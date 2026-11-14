@@ -96,6 +96,25 @@ adb shell am start -n $PKG/.MainActivity --ez nowizard true
 sleep 2; key 20; key 20; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk
 key 4; sleep 1
 
+# 8) jiná rozlišení obrazovky televize: 720p a 4K. Pruh se má i tam postavit přesně na titulek.
+for mode in "1280x720 213 720p" "3840x2160 640 4k"; do
+  set -- $mode
+  adb shell am force-stop $PKG
+  adb shell wm size $1; adb shell wm density $2; sleep 3
+  adb shell settings put secure enabled_accessibility_services $PKG/$PKG.TitulkyAccessibility
+  adb shell settings put secure accessibility_enabled 1
+  sleep 4
+  adb shell am start -n $PKG/.MainActivity --ez autostart true
+  sleep 12
+  adb shell am start -n $PKG/.TestCardActivity
+  sleep 20; shot "14_rozliseni_$3_a"
+  sleep 8; shot "14_rozliseni_$3_b"
+  sleep 8; shot "14_rozliseni_$3_c"
+  key 4; sleep 1
+done
+adb shell am force-stop $PKG
+adb shell wm size reset; adb shell wm density reset; sleep 2
+
 adb logcat -d -v time > $OUT/logcat_full.txt
 grep -E "TP_TEST|TestPreklad|AndroidRuntime|FATAL|libchiaki|DEBUG   :" $OUT/logcat_full.txt > $OUT/log.txt
 SHOWS=$(grep -c "TP_TEST.*SHOW|" $OUT/log.txt)
