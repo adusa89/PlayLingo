@@ -292,8 +292,10 @@ class StreamReader(private val width: Int, private val height: Int) {
     /** Zkopíruje jas z dekódovaného obrázku a občas uloží barevný náhled. */
     private fun handleImage(img: Image) {
         run {
-            val w = img.width
-            val h = img.height
+            // skutečný obraz bez výplně na okraji (dekodér vrací např. 1920×1088 místo 1920×1080)
+            val cr = img.cropRect
+            val w = if (cr.width() in 1..img.width) cr.width() else img.width
+            val h = if (cr.height() in 1..img.height) cr.height() else img.height
             val p = img.planes[0]
             val stride = p.rowStride
             val buf = p.buffer.duplicate()

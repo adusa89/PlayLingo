@@ -30,6 +30,7 @@ import cz.testpreklad.core.Lang
 import cz.testpreklad.core.OcrBlock
 import cz.testpreklad.core.OcrLine
 import cz.testpreklad.core.Perf
+import cz.testpreklad.core.Picked
 import cz.testpreklad.core.Ps5
 import cz.testpreklad.core.ScreenLayout
 import cz.testpreklad.core.Segment
@@ -456,7 +457,10 @@ class TranslatorService : Service() {
         ocrRuns++
         lastOcrMs = SystemClock.uptimeMillis() - ocrStart
 
-        val picked = TextLogic.assemble(
+        // V oblasti je text v jiném jazyce než v angličtině (česká nabídka konzole, hra už je přeložená):
+        // to není anglický titulek ze hry – nepřekládá se nic, ani anglické nápisy vedle.
+        val foreignScreen = (onlySubtitles || autoFind) && TextLogic.looksForeign(result.text)
+        val picked = if (foreignScreen) Picked("", 0) else TextLogic.assemble(
             toBlocks(result),
             minLineHeight = (capH * 0.013f).toInt(),
             subtitlesOnly = onlySubtitles || autoFind,   // automatika čte velkou plochu → vždy jen titulky
