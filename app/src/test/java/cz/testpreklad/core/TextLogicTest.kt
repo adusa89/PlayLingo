@@ -226,3 +226,41 @@ class SubtitleClusterTest {
         assertEquals("Chapter Three\nWe ride at dawn.", TextLogic.assemble(blocks, 10).text)
     }
 }
+
+class OcrRepairTest {
+    @Test fun missingApostrophes() {
+        assertEquals("Mira: I'll take the left door.", TextLogic.clean("Mira: Ill take the left door."))
+        assertEquals("I'll go.", TextLogic.clean("IIl go."))
+        assertEquals("I don't know what's there.", TextLogic.clean("I dont know whats there."))
+        assertEquals("Don't move, you're hurt.", TextLogic.clean("Dont move, youre hurt."))
+        // skutečná slova zůstávají
+        assertEquals("He was ill for days.", TextLogic.clean("He was ill for days."))
+        assertEquals("Illness spreads.", TextLogic.clean("Illness spreads."))
+    }
+
+    @Test fun bracketNameWithSmallFirstLetter() {
+        val s = TextLogic.splitSpeaker("[old Kessler] You two were never supposed to meet.")
+        assertEquals("old Kessler", s.speaker)
+        assertEquals("Old Kessler", TextLogic.normalizeName(s.speaker!!))
+    }
+
+    @Test fun singleWordGetsADotForTheTranslator() {
+        assertEquals("Wait.", TextLogic.forTranslator("Wait"))
+        assertEquals("Wait!", TextLogic.forTranslator("Wait!"))
+        assertEquals("We ride", TextLogic.forTranslator("We ride"))
+        assertEquals("Počkej", TextLogic.finishTranslation("Wait", "počkej."))
+        assertEquals("Prosím", TextLogic.finishTranslation("Wait", ", Prosím"))
+        assertEquals("Počkej!", TextLogic.finishTranslation("Wait!", "Počkej!"))
+        assertEquals("Potřebujeme peníze.", TextLogic.finishTranslation("We need money.", "potřebujeme peníze."))
+    }
+
+    @Test fun longerReadingFixesTheShownText() {
+        val t = SubtitleTracker(fastComplete = true)
+        assertEquals(SubtitleTracker.Action.Show("The marshals wil find us."), t.onOcr("The marshals wil find us."))
+        t.confirmShown("The marshals wil find us.")
+        assertEquals(SubtitleTracker.Action.Show("The marshals will find us."), t.onOcr("The marshals will find us."))
+        t.confirmShown("The marshals will find us.")
+        assertEquals(SubtitleTracker.Action.None, t.onOcr("The marshals will find us."))
+        assertEquals(SubtitleTracker.Action.None, t.onOcr("The marshals wil find us."))
+    }
+}

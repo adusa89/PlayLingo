@@ -34,9 +34,9 @@ object TextLogic {
     // Mezera za dvojtečkou není povinná (OCR ji někdy vynechá), ale pak musí následovat písmeno nebo uvozovka.
     private val SPEAKER = Regex("^([A-Z][A-Za-z'.\\-]{0,20}(?: [A-Z][A-Za-z'.\\-]{0,20}){0,2}):\\s*((?=[A-Za-z\"'(.]).+)$")
     // "[Dutch] We need money." – jméno v hranatých závorkách
-    private val SPEAKER_BRACKET = Regex("^\\[([A-Z][A-Za-z'.\\- ]{0,30})]\\s*(.+)$")
+    private val SPEAKER_BRACKET = Regex("^\\[([A-Za-z][A-Za-z'.\\- ]{0,30})]\\s*(.+)$")
     // samotné jméno na řádku ("DUTCH:" nebo "[Dutch]"), text je až na dalším řádku
-    private val SPEAKER_ONLY = Regex("^(?:[A-Z][A-Za-z'.\\-]{0,20}(?: [A-Z][A-Za-z'.\\-]{0,20}){0,2}:|\\[[A-Z][A-Za-z'.\\- ]{0,30}])$")
+    private val SPEAKER_ONLY = Regex("^(?:[A-Z][A-Za-z'.\\-]{0,20}(?: [A-Z][A-Za-z'.\\-]{0,20}){0,2}:|\\[[A-Za-z][A-Za-z'.\\- ]{0,30}])$")
     // jedno slovo jako celá replika: "Wait", "RUN" (první písmeno velké, zbytek malý, nebo celé velké)
     private val SINGLE_WORD = Regex("^(?:[A-Z][a-z]{2,}|[A-Z]{3,})[.!?…,]*$")
 
@@ -45,6 +45,18 @@ object TextLogic {
         "Note", "Tip", "Hint", "Objective", "Mission", "Goal", "Reward", "Warning", "Bounty",
         "Wanted", "Status", "Chapter", "Honor", "Help", "Info", "Location", "Time", "Cost", "Price"
     )
+
+    // "Ill"/"IIl"/"I1l" před dalším slovem je skoro vždy špatně přečtené "I'll"
+    private val ILL = Regex("\\bI[Il1]l(?=\\s+[a-z])")
+    private val CONTRACTIONS = mapOf(
+        "im" to "I'm", "ive" to "I've", "dont" to "don't", "didnt" to "didn't", "doesnt" to "doesn't",
+        "isnt" to "isn't", "wasnt" to "wasn't", "arent" to "aren't", "werent" to "weren't",
+        "couldnt" to "couldn't", "wouldnt" to "wouldn't", "shouldnt" to "shouldn't", "havent" to "haven't",
+        "hasnt" to "hasn't", "youre" to "you're", "theyre" to "they're", "thats" to "that's",
+        "whats" to "what's", "theres" to "there's",
+    )
+    private val NO_APOSTROPHE = Regex("\\b(?:[Ii]m|[Ii]ve|[Dd]ont|[Dd]idnt|[Dd]oesnt|[Ii]snt|[Ww]asnt|[Aa]rent|[Ww]erent|" +
+        "[Cc]ouldnt|[Ww]ouldnt|[Ss]houldnt|[Hh]avent|[Hh]asnt|[Yy]oure|[Tt]heyre|[Tt]hats|[Ww]hats|[Tt]heres)\\b")
 
     /** Opraví typické chyby OCR a sjednotí mezery. */
     fun clean(raw: String): String {
@@ -58,6 +70,13 @@ object TextLogic {
             .trim()
         // osamocené "l" nebo "1" na místě zájmena I ("l think" -> "I think")
         t = t.replace(Regex("(^|[\\s\"'(])[l1](?=\\s+[a-z'])"), "$1I")
+        // drobné písmo: OCR vynechá apostrof ("Ill take" → "I'll take", "dont" → "don't")
+        t = t.replace(ILL) { "I'll" }
+        t = t.replace(NO_APOSTROPHE) { m ->
+            val w = m.value
+            val fixed = CONTRACTIONS[w.lowercase()] ?: return@replace w
+            if (w[0].isUpperCase()) fixed.replaceFirstChar { it.uppercaseChar() } else fixed
+        }
         return t
     }
 
@@ -225,6 +244,8 @@ object TextLogic {
 
     /** Jméno psané velkými písmeny ukáže jako běžné jméno ("MARY-BETH" → "Mary-Beth"). */
     fun normalizeName(name: String): String {
+        // OCR občas přečte první písmeno jména malé ("old Kessler")
+        if (name.isNotEmpty() && name[0].isLowerCase()) return name.replaceFirstChar { it.uppercaseChar() }
         if (name.length < 3 || name.any { it.isLowerCase() }) return name
         val sb = StringBuilder(name.lowercase())
         var start = true
@@ -232,6 +253,23 @@ object TextLogic {
             if (sb[i].isLetter()) { if (start) { sb[i] = sb[i].uppercaseChar(); start = false } } else start = true
         }
         return sb.toString()
+    }
+
+    /**
+     * Text připravený pro překladač: samotné slovo bez tečky ("Wait") se překládá špatně,
+     * proto dostane tečku. [finishTranslation] ji z překladu zase odebere.
+     */
+    fun forTranslator(body: String): String {
+        val t = body.trim()
+        return if (t.isNotEmpty() && !t.contains(' ') && t.last().isLetter()) "$t." else t
+    }
+
+    /** Uklidí překlad: pryč s interpunkcí na začátku, tečka navíc pryč, velké písmeno jako v originále. */
+    fun finishTranslation(source: String, translated: String): String {
+        var t = translated.trim().trimStart(',', '.', ';', ':', ' ')
+        val s = source.trim()
+        if (s.isNotEmpty() && s.last().isLetter() && t.endsWith(".") && !t.endsWith("..")) t = t.dropLast(1)
+        return matchFirstCase(s, t)
     }
 
     /** Překlad začíná velkým písmenem, když jím začínal i původní text. */

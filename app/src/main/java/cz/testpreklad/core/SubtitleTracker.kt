@@ -61,7 +61,12 @@ class SubtitleTracker(
             return Action.None
         }
         if (count < needStable) return Action.None
-        if (TextLogic.similar(candidate, shown)) return Action.None
+        if (TextLogic.similar(candidate, shown)) {
+            // první přečtení bylo o písmeno kratší (OCR ho useklo) a další čtení se shodla na delším
+            // textu → překlad se opraví
+            if (fastComplete && count >= 2 && candidate.length > shown.length) return Action.Show(candidate)
+            return Action.None
+        }
         return Action.Show(candidate)
     }
 

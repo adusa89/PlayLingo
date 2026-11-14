@@ -394,7 +394,11 @@ class MainActivity : Activity() {
             !lic.canRun -> { title = t("lic_expired"); sub = t("lic_expired_sub"); color = Theme.BAD }
             running && paused -> { title = t("st_paused"); sub = t("st_paused_sub"); color = Theme.WARN }
             demoRun -> { title = t("st_running"); sub = t("st_demo"); color = Theme.OK }
-            running && link == Ps5.Link.CONNECTED -> { title = t("st_running"); sub = t("st_running_sub"); color = Theme.OK }
+            running && link == Ps5.Link.CONNECTED -> {
+                title = t("st_running"); color = Theme.OK
+                // rychlost čtení titulků na tomto zařízení (číslo je srozumitelné ve všech jazycích)
+                sub = t("st_running_sub") + (TranslatorService.readMs.takeIf { it > 0 }?.let { "\n⏱ $it ms" } ?: "")
+            }
             running && link == Ps5.Link.FAILED -> {
                 title = t("m_ps5")
                 sub = t(if (Ps5Link.needsLoginPin) "ps5_login_fail" else "st_failed")
@@ -1210,8 +1214,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.25"
-    const val VERSION_CODE = 25
+    const val VERSION = "verze 0.26"
+    const val VERSION_CODE = 26
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

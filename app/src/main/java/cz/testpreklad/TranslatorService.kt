@@ -77,6 +77,9 @@ class TranslatorService : Service() {
 
         @Volatile var running = false
             private set
+        /** Jak dlouho v průměru trvá jedno přečtení titulku (ms); 0 = zatím se nečetlo. */
+        @Volatile var readMs = 0L
+            private set
         @Volatile var paused = false
             private set
         /** Běží nad ukázkovým videem (ne nad PlayStationem)? */
@@ -462,6 +465,7 @@ class TranslatorService : Service() {
 
         // slabé zařízení: jedno čtení trvá déle než půl sekundy → nečekej na druhé potvrzení
         ocrMsSum += lastOcrMs
+        readMs = if (readMs == 0L) lastOcrMs else (readMs * 4 + lastOcrMs) / 5
         when (val action = tracker.onOcr(picked.text, slowDevice = lastOcrMs > 500)) {
             is SubtitleTracker.Action.Show -> {
                 // překlad už většinou běží (spuštěný po prvním přečtení) – jen se počká na výsledek
@@ -545,8 +549,8 @@ class TranslatorService : Service() {
         val out = ArrayList<Segment>()
         for (s in TextLogic.segments(text)) {
             val body = TextLogic.normalizeCase(s.body)
-            val tr = translate(body) ?: return null
-            out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.matchFirstCase(body, tr)))
+            val tr = translate(TextLogic.forTranslator(body)) ?: return null
+            out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr)))
         }
         return out
     }

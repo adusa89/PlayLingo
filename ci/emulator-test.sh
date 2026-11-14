@@ -108,7 +108,7 @@ LINK=$(grep -c "TP_TEST.*LINK|\(WAITING\|FAILED\)" $OUT/log.txt)
 PAIR=$(grep -c "TP_TEST.*PAIR|\(failed\|timeout\|error\)" $OUT/log.txt)
 # kolik z deseti různých ukázkových titulků (velká písmena, jména, krátká slova…) se přeložilo
 KINDS=0
-for k in "We need money" "reckon" "ride at dawn" "keep going like this" "right way" "no idea" "GET OUT OF HERE" "SHOW|Wait|" "never supposed to meet" "left door"; do
+for k in "We need money" "reckon" "ride at dawn" "keep going like this" "right way" "no idea" "GET OUT OF HERE" "|Wait|" "never supposed to meet" "left door"; do
   grep -q "TP_TEST.*SHOW|.*$k" $OUT/log.txt && KINDS=$((KINDS+1)) || echo "NEPRELOZENO: $k" >> $OUT/missing.txt
 done
 echo "ruznych_titulku=$KINDS/10" > $OUT/kinds.txt

@@ -163,7 +163,11 @@ class SubtitleOverlay(
             val l = layout
             val maxWidth = (screenW * l.barWidth).toInt()
             tv.textSize = textSize.toFloat()
-            tv.setBackgroundColor(Color.argb(bgAlpha, 0, 0, 0))
+            // černý podklad s lehce zaoblenými rohy
+            tv.background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(Color.argb(bgAlpha, 0, 0, 0))
+                cornerRadius = dp(8).toFloat()
+            }
             tv.text = format(segments, original)
 
             val hasText = textTop >= 0f && textBottom > textTop
