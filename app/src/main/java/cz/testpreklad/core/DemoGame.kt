@@ -27,7 +27,27 @@ object DemoGame {
         "",
         "Mira: I'll take the left door.\nTobin: Then I'm going right.",   // dva mluvčí najednou
         "",
+        // drobné písmo a neklidné pozadí, jak to bývá ve skutečných hrách (viz [style])
+        "Lena: Keep your voice down, they can hear us.",
+        "",
+        "I don't think anyone has been here for years.",
+        "",
+        "Davor: Hand me the lantern and stay close.",
+        "",
+        "Lena: The bridge is out, we have to swim.",
+        "",
     )
+    /** Jak se titulek kreslí: výška písma jako zlomek výšky obrazu a jestli je pod ním světlé neklidné pozadí. */
+    data class Style(val size: Float, val busy: Boolean)
+
+    fun style(subtitle: String): Style = when {
+        subtitle.startsWith("Lena: Keep") -> Style(0.024f, false)
+        subtitle.startsWith("I don't think") -> Style(0.020f, false)
+        subtitle.startsWith("Davor:") -> Style(0.016f, false)
+        subtitle.startsWith("Lena: The bridge") -> Style(0.026f, true)
+        else -> Style(0.032f, false)
+    }
+
     const val SHOWN_MS = 6000L
     const val GAP_MS = 1500L
     val cycleMs: Long = lines.sumOf { if (it.isEmpty()) GAP_MS else SHOWN_MS }

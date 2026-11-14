@@ -84,11 +84,21 @@ object TestCard {
         // pruh ho nesmí spojit s titulkem do jednoho velkého obdélníku
         p.textSize = h * 0.03f
         canvas.drawText("Old Mill Road", w / 2, h * 0.60f, p)
-        // velikost jako ve hrách: řádek zabere zhruba 3 % výšky obrazu
-        p.textSize = h * 0.032f
+        val st = DemoGame.style(subtitle)
+        if (st.busy) {
+            // světlé neklidné pozadí pod titulkem (sníh, obloha, výbuchy) – nejtěžší případ pro čtení
+            val cols = intArrayOf(Color.rgb(205, 200, 190), Color.rgb(120, 150, 170), Color.rgb(230, 225, 215), Color.rgb(90, 100, 80), Color.rgb(180, 170, 140))
+            val n = 48
+            for (k in 0 until n) {
+                p.color = cols[(k * 7 + k / 3) % cols.size]
+                canvas.drawRect(w * k / n, h * (0.80f + 0.02f * (k % 3)), w * (k + 1) / n, h * 0.95f, p)
+            }
+            p.color = Color.WHITE
+        }
+        p.textSize = h * st.size
         p.setShadowLayer(4f, 0f, 2f, Color.BLACK)
         subtitle.split('\n').forEachIndexed { i, s ->
-            canvas.drawText(s, w / 2, h * 0.87f + i * h * 0.045f, p)
+            canvas.drawText(s, w / 2, h * 0.87f + i * h * st.size * 1.4f, p)
         }
         p.clearShadowLayer()
     }

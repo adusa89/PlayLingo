@@ -123,7 +123,7 @@ class DemoGameTest {
     }
 
     @Test fun timelineRepeats() {
-        assertEquals(75000, DemoGame.cycleMs)
+        assertEquals(105000, DemoGame.cycleMs)
         assertEquals(DemoGame.subtitleAt(100), DemoGame.subtitleAt(100 + DemoGame.cycleMs * 7))
         for (t in 0 until DemoGame.cycleMs step 500) assertTrue(DemoGame.indexAt(t) in DemoGame.lines.indices)
     }

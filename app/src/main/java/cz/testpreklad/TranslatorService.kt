@@ -241,7 +241,8 @@ class TranslatorService : Service() {
         overlay?.hide(); tracker.reset(); lastSig = null
         r.clearFrames()
         if (wantDemo) {
-            feeder = DemoFeeder(VIDEO_W, VIDEO_H, { r.feed(it) }, { y, w, h -> r.feedRaw(y, w, h, null) }, { r.decoded }).also { it.start() }
+            // ukázka má stejnou velikost obrazu, jakou by toto zařízení bralo z konzole
+            feeder = DemoFeeder(perf.captureWidth, perf.captureHeight, { r.feed(it) }, { y, w, h -> r.feedRaw(y, w, h, null) }, { r.decoded }).also { it.start() }
             tp("SOURCE|demo")
         } else {
             val host = Prefs.ps5Host(this) ?: return
