@@ -162,6 +162,8 @@ internal val I18N_FR: Map<String, String> = mapOf(
     "help_3" to "3. Active les sous-titres dans le jeu.",
     "help_6" to "6. L’application trouve toute seule les sous-titres. Sinon, règle la zone à la main dans Zones de sous-titres.",
     "help_tips" to "Conseils",
+    "inst_title" to "Si l’application ne s’installe pas ou ne se met pas à jour",
+    "inst_text" to "1. Si une fenêtre Play Protect apparaît, choisis « Plus de détails » → « Installer quand même ».\n2. Si cette option n’y est pas : ouvre Google Play → icône du compte → Play Protect → roue dentée → désactive « Analyser les applis avec Play Protect », installe, puis réactive l’analyse.\n3. Si le téléviseur signale une « installation depuis des sources inconnues » : Paramètres → Applications → Sécurité et restrictions → Sources inconnues → autorise l’application depuis laquelle tu installes (Downloader ou le gestionnaire de fichiers).\n4. Si l’installation se termine par une erreur : libère de l’espace sur le téléviseur ou désinstalle l’ancienne version et réinstalle.",
     "help_t2" to "Si rien n’apparaît, active le Mode diagnostic et regarde ce que lit l’application.",
     "help_t3" to "La pause et l’arrêt sont aussi possibles depuis la notification.",
     "help_t4" to "La traduction est hors ligne et gratuite. Internet n’est nécessaire qu’une fois, pour télécharger le modèle de langue.",

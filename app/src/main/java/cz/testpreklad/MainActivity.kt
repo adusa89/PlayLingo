@@ -968,6 +968,8 @@ class MainActivity : Activity() {
         val c2 = ui.card()
         for (i in 1..4) c2.addView(ui.text("•  " + t("help_t$i"), 16f, Theme.MUTED), ui.lp(top = if (i == 1) 0 else 8))
         add(c2, 0)
+        content.addView(ui.section(t("inst_title")))
+        add(ui.card().apply { addView(ui.text(t("inst_text"), 15f, Theme.MUTED)) }, 0)
         content.addView(ui.section(t("adb_title")))
         add(ui.card().apply {
             isFocusable = true
@@ -1201,8 +1203,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.21"
-    const val VERSION_CODE = 21
+    const val VERSION = "verze 0.22"
+    const val VERSION_CODE = 22
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

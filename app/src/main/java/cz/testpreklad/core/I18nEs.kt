@@ -162,6 +162,8 @@ internal val I18N_ES: Map<String, String> = mapOf(
     "help_3" to "3. Activa los subtítulos en el juego.",
     "help_6" to "6. La aplicación encuentra sola los subtítulos. Si no los encuentra, ajusta la zona a mano en Zonas de subtítulos.",
     "help_tips" to "Consejos",
+    "inst_title" to "Si la aplicación no se puede instalar o actualizar",
+    "inst_text" to "1. Si aparece una ventana de Play Protect, elige «Más detalles» → «Instalar de todos modos».\n2. Si no aparece esa opción: abre Google Play → icono de la cuenta → Play Protect → rueda dentada → desactiva «Analizar aplicaciones con Play Protect», instala y después vuelve a activar el análisis.\n3. Si el televisor avisa de «instalación de fuentes desconocidas»: Ajustes → Aplicaciones → Seguridad y restricciones → Fuentes desconocidas → permite la aplicación desde la que instalas (Downloader o el gestor de archivos).\n4. Si la instalación termina con error: libera espacio en el televisor o desinstala la versión antigua e instala de nuevo.",
     "help_t2" to "Si no aparece nada, activa el Modo de diagnóstico y mira qué lee la aplicación.",
     "help_t3" to "También puedes pausar y detener desde la notificación.",
     "help_t4" to "La traducción es sin conexión y gratuita. Internet solo hace falta una vez, para descargar el modelo de idioma.",

@@ -10,8 +10,15 @@ https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk
 
 ## 2. Instalace
 Nahraj APK do televize (USB flash + správce souborů, nebo aplikace Downloader) a nainstaluj.
-Když instalaci zablokuje Play Protect, vypni v Google Play → Play Protect → nastavení
-„Kontrolovat aplikace pomocí Play Protect“ a nainstaluj znovu.
+Když aplikace nejde nainstalovat nebo aktualizovat:
+1. Objeví-li se okno Play Protect, zvol „Další podrobnosti“ → „Přesto nainstalovat“.
+2. Když tam ta možnost není: Google Play → ikona účtu → Play Protect → ozubené kolo → vypni
+   „Kontrolovat aplikace pomocí Play Protect“, nainstaluj a pak kontrolu zase zapni.
+3. Hlásí-li televize „instalace z neznámých zdrojů“: Nastavení → Aplikace → Zabezpečení a omezení →
+   Neznámé zdroje → povol aplikaci, ze které instaluješ (Downloader nebo správce souborů).
+4. Skončí-li instalace chybou: uvolni místo v televizi, případně starou verzi odinstaluj a nainstaluj znovu.
+
+Stejný postup najdeš i v aplikaci na stránce Nápověda.
 
 ## 3. První nastavení (průvodce tě provede)
 1. Vyber jazyk překladu.

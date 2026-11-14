@@ -162,6 +162,8 @@ internal val I18N_PL: Map<String, String> = mapOf(
     "help_3" to "3. Włącz napisy w grze.",
     "help_6" to "6. Aplikacja sama znajdzie napisy. Gdyby ich nie znalazła, ustaw obszar ręcznie w Obszarach napisów.",
     "help_tips" to "Wskazówki",
+    "inst_title" to "Gdy aplikacji nie da się zainstalować lub zaktualizować",
+    "inst_text" to "1. Gdy pojawi się okno Play Protect, wybierz „Więcej szczegółów” → „Zainstaluj mimo to”.\n2. Gdy tej opcji nie ma: otwórz Google Play → ikona konta → Play Protect → koło zębate → wyłącz „Skanuj aplikacje za pomocą Play Protect”, zainstaluj, a potem włącz skanowanie z powrotem.\n3. Gdy telewizor zgłasza „instalację z nieznanych źródeł”: Ustawienia → Aplikacje → Zabezpieczenia i ograniczenia → Nieznane źródła → zezwól aplikacji, z której instalujesz (Downloader lub menedżer plików).\n4. Gdy instalacja kończy się błędem: zwolnij miejsce w telewizorze albo odinstaluj starą wersję i zainstaluj ponownie.",
     "help_t2" to "Gdy nic się nie pojawia, włącz Tryb diagnostyczny i zobacz, co aplikacja czyta.",
     "help_t3" to "Wstrzymać i zatrzymać można też z powiadomienia.",
     "help_t4" to "Tłumaczenie jest offline i darmowe. Internet jest potrzebny tylko raz, do pobrania modelu językowego.",

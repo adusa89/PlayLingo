@@ -162,6 +162,8 @@ internal val I18N_HU: Map<String, String> = mapOf(
     "help_3" to "3. Kapcsold be a feliratot a játékban.",
     "help_6" to "6. Az alkalmazás magától megtalálja a feliratokat. Ha mégsem, állítsd be a területet kézzel a Feliratterületek menüben.",
     "help_tips" to "Tippek",
+    "inst_title" to "Ha az alkalmazást nem lehet telepíteni vagy frissíteni",
+    "inst_text" to "1. Ha megjelenik a Play Protect ablaka, válaszd a „További részletek” → „Telepítés mindenképp” lehetőséget.\n2. Ha nincs ilyen lehetőség: nyisd meg a Google Playt → fiók ikon → Play Protect → fogaskerék → kapcsold ki az „Alkalmazások ellenőrzése a Play Protecttel” beállítást, telepíts, majd kapcsold vissza az ellenőrzést.\n3. Ha a tévé „ismeretlen forrásból származó telepítést” jelez: Beállítások → Alkalmazások → Biztonság és korlátozások → Ismeretlen források → engedélyezd azt az alkalmazást, amelyből telepítesz (Downloader vagy fájlkezelő).\n4. Ha a telepítés hibával ér véget: szabadíts fel helyet a tévén, vagy távolítsd el a régi verziót, és telepítsd újra.",
     "help_t2" to "Ha semmi nem jelenik meg, kapcsold be a Diagnosztikai módot, és nézd meg, mit olvas az alkalmazás.",
     "help_t3" to "Szüneteltetni és leállítani az értesítésből is lehet.",
     "help_t4" to "A fordítás offline és ingyenes. Internet csak egyszer kell, a nyelvi modell letöltéséhez.",

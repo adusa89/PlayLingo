@@ -162,6 +162,8 @@ internal val I18N_DE: Map<String, String> = mapOf(
     "help_3" to "3. Schalte im Spiel die Untertitel ein.",
     "help_6" to "6. Die App findet die Untertitel selbst. Falls nicht, stelle den Bereich in Untertitelbereiche manuell ein.",
     "help_tips" to "Tipps",
+    "inst_title" to "Wenn sich die App nicht installieren oder aktualisieren lässt",
+    "inst_text" to "1. Erscheint ein Fenster von Play Protect, wähle „Weitere Details“ → „Trotzdem installieren“.\n2. Fehlt diese Option: Google Play öffnen → Kontosymbol → Play Protect → Zahnrad → „Apps mit Play Protect scannen“ ausschalten, installieren und die Prüfung danach wieder einschalten.\n3. Meldet der Fernseher „Installation aus unbekannten Quellen“: Einstellungen → Apps → Sicherheit & Einschränkungen → Unbekannte Quellen → die App erlauben, aus der du installierst (Downloader oder Dateimanager).\n4. Endet die Installation mit einem Fehler: Speicherplatz freigeben, notfalls die alte Version deinstallieren und neu installieren.",
     "help_t2" to "Wenn nichts erscheint, schalte den Diagnosemodus ein und sieh nach, was die App liest.",
     "help_t3" to "Pausieren und Stoppen geht auch über die Benachrichtigung.",
     "help_t4" to "Die Übersetzung ist offline und kostenlos. Internet wird nur einmal zum Herunterladen des Sprachmodells benötigt.",
