@@ -33,7 +33,7 @@ class Ps5Link(
     private val ctx: Context,
     private var host: Ps5Host,
     /** Brát obraz 1080p (drobné titulky se čtou spolehlivěji), jinak 720p. */
-    private val highRes: Boolean,
+    highRes: Boolean,
     private val onVideo: (ByteArray) -> Boolean,
 ) {
     companion object {
@@ -60,6 +60,12 @@ class Ps5Link(
     private val exec = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "tp-ps5") }
     private var session: Session? = null
     private var failures = 0
+    /** Obraz 1080p; když s ním spojení nedrží, přejde se natrvalo na 720p. */
+    private var useHigh = highRes
+    /** Kolikrát po sobě se spojení navázalo a hned zase spadlo (nebo nepřišlo video). */
+    private var shortSessions = 0
+    /** Kdy se právě běžící relace připojila (0 = ještě ne). */
+    @Volatile private var sessionConnectedAt = 0L
     private var retry: ScheduledFuture<*>? = null
     @Volatile private var stopped = false
     @Volatile private var connectedAt = 0L
@@ -76,11 +82,12 @@ class Ps5Link(
         if (stopped || session != null) return
         state = Ps5.Link.CONNECTING
         needsLoginPin = false
+        sessionConnectedAt = 0
         try {
             val f = logFile(ctx)
             try { if (f.length() > 400_000) f.delete() } catch (_: Exception) {}
             val profile = ConnectVideoProfile.preset(
-                if (highRes) VideoResolutionPreset.RES_1080P else VideoResolutionPreset.RES_720P, VideoFPSPreset.FPS_30, Codec.CODEC_H264)
+                if (useHigh) VideoResolutionPreset.RES_1080P else VideoResolutionPreset.RES_720P, VideoFPSPreset.FPS_30, Codec.CODEC_H264)
             val s = Session(ConnectInfo(true, host.ip, host.registKey, host.morning, profile), f.absolutePath, false)
             s.eventCallback = { e -> onEvent(s, e) }
             s.videoCallback = onVideo
@@ -107,8 +114,9 @@ class Ps5Link(
                 state = Ps5.Link.CONNECTED
                 reason = null
                 connectedAt = SystemClock.uptimeMillis()
+                sessionConnectedAt = connectedAt
                 everConnected = true
-                exec.execute { failures = 0 }
+                // počítadlo neúspěchů se nuluje až poté, co spojení chvíli vydrží (viz failed())
             }
             is LoginPinRequestEvent -> {
                 log("login pin requested")
@@ -134,6 +142,30 @@ class Ps5Link(
 
     private fun failed() {
         if (stopped) return
+        // Jak dopadla relace, která právě skončila?
+        val since = sessionConnectedAt
+        sessionConnectedAt = 0
+        if (since > 0) {
+            if (SystemClock.uptimeMillis() - since >= Ps5.STABLE_SESSION_MS) { failures = 0; shortSessions = 0 }
+            else shortSessions++
+        }
+        // Spojení se naváže a hned spadne: každé takové připojení konzole hlásí na obrazovce a ruší
+        // ovladač, proto se to nesmí opakovat donekonečna.
+        when (Ps5.afterShortSessions(shortSessions, useHigh)) {
+            Ps5.Unstable.LOWER_QUALITY -> {
+                log("unstable with 1080p → 720p")
+                useHigh = false
+                Prefs.setHighResFailed(ctx, true)
+            }
+            Ps5.Unstable.GIVE_UP -> {
+                log("unstable → giving up")
+                reason = "unstable"
+                state = Ps5.Link.FAILED
+                retry?.cancel(false)
+                return
+            }
+            Ps5.Unstable.RETRY -> {}
+        }
         failures++
         state = if (failures >= 3) Ps5.Link.FAILED else Ps5.Link.WAITING
         val delay = Ps5.retryDelayMs(failures)

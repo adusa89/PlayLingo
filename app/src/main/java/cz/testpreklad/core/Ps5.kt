@@ -191,4 +191,20 @@ object Ps5 {
         failures <= 5 -> 12000
         else -> 30000
     }
+
+    /** Spojení, které vydrží aspoň takhle dlouho, se bere jako v pořádku. */
+    const val STABLE_SESSION_MS = 60_000L
+
+    enum class Unstable { RETRY, LOWER_QUALITY, GIVE_UP }
+
+    /**
+     * Co dělat, když se spojení [shortSessions]× po sobě navázalo a hned spadlo:
+     * po druhém takovém pokusu s obrazem 1080p přejít na 720p (méně dat, lehčí pro televizi i Wi-Fi),
+     * po čtvrtém přestat – opakované připojování ruší hráče u konzole.
+     */
+    fun afterShortSessions(shortSessions: Int, highRes: Boolean): Unstable = when {
+        shortSessions >= 4 -> Unstable.GIVE_UP
+        shortSessions == 2 && highRes -> Unstable.LOWER_QUALITY
+        else -> Unstable.RETRY
+    }
 }

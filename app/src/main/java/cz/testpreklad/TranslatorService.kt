@@ -148,7 +148,9 @@ class TranslatorService : Service() {
             val mi = android.app.ActivityManager.MemoryInfo()
             am.getMemoryInfo(mi)
             Perf.forDevice(mi.totalMem / (1024 * 1024), am.isLowRamDevice)
-        } catch (_: Exception) { Perf.forDevice(0, false) }.withQuality(Prefs.readQuality(this))
+        } catch (_: Exception) { Perf.forDevice(0, false) }.withQuality(
+            // automatika: když s obrazem 1080p spojení na tomto zařízení nedrželo, zůstává u 720p
+            Prefs.readQuality(this).let { q -> if (q == "auto" && Prefs.highResFailed(this)) "std" else q })
     }
 
     /** Kdy schovat pruh (překlad zůstane chvíli po zmizení angličtiny, ať se dá dočíst). 0 = nic. */
@@ -377,7 +379,9 @@ class TranslatorService : Service() {
                 if (!Prefs.license(this).canRun) { stopSelf(); return }
             }
             val spent = SystemClock.uptimeMillis() - t0
-            delay(max(20L, perf.intervalMs - spent))
+            // Po každém čtení krátká pauza úměrná jeho délce: procesor televize musí stíhat i příjem
+            // videa a spojení s konzolí, jinak se spojení rozpadá.
+            delay(max(max(30L, spent / 2), perf.intervalMs - spent))
         }
     }
 

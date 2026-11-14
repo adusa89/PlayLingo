@@ -192,3 +192,22 @@ class DemoGameTest {
         assertNull(Ps5.authCodeFromTyped("kód s háčky"))
     }
 }
+
+class UnstableLinkTest {
+    @Test fun oneDropJustRetries() {
+        assertEquals(Ps5.Unstable.RETRY, Ps5.afterShortSessions(0, true))
+        assertEquals(Ps5.Unstable.RETRY, Ps5.afterShortSessions(1, true))
+    }
+
+    @Test fun secondDropWithFullPictureLowersQuality() {
+        assertEquals(Ps5.Unstable.LOWER_QUALITY, Ps5.afterShortSessions(2, true))
+        assertEquals(Ps5.Unstable.RETRY, Ps5.afterShortSessions(2, false))
+        assertEquals(Ps5.Unstable.RETRY, Ps5.afterShortSessions(3, false))
+    }
+
+    @Test fun repeatedDropsStopReconnecting() {
+        assertEquals(Ps5.Unstable.GIVE_UP, Ps5.afterShortSessions(4, false))
+        assertEquals(Ps5.Unstable.GIVE_UP, Ps5.afterShortSessions(4, true))
+        assertEquals(Ps5.Unstable.GIVE_UP, Ps5.afterShortSessions(9, false))
+    }
+}

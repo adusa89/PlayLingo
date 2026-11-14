@@ -403,7 +403,7 @@ class MainActivity : Activity() {
             }
             running && link == Ps5.Link.FAILED -> {
                 title = t("m_ps5")
-                sub = t(if (Ps5Link.needsLoginPin) "ps5_login_fail" else "st_failed")
+                sub = t(if (Ps5Link.needsLoginPin) "ps5_login_fail" else if (Ps5Link.reason == "unstable") "st_unstable" else "st_failed")
                 color = Theme.BAD
             }
             running && link == Ps5.Link.WAITING -> { title = t("m_ps5"); sub = t("st_waiting"); color = Theme.WARN }
@@ -1216,8 +1216,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.31"
-    const val VERSION_CODE = 31
+    const val VERSION = "verze 0.32"
+    const val VERSION_CODE = 32
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

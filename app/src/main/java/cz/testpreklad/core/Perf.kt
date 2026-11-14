@@ -20,8 +20,7 @@ data class Perf(val captureWidth: Int, val intervalMs: Long, val eco: Boolean) {
     companion object {
         fun forDevice(totalRamMb: Long, lowRamFlag: Boolean): Perf = when {
             lowRamFlag || totalRamMb in 1..1600 -> Perf(1280, 200, true)    // ~1 GB: čte méně často
-            // ~2 GB: obraz v plné velikosti (drobné herní titulky se z menšího nedají přečíst), čte o něco méně často
-            totalRamMb in 1601..2600 -> Perf(1920, 100, true)
+            totalRamMb in 1601..2600 -> Perf(1280, 100, true)               // ~2 GB
             else -> Perf(1920, 50, false)                                   // 3 GB a víc (nebo neznámo)
         }
     }
