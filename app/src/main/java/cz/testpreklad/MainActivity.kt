@@ -1210,8 +1210,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.22"
-    const val VERSION_CODE = 22
+    const val VERSION = "verze 0.23"
+    const val VERSION_CODE = 23
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

@@ -444,7 +444,7 @@ class TranslatorService : Service() {
 
         val picked = TextLogic.assemble(
             toBlocks(result),
-            minLineHeight = (capH * 0.016f).toInt(),
+            minLineHeight = (capH * 0.013f).toInt(),
             subtitlesOnly = onlySubtitles || autoFind,   // automatika čte velkou plochu → vždy jen titulky
             screenCenterX = capW / 2 - x0,
             centerTolerance = (capW * 0.12f).toInt(),

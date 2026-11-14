@@ -7,8 +7,8 @@ import kotlin.math.min
  * Automatické hledání titulků – uživatel nemusí nic nastavovat.
  *
  * 1) HLEDÁNÍ: aplikace čte skoro celou obrazovku a bere jen vycentrovaný text (titulky).
- * 2) Jakmile několikrát po sobě najde titulky ve stejné výšce, ZAPAMATUJE si to místo
- *    a dál čte jen úzký pás kolem něj (rychlejší, méně omylů).
+ * 2) Jakmile několikrát po sobě najde titulky ve spodní části obrazovky, ZAPAMATUJE si to
+ *    a dál čte jen spodní pás (rychlejší, méně omylů). Text výš oblast nikdy nezúží.
  * 3) Když se v zapamatovaném pásu dlouho nic neobjeví (jiná hra, jiné umístění titulků),
  *    začne znovu hledat po celé obrazovce.
  */
@@ -30,6 +30,9 @@ class AutoZone(
         lastSeen = now
         if (top < 0f || bottom <= top || bottom - top > 0.4f) return false
         val center = (top + bottom) / 2
+        // Text uprostřed obrazovky (menu, hlášení konzole, nápisy ve hře) oblast nikdy nezúží:
+        // jinak by aplikace četla jen pás kolem něj a titulky dole by neviděla.
+        if (center < LEARN_FROM) return false
         // titulek úplně jinde než dosavadní vzorky → začni sbírat znovu
         if (samples.isNotEmpty() && kotlin.math.abs(center - sampleCenter()) > SPREAD) samples.clear()
         samples.addLast(top to bottom)
@@ -41,7 +44,8 @@ class AutoZone(
         var zt = t - MARGIN
         var zb = b + MARGIN
         if (zb - zt < MIN_HEIGHT) { val mid = (zt + zb) / 2; zt = mid - MIN_HEIGHT / 2; zb = mid + MIN_HEIGHT / 2 }
-        zt = max(0f, zt); zb = min(1f, zb)
+        // zapamatovaný pás vždy sahá až ke spodnímu okraji a pokrývá obvyklé místo titulků
+        zt = max(SCAN.top, min(zt, BOTTOM_TOP)); zb = SCAN.bottom
         val z = Zone(SCAN.left, zt, SCAN.right, zb)
         val old = learned
         // drobné změny ignoruj, ať se oblast pořád nepřepíná
@@ -73,5 +77,9 @@ class AutoZone(
         const val MARGIN = 0.06f
         const val MIN_HEIGHT = 0.18f
         const val SPREAD = 0.15f
+        /** Jen text se středem pod touto výškou se bere jako místo titulků. */
+        const val LEARN_FROM = 0.68f
+        /** Zapamatovaný pás začíná nejníž tady (pokryje jedno- i třířádkové titulky dole). */
+        const val BOTTOM_TOP = 0.72f
     }
 }

@@ -22,12 +22,22 @@ class AutoZoneTest {
         assertTrue(z.top >= 0f && z.bottom <= 1f)
     }
 
-    @Test fun learnsTopSubtitlesToo() {
+    @Test fun textInTheMiddleNeverNarrowsTheZone() {
+        // menu nebo hlášení konzole uprostřed obrazovky: dál se čte celá spodní polovina
         val a = AutoZone()
-        repeat(3) { a.onSubtitle(0.06f, 0.10f, it * 1000L) }
+        repeat(6) { assertFalse(a.onSubtitle(0.52f, 0.58f, it * 1000L)) }
+        assertNull(a.learned)
+        assertEquals(AutoZone.SCAN, a.current)
+    }
+
+    @Test fun learnedZoneAlwaysReachesTheBottom() {
+        val a = AutoZone()
+        repeat(3) { a.onSubtitle(0.70f, 0.74f, it * 1000L) }     // titulky výš než obvykle
         val z = a.learned!!
-        assertEquals(0f, z.top, 0.001f)
-        assertTrue(z.bottom < 0.4f)
+        assertEquals(AutoZone.SCAN.bottom, z.bottom, 0.001f)
+        assertTrue(z.top <= 0.70f)
+        // titulek o kus níž je pořád uvnitř
+        assertTrue(z.top <= 0.90f && z.bottom >= 0.96f)
     }
 
     @Test fun smallJitterDoesNotKeepChangingZone() {
@@ -44,15 +54,6 @@ class AutoZoneTest {
         val z = a.learned
         assertFalse(a.onSubtitle(0.10f, 0.14f, 5000))       // např. název mise nahoře (našlo by se jen při hledání)
         assertEquals(z, a.learned)
-    }
-
-    @Test fun movesWhenSubtitlesReallyMove() {
-        val a = AutoZone()
-        repeat(3) { a.onSubtitle(0.86f, 0.90f, it * 1000L) }
-        var changed = false
-        repeat(3) { changed = a.onSubtitle(0.08f, 0.12f, 10_000L + it) || changed }
-        assertTrue(changed)
-        assertTrue(a.learned!!.bottom < 0.4f)
     }
 
     @Test fun rescansAfterLongSilence() {
