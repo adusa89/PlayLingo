@@ -28,8 +28,9 @@ Televize a PS5 musí být ve stejné domácí síti.
 4. **Přihlas se k účtu PlayStation přes telefon** (jednou, asi dvě minuty):
    - televize ukáže QR kód – namiř na něj foťák telefonu a otevři odkaz,
    - v telefonu se přihlas e-mailem a heslem ke svému účtu PlayStation,
+   - když se stránka zeptá na „passkey“, zvol „Remind Me Later“,
    - zůstane skoro prázdná stránka s nápisem „redirect“; klepni nahoře na její adresu,
-     na konci je „code=“ a za ním krátký kód,
+     za „redirect?code=“ je krátký kód (končí před znakem &),
    - ten kód opiš do televize a zvol „Ověřit kód“.
    Přihlášení jde zkusit i přímo v televizi („Zkusit přihlášení přímo v televizi“), ale ochrana
    Sony ho tam často odmítne hláškou „Can't connect to the server“. Pak použij telefon.
