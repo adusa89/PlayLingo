@@ -84,6 +84,7 @@ jobs:
     name: Emulátor Android TV (API ${{ matrix.api }})
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 50     # emulátor se občas zasekne – ať neblokuje vydání celé hodiny
     strategy:
       fail-fast: false
       matrix:
