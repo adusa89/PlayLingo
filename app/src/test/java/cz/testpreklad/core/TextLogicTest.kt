@@ -296,3 +296,25 @@ class QuickWordsAndSpeakersTest {
             TextLogic.assemble(listOf(block), 10, true, 640, 150).text)
     }
 }
+
+class DialogueBoxTest {
+    private fun line(t: String, l: Int, r: Int, top: Int) = OcrLine(t, l, top, r, top + 24)
+
+    @Test fun leftAlignedDialogueBoxIsRead() {
+        // okno s rozhovorem: text začíná vlevo a sahá přes střed, poslední řádek je krátký
+        val block = OcrBlock(listOf(
+            line("I have been waiting for you since the war ended,", 260, 900, 300),
+            line("my friend.", 260, 380, 332),
+        ))
+        val p = TextLogic.assemble(listOf(block), 10, true, 640, 150)
+        assertEquals("I have been waiting for you since the war ended, my friend.", p.text)
+    }
+
+    @Test fun cornersAreStillIgnored() {
+        val blocks = listOf(
+            OcrBlock(listOf(line("Find the missing key", 30, 330, 300))),     // úkol vlevo dole
+            OcrBlock(listOf(line("Northern Outpost", 980, 1250, 300))),       // místo vpravo dole
+        )
+        assertEquals("", TextLogic.assemble(blocks, 10, true, 640, 150).text)
+    }
+}

@@ -441,9 +441,8 @@ class TranslatorService : Service() {
         val crop = frame.bmp      // znovupoužívaná bitmapa – nerecyklovat
 
         // přeskoč čtení, když se oblast od posledního čtení nezměnila
-        val sig = signature(crop)
-        val prev = lastSig
-        if (prev != null && tracker.isSettled && FrameSignature.diff(prev, sig) < 1.5f) {
+        val sig = frame.sig
+        if (tracker.isSettled && !FrameSignature.changed(lastSig, sig, frame.cellPixels)) {
             return
         }
         lastSig = sig
@@ -524,15 +523,6 @@ class TranslatorService : Service() {
             val bb = l.boundingBox ?: return@mapNotNull null
             OcrLine(l.text, bb.left, bb.top, bb.right, bb.bottom)
         })
-    }
-
-    /** Otisk oblasti: 64×16 náhled, jen světlé pixely (titulky jsou bílé). */
-    private fun signature(bmp: Bitmap): IntArray {
-        val small = Bitmap.createScaledBitmap(bmp, 64, 16, true)
-        val px = IntArray(64 * 16)
-        small.getPixels(px, 0, 64, 0, 0, 64, 16)
-        if (small !== bmp) small.recycle()
-        return FrameSignature.brightMask(FrameSignature.luminance(px))
     }
 
     // ---------------- překlad ----------------

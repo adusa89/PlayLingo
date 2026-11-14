@@ -52,22 +52,95 @@ class TranslationCacheTest {
 
 
 class FrameSignatureTest {
-    @Test fun identicalIsZeroDifferentIsLarge() {
-        val white = IntArray(64) { 0xFFFFFFFF.toInt() }
-        val black = IntArray(64) { 0xFF000000.toInt() }
-        val lw = FrameSignature.luminance(white)
-        val lb = FrameSignature.luminance(black)
-        assertEquals(255, lw[0])
-        assertEquals(0, lb[0])
-        assertEquals(0f, FrameSignature.diff(lw, lw), 0.001f)
-        assertEquals(255f, FrameSignature.diff(lw, lb), 0.001f)
-        assertEquals(Float.MAX_VALUE, FrameSignature.diff(lw, IntArray(3)), 0f)
+    private val cell = 500
+
+    @Test fun sameFrameIsNotAChange() {
+        val a = IntArray(FrameSignature.SIZE) { 40 * cell }
+        assertFalse(FrameSignature.changed(a, a.copyOf(), cell))
     }
 
-    @Test fun brightMaskIgnoresDarkSceneChanges() {
-        val a = FrameSignature.brightMask(intArrayOf(10, 50, 250, 90))
-        val b = FrameSignature.brightMask(intArrayOf(80, 20, 240, 30))
-        assertEquals(0f, FrameSignature.diff(a, b), 0.001f)
+    @Test fun videoNoiseIsNotAChange() {
+        val a = IntArray(FrameSignature.SIZE) { 40 * cell }
+        val b = IntArray(FrameSignature.SIZE) { 40 * cell + (if (it % 2 == 0) 2 else -2) * cell }
+        assertFalse(FrameSignature.changed(a, b, cell))
+    }
+
+    @Test fun smallSubtitleInAFewCellsIsAChange() {
+        // drobný bílý titulek: v pěti buňkách přibude 15 % světlých pixelů, zbytek obrazu stejný
+        val a = IntArray(FrameSignature.SIZE) { 40 * cell }
+        val b = a.copyOf()
+        for (i in 700 until 705) b[i] += (cell * 0.15 * 180).toInt()
+        assertTrue(FrameSignature.changed(a, b, cell))
+    }
+
+    @Test fun darkTextInALightBoxIsAChange() {
+        val a = IntArray(FrameSignature.SIZE) { 230 * cell }
+        val b = a.copyOf()
+        b[800] -= (cell * 0.1 * 200).toInt()
+        assertTrue(FrameSignature.changed(a, b, cell))
+    }
+
+    // --- celá cesta: snímek → výřez → otisk ---
+    private val fw = 1920; private val fh = 1080
+    private fun frame(bg: Int, noise: Int = 0, seed: Int = 1): ByteArray {
+        val r = java.util.Random(seed.toLong())
+        return ByteArray(fw * fh) { (bg + if (noise > 0) r.nextInt(2 * noise + 1) - noise else 0).coerceIn(0, 255).toByte() }
+    }
+    /** "Titulek": řádek svislých tahů tlustých 2 px, vysoký [size] px, široký [width] px, dole uprostřed. */
+    private fun subtitle(f: ByteArray, size: Int, width: Int, value: Int) {
+        val top = (fh * 0.88f).toInt(); val left = (fw - width) / 2
+        for (yy in top until top + size) for (x in left until left + width) if (x % 9 < 2) f[yy * fw + x] = value.toByte()
+    }
+    private fun sigOf(f: ByteArray): Pair<IntArray, Int> {
+        val x0 = (fw * 0.05f).toInt(); val x1 = (fw * 0.95f).toInt(); val y0 = (fh * 0.72f).toInt(); val y1 = fh
+        val w = x1 - x0; val h = y1 - y0
+        val sig = IntArray(FrameSignature.SIZE)
+        FrameSignature.cropGray(f, fw, x0, y0, w, h, IntArray(w * h), sig)
+        return sig to w * h / FrameSignature.SIZE
+    }
+
+    @Test fun cropGrayCountsEveryPixelOnce() {
+        val f = frame(100)
+        val (sig, _) = sigOf(f)
+        val w = (fw * 0.95f).toInt() - (fw * 0.05f).toInt(); val h = fh - (fh * 0.72f).toInt()
+        assertEquals(100L * w * h, sig.sumOf { it.toLong() })
+    }
+
+    @Test fun tinySubtitleAppearingOnADarkStillSceneIsNoticed() {
+        // nejhorší případ: tmavá nehybná scéna, drobný titulek (1,6 % výšky), jen pár slov
+        val empty = frame(30, noise = 2, seed = 1)
+        val withText = frame(30, noise = 2, seed = 2).also { subtitle(it, 17, 220, 235) }
+        val (a, cell) = sigOf(empty); val (b, _) = sigOf(withText)
+        assertTrue(FrameSignature.changed(a, b, cell))
+    }
+
+    @Test fun stillSceneWithVideoNoiseIsSkipped() {
+        val (a, cell) = sigOf(frame(30, noise = 3, seed = 1)); val (b, _) = sigOf(frame(30, noise = 3, seed = 2))
+        assertFalse(FrameSignature.changed(a, b, cell))
+    }
+
+    @Test fun subtitleReplacedByAnotherOfSimilarLengthIsNoticed() {
+        val one = frame(30).also { subtitle(it, 24, 600, 235) }
+        val two = frame(30).also { subtitle(it, 24, 600, 235) }
+        // jiná slova = tahy jinde: posun o 4 px v polovině řádku
+        val top = (fh * 0.88f).toInt()
+        for (yy in top until top + 24) for (x in 960 until 1260) two[yy * fw + x] = (if ((x + 4) % 9 < 2) 235 else 30).toByte()
+        val (a, cell) = sigOf(one); val (b, _) = sigOf(two)
+        assertTrue(FrameSignature.changed(a, b, cell))
+    }
+
+    @Test fun greyOrDarkSubtitlesAreNoticedToo() {
+        val (a, cell) = sigOf(frame(60))
+        val (grey, _) = sigOf(frame(60).also { subtitle(it, 22, 400, 170) })          // šedý text
+        assertTrue(FrameSignature.changed(a, grey, cell))
+        val (light, _) = sigOf(frame(225))
+        val (dark, _) = sigOf(frame(225).also { subtitle(it, 22, 400, 20) })          // tmavý text ve světlém okně
+        assertTrue(FrameSignature.changed(light, dark, cell))
+    }
+
+    @Test fun missingOrDifferentSizeMeansChanged() {
+        assertTrue(FrameSignature.changed(null, IntArray(4), cell))
+        assertTrue(FrameSignature.changed(IntArray(3), IntArray(4), cell))
     }
 }
 

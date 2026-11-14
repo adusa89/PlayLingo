@@ -1,6 +1,7 @@
 package cz.testpreklad
 
 import android.graphics.Bitmap
+import cz.testpreklad.core.FrameSignature
 import android.graphics.ImageFormat
 import android.media.Image
 import android.media.ImageReader
@@ -353,7 +354,11 @@ class StreamReader(private val width: Int, private val height: Int) {
     } catch (_: Exception) { null }
 
     /** Výřez posledního obrázku: bitmapa (znovupoužívaná – nerecyklovat) a kde v celém obrázku leží. */
-    class Crop(val bmp: Bitmap, val x0: Int, val y0: Int, val fullW: Int, val fullH: Int)
+    class Crop(
+        val bmp: Bitmap, val x0: Int, val y0: Int, val fullW: Int, val fullH: Int,
+        /** Otisk výřezu (viz [FrameSignature]) a kolik pixelů připadá na jednu jeho buňku. */
+        val sig: IntArray, val cellPixels: Int,
+    )
 
     /**
      * Výřez posledního obrázku (šedý) v oblasti dané zlomky 0..1. Převádí se jen výřez, ne celý
@@ -371,21 +376,16 @@ class StreamReader(private val width: Int, private val height: Int) {
         val w = x1 - x0
         val h = y1 - y0
         if (argb.size != w * h) argb = IntArray(w * h)
-        var o = 0
-        for (row in y0 until y1) {
-            var i = row * yStride + x0
-            for (x in 0 until w) {
-                val v = yBuf[i++].toInt() and 0xFF
-                argb[o++] = (0xFF shl 24) or (v shl 16) or (v shl 8) or v
-            }
-        }
+        // otisk se počítá rovnou při převodu, ze všech pixelů (nový snímek = nové pole, čtečka si ho drží)
+        val sig = IntArray(FrameSignature.SIZE)
+        FrameSignature.cropGray(yBuf, yStride, x0, y0, w, h, argb, sig)
         var b = bmp
         if (b == null || b.width != w || b.height != h) {
             b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
             bmp = b
         }
         b.setPixels(argb, 0, w, 0, 0, w, h)
-        Crop(b, x0, y0, frameW, frameH)
+        Crop(b, x0, y0, frameW, frameH, sig, maxOf(1, w * h / FrameSignature.SIZE))
     }
 
     fun stop() {

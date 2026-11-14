@@ -133,9 +133,14 @@ object TextLogic {
         val kept = ArrayList<Pair<Int, OcrLine>>()      // (pořadí bloku, řádek)
         sorted.forEachIndexed { bi, block ->
             // titulek o víc řádcích může mít řádky zarovnané vlevo – pak je vycentrovaný jen blok jako celek
-            val blockCentered = block.lines.isNotEmpty() && kotlin.math.abs(
-                (block.lines.minOf { it.left } + block.lines.maxOf { it.right }) / 2 - screenCenterX
-            ) <= centerTolerance
+            // Stejně tak dialogové okno se zarovnáním vlevo (běžné v RPG): text začíná vlevo, ale sahá přes
+            // střed obrazovky. Údaje v rozích (mapa, peníze, úkol) přes střed nesahají nikdy.
+            val bl = block.lines.minOfOrNull { it.left } ?: 0
+            val br = block.lines.maxOfOrNull { it.right } ?: 0
+            val blockCentered = block.lines.isNotEmpty() && (
+                kotlin.math.abs((bl + br) / 2 - screenCenterX) <= centerTolerance ||
+                    (centerTolerance != Int.MAX_VALUE && bl < screenCenterX && br > screenCenterX)
+                )
             block.lines
                 .filter { it.height >= minLineHeight && isUseful(it.text) }
                 .filter { l ->
