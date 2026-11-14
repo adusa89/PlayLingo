@@ -46,7 +46,7 @@ sleep 12; shot 08_po_spusteni
 # 4) ukázková hra s titulky – jde do aplikace jako video (stejná cesta jako z PlayStationu);
 #    aplikace ji má dekódovat, přečíst, přeložit a zakrýt pruhem
 adb shell am start -n $PKG/.TestCardActivity
-for i in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16; do sleep 3; shot "09_hra_$i"; done
+for i in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36; do sleep 3; shot "09_hra_$i"; done
 
 # 5) spojení s PlayStationem: konzole tu není, ale ověří se, že se nativní část načte,
 #    hledání v síti a párování skončí slušně a spojení se zkouší znovu – bez pádu
@@ -106,12 +106,19 @@ LIB=$(grep -c "TP_TEST.*START|.*lib=ok" $OUT/log.txt)
 DECODED=$(grep "TP_TEST.*VIDEO|" $OUT/log.txt | grep -oE "decoded=[0-9]+" | cut -d= -f2 | sort -n | tail -1)
 LINK=$(grep -c "TP_TEST.*LINK|\(WAITING\|FAILED\)" $OUT/log.txt)
 PAIR=$(grep -c "TP_TEST.*PAIR|\(failed\|timeout\|error\)" $OUT/log.txt)
+# kolik z deseti různých ukázkových titulků (velká písmena, jména, krátká slova…) se přeložilo
+KINDS=0
+for k in "We need money" "reckon" "ride at dawn" "keep going like this" "right way" "no idea" "GET OUT OF HERE" "SHOW|Wait|" "never supposed to meet" "left door"; do
+  grep -q "TP_TEST.*SHOW|.*$k" $OUT/log.txt && KINDS=$((KINDS+1)) || echo "NEPRELOZENO: $k" >> $OUT/missing.txt
+done
+echo "ruznych_titulku=$KINDS/10" > $OUT/kinds.txt
 echo "prelozenych_titulku=$SHOWS pady=$CRASH knihovna_ps5=$LIB dekodovano_snimku=${DECODED:-0} pokusy_o_spojeni=$LINK parovani_bez_konzole=$PAIR" > $OUT/result.txt
-if [ "$SHOWS" -ge 3 ] && [ "$CRASH" -eq 0 ] && [ "$LIB" -ge 1 ] && [ "${DECODED:-0}" -ge 20 ] && [ "$LINK" -ge 1 ] && [ "$PAIR" -ge 1 ]; then
+if [ "$SHOWS" -ge 3 ] && [ "$KINDS" -ge 7 ] && [ "$CRASH" -eq 0 ] && [ "$LIB" -ge 1 ] && [ "${DECODED:-0}" -ge 20 ] && [ "$LINK" -ge 1 ] && [ "$PAIR" -ge 1 ]; then
   echo "VYSLEDEK=OK" >> $OUT/result.txt
 else
   echo "VYSLEDEK=CHYBA" >> $OUT/result.txt
 fi
+cat $OUT/kinds.txt $OUT/missing.txt >> $OUT/result.txt 2>/dev/null
 grep "TP_TEST" $OUT/log.txt | grep -v "READ|" >> $OUT/result.txt
 adb shell dumpsys package com.google.android.webview 2>/dev/null | grep -m1 versionName >> $OUT/device.txt || true
 grep "TP_TEST" $OUT/log.txt > $OUT/reads.txt

@@ -12,7 +12,7 @@ package cz.testpreklad.core
 class SubtitleTracker(
     private val stableFrames: Int = 2,
     private val hideAfterEmpty: Int = 2,
-    /** Titulek, který vypadá celý, zobrazit hned po prvním přečtení (obraz přímo z konzole je čistý). */
+    /** Zobrazit titulek hned po prvním přečtení (obraz přímo z konzole je čistý, potvrzení netřeba). */
     private val fastComplete: Boolean = false,
 ) {
     sealed class Action {
@@ -40,7 +40,9 @@ class SubtitleTracker(
     fun onOcr(text: String, slowDevice: Boolean = false): Action {
         // Obraz přichází čistý přímo z konzole, takže titulek, který vypadá celý (končí tečkou,
         // otazníkem…), se překládá hned po prvním přečtení – čekání na potvrzení by jen zdržovalo.
-        val needStable = if ((fastComplete || slowDevice) && TextLogic.looksComplete(text)) 1 else stableFrames
+        // S čistým obrazem z konzole ([fastComplete]) se zobrazí hned každý text, i nedokončený –
+        // kdyby se ještě dopisoval, překlad se s dalším čtením jen doplní.
+        val needStable = if (fastComplete || (slowDevice && TextLogic.looksComplete(text))) 1 else stableFrames
         val needEmpty = if (slowDevice) 1 else hideAfterEmpty
         if (TextLogic.similar(text, candidate)) {
             count++

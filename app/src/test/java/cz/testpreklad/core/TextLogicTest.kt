@@ -108,3 +108,88 @@ class TextLogicTest {
         assertEquals(3, TextLogic.levenshtein("", "abc"))
     }
 }
+
+class SubtitleShapesTest {
+    private fun line(t: String, l: Int, r: Int, top: Int = 0) = OcrLine(t, l, top, r, top + 24)
+
+    @Test fun speakerInCapitalsAndWithoutSpace() {
+        assertEquals(Segment("MIRA", "Are you sure?"), TextLogic.splitSpeaker("MIRA: Are you sure?"))
+        assertEquals(Segment("Tobin", "no idea"), TextLogic.splitSpeaker("Tobin:no idea"))
+        assertEquals("Mira", TextLogic.normalizeName("MIRA"))
+        assertEquals("Mary-Beth", TextLogic.normalizeName("MARY-BETH"))
+        assertEquals("Old Kessler", TextLogic.normalizeName("OLD KESSLER"))
+        assertEquals("Tobin", TextLogic.normalizeName("Tobin"))
+    }
+
+    @Test fun speakerInBrackets() {
+        assertEquals(Segment("Old Kessler", "You two were never supposed to meet."),
+            TextLogic.splitSpeaker("[Old Kessler] You two were never supposed to meet."))
+    }
+
+    @Test fun timeIsNotASpeaker() {
+        assertNull(TextLogic.splitSpeaker("At 10:45 we leave.").speaker)
+        assertNull(TextLogic.splitSpeaker("OBJECTIVE: Find the key").speaker)
+    }
+
+    @Test fun capitalsBecomeASentence() {
+        assertEquals("We have to get out of here!", TextLogic.normalizeCase("WE HAVE TO GET OUT OF HERE!"))
+        assertEquals("Run! I'm right behind you.", TextLogic.normalizeCase("RUN! I'M RIGHT BEHIND YOU."))
+        assertEquals("What did I say?", TextLogic.normalizeCase("WHAT DID I SAY?"))
+        // běžný text se nemění
+        assertEquals("We need money, Arthur.", TextLogic.normalizeCase("We need money, Arthur."))
+        assertEquals("no idea, but OK", TextLogic.normalizeCase("no idea, but OK"))
+    }
+
+    @Test fun translationKeepsFirstCapital() {
+        assertEquals("Potřebujeme peníze.", TextLogic.matchFirstCase("We need money.", "potřebujeme peníze."))
+        assertEquals("netuším", TextLogic.matchFirstCase("no idea", "netuším"))
+        assertEquals("„Počkej!“", TextLogic.matchFirstCase("\"Wait!\"", "„počkej!“"))
+    }
+
+    @Test fun shortSingleWordsAreSubtitles() {
+        assertTrue(TextLogic.isUseful("Wait"))
+        assertTrue(TextLogic.isUseful("RUN"))
+        assertTrue(TextLogic.isUseful("No."))
+        assertFalse(TextLogic.isUseful("x2"))
+        assertFalse(TextLogic.isUseful("Il"))
+    }
+
+    @Test fun speakerOnItsOwnLineJoinsTheText() {
+        val blocks = listOf(
+            OcrBlock(listOf(line("MIRA:", 600, 680, 0))),
+            OcrBlock(listOf(line("Are you sure this is the right way?", 400, 880, 30))),
+        )
+        val p = TextLogic.assemble(blocks, 10, subtitlesOnly = true, screenCenterX = 640, centerTolerance = 150)
+        assertEquals("MIRA: Are you sure this is the right way?", p.text)
+        assertEquals(Segment("MIRA", "Are you sure this is the right way?"), TextLogic.segments(p.text).single())
+    }
+
+    @Test fun nameAloneIsNotASubtitle() {
+        val p = TextLogic.assemble(listOf(OcrBlock(listOf(line("MIRA:", 600, 680)))), 10, true, 640, 150)
+        assertEquals("", p.text)
+    }
+
+    @Test fun leftAlignedLinesInsideCenteredSubtitle() {
+        // druhý řádek je kratší a zarovnaný vlevo – sám o sobě vycentrovaný není
+        val block = OcrBlock(listOf(
+            line("If we keep going like this, they will find us before", 240, 1040, 0),
+            line("dawn.", 240, 330, 30),
+        ))
+        val p = TextLogic.assemble(listOf(block), 10, true, 640, 150)
+        assertEquals("If we keep going like this, they will find us before dawn.", p.text)
+    }
+
+    @Test fun twoSpeakersAtOnce() {
+        val segs = TextLogic.segments("Mira: I'll take the left door.\nTobin: Then I'm going right.")
+        assertEquals(listOf("Mira", "Tobin"), segs.map { it.speaker })
+    }
+
+    @Test fun hudOnTheSideIsStillIgnored() {
+        val blocks = listOf(
+            OcrBlock(listOf(line("Press X to mount", 40, 300))),
+            OcrBlock(listOf(line("New objective added", 1000, 1260))),
+            OcrBlock(listOf(line("We ride at dawn.", 520, 760, 60))),
+        )
+        assertEquals("We ride at dawn.", TextLogic.assemble(blocks, 10, true, 640, 150).text)
+    }
+}

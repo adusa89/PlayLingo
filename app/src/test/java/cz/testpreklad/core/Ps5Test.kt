@@ -119,11 +119,11 @@ class DemoGameTest {
         assertEquals("Dutch: We need money, Arthur.", DemoGame.subtitleAt(0))
         assertEquals("Dutch: We need money, Arthur.", DemoGame.subtitleAt(5999))
         assertEquals("", DemoGame.subtitleAt(6000))
-        assertEquals(DemoGame.lines[2], DemoGame.subtitleAt(8000))
+        assertEquals(DemoGame.lines[2], DemoGame.subtitleAt(7500))
     }
 
     @Test fun timelineRepeats() {
-        assertEquals(32000, DemoGame.cycleMs)
+        assertEquals(75000, DemoGame.cycleMs)
         assertEquals(DemoGame.subtitleAt(100), DemoGame.subtitleAt(100 + DemoGame.cycleMs * 7))
         for (t in 0 until DemoGame.cycleMs step 500) assertTrue(DemoGame.indexAt(t) in DemoGame.lines.indices)
     }

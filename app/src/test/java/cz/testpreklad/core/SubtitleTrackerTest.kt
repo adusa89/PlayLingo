@@ -103,8 +103,10 @@ class SubtitleTrackerTest {
         assertEquals(SubtitleTracker.Action.Show("We need money, Arthur."), t.onOcr("We need money, Arthur."))
         t.confirmShown("We need money, Arthur.")
         assertEquals(SubtitleTracker.Action.None, t.onOcr("We need money, Arthur."))
-        // nedokončený text (bez tečky) čeká na druhé přečtení
-        assertEquals(SubtitleTracker.Action.None, t.onOcr("Get on your horse and"))
+        // i text bez tečky na konci se ukáže hned
         assertEquals(SubtitleTracker.Action.Show("Get on your horse and"), t.onOcr("Get on your horse and"))
+        t.confirmShown("Get on your horse and")
+        // titulek se dopsal → překlad se doplní
+        assertEquals(SubtitleTracker.Action.Show("Get on your horse and ride with me."), t.onOcr("Get on your horse and ride with me."))
     }
 }

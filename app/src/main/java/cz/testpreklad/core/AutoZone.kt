@@ -73,7 +73,7 @@ class AutoZone(
          * Oblast při hledání: spodní polovina obrazovky – tam mají hry titulky. Celá obrazovka by se
          * na slabších televizích četla příliš dlouho (zkouška v emulátoru). Titulky nahoře → ruční oblast.
          */
-        val SCAN = Zone(0.05f, 0.50f, 0.95f, 0.98f)
+        val SCAN = Zone(0.05f, 0.50f, 0.95f, 1.0f)
         const val MARGIN = 0.06f
         const val MIN_HEIGHT = 0.18f
         const val SPREAD = 0.15f

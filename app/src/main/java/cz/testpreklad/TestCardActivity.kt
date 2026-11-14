@@ -80,10 +80,11 @@ object TestCard {
         canvas.drawText("Press X to mount", w * 0.04f, h * 0.10f, p)
         // titulky: bílé, vycentrované, dole
         p.textAlign = Paint.Align.CENTER
-        p.textSize = h * 0.042f
+        // velikost jako ve hrách: řádek zabere zhruba 3 % výšky obrazu
+        p.textSize = h * 0.032f
         p.setShadowLayer(4f, 0f, 2f, Color.BLACK)
         subtitle.split('\n').forEachIndexed { i, s ->
-            canvas.drawText(s, w / 2, h * 0.86f + i * h * 0.055f, p)
+            canvas.drawText(s, w / 2, h * 0.87f + i * h * 0.045f, p)
         }
         p.clearShadowLayer()
     }

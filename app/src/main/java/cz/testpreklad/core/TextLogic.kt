@@ -27,7 +27,14 @@ object TextLogic {
     private val WS = Regex("\\s+")
 
     // "Dutch: We need money." / "Uncle Bob: ..." / "Mary-Beth: ..." (max 3 slova, každé s velkým písmenem)
-    private val SPEAKER = Regex("^([A-Z][A-Za-z'.\\-]{0,20}(?: [A-Z][A-Za-z'.\\-]{0,20}){0,2}):\\s+(.+)$")
+    // Mezera za dvojtečkou není povinná (OCR ji někdy vynechá), ale pak musí následovat písmeno nebo uvozovka.
+    private val SPEAKER = Regex("^([A-Z][A-Za-z'.\\-]{0,20}(?: [A-Z][A-Za-z'.\\-]{0,20}){0,2}):\\s*((?=[A-Za-z\"'(.]).+)$")
+    // "[Dutch] We need money." – jméno v hranatých závorkách
+    private val SPEAKER_BRACKET = Regex("^\\[([A-Z][A-Za-z'.\\- ]{0,30})]\\s*(.+)$")
+    // samotné jméno na řádku ("DUTCH:" nebo "[Dutch]"), text je až na dalším řádku
+    private val SPEAKER_ONLY = Regex("^(?:[A-Z][A-Za-z'.\\-]{0,20}(?: [A-Z][A-Za-z'.\\-]{0,20}){0,2}:|\\[[A-Z][A-Za-z'.\\- ]{0,30}])$")
+    // jedno slovo jako celá replika: "Wait", "RUN" (první písmeno velké, zbytek malý, nebo celé velké)
+    private val SINGLE_WORD = Regex("^(?:[A-Z][a-z]{2,}|[A-Z]{3,})[.!?…,]*$")
 
     // Slova, která vypadají jako jméno mluvčího, ale nejsou (nápovědy, úkoly…)
     private val NOT_SPEAKERS = setOf(
@@ -64,8 +71,10 @@ object TextLogic {
         val words = t.split(' ').count { w -> w.count { it.isLetter() } >= 2 }
         val endsLikeSentence = t.last() in ".!?…"
         if (words >= 2) return true
-        // jedno slovo: buď delší ("Hello"), nebo krátká odpověď s interpunkcí ("No.")
-        return letters >= 5 || (endsLikeSentence && letters >= 2)
+        // samotné jméno mluvčího ("MIO:") – text přijde na dalším řádku
+        if (SPEAKER_ONLY.matches(t)) return true
+        // jedno slovo: buď delší ("Hello"), krátká odpověď s interpunkcí ("No."), nebo slovo jako "Wait"
+        return letters >= 5 || (endsLikeSentence && letters >= 2) || SINGLE_WORD.matches(t)
     }
 
     // "Press X to mount", "Hold [] to aim", "Tap @ for ..." – nápovědy k ovládání, nejsou to titulky
@@ -102,12 +111,16 @@ object TextLogic {
         var bottom = -1
         val sorted = blocks.sortedBy { b -> b.lines.minOfOrNull { it.top } ?: Int.MAX_VALUE }
         for (block in sorted) {
+            // titulek o víc řádcích může mít řádky zarovnané vlevo – pak je vycentrovaný jen blok jako celek
+            val blockCentered = block.lines.isNotEmpty() && kotlin.math.abs(
+                (block.lines.minOf { it.left } + block.lines.maxOf { it.right }) / 2 - screenCenterX
+            ) <= centerTolerance
             val good = block.lines
                 .filter { it.height >= minLineHeight && isUseful(it.text) }
                 .filter { l ->
                     !subtitlesOnly || (
                         !isControlPrompt(l.text) &&
-                            kotlin.math.abs((l.left + l.right) / 2 - screenCenterX) <= centerTolerance
+                            (blockCentered || kotlin.math.abs((l.left + l.right) / 2 - screenCenterX) <= centerTolerance)
                         )
                 }
                 .sortedBy { it.top }
@@ -116,7 +129,8 @@ object TextLogic {
             for (l in good) { top = minOf(top, l.top); bottom = maxOf(bottom, l.bottom) }
             parts.add(good.joinToString(" ") { clean(it.text) })
         }
-        if (count == 0) return Picked("", 0)
+        // samotné jméno bez textu není titulek
+        if (count == 0 || parts.all { SPEAKER_ONLY.matches(it) }) return Picked("", 0)
         return Picked(mergeSpeakerLines(parts).joinToString("\n").trim(), count, top, bottom)
     }
 
@@ -152,6 +166,7 @@ object TextLogic {
         val out = ArrayList<String>()
         for (p in parts) {
             val prev = out.lastOrNull()
+            if (prev != null && SPEAKER_ONLY.matches(prev)) { out[out.size - 1] = "$prev $p"; continue }
             if (prev != null && splitSpeaker(p).speaker == null && splitSpeaker(prev).speaker != null &&
                 prev.last() !in ".!?…\"" && p.first().isLowerCase()
             ) {
@@ -163,10 +178,49 @@ object TextLogic {
 
     /** Oddělí jméno mluvčího ("Arthur: Hello") od textu. */
     fun splitSpeaker(line: String): Segment {
-        val m = SPEAKER.find(line.trim()) ?: return Segment(null, line.trim())
-        val name = m.groupValues[1]
-        if (name in NOT_SPEAKERS) return Segment(null, line.trim())
+        val t = line.trim()
+        val m = SPEAKER.find(t) ?: SPEAKER_BRACKET.find(t) ?: return Segment(null, t)
+        val name = m.groupValues[1].trim()
+        if (NOT_SPEAKERS.any { it.equals(name, ignoreCase = true) }) return Segment(null, t)
         return Segment(name, m.groupValues[2].trim())
+    }
+
+    /**
+     * Text psaný jen VELKÝMI písmeny převede na běžnou větu ("WE HAVE TO GO!" → "We have to go!").
+     * Překladač si s velkými písmeny neporadí (bere je jako zkratky a jména). Jiný text nechá být.
+     */
+    fun normalizeCase(text: String): String {
+        val letters = text.count { it.isLetter() }
+        if (letters < 4 || text.any { it.isLowerCase() }) return text
+        val sb = StringBuilder(text.lowercase())
+        var start = true
+        for (i in sb.indices) {
+            val c = sb[i]
+            if (c.isLetter()) {
+                if (start) { sb[i] = c.uppercaseChar(); start = false }
+            } else if (c == '.' || c == '!' || c == '?' || c == '…') start = true
+        }
+        // zájmeno "I" a jeho tvary (I'm, I'll, I've, I'd)
+        return sb.toString().replace(Regex("(?<![A-Za-z'])i(?=$|[^A-Za-z]|'(?:m|ll|ve|d)\\b)"), "I")
+    }
+
+    /** Jméno psané velkými písmeny ukáže jako běžné jméno ("MARY-BETH" → "Mary-Beth"). */
+    fun normalizeName(name: String): String {
+        if (name.length < 3 || name.any { it.isLowerCase() }) return name
+        val sb = StringBuilder(name.lowercase())
+        var start = true
+        for (i in sb.indices) {
+            if (sb[i].isLetter()) { if (start) { sb[i] = sb[i].uppercaseChar(); start = false } } else start = true
+        }
+        return sb.toString()
+    }
+
+    /** Překlad začíná velkým písmenem, když jím začínal i původní text. */
+    fun matchFirstCase(source: String, translated: String): String {
+        val s = source.firstOrNull { it.isLetter() } ?: return translated
+        val i = translated.indexOfFirst { it.isLetter() }
+        if (i < 0 || !s.isUpperCase() || translated[i].isUpperCase()) return translated
+        return translated.substring(0, i) + translated[i].uppercaseChar() + translated.substring(i + 1)
     }
 
     /** Rozdělí celý text pásu na segmenty (každý řádek může mít svého mluvčího). */

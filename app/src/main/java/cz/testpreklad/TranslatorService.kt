@@ -20,6 +20,7 @@ import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import cz.testpreklad.core.AutoZone
+import cz.testpreklad.core.DemoGame
 import cz.testpreklad.core.DiagLog
 import cz.testpreklad.core.FrameSignature
 import cz.testpreklad.core.Glossary
@@ -447,7 +448,7 @@ class TranslatorService : Service() {
             minLineHeight = (capH * 0.013f).toInt(),
             subtitlesOnly = onlySubtitles || autoFind,   // automatika čte velkou plochu → vždy jen titulky
             screenCenterX = capW / 2 - x0,
-            centerTolerance = (capW * 0.12f).toInt(),
+            centerTolerance = (capW * 0.14f).toInt(),
         )
         if (picked.text.isNotEmpty()) lastOcrText = picked.text
 
@@ -472,6 +473,8 @@ class TranslatorService : Service() {
                 hideAt = 0
                 shows++
                 tp("SHOW|" + action.text.replace('\n', ' ') + "|" + segs.joinToString(" ") { (it.speaker?.plus(": ") ?: "") + it.body })
+                // ukázka: za jak dlouho po objevení titulku je překlad na obrazovce (z toho samotné čtení)
+                if (demo) tp("LAT|${DemoGame.shownFor(SystemClock.uptimeMillis() - DemoFeeder.epoch)}ms|ocr=${lastOcrMs}ms")
                 ov.show(segs, if (showOriginal) action.text else null, top, bottom)
                 statsFor(this).line()
                 // automatika: zapamatuj si, kde na obrazovce titulky jsou
@@ -539,8 +542,9 @@ class TranslatorService : Service() {
     private suspend fun translateSegments(text: String): List<Segment>? {
         val out = ArrayList<Segment>()
         for (s in TextLogic.segments(text)) {
-            val tr = translate(s.body) ?: return null
-            out.add(Segment(s.speaker, tr))
+            val body = TextLogic.normalizeCase(s.body)
+            val tr = translate(body) ?: return null
+            out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.matchFirstCase(body, tr)))
         }
         return out
     }
