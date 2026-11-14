@@ -130,7 +130,7 @@ internal val I18N_DE: Map<String, String> = mapOf(
     "l_bold" to "Fette Schrift",
     "l_fine" to "Position auf einem Spielbild fein einstellen",
     "l_reset" to "Standardaussehen der Untertitel wiederherstellen",
-    "demo_line" to "Wir brauchen Geld, Arthur. Viel Geld. Und zwar schnell.",
+    "demo_line" to "Wir brauchen Geld, Jonas. Viel Geld. Und zwar schnell.",
     "t_mode" to "Übersetzungsmodus",
     "t_offline" to "Offline – kostenlos, ohne Internet",
     "t_offline_desc" to "Übersetzt wird direkt im Fernseher, es kostet nichts und es wird nichts gesendet. Namen von Figuren und Orten bleiben im Original, und Western-Slang wird vor der Übersetzung in Standardenglisch umgewandelt.",

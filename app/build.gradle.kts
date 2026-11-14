@@ -11,8 +11,8 @@ android {
         applicationId = "cz.testpreklad"
         minSdk = 26          // Android 8 a novější (prakticky všechny Android TV a boxy)
         targetSdk = 34
-        versionCode = 27
-        versionName = "0.27"
+        versionCode = 28
+        versionName = "0.28"
 
         // televize a boxy mají procesory ARM; emulátor při zkoušce x86 (-Pabis=x86)
         val abis = ((project.findProperty("abis") as String?) ?: "armeabi-v7a,arm64-v8a").split(",")

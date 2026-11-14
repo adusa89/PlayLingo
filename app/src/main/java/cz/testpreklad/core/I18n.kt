@@ -136,7 +136,7 @@ object I18n {
         "l_bold" to ("Tučné písmo" to "Tučné písmo"),
         "l_fine" to ("Jemné doladění polohy nad snímkem ze hry" to "Jemné doladenie polohy nad snímkou z hry"),
         "l_reset" to ("Obnovit výchozí vzhled titulků" to "Obnoviť predvolený vzhľad titulkov"),
-        "demo_line" to ("Potřebujeme peníze, Arthure. Hodně peněz. A rychle." to "Potrebujeme peniaze, Arthur. Veľa peňazí. A rýchlo."),
+        "demo_line" to ("Potřebujeme peníze, Jonasi. Hodně peněz. A rychle." to "Potrebujeme peniaze, Jonas. Veľa peňazí. A rýchlo."),
 
         // ---- překlad ----
         "t_mode" to ("Režim překladu" to "Režim prekladu"),

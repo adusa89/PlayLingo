@@ -259,7 +259,7 @@ class StreamReader(private val width: Int, private val height: Int) {
         decoded++
         val now = SystemClock.uptimeMillis()
         lastFrameAt = now
-        if (now - lastColorAt > 1500) { lastColorAt = now; colorSnapshot = grayHalf() }
+        if (UiState.visible && now - lastColorAt > 1500) { lastColorAt = now; colorSnapshot = grayHalf() }
     }
 
     /** Šedý náhled v poloviční velikosti (když nejsou k dispozici barvy). */
@@ -308,7 +308,7 @@ class StreamReader(private val width: Int, private val height: Int) {
             decoded++
             val now = SystemClock.uptimeMillis()
             lastFrameAt = now
-            if (now - lastColorAt > 1500) {
+            if (UiState.visible && now - lastColorAt > 1500) {
                 lastColorAt = now
                 colorSnapshot = colorHalf(img)
             }

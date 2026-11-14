@@ -1164,7 +1164,7 @@ class MainActivity : Activity() {
 
     /** Přeloží ukázkovou větu ze hry – ověří, že je jazykový model připravený. */
     private fun testTranslation() {
-        val sample = "Well, I reckon we ought to ride out to Strawberry before them Pinkertons show up, Dutch."
+        val sample = "Well, I reckon we ought to ride out to Greyford before the marshals show up, Marek."
         val lang = Prefs.lang(this)
         testResult = t("t_testing"); render(true)
         scope.launch {
@@ -1192,8 +1192,8 @@ class MainActivity : Activity() {
         )
         demo = o
         o.show(
-            listOf(Segment("Dutch", t("demo_line"))),
-            if (Prefs.showOriginal(this)) "Dutch: We need money, Arthur. A lot of money. And fast." else null,
+            listOf(Segment("Marek", t("demo_line"))),
+            if (Prefs.showOriginal(this)) "Marek: We need money, Jonas. A lot of money. And fast." else null,
             -1f, -1f
         )
         main.postDelayed({ if (demo === o) { o.destroy(); demo = null } }, 6000)
@@ -1214,8 +1214,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.27"
-    const val VERSION_CODE = 27
+    const val VERSION = "verze 0.28"
+    const val VERSION_CODE = 28
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

@@ -130,7 +130,7 @@ internal val I18N_ES: Map<String, String> = mapOf(
     "l_bold" to "Letra en negrita",
     "l_fine" to "Ajuste fino de la posición sobre una imagen del juego",
     "l_reset" to "Restablecer el aspecto predeterminado de los subtítulos",
-    "demo_line" to "Necesitamos dinero, Arthur. Mucho dinero. Y rápido.",
+    "demo_line" to "Necesitamos dinero, Jonas. Mucho dinero. Y rápido.",
     "t_mode" to "Modo de traducción",
     "t_offline" to "Sin conexión: gratis, sin internet",
     "t_offline_desc" to "Se traduce directamente en el televisor, no se paga nada y no se envía nada. Los nombres de personajes y lugares se mantienen en el original, y la jerga del oeste se convierte a inglés estándar antes de traducir.",

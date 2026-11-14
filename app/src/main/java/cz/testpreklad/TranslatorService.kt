@@ -248,7 +248,7 @@ class TranslatorService : Service() {
 
     private fun beginRunning() {
         lastLicenseCheck = SystemClock.uptimeMillis()
-        tp("A11Y|" + (TitulkyAccessibility.instance != null) + "|launchers=" + launchers)
+        tp("A11Y|" + (TitulkyAccessibility.instance != null))
         tp("START|video=${perf.captureWidth}x${perf.captureHeight}|interval=${perf.intervalMs}|screen=${screenW}x${screenH}|eco=${perf.eco}|decoder=${reader?.decoderName}|lib=${Ps5Link.selfTest()}")
         lang = Prefs.lang(this)
         statsFor(this)
@@ -525,15 +525,6 @@ class TranslatorService : Service() {
         small.getPixels(px, 0, 64, 0, 0, 64, 16)
         if (small !== bmp) small.recycle()
         return FrameSignature.brightMask(FrameSignature.luminance(px))
-    }
-
-    /** Domovské obrazovky televize (launchery) – přes ně se titulky neukazují. */
-    private val launchers: Set<String> by lazy {
-        try {
-            @Suppress("DEPRECATION")
-            packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), 0)
-                .map { it.activityInfo.packageName }.toSet()
-        } catch (_: Exception) { emptySet() }
     }
 
     // ---------------- překlad ----------------

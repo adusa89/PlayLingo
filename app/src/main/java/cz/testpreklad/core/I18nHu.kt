@@ -130,7 +130,7 @@ internal val I18N_HU: Map<String, String> = mapOf(
     "l_bold" to "Félkövér betű",
     "l_fine" to "A helyzet finomhangolása a játék képén",
     "l_reset" to "A feliratok alapértelmezett megjelenésének visszaállítása",
-    "demo_line" to "Pénzre van szükségünk, Arthur. Sok pénzre. Méghozzá gyorsan.",
+    "demo_line" to "Pénzre van szükségünk, Jonas. Sok pénzre. Méghozzá gyorsan.",
     "t_mode" to "Fordítási mód",
     "t_offline" to "Offline – ingyen, internet nélkül",
     "t_offline_desc" to "A fordítás közvetlenül a tévében történik, nem kell fizetni, és semmi nem kerül elküldésre. A szereplők és helyek neve eredetiben marad, a westernszlenget pedig a fordítás előtt köznyelvi angolra alakítja.",

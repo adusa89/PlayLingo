@@ -130,7 +130,7 @@ internal val I18N_FR: Map<String, String> = mapOf(
     "l_bold" to "Texte en gras",
     "l_fine" to "Réglage fin de la position sur une image du jeu",
     "l_reset" to "Rétablir l’apparence par défaut des sous-titres",
-    "demo_line" to "On a besoin d’argent, Arthur. De beaucoup d’argent. Et vite.",
+    "demo_line" to "On a besoin d’argent, Jonas. De beaucoup d’argent. Et vite.",
     "t_mode" to "Mode de traduction",
     "t_offline" to "Hors ligne : gratuit, sans internet",
     "t_offline_desc" to "La traduction se fait directement dans le téléviseur, rien n’est payant et rien n’est envoyé. Les noms de personnages et de lieux restent en version originale, et l’argot du Far West est converti en anglais standard avant la traduction.",

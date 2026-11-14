@@ -130,7 +130,7 @@ internal val I18N_IT: Map<String, String> = mapOf(
     "l_bold" to "Testo in grassetto",
     "l_fine" to "Regolazione fine della posizione su un’immagine del gioco",
     "l_reset" to "Ripristina l’aspetto predefinito dei sottotitoli",
-    "demo_line" to "Ci servono soldi, Arthur. Tanti soldi. E in fretta.",
+    "demo_line" to "Ci servono soldi, Jonas. Tanti soldi. E in fretta.",
     "t_mode" to "Modalità di traduzione",
     "t_offline" to "Offline: gratis, senza internet",
     "t_offline_desc" to "La traduzione avviene direttamente nel televisore, non si paga nulla e non viene inviato nulla. I nomi di personaggi e luoghi restano in originale e lo slang western viene convertito in inglese standard prima della traduzione.",

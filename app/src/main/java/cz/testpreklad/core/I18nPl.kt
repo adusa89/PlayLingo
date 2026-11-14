@@ -130,7 +130,7 @@ internal val I18N_PL: Map<String, String> = mapOf(
     "l_bold" to "Pogrubiona czcionka",
     "l_fine" to "Dokładne ustawienie położenia na zrzucie z gry",
     "l_reset" to "Przywróć domyślny wygląd napisów",
-    "demo_line" to "Potrzebujemy pieniędzy, Arthur. Dużo pieniędzy. I to szybko.",
+    "demo_line" to "Potrzebujemy pieniędzy, Jonas. Dużo pieniędzy. I to szybko.",
     "t_mode" to "Tryb tłumaczenia",
     "t_offline" to "Offline – za darmo, bez internetu",
     "t_offline_desc" to "Tłumaczenie odbywa się bezpośrednio w telewizorze, nic się nie płaci i nic nie jest wysyłane. Imiona postaci i nazwy miejsc pozostają w oryginale, a westernowy slang jest przed tłumaczeniem zamieniany na standardowy angielski.",
