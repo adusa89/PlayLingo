@@ -20,23 +20,26 @@ Když instalaci zablokuje Play Protect, vypni v Google Play → Play Protect →
 4. Spáruj PlayStation – viz další bod.
 
 ## 4. Spárování PlayStationu (jen jednou)
-Televize a PS5 musí být ve stejné domácí síti.
-1. Na PS5: Nastavení → Systém → Remote Play → zapni „Povolit Remote Play“.
-2. Tamtéž zvol „Propojit zařízení“ – ukáže se osmimístné číslo (platí pár minut).
-3. V aplikaci na stránce PlayStation zvol „Najít PlayStation v síti“ (nebo zadej adresu ručně:
-   PS5 → Nastavení → Síť → Stav připojení → Adresa IPv4).
-4. **Přihlas se k účtu PlayStation přes telefon** (jednou, asi dvě minuty):
-   - televize ukáže QR kód – namiř na něj foťák telefonu a otevři odkaz,
-   - v telefonu se přihlas e-mailem a heslem ke svému účtu PlayStation,
-   - když se stránka zeptá na „passkey“, zvol „Remind Me Later“,
-   - zůstane skoro prázdná stránka s nápisem „redirect“; klepni nahoře na její adresu,
-     za „redirect?code=“ je krátký kód (končí před znakem &),
-   - ten kód opiš do televize a zvol „Ověřit kód“.
-   Přihlášení jde zkusit i přímo v televizi („Zkusit přihlášení přímo v televizi“), ale ochrana
-   Sony ho tam často odmítne hláškou „Can't connect to the server“. Pak použij telefon.
-5. Na PS5 zvol „Propojit zařízení“, osmimístné číslo opiš do televize a zvol Spárovat.
+Aplikace tě provede šesti kroky, na každé obrazovce je jedna věc. Televize a PS5 musí být
+ve stejné domácí síti. Připrav si telefon – bude potřeba jen teď, k hraní už ne.
 
-Telefon je potřeba jen k tomuto jednomu přihlášení. K hraní už ne.
+1. **Zapni na PlayStationu Remote Play.** Na PS5: Nastavení → Systém → Remote Play →
+   zapni „Povolit Remote Play“.
+2. **Najdi PlayStation.** Aplikace ho v síti najde sama. Když ne, zadej adresu ručně
+   (PS5 → Nastavení → Síť → Stav připojení → Adresa IPv4).
+3. **Naskenuj čtvereček telefonem.** Otevři v telefonu fotoaparát, namiř ho na čtvereček
+   v televizi a klepni na odkaz.
+4. **V telefonu se přihlas** e-mailem a heslem ke svému účtu PlayStation. Když se stránka
+   zeptá na „passkey“, zvol „Remind Me Later“. Nakonec zůstane skoro prázdná stránka
+   s jediným slovem „redirect“ – tak je to správně.
+5. **Opiš kód z telefonu.** Klepni v telefonu nahoře na adresu té prázdné stránky, najdi
+   v ní „code=“ a opiš do televize to, co je hned za ním, až po znak & (i s tečkou a velkými
+   písmeny). Zvol „Ověřit kód“. Kód platí jen pár minut.
+6. **Opiš číslo z PlayStationu.** Na PS5: Nastavení → Systém → Remote Play → Propojit
+   zařízení. Osmimístné číslo opiš do televize a zvol Spárovat.
+
+Přihlášení jde zkusit i přímo v televizi (tlačítko pod čtverečkem), ale ochrana Sony ho tam
+často odmítne hláškou „Can't connect to the server“. Proto je doporučený telefon.
 
 ## 5. Hraní
 1. Na stránce Domů zvol „Spustit překlad“ a počkej na „Překlad běží“ (objeví se i malý náhled

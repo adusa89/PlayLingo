@@ -82,8 +82,14 @@ key 4; sleep 2
 key 4; sleep 2; key 4; sleep 2
 
 # 6b) přihlášení přes telefon: QR kód a políčko na kód
-adb shell am start -n $PKG/.MainActivity --ez phonelogin true
-sleep 4; shot 12j_prihlaseni_pres_telefon
+adb shell am start -n $PKG/.MainActivity --ez phonelogin true --ei pairstep 2
+sleep 4; shot 12j_ucet_1_qr
+adb shell am start -n $PKG/.MainActivity --ez phonelogin true --ei pairstep 3
+sleep 3; shot 12k_ucet_2_prihlaseni
+adb shell am start -n $PKG/.MainActivity --ez phonelogin true --ei pairstep 4
+sleep 3; shot 12l_ucet_3_kod
+adb shell am start -n $PKG/.MainActivity --ez phonelogin true --ei pairstep 5
+sleep 3; shot 12m_cislo_z_ps5
 
 # 7) nabídka se seznamem (jazyk): stránka Titulky → první řádek → OK
 adb shell am start -n $PKG/.MainActivity --ez nowizard true

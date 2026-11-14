@@ -83,8 +83,6 @@ class MainActivity : Activity() {
     private var pairMsgColor = Theme.MUTED
     private var pairBusy = false
     private var pairStep = 0
-    /** Přihlášení k účtu přes telefon (výchozí – v televizi ho Sony často odmítne). */
-    private var phoneLogin = true
     private var draftAuth = ""
     private var skipDraftSave = false
     private var lastLink = Ps5.Link.OFF
@@ -139,7 +137,7 @@ class MainActivity : Activity() {
         if (i?.getBooleanExtra("phonelogin", false) == true) {
             Prefs.setWizardDone(this, true); wizard = -1
             Prefs.setPs5Host(this, null)
-            section = Section.PS5; pairStep = 2; phoneLogin = true; render(); return
+            section = Section.PS5; pairStep = i?.getIntExtra("pairstep", 2) ?: 2; render(); return
         }
         if (i?.getBooleanExtra("psnlogin", false) == true) { startActivity(Intent(this, PsnLoginActivity::class.java)); return }
         val ip = i?.getStringExtra("ps5test") ?: return
@@ -162,7 +160,7 @@ class MainActivity : Activity() {
         val acc = PsnLoginActivity.result
         if (acc != null) {
             PsnLoginActivity.result = null
-            pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = acc; pairStep = 3 }
+            pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = acc; pairStep = 5 }
         } else if (PsnLoginActivity.failed) {
             PsnLoginActivity.failed = false
             pairNote(t("ps5_acc_err"), Theme.BAD)
@@ -528,51 +526,53 @@ class MainActivity : Activity() {
         if (draftIp.isEmpty()) draftIp = Prefs.ps5Ip(this)
         if (draftPsn.isEmpty()) draftPsn = Prefs.psnId(this)
 
-        // ---- průvodce spárováním: čtyři malé kroky, vždy jedna věc ----
-        val step = pairStep.coerceIn(0, 3)
-        add(ui.text(t("pg_step").replace("%d", (step + 1).toString()), 14f, Theme.ACCENT, bold = true), 16)
-        add(ui.text(t("pg_${step + 1}_title"), 22f, Theme.TEXT, bold = true), 2)
-        add(ui.card().apply { addView(ui.text(t("pg_${step + 1}_text"), 16f, Theme.TEXT)) }, 10)
+        // ---- průvodce spárováním: šest malých kroků, na každé obrazovce jedna věc ----
+        val step = pairStep.coerceIn(0, 5)
+        val have = Ps5.parseAccountId(draftPsn) != null
+        val key = when (step) { 0 -> "pg_1"; 1 -> "pg_2"; 2 -> "pa_1"; 3 -> "pa_2"; 4 -> "pa_3"; else -> "pg_4" }
+        // text „krok X ze 4“ se používá i pro šest kroků – číslo celkem se dosadí
+        val label = t("pg_step").let { it.substringBefore("%d") + (step + 1) + it.substringAfter("%d").replace("4", "6") }
+        add(ui.text(label, 14f, Theme.ACCENT, bold = true), 16)
+        add(ui.text(t("${key}_title"), 22f, Theme.TEXT, bold = true), 2)
         var nextOk = true
         when (step) {
+            0 -> add(ui.card().apply { addView(ui.text(t("pg_1_text"), 17f, Theme.TEXT)) }, 10)
             1 -> {
+                add(ui.card().apply { addView(ui.text(t("pg_2_text"), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_ip", draftIp, "pip", number = true), 10)
                 add(tagged(ui.button(t("ps5_find")) { findPs5() }, "pfind"), 8)
             }
             2 -> {
-                val have = Ps5.parseAccountId(draftPsn) != null
+                // telefon: velký QR kód s přihlašovací adresou Sony
                 if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
-                // bez přibaleného prohlížeče a se starým prohlížečem televize stránka Sony nefunguje
-                val wv = PsnLoginActivity.webViewVersion()
-                if (!have && !LoginBrowser.bundledAvailable(this) && Ps5.webViewTooOld(wv)) {
-                    add(ui.text(t("wv_old").replace("%s", wv), 15f, Theme.WARN), 10)
-                    add(tagged(ui.button(t("wv_update")) {
-                        try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + PsnLoginActivity.webViewPackage()))) }
-                        catch (_: Exception) { toast("Google Play → Android System WebView") }
-                    }, "wvupd"), 8)
+                val row = ui.hbox().apply { gravity = Gravity.TOP }
+                qrBitmap(PsnLoginActivity.LOGIN_URL)?.let { qr ->
+                    row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(10), ui.dp(10), ui.dp(10), ui.dp(10)) },
+                        LinearLayout.LayoutParams(ui.dp(280), ui.dp(280)))
                 }
-                if (!phoneLogin) {
-                    add(tagged(ui.button(t("ps5_acc_btn")) {
-                        saveDrafts()
-                        try { startActivity(Intent(this, PsnLoginActivity::class.java)) } catch (_: Exception) { pairNote(t("ps5_acc_err"), Theme.BAD) }
-                    }, "pacc"), 10)
-                    add(tagged(ui.button(t("ph_btn"), primary = !have) { saveDrafts(); phoneLogin = true; pairMsg = null; render() }, "pphone"), 8)
-                } else {
-                    // přihlášení v telefonu: QR kód s adresou Sony, zpět se do televize opíše krátký kód
-                    val row = ui.hbox().apply { gravity = Gravity.TOP }
-                    qrBitmap(PsnLoginActivity.LOGIN_URL)?.let { qr ->
-                        row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(10), ui.dp(10), ui.dp(10), ui.dp(10)) },
-                            LinearLayout.LayoutParams(ui.dp(250), ui.dp(250)))
-                    }
-                    row.addView(ui.text(t("ph_text"), 15f, Theme.TEXT).apply { setPadding(ui.dp(18), 0, 0, 0) },
-                        LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-                    add(row, 10)
-                    add(input("ph_code", draftAuth, "pauth", number = false), 10)
-                    add(tagged(ui.button(t(if (pairBusy) "ps5_acc_wait" else "ph_check"), primary = !have) { if (!pairBusy) checkPhoneCode() }, "pcheck"), 8)
-                    add(tagged(ui.button(t("ps5_acc_btn")) { saveDrafts(); phoneLogin = false; pairMsg = null; render() }, "ptv"), 8)
-                }
+                row.addView(ui.text(t("pa_1_text"), 17f, Theme.TEXT).apply { setPadding(ui.dp(20), 0, 0, 0) },
+                    LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+                add(row, 10)
             }
-            3 -> {
+            3 -> add(ui.card().apply { addView(ui.text(t("pa_2_text"), 17f, Theme.TEXT)) }, 10)
+            4 -> {
+                add(ui.card().apply {
+                    addView(ui.text(t("pa_3_text"), 17f, Theme.TEXT))
+                    addView(ui.text(t("pa_example"), 14f, Theme.MUTED), ui.lp(top = 12))
+                    // ukázka adresy se zvýrazněným kódem
+                    val ex = android.text.SpannableStringBuilder("…playstation.net/remoteplay/redirect?code=")
+                    val from = ex.length
+                    ex.append("v3.Ab12Cd")
+                    ex.setSpan(android.text.style.ForegroundColorSpan(Theme.ACCENT), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    ex.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    ex.append("&cid=0000…")
+                    addView(ui.text(ex, 17f, Theme.TEXT), ui.lp(top = 4))
+                }, 10)
+                add(input("ph_code", draftAuth, "pauth", number = false), 10)
+                nextOk = false
+            }
+            else -> {
+                add(ui.card().apply { addView(ui.text(t("pg_4_text"), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_pin", draftPin, "ppin", number = true), 10)
                 add(input("ps5_login", draftLogin, "plogin", number = true), 8)
                 nextOk = false
@@ -580,13 +580,23 @@ class MainActivity : Activity() {
         }
         pairMsg?.let { add(ui.text(it, 15f, pairMsgColor), 10) }
         val row = ui.hbox()
-        if (nextOk) {
-            row.addView(tagged(ui.button(t("wz_next"), primary = !(step == 2 && Ps5.parseAccountId(draftPsn) == null)) { pairNext() }, "pnext"))
-        } else {
-            row.addView(tagged(ui.button(t(if (pairBusy) "ps5_pairing" else "ps5_pair"), primary = true) { if (!pairBusy) pairPs5() }, "pnext"))
+        when {
+            nextOk -> row.addView(tagged(ui.button(t("wz_next"), primary = true) { pairNext() }, "pnext"))
+            step == 4 -> row.addView(tagged(ui.button(t(if (pairBusy) "ps5_acc_wait" else "ph_check"), primary = true) { if (!pairBusy) checkPhoneCode() }, "pnext"))
+            else -> row.addView(tagged(ui.button(t(if (pairBusy) "ps5_pairing" else "ps5_pair"), primary = true) { if (!pairBusy) pairPs5() }, "pnext"))
         }
-        if (step > 0) row.addView(tagged(ui.button(t("wz_back")) { saveDrafts(); pairStep = step - 1; pairMsg = null; render() }, "pback"), wrapLp())
+        if (step > 0) row.addView(tagged(ui.button(t("wz_back")) {
+            saveDrafts()
+            // z kroku s číslem z PS5 zpět rovnou před přihlášení, když už je účet ověřený
+            pairStep = if (step == 5 && have) 1 else step - 1
+            pairMsg = null; render()
+        }, "pback"), wrapLp())
         add(row, 14)
+        // druhá možnost přihlášení: přímo v televizi (ochrana Sony ho tam často odmítne)
+        if (step == 2 && !have) add(tagged(ui.button(t("ps5_acc_btn")) {
+            saveDrafts()
+            try { startActivity(Intent(this, PsnLoginActivity::class.java)) } catch (_: Exception) { pairNote(t("ps5_acc_err"), Theme.BAD) }
+        }, "pacc"), 10)
     }
 
     /** Zpráva u párování; [change] upraví rozepsané údaje (až po uložení toho, co je v políčkách). */
@@ -604,17 +614,16 @@ class MainActivity : Activity() {
     /** Další krok průvodce spárováním (s kontrolou toho, co je v daném kroku potřeba). */
     private fun pairNext() {
         saveDrafts()
-        when (pairStep.coerceIn(0, 3)) {
+        val have = Ps5.parseAccountId(draftPsn) != null
+        when (pairStep.coerceIn(0, 5)) {
             0 -> { pairStep = 1; pairMsg = null; render(); if (draftIp.isEmpty()) findPs5() }
             1 -> {
                 if (!Ps5.validHost(draftIp)) { pairNote(t("ps5_bad_ip"), Theme.BAD); return }
                 Prefs.setPs5Ip(this, draftIp)
-                pairStep = 2; pairMsg = null; render()
+                pairStep = if (have) 5 else 2; pairMsg = null; render()
             }
-            2 -> {
-                if (Ps5.parseAccountId(draftPsn) == null) { pairNote(t("pg_need_acc"), Theme.BAD); return }
-                pairStep = 3; pairMsg = null; render()
-            }
+            2 -> { pairStep = if (have) 5 else 3; pairMsg = null; render() }
+            3 -> { pairStep = 4; pairMsg = null; render() }
         }
     }
 
@@ -640,7 +649,7 @@ class MainActivity : Activity() {
             val id = PsnLoginActivity.accountIdForCode(code)
             if (id != null) {
                 Prefs.setPsnId(this, id)
-                pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = id; draftAuth = ""; pairStep = 3 }
+                pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = id; draftAuth = ""; pairStep = 5 }
             } else pairNote(t("ph_bad"), Theme.BAD)
         }, "tp-code").start()
     }
@@ -1192,8 +1201,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.20"
-    const val VERSION_CODE = 20
+    const val VERSION = "verze 0.21"
+    const val VERSION_CODE = 21
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }
