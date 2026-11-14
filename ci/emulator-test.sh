@@ -96,8 +96,9 @@ adb shell am start -n $PKG/.MainActivity --ez nowizard true
 sleep 2; key 20; key 20; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk
 key 4; sleep 1
 
-# 8) jiná rozlišení obrazovky televize: 720p a 4K. Pruh se má i tam postavit přesně na titulek.
-for mode in "1280x720 213 720p" "3840x2160 640 4k"; do
+# 8) jiné rozlišení obrazovky televize: 720p. Pruh se má i tam postavit přesně na titulek.
+#    (4K emulátor nepřepne – zůstane na 1080p, taková zkouška by nic neříkala.)
+for mode in "1280x720 213 720p"; do
   set -- $mode
   adb shell am force-stop $PKG
   adb shell wm size $1; adb shell wm density $2; sleep 3
