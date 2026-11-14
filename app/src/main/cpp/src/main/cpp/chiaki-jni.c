@@ -101,6 +101,13 @@ JNIEnv *attach_thread_jni()
 	return NULL;
 }
 
+// Režim „jen se dívat“: relace se konzoli nehlásí jako ovladač ani mikrofon (úprava v streamconnection.c).
+extern int chiaki_view_only;
+JNIEXPORT void JNICALL JNI_FCN(setViewOnly)(JNIEnv *env, jobject obj, jboolean value)
+{
+	chiaki_view_only = value ? 1 : 0;
+}
+
 JNIEXPORT jstring JNICALL JNI_FCN(errorCodeToString)(JNIEnv *env, jobject obj, jint value)
 {
 	return E->NewStringUTF(env, chiaki_error_string((ChiakiErrorCode)value));
