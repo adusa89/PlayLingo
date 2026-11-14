@@ -78,6 +78,11 @@ class TranslatorService : Service() {
 
         @Volatile var running = false
             private set
+        /** Velikost obrazu, který právě přichází z konzole ("1920×1080"), a co aplikace naposledy přečetla. */
+        @Volatile var videoSize = ""
+            private set
+        @Volatile var lastRead = ""
+            private set
         /** Jak dlouho v průměru trvá jedno přečtení titulku (ms); 0 = zatím se nečetlo. */
         @Volatile var readMs = 0L
             private set
@@ -467,6 +472,8 @@ class TranslatorService : Service() {
         // slabé zařízení: jedno čtení trvá déle než půl sekundy → nečekej na druhé potvrzení
         ocrMsSum += lastOcrMs
         readMs = if (readMs == 0L) lastOcrMs else (readMs * 4 + lastOcrMs) / 5
+        videoSize = "${capW}×${capH}"
+        if (picked.text.isNotEmpty()) lastRead = picked.text.replace('\n', ' ').take(60)
         when (val action = tracker.onOcr(picked.text, slowDevice = lastOcrMs > 500)) {
             is SubtitleTracker.Action.Show -> {
                 // překlad už většinou běží (spuštěný po prvním přečtení) – jen se počká na výsledek

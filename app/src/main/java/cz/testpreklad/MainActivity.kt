@@ -397,7 +397,9 @@ class MainActivity : Activity() {
             running && link == Ps5.Link.CONNECTED -> {
                 title = t("st_running"); color = Theme.OK
                 // rychlost čtení titulků na tomto zařízení (číslo je srozumitelné ve všech jazycích)
-                sub = t("st_running_sub") + (TranslatorService.readMs.takeIf { it > 0 }?.let { "\n⏱ $it ms" } ?: "")
+                sub = t("st_running_sub") + (TranslatorService.readMs.takeIf { it > 0 }?.let {
+                    "\n⏱ $it ms · ${TranslatorService.videoSize}" + (TranslatorService.lastRead.takeIf { r -> r.isNotEmpty() }?.let { r -> "\n„$r“" } ?: "")
+                } ?: "")
             }
             running && link == Ps5.Link.FAILED -> {
                 title = t("m_ps5")
@@ -1214,8 +1216,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.28"
-    const val VERSION_CODE = 28
+    const val VERSION = "verze 0.29"
+    const val VERSION_CODE = 29
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }
