@@ -75,7 +75,7 @@ class SubtitleOverlay(
                 typeface = Typeface.create("sans-serif-medium", if (bold) Typeface.BOLD else Typeface.NORMAL)
                 setShadowLayer(3f, 0f, 1f, Color.BLACK)
                 setLineSpacing(0f, 1.08f)
-                setPadding(dp(28), dp(8), dp(28), dp(10))
+                setPadding(dp(18), dp(6), dp(18), dp(8))
                 visibility = View.GONE
             }
             val lp = params((screenW * this.layout.barWidth).toInt()).apply {
@@ -152,13 +152,16 @@ class SubtitleOverlay(
      * Zobrazí překlad. [textTop]/[textBottom] = kde na obrazovce (0..1) je anglický text;
      * v režimu "přes titulky" se pruh položí přesně přes něj.
      */
-    fun show(segments: List<Segment>, original: String?, textTop: Float, textBottom: Float) {
+    fun show(
+        segments: List<Segment>, original: String?, textTop: Float, textBottom: Float,
+        textLeft: Float = -1f, textRight: Float = -1f,
+    ) {
         isShown = true
         main.post {
             val tv = bar ?: return@post
             val lp = barParams ?: return@post
             val l = layout
-            val width = (screenW * l.barWidth).toInt()
+            val maxWidth = (screenW * l.barWidth).toInt()
             tv.textSize = textSize.toFloat()
             tv.setBackgroundColor(Color.argb(bgAlpha, 0, 0, 0))
             tv.text = format(segments, original)
@@ -168,6 +171,16 @@ class SubtitleOverlay(
             val tBottom = if (hasText) textBottom else l.read.bottom
             // v režimu "přes titulky" musí pruh zakrýt celou angličtinu
             tv.minHeight = if (l.cover) (l.coverHeight(tTop, tBottom) * screenH).toInt() else 0
+            // Šířka pruhu podle textu: jen tak široký, aby se vešel překlad a zakryla se angličtina
+            // (ne pruh přes celou obrazovku).
+            val hasSpan = hasText && textLeft >= 0f && textRight > textLeft
+            tv.measure(
+                View.MeasureSpec.makeMeasureSpec(maxWidth, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            var width = tv.measuredWidth
+            if (l.cover && hasSpan) width = max(width, ((textRight - textLeft) * screenW).toInt() + dp(20))
+            width = width.coerceIn(dp(80), screenW)
             tv.measure(
                 View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
@@ -181,6 +194,10 @@ class SubtitleOverlay(
                 else -> l.barTop(hf)
             }
             lp.width = width
+            // vodorovně na střed anglického textu (okno je zarovnané na střed, x je posun od středu)
+            val centerX = if (l.cover && hasSpan) (textLeft + textRight) / 2 else 0.5f
+            val limit = max(0, (screenW - width) / 2)
+            lp.x = ((centerX - 0.5f) * screenW).toInt().coerceIn(-limit, limit)
             lp.y = (top * screenH).toInt().coerceIn(0, max(0, screenH - h))
             tv.visibility = View.VISIBLE
             try { wm.updateViewLayout(tv, lp) } catch (_: Exception) {}

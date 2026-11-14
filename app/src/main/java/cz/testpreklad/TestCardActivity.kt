@@ -80,6 +80,10 @@ object TestCard {
         canvas.drawText("Press X to mount", w * 0.04f, h * 0.10f, p)
         // titulky: bílé, vycentrované, dole
         p.textAlign = Paint.Align.CENTER
+        // nápis uprostřed obrazu (název místa) – s titulkem dole nemá nic společného,
+        // pruh ho nesmí spojit s titulkem do jednoho velkého obdélníku
+        p.textSize = h * 0.03f
+        canvas.drawText("Old Mill Road", w / 2, h * 0.60f, p)
         // velikost jako ve hrách: řádek zabere zhruba 3 % výšky obrazu
         p.textSize = h * 0.032f
         p.setShadowLayer(4f, 0f, 2f, Color.BLACK)

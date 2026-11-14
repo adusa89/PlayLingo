@@ -17,7 +17,11 @@ data class Segment(val speaker: String?, val body: String)
  * Výsledek výběru textu z jedné oblasti obrazovky.
  * [top]/[bottom] = svislý rozsah použitých řádků v pixelech oblasti (-1, když nic).
  */
-data class Picked(val text: String, val lineCount: Int, val top: Int = -1, val bottom: Int = -1)
+data class Picked(
+    val text: String, val lineCount: Int, val top: Int = -1, val bottom: Int = -1,
+    /** Vodorovný rozsah použitých řádků v pixelech oblasti (-1, když nic). */
+    val left: Int = -1, val right: Int = -1,
+)
 
 /**
  * Čistá logika bez závislosti na Androidu – dá se testovat na počítači.
@@ -105,17 +109,15 @@ object TextLogic {
         screenCenterX: Int = 0,
         centerTolerance: Int = Int.MAX_VALUE,
     ): Picked {
-        val parts = ArrayList<String>()
-        var count = 0
-        var top = Int.MAX_VALUE
-        var bottom = -1
         val sorted = blocks.sortedBy { b -> b.lines.minOfOrNull { it.top } ?: Int.MAX_VALUE }
-        for (block in sorted) {
+        // 1) řádky, které vypadají jako titulek (podle velikosti, obsahu a vycentrování)
+        val kept = ArrayList<Pair<Int, OcrLine>>()      // (pořadí bloku, řádek)
+        sorted.forEachIndexed { bi, block ->
             // titulek o víc řádcích může mít řádky zarovnané vlevo – pak je vycentrovaný jen blok jako celek
             val blockCentered = block.lines.isNotEmpty() && kotlin.math.abs(
                 (block.lines.minOf { it.left } + block.lines.maxOf { it.right }) / 2 - screenCenterX
             ) <= centerTolerance
-            val good = block.lines
+            block.lines
                 .filter { it.height >= minLineHeight && isUseful(it.text) }
                 .filter { l ->
                     !subtitlesOnly || (
@@ -123,15 +125,32 @@ object TextLogic {
                             (blockCentered || kotlin.math.abs((l.left + l.right) / 2 - screenCenterX) <= centerTolerance)
                         )
                 }
-                .sortedBy { it.top }
-            if (good.isEmpty()) continue
-            count += good.size
-            for (l in good) { top = minOf(top, l.top); bottom = maxOf(bottom, l.bottom) }
-            parts.add(good.joinToString(" ") { clean(it.text) })
+                .forEach { kept.add(bi to it) }
+        }
+        // 2) "jen titulky": texty daleko nad sebou k sobě nepatří (nadpis v menu + titulek dole).
+        //    Bere se jen nejspodnější skupina – pruh pak zakryje jen titulek, ne půl obrazovky.
+        var used: List<Pair<Int, OcrLine>> = kept
+        if (subtitlesOnly && kept.size > 1) {
+            val byTop = kept.sortedBy { it.second.top }
+            var start = 0
+            for (k in 1 until byTop.size) {
+                val prevBottom = byTop.subList(start, k).maxOf { it.second.bottom }
+                val gap = byTop[k].second.top - prevBottom
+                if (gap > 1.5f * maxOf(byTop[k - 1].second.height, byTop[k].second.height)) start = k
+            }
+            used = byTop.subList(start, byTop.size)
+        }
+        if (used.isEmpty()) return Picked("", 0)
+        val parts = used.groupBy { it.first }.toSortedMap().values.map { ls ->
+            ls.map { it.second }.sortedBy { it.top }.joinToString(" ") { clean(it.text) }
         }
         // samotné jméno bez textu není titulek
-        if (count == 0 || parts.all { SPEAKER_ONLY.matches(it) }) return Picked("", 0)
-        return Picked(mergeSpeakerLines(parts).joinToString("\n").trim(), count, top, bottom)
+        if (parts.all { SPEAKER_ONLY.matches(it) }) return Picked("", 0)
+        val ls = used.map { it.second }
+        return Picked(
+            mergeSpeakerLines(parts).joinToString("\n").trim(), ls.size,
+            ls.minOf { it.top }, ls.maxOf { it.bottom }, ls.minOf { it.left }, ls.maxOf { it.right },
+        )
     }
 
     /**

@@ -193,3 +193,36 @@ class SubtitleShapesTest {
         assertEquals("We ride at dawn.", TextLogic.assemble(blocks, 10, true, 640, 150).text)
     }
 }
+
+class SubtitleClusterTest {
+    private fun line(t: String, l: Int, r: Int, top: Int) = OcrLine(t, l, top, r, top + 24)
+
+    @Test fun onlyTheLowestGroupIsTheSubtitle() {
+        // nadpis uprostřed obrazovky a titulek dole: pruh má zakrýt jen titulek
+        val blocks = listOf(
+            OcrBlock(listOf(line("Chapter Three", 520, 760, 20))),
+            OcrBlock(listOf(line("We ride at dawn.", 500, 780, 300), line("Get some sleep.", 510, 770, 330))),
+        )
+        val p = TextLogic.assemble(blocks, 10, subtitlesOnly = true, screenCenterX = 640, centerTolerance = 150)
+        assertEquals("We ride at dawn. Get some sleep.", p.text)
+        assertEquals(300, p.top); assertEquals(354, p.bottom)
+        assertEquals(500, p.left); assertEquals(780, p.right)
+    }
+
+    @Test fun linesCloseTogetherStayTogether() {
+        val blocks = listOf(
+            OcrBlock(listOf(line("Mira: I'll take the left door.", 420, 860, 300))),
+            OcrBlock(listOf(line("Tobin: Then I'm going right.", 440, 840, 332))),
+        )
+        val p = TextLogic.assemble(blocks, 10, true, 640, 150)
+        assertEquals("Mira: I'll take the left door.\nTobin: Then I'm going right.", p.text)
+    }
+
+    @Test fun withoutSubtitleModeEverythingIsRead() {
+        val blocks = listOf(
+            OcrBlock(listOf(line("Chapter Three", 520, 760, 20))),
+            OcrBlock(listOf(line("We ride at dawn.", 500, 780, 300))),
+        )
+        assertEquals("Chapter Three\nWe ride at dawn.", TextLogic.assemble(blocks, 10).text)
+    }
+}

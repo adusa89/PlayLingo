@@ -475,7 +475,9 @@ class TranslatorService : Service() {
                 tp("SHOW|" + action.text.replace('\n', ' ') + "|" + segs.joinToString(" ") { (it.speaker?.plus(": ") ?: "") + it.body })
                 // ukázka: za jak dlouho po objevení titulku je překlad na obrazovce (z toho samotné čtení)
                 if (demo) tp("LAT|${DemoGame.shownFor(SystemClock.uptimeMillis() - DemoFeeder.epoch)}ms|ocr=${lastOcrMs}ms")
-                ov.show(segs, if (showOriginal) action.text else null, top, bottom)
+                val left = if (picked.left >= 0) (x0 + picked.left).toFloat() / capW else -1f
+                val right = if (picked.right >= 0) (x0 + picked.right).toFloat() / capW else -1f
+                ov.show(segs, if (showOriginal) action.text else null, top, bottom, left, right)
                 statsFor(this).line()
                 // automatika: zapamatuj si, kde na obrazovce titulky jsou
                 if (autoFind && autoZone.onSubtitle(top, bottom, SystemClock.uptimeMillis())) zoneChanged()

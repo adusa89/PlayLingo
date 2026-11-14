@@ -116,8 +116,8 @@ class YuvTest {
 
 class DemoGameTest {
     @Test fun timelineFollowsLines() {
-        assertEquals("Dutch: We need money, Arthur.", DemoGame.subtitleAt(0))
-        assertEquals("Dutch: We need money, Arthur.", DemoGame.subtitleAt(5999))
+        assertEquals("Marek: We need money, Jonas.", DemoGame.subtitleAt(0))
+        assertEquals("Marek: We need money, Jonas.", DemoGame.subtitleAt(5999))
         assertEquals("", DemoGame.subtitleAt(6000))
         assertEquals(DemoGame.lines[2], DemoGame.subtitleAt(7500))
     }

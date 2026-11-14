@@ -6,13 +6,13 @@ package cz.testpreklad.core
  */
 object DemoGame {
     val lines = listOf(
-        "Dutch: We need money, Arthur.",
+        "Marek: We need money, Jonas.",
         "",
-        "Arthur: I reckon we ain't gonna find nothin' in Valentine.",
+        "Jonas: I reckon we won't find anything in Greyford.",
         "",
         "Get on your horse, we ride at dawn.",
         "",
-        "Hosea: If we keep going like this,\nthe Pinkertons will find us.",
+        "Silas: If we keep going like this,\nthe marshals will find us.",
         "",
         // různé podoby titulků, jak je hry píšou
         "MIRA: Are you sure this is the right way?",          // jméno velkými písmeny
