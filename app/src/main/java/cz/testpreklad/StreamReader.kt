@@ -352,24 +352,40 @@ class StreamReader(private val width: Int, private val height: Int) {
         Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { it.setPixels(out, 0, w, 0, 0, w, h) }
     } catch (_: Exception) { null }
 
+    /** Výřez posledního obrázku: bitmapa (znovupoužívaná – nerecyklovat) a kde v celém obrázku leží. */
+    class Crop(val bmp: Bitmap, val x0: Int, val y0: Int, val fullW: Int, val fullH: Int)
+
     /**
-     * Poslední obrázek jako šedá bitmapa (znovupoužívaná – volající ji nesmí recyklovat).
+     * Výřez posledního obrázku (šedý) v oblasti dané zlomky 0..1. Převádí se jen výřez, ne celý
+     * obrázek – při čtení úzkého pásu s titulky je to několikrát rychlejší.
      * Vrací null, dokud žádný snímek nepřišel, nebo když od minula žádný nový není.
      */
-    fun grab(onlyNew: Boolean = true): Bitmap? = synchronized(frameLock) {
+    fun grab(left: Float, top: Float, right: Float, bottom: Float, onlyNew: Boolean = true): Crop? = synchronized(frameLock) {
         if (frameW <= 0 || frameH <= 0) return null
         if (onlyNew && grabbedSerial == frameSerial) return null
         grabbedSerial = frameSerial
-        val n = frameW * frameH
-        if (argb.size != n) argb = IntArray(n)
-        Yuv.grayToArgb(yBuf, yStride, frameW, frameH, argb)
+        val x0 = (frameW * left).toInt().coerceIn(0, frameW - 1)
+        val x1 = (frameW * right).toInt().coerceIn(x0 + 1, frameW)
+        val y0 = (frameH * top).toInt().coerceIn(0, frameH - 1)
+        val y1 = (frameH * bottom).toInt().coerceIn(y0 + 1, frameH)
+        val w = x1 - x0
+        val h = y1 - y0
+        if (argb.size != w * h) argb = IntArray(w * h)
+        var o = 0
+        for (row in y0 until y1) {
+            var i = row * yStride + x0
+            for (x in 0 until w) {
+                val v = yBuf[i++].toInt() and 0xFF
+                argb[o++] = (0xFF shl 24) or (v shl 16) or (v shl 8) or v
+            }
+        }
         var b = bmp
-        if (b == null || b.width != frameW || b.height != frameH) {
-            b = Bitmap.createBitmap(frameW, frameH, Bitmap.Config.ARGB_8888)
+        if (b == null || b.width != w || b.height != h) {
+            b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
             bmp = b
         }
-        b.setPixels(argb, 0, frameW, 0, 0, frameW, frameH)
-        b
+        b.setPixels(argb, 0, w, 0, 0, w, h)
+        Crop(b, x0, y0, frameW, frameH)
     }
 
     fun stop() {

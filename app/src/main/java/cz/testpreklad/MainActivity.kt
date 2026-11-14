@@ -869,6 +869,17 @@ class MainActivity : Activity() {
         }, "overlay"), 8)
 
         content.addView(ui.section(t("s_behavior")))
+        val q = Prefs.readQuality(this)
+        val qKeys = listOf("auto", "std", "high")
+        add(tagged(ui.settingRow(t("s_quality"), t("q_$q")) {
+            choose(t("s_quality"), qKeys.map { t("q_$it") }, qKeys.indexOf(q)) { i ->
+                Prefs.setReadQuality(this, qKeys[i])
+                // jiné rozlišení obrazu z konzole = spojení je potřeba navázat znovu
+                if (TranslatorService.running) { stopService(Intent(this, TranslatorService::class.java)); toast(t("q_restart")) }
+                render(true)
+            }
+        }, "quality"), 0)
+        add(ui.text(t("q_desc"), 14f, Theme.MUTED), 6)
         add(tagged(ui.settingRow(t("s_debug"), onOff(Prefs.debug(this))) {
             Prefs.setDebug(this, !Prefs.debug(this)); applyToService(); render(true)
         }, "debug"), 8)
@@ -1091,7 +1102,7 @@ class MainActivity : Activity() {
         } catch (e: Exception) { "?" }
         // na obrazovce (kvůli fotce) nejdřív hlavička a pak to podstatné: přihlášení, párování a spojení
         val key = DiagLog.dump().split('\n').filter { l ->
-            listOf("PSN|", "PAIR|", "PS5|", "LINK|", "ERROR", "SOURCE|", "START|").any { l.contains(it) }
+            listOf("PSN|", "PAIR|", "PS5|", "LINK|", "ERROR", "SOURCE|", "START|", "PERF|").any { l.contains(it) }
         }.takeLast(45).joinToString("\n")
         reportText = t("rep_saved") + " " + where + "\n\n" + text.substringBefore("--- poslední události ---").take(900) + "---\n" + key
         render(true)
@@ -1181,8 +1192,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.19"
-    const val VERSION_CODE = 19
+    const val VERSION = "verze 0.20"
+    const val VERSION_CODE = 20
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

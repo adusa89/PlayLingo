@@ -66,6 +66,7 @@ class TranslatorService : Service() {
         const val ACTION_START_DEMO = "cz.testpreklad.START_DEMO"
 
         /** Šířka a výška videa, které aplikace čte (na titulky bohatě stačí, šetří síť i výkon). */
+        /** Ukázkové video (zkouška bez konzole) má vždy tuto velikost. */
         const val VIDEO_W = 1280
         const val VIDEO_H = 720
 
@@ -115,7 +116,8 @@ class TranslatorService : Service() {
     @Volatile private var overlay: SubtitleOverlay? = null
     private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
     private val cache = TranslationCache()
-    private val tracker = SubtitleTracker()
+    // schovat až po třetím prázdném čtení: jeden nepovedený snímek videa nesmí překlad shodit
+    private val tracker = SubtitleTracker(hideAfterEmpty = 3, fastComplete = true)
     @Volatile private var layout = ScreenLayout()
     @Volatile private var lang = Lang.CS
     private var screenW = 0
@@ -136,7 +138,7 @@ class TranslatorService : Service() {
             val mi = android.app.ActivityManager.MemoryInfo()
             am.getMemoryInfo(mi)
             Perf.forDevice(mi.totalMem / (1024 * 1024), am.isLowRamDevice)
-        } catch (_: Exception) { Perf.forDevice(0, false) }
+        } catch (_: Exception) { Perf.forDevice(0, false) }.withQuality(Prefs.readQuality(this))
     }
 
     /** Kdy schovat pruh (překlad zůstane chvíli po zmizení angličtiny, ať se dá dočíst). 0 = nic. */
@@ -155,6 +157,9 @@ class TranslatorService : Service() {
     private var ticksLogged = 0
     private var lastLinkLogged: Ps5.Link? = null
     private var lastVideoLog = 0L
+    private var lastPerfLog = 0L
+    private var ocrMsSum = 0L
+    private var shows = 0
 
     /** Slovník: jména podle hry, předpřipravené hlášky a vlastní slovník uživatele. */
     @Volatile private var glossary: Glossary? = null
@@ -199,7 +204,7 @@ class TranslatorService : Service() {
         if (!wantDemo && Prefs.ps5Host(this) == null) { startError = "ps5"; stopSelf(); return START_NOT_STICKY }
 
         setupScreenSize()
-        val r = StreamReader(VIDEO_W, VIDEO_H)
+        val r = StreamReader(perf.captureWidth, perf.captureHeight)
         if (!r.start()) {
             startError = "video: " + (r.lastError ?: "?")
             tp("ERROR|decoder|" + r.lastError)
@@ -230,7 +235,7 @@ class TranslatorService : Service() {
             tp("SOURCE|demo")
         } else {
             val host = Prefs.ps5Host(this) ?: return
-            link = Ps5Link(applicationContext, host) { r.feed(it) }.also { it.start() }
+            link = Ps5Link(applicationContext, host, perf.captureWidth >= 1920) { r.feed(it) }.also { it.start() }
             tp("SOURCE|ps5 ${host.ip}")
         }
         updateNotification()
@@ -239,7 +244,7 @@ class TranslatorService : Service() {
     private fun beginRunning() {
         lastLicenseCheck = SystemClock.uptimeMillis()
         tp("A11Y|" + (TitulkyAccessibility.instance != null) + "|launchers=" + launchers)
-        tp("START|video=${VIDEO_W}x${VIDEO_H}|screen=${screenW}x${screenH}|eco=${perf.eco}|decoder=${reader?.decoderName}|lib=${Ps5Link.selfTest()}")
+        tp("START|video=${perf.captureWidth}x${perf.captureHeight}|interval=${perf.intervalMs}|screen=${screenW}x${screenH}|eco=${perf.eco}|decoder=${reader?.decoderName}|lib=${Ps5Link.selfTest()}")
         lang = Prefs.lang(this)
         statsFor(this)
         loadCache()
@@ -373,6 +378,11 @@ class TranslatorService : Service() {
             if (ticksLogged < 400) tp("VIDEO|fed=${r.fed}|decoded=${r.decoded}|${r.frameWidth}x${r.frameHeight}|dec=${r.decoderName}|err=${r.lastError}" +
                 (feeder?.let { "|demo sent=${it.sent} raw=${it.raw} err=${it.error}" } ?: ""))
         }
+        // jednou za půl minuty souhrn rychlosti (pro hlášení chyby)
+        if (now - lastPerfLog > 30_000 && ocrRuns > 0) {
+            lastPerfLog = now
+            tp("PERF|čtení=${ocrRuns}|průměr=${ocrMsSum / ocrRuns}ms|poslední=${lastOcrMs}ms|titulků=${shows}|video=${r.frameWidth}x${r.frameHeight}|oblast=${(layout.read.height * 100).toInt()}%")
+        }
         if (demo) return
         val st = Ps5Link.state
         if (st != lastLinkLogged) {
@@ -388,11 +398,13 @@ class TranslatorService : Service() {
         }
     }
 
-    /** Pruh se ukazuje jen nad hrou – ne v menu této aplikace ani na domovské obrazovce televize. */
+    /**
+     * Pruh se neukazuje přes obrazovky této aplikace. Jinak běží vždy, když je spojení s konzolí:
+     * televize při přepnutí na HDMI nemusí oznámit, co je na obrazovce, a hádat to by znamenalo,
+     * že překlad nad hrou občas zmizí.
+     */
     private fun appAllowed(): Boolean {
-        val pkg = TitulkyAccessibility.foregroundPackage
-        val allowed = if (demo) UiState.testCard
-            else !UiState.visible && pkg != packageName && (pkg == null || pkg !in launchers)
+        val allowed = if (demo) UiState.testCard else !UiState.visible
         if (!allowed && !hiddenForOtherApp) {
             hideAt = 0; overlay?.hide(); tracker.reset(); lastSig = null
         }
@@ -402,36 +414,31 @@ class TranslatorService : Service() {
 
     private suspend fun tick(now: Long) {
         val ov = overlay ?: return
-        val frame = reader?.grab() ?: return      // žádný nový snímek videa
-        capW = frame.width
-        capH = frame.height
+        val z = layout.read
+        val frame = reader?.grab(z.left, z.top, z.right, z.bottom) ?: return      // žádný nový snímek videa
+        capW = frame.fullW
+        capH = frame.fullH
         frames++
         process(frame, ov)
         lastMs = SystemClock.uptimeMillis() - now
     }
 
-    private suspend fun process(frame: Bitmap, ov: SubtitleOverlay) {
+    private suspend fun process(frame: StreamReader.Crop, ov: SubtitleOverlay) {
         val z = layout.read
-        val x0 = (capW * z.left).toInt().coerceIn(0, capW - 1)
-        val x1 = (capW * z.right).toInt().coerceIn(x0 + 1, capW)
-        val y0 = (capH * z.top).toInt().coerceIn(0, capH - 1)
-        val y1 = (capH * z.bottom).toInt().coerceIn(y0 + 1, capH)
-        val crop = Bitmap.createBitmap(frame, x0, y0, x1 - x0, y1 - y0)
+        val x0 = frame.x0
+        val y0 = frame.y0
+        val crop = frame.bmp      // znovupoužívaná bitmapa – nerecyklovat
 
         // přeskoč čtení, když se oblast od posledního čtení nezměnila
         val sig = signature(crop)
         val prev = lastSig
         if (prev != null && tracker.isSettled && FrameSignature.diff(prev, sig) < 1.5f) {
-            crop.recycle(); return
+            return
         }
         lastSig = sig
 
         val ocrStart = SystemClock.uptimeMillis()
-        val result = try {
-            recognizer.process(InputImage.fromBitmap(crop, 0)).await()
-        } finally {
-            crop.recycle()
-        }
+        val result = recognizer.process(InputImage.fromBitmap(crop, 0)).await()
         ocrRuns++
         lastOcrMs = SystemClock.uptimeMillis() - ocrStart
 
@@ -453,6 +460,7 @@ class TranslatorService : Service() {
         if (ticksLogged++ < 400) tp("READ|ocr=${lastOcrMs}ms|zone=${(z.height * 100).toInt()}%|" + picked.text.replace('\n', ' ').take(40))
 
         // slabé zařízení: jedno čtení trvá déle než půl sekundy → nečekej na druhé potvrzení
+        ocrMsSum += lastOcrMs
         when (val action = tracker.onOcr(picked.text, slowDevice = lastOcrMs > 500)) {
             is SubtitleTracker.Action.Show -> {
                 // překlad už většinou běží (spuštěný po prvním přečtení) – jen se počká na výsledek
@@ -462,6 +470,7 @@ class TranslatorService : Service() {
                 val top = if (picked.top >= 0) (y0 + picked.top).toFloat() / capH else -1f
                 val bottom = if (picked.bottom >= 0) (y0 + picked.bottom).toFloat() / capH else -1f
                 hideAt = 0
+                shows++
                 tp("SHOW|" + action.text.replace('\n', ' ') + "|" + segs.joinToString(" ") { (it.speaker?.plus(": ") ?: "") + it.body })
                 ov.show(segs, if (showOriginal) action.text else null, top, bottom)
                 statsFor(this).line()

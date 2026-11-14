@@ -166,11 +166,15 @@ class LatencyTest {
 
 class PerfTest {
     @Test fun weakTvGetsEcoMode() {
-        assertEquals(Perf(1280, 250, true), Perf.forDevice(1024, false))
-        assertEquals(Perf(1280, 250, true), Perf.forDevice(4096, true))      // systém hlásí "low RAM"
-        assertEquals(Perf(1280, 150, true), Perf.forDevice(2048, false))
-        assertEquals(Perf(1280, 100, false), Perf.forDevice(3072, false))
-        assertEquals(Perf(1280, 100, false), Perf.forDevice(0, false))      // neznámá paměť
+        assertEquals(Perf(1280, 200, true), Perf.forDevice(1024, false))
+        assertEquals(Perf(1280, 200, true), Perf.forDevice(4096, true))      // systém hlásí "low RAM"
+        assertEquals(Perf(1280, 100, true), Perf.forDevice(2048, false))
+        assertEquals(Perf(1920, 50, false), Perf.forDevice(3072, false))
+        assertEquals(1080, Perf.forDevice(3072, false).captureHeight)
+        assertEquals(1280, Perf.forDevice(3072, false).withQuality("std").captureWidth)
+        assertEquals(1920, Perf.forDevice(1024, false).withQuality("high").captureWidth)
+        assertEquals(1280, Perf.forDevice(1024, false).withQuality(null).captureWidth)
+        assertEquals(Perf(1920, 50, false), Perf.forDevice(0, false))      // neznámá paměť
     }
 }
 

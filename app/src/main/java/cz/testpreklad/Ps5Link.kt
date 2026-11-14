@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit
 class Ps5Link(
     private val ctx: Context,
     private var host: Ps5Host,
+    /** Brát obraz 1080p (drobné titulky se čtou spolehlivěji), jinak 720p. */
+    private val highRes: Boolean,
     private val onVideo: (ByteArray) -> Boolean,
 ) {
     companion object {
@@ -77,7 +79,8 @@ class Ps5Link(
         try {
             val f = logFile(ctx)
             try { if (f.length() > 400_000) f.delete() } catch (_: Exception) {}
-            val profile = ConnectVideoProfile.preset(VideoResolutionPreset.RES_720P, VideoFPSPreset.FPS_30, Codec.CODEC_H264)
+            val profile = ConnectVideoProfile.preset(
+                if (highRes) VideoResolutionPreset.RES_1080P else VideoResolutionPreset.RES_720P, VideoFPSPreset.FPS_30, Codec.CODEC_H264)
             val s = Session(ConnectInfo(true, host.ip, host.registKey, host.morning, profile), f.absolutePath, false)
             s.eventCallback = { e -> onEvent(s, e) }
             s.videoCallback = onVideo

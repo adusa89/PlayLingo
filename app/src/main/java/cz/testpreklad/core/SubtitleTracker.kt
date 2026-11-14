@@ -4,14 +4,16 @@ package cz.testpreklad.core
  * Sleduje text v jednom pásu obrazovky (nahoře / dole) a rozhoduje,
  * kdy titulek zobrazit, kdy ho schovat a kdy nedělat nic.
  *
- * - Nový text se zobrazí, až ho OCR přečte [stableFrames]× po sobě (odfiltruje
- *   rozmazané snímky při nabíhání titulku a náhodný šum).
+ * - Titulek, který vypadá celý, se zobrazí hned. Nedokončený text (bez tečky na konci) až poté,
+ *   co ho OCR přečte [stableFrames]× po sobě (odfiltruje nabíhající titulek a náhodný šum).
  * - Když text zmizí, pruh se schová po [hideAfterEmpty] prázdných snímcích.
  * - Drobné rozdíly v OCR mezi snímky se považují za stejný text.
  */
 class SubtitleTracker(
     private val stableFrames: Int = 2,
     private val hideAfterEmpty: Int = 2,
+    /** Titulek, který vypadá celý, zobrazit hned po prvním přečtení (obraz přímo z konzole je čistý). */
+    private val fastComplete: Boolean = false,
 ) {
     sealed class Action {
         object None : Action()
@@ -36,7 +38,9 @@ class SubtitleTracker(
      * pokud titulek vypadá celý (končí tečkou, otazníkem…) – jinak by překlad přišel pozdě nebo vůbec.
      */
     fun onOcr(text: String, slowDevice: Boolean = false): Action {
-        val needStable = if (slowDevice && TextLogic.looksComplete(text)) 1 else stableFrames
+        // Obraz přichází čistý přímo z konzole, takže titulek, který vypadá celý (končí tečkou,
+        // otazníkem…), se překládá hned po prvním přečtení – čekání na potvrzení by jen zdržovalo.
+        val needStable = if ((fastComplete || slowDevice) && TextLogic.looksComplete(text)) 1 else stableFrames
         val needEmpty = if (slowDevice) 1 else hideAfterEmpty
         if (TextLogic.similar(text, candidate)) {
             count++

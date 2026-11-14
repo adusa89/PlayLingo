@@ -96,4 +96,15 @@ class SubtitleTrackerTest {
         val a = run(t, listOf("Okay.", "Okay.", "", "", "Okay.", "Okay."))
         assertEquals(2, a.count { it is Action.Show })
     }
+
+    @Test fun completeSubtitleShowsAfterFirstReadWhenFast() {
+        val t = SubtitleTracker(fastComplete = true)
+        // celá věta → hned
+        assertEquals(SubtitleTracker.Action.Show("We need money, Arthur."), t.onOcr("We need money, Arthur."))
+        t.confirmShown("We need money, Arthur.")
+        assertEquals(SubtitleTracker.Action.None, t.onOcr("We need money, Arthur."))
+        // nedokončený text (bez tečky) čeká na druhé přečtení
+        assertEquals(SubtitleTracker.Action.None, t.onOcr("Get on your horse and"))
+        assertEquals(SubtitleTracker.Action.Show("Get on your horse and"), t.onOcr("Get on your horse and"))
+    }
 }
