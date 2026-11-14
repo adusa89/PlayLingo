@@ -264,3 +264,35 @@ class OcrRepairTest {
         assertEquals(SubtitleTracker.Action.None, t.onOcr("The marshals wil find us."))
     }
 }
+
+class QuickWordsAndSpeakersTest {
+    private fun line(t: String, l: Int, r: Int, top: Int) = OcrLine(t, l, top, r, top + 24)
+
+    @Test fun shortRepliesHaveFixedTranslation() {
+        assertEquals("Počkej", QuickWords.lookup("cs", "Wait"))
+        assertEquals("Počkej!", QuickWords.lookup("cs", "WAIT!"))
+        assertEquals("No tak...", QuickWords.lookup("cs", "Come on..."))
+        assertEquals("Počkaj", QuickWords.lookup("sk", "Wait"))
+        assertNull(QuickWords.lookup("de", "Wait"))
+        assertNull(QuickWords.lookup("cs", "Wait for me by the gate."))
+    }
+
+    @Test fun twoSpeakersInOneBlockAreTwoReplies() {
+        val block = OcrBlock(listOf(
+            line("Mira: I'll take the left door.", 420, 860, 300),
+            line("Tobin: Then I'm going right.", 440, 840, 332),
+        ))
+        val p = TextLogic.assemble(listOf(block), 10, true, 640, 150)
+        assertEquals("Mira: I'll take the left door.\nTobin: Then I'm going right.", p.text)
+        assertEquals(listOf("Mira", "Tobin"), TextLogic.segments(p.text).map { it.speaker })
+    }
+
+    @Test fun secondLineWithoutSpeakerStaysInTheSameReply() {
+        val block = OcrBlock(listOf(
+            line("Silas: If we keep going like this,", 420, 860, 300),
+            line("the marshals will find us.", 440, 840, 332),
+        ))
+        assertEquals("Silas: If we keep going like this, the marshals will find us.",
+            TextLogic.assemble(listOf(block), 10, true, 640, 150).text)
+    }
+}

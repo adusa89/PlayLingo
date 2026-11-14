@@ -160,8 +160,16 @@ object TextLogic {
             used = byTop.subList(start, byTop.size)
         }
         if (used.isEmpty()) return Picked("", 0)
-        val parts = used.groupBy { it.first }.toSortedMap().values.map { ls ->
-            ls.map { it.second }.sortedBy { it.top }.joinToString(" ") { clean(it.text) }
+        // řádky jednoho bloku se spojí mezerou; řádek, který začíná jménem mluvčího, je nová replika
+        val parts = ArrayList<String>()
+        for (ls in used.groupBy { it.first }.toSortedMap().values) {
+            var cur = ""
+            for (l in ls.map { it.second }.sortedBy { it.top }) {
+                val t = clean(l.text)
+                if (cur.isNotEmpty() && !SPEAKER_ONLY.matches(cur) && splitSpeaker(t).speaker != null) { parts.add(cur); cur = t }
+                else cur = if (cur.isEmpty()) t else "$cur $t"
+            }
+            if (cur.isNotEmpty()) parts.add(cur)
         }
         // samotné jméno bez textu není titulek
         if (parts.all { SPEAKER_ONLY.matches(it) }) return Picked("", 0)

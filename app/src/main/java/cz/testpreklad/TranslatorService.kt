@@ -21,6 +21,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import cz.testpreklad.core.AutoZone
 import cz.testpreklad.core.DemoGame
+import cz.testpreklad.core.QuickWords
 import cz.testpreklad.core.DiagLog
 import cz.testpreklad.core.FrameSignature
 import cz.testpreklad.core.Glossary
@@ -549,7 +550,7 @@ class TranslatorService : Service() {
         val out = ArrayList<Segment>()
         for (s in TextLogic.segments(text)) {
             val body = TextLogic.normalizeCase(s.body)
-            val tr = translate(TextLogic.forTranslator(body)) ?: return null
+            val tr = QuickWords.lookup(lang.code, body) ?: translate(TextLogic.forTranslator(body)) ?: return null
             out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr)))
         }
         return out
