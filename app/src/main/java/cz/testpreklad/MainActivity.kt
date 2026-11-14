@@ -572,6 +572,7 @@ class MainActivity : Activity() {
                 nextOk = false
             }
             else -> {
+                if (have) add(ui.text(t("ps5_acc_done"), 15f, Theme.OK, bold = true), 8)
                 add(ui.card().apply { addView(ui.text(t("pg_4_text"), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_pin", draftPin, "ppin", number = true), 10)
                 add(input("ps5_login", draftLogin, "plogin", number = true), 8)
@@ -592,6 +593,12 @@ class MainActivity : Activity() {
             pairMsg = null; render()
         }, "pback"), wrapLp())
         add(row, 14)
+        // účet už je uložený: nabídnout nové přihlášení (jiný účet, nebo když spárování s tímhle nejde)
+        if (step == 5 && have && !pairBusy) add(tagged(ui.button(t("ps5_acc_again")) {
+            saveDrafts()
+            draftPsn = ""; draftAuth = ""; Prefs.setPsnId(this, "")
+            pairStep = 2; pairMsg = null; render()
+        }, "pagain"), 10)
         // druhá možnost přihlášení: přímo v televizi (ochrana Sony ho tam často odmítne)
         if (step == 2 && !have) add(tagged(ui.button(t("ps5_acc_btn")) {
             saveDrafts()
@@ -683,7 +690,7 @@ class MainActivity : Activity() {
                 if (h != null) {
                     Prefs.setPs5Host(this, h)
                     pairNote(t("ps5_ok"), Theme.OK) { draftPin = ""; pairStep = 0 }
-                } else pairNote(t("ps5_fail"), Theme.BAD)
+                } else pairNote(t("ps5_fail") + (Ps5Pairing.lastError?.let { "\n($it)" } ?: ""), Theme.BAD)
             }
         }, "tp-pair").start()
     }

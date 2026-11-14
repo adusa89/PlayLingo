@@ -20,6 +20,10 @@ object Ps5Pairing {
     /** Nalezená konzole v síti. */
     data class Found(val ip: String, val name: String, val ps5: Boolean, val standby: Boolean, val id: String = "")
 
+    /** Poslední chyba, kterou při párování ohlásila knihovna (pro hlášku na obrazovce). */
+    @Volatile var lastError: String? = null
+        private set
+
     private fun log(msg: String) { Log.i("TP_TEST", "PAIR|$msg"); DiagLog.add("PAIR|$msg") }
 
     /**
@@ -91,6 +95,7 @@ object Ps5Pairing {
      */
     fun pair(ip: String, accountId: ByteArray, pin: Int, done: (Ps5Host?) -> Unit) {
         var regist: Regist? = null
+        lastError = null
         var finished = false
         val lock = Any()
         fun finish(h: Ps5Host?) {
@@ -105,6 +110,7 @@ object Ps5Pairing {
             val chLog = ChiakiLog(ChiakiLog.Level.ALL.value and ChiakiLog.Level.VERBOSE.value.inv() and ChiakiLog.Level.DEBUG.value.inv()) { level, text ->
                 Log.i(TAG, "regist: " + ChiakiLog.formatLog(level, text))
                 if (level == ChiakiLog.Level.ERROR.value || level == ChiakiLog.Level.WARNING.value) DiagLog.add("PAIR|lib " + text.take(120))
+                if (level == ChiakiLog.Level.ERROR.value) lastError = text.take(120)
             }
             val info = RegistInfo(Target.PS5_1, ip, false, null, accountId, pin)
             regist = Regist(info, chLog) { e: RegistEvent ->
@@ -121,7 +127,7 @@ object Ps5Pairing {
             Thread({
                 try { Thread.sleep(25_000) } catch (_: Throwable) {}
                 val pending = synchronized(lock) { !finished }
-                if (pending) { log("timeout"); try { regist.stop() } catch (_: Throwable) {}; finish(null) }
+                if (pending) { log("timeout"); if (lastError == null) lastError = "timeout"; try { regist.stop() } catch (_: Throwable) {}; finish(null) }
             }, "tp-pair-timeout").start()
         } catch (e: Throwable) {
             log("error $e")
