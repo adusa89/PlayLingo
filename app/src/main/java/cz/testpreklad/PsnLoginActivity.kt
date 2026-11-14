@@ -44,7 +44,7 @@ class PsnLoginActivity : Activity() {
         private const val CLIENT_SECRET = "mvaiZkRsAsI1IBkY"
         private const val REDIRECT = "https://remoteplay.dl.playstation.net/remoteplay/redirect"
         private const val TOKEN_URL = "https://auth.api.sonyentertainmentnetwork.com/2.0/oauth/token"
-        private const val LOGIN_URL = "https://auth.api.sonyentertainmentnetwork.com/2.0/oauth/authorize" +
+        const val LOGIN_URL = "https://auth.api.sonyentertainmentnetwork.com/2.0/oauth/authorize" +
             "?service_entity=urn:service-entity:psn&response_type=code&client_id=$CLIENT_ID" +
             "&redirect_uri=$REDIRECT&scope=psn:clientapp&request_locale=en_US&ui=pr&service_logo=ps" +
             "&layout_type=popup&smcid=remoteplay&prompt=always&PlatformPrivacyWs1=minimal&"

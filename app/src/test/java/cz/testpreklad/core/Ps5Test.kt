@@ -180,4 +180,15 @@ class DemoGameTest {
         assertFalse(Ps5.webViewTooOld("?"))
         assertEquals(90, Ps5.webViewMajor("90.0.4430.91"))
     }
+
+    @Test fun typedCodeFromPhone() {
+        assertEquals("v3.AbC12x", Ps5.authCodeFromUrl("https://remoteplay.dl.playstation.net/remoteplay/redirect?code=v3.AbC12x&cid=1"))
+        assertEquals("v3.AbC12x", Ps5.authCodeFromTyped("v3.AbC12x"))
+        assertEquals("v3.AbC12x", Ps5.authCodeFromTyped(" v3.AbC 12x "))
+        assertEquals("v3.AbC12x", Ps5.authCodeFromTyped("code=v3.AbC12x&cid=0000"))
+        assertEquals("v3.AbC12x", Ps5.authCodeFromTyped("https://remoteplay.dl.playstation.net/remoteplay/redirect?code=v3.AbC12x&cid=0000"))
+        assertNull(Ps5.authCodeFromTyped(""))
+        assertNull(Ps5.authCodeFromTyped("ab"))
+        assertNull(Ps5.authCodeFromTyped("kód s háčky"))
+    }
 }

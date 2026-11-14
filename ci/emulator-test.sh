@@ -81,6 +81,10 @@ sleep 20; shot 12i_heslo_po_odeslani_pozdeji
 key 4; sleep 2
 key 4; sleep 2; key 4; sleep 2
 
+# 6b) přihlášení přes telefon: QR kód a políčko na kód
+adb shell am start -n $PKG/.MainActivity --ez phonelogin true
+sleep 4; shot 12j_prihlaseni_pres_telefon
+
 # 7) nabídka se seznamem (jazyk): stránka Titulky → první řádek → OK
 adb shell am start -n $PKG/.MainActivity --ez nowizard true
 sleep 2; key 20; key 20; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk

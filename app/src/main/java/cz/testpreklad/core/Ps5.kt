@@ -148,15 +148,28 @@ object Ps5 {
         return out.toList()
     }
 
+    private fun validCode(v: String) = v.length in 4..80 && v.all { it.isLetterOrDigit() || it in "-_.~" } && v.all { it.code < 128 }
+
     /** Z adresy, na kterou Sony po přihlášení přesměruje, vytáhne jednorázový kód. */
     fun authCodeFromUrl(url: String): String? {
         val q = url.substringAfter('?', "").substringBefore('#')
         for (part in q.split('&')) {
             val k = part.substringBefore('=')
             val v = part.substringAfter('=', "")
-            if (k == "code" && v.isNotEmpty() && v.length <= 64 && v.all { it.isLetterOrDigit() || it == '-' || it == '_' }) return v
+            if (k == "code" && validCode(v)) return v
         }
         return null
+    }
+
+    /**
+     * Kód, který uživatel opsal z adresy v telefonu: přijme celou adresu, kus „code=…&…“ i samotný kód.
+     */
+    fun authCodeFromTyped(input: String): String? {
+        val s = input.trim().replace(" ", "")
+        if (s.isEmpty()) return null
+        authCodeFromUrl(if (s.contains('?')) s else "x?$s")?.let { return it }
+        val bare = s.substringAfter("code=", s).substringBefore('&')
+        return if (validCode(bare)) bare else null
     }
 
     /** Z odpovědi Sony o účtu vytáhne číslo účtu a převede ho na zakódované ID (base64). */
