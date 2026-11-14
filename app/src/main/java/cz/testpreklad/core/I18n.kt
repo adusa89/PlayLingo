@@ -50,11 +50,9 @@ object I18n {
 
         // ---- domů ----
         "st_running" to ("Překlad běží" to "Preklad beží"),
-        "st_running_sub" to ("Přepni do PS Remote Play a hraj. Titulky se objeví samy." to "Prepni do PS Remote Play a hraj. Titulky sa objavia samy."),
         "st_paused" to ("Pozastaveno" to "Pozastavené"),
         "st_paused_sub" to ("Překlad čeká. Pokračuj tlačítkem níže." to "Preklad čaká. Pokračuj tlačidlom nižšie."),
         "st_ready" to ("Připraveno" to "Pripravené"),
-        "st_ready_sub" to ("Spusť překlad a otevře se PS Remote Play." to "Spusti preklad a otvorí sa PS Remote Play."),
         "st_setup" to ("Ještě je potřeba nastavit" to "Ešte treba nastaviť"),
         "st_setup_sub" to ("Projdi kontrolní seznam níže." to "Prejdi kontrolný zoznam nižšie."),
         "b_go_game" to ("Zpět do hry (HDMI)" to "Späť do hry (HDMI)"),
@@ -176,14 +174,9 @@ object I18n {
         "h_clear" to ("Smazat historii" to "Vymazať históriu"),
 
         // ---- nápověda ----
-        "help_1" to ("1. PlayStation nech připojený k televizi kabelem HDMI jako obvykle (plná kvalita)." to "1. PlayStation nechaj pripojený k televízoru káblom HDMI ako obvykle (plná kvalita)."),
-        "help_2" to ("2. Na stránce Domů dej u „Televize čte obraz z HDMI“ Vyzkoušet – test zjistí, jestli to tvoje TV dovolí." to "2. Na stránke Domov daj pri „Televízor číta obraz z HDMI“ Vyskúšať – test zistí, či to tvoj TV dovolí."),
         "help_3" to ("3. Ve hře zapni titulky." to "3. V hre zapni titulky."),
-        "help_4" to ("4. V Test Překlad projdi kontrolní seznam na stránce Domů." to "4. V Test Překlad prejdi kontrolný zoznam na stránke Domov."),
-        "help_5" to ("5. Spusť překlad, povol snímání celé obrazovky a přepni na HDMI s PlayStationem." to "5. Spusti preklad, povoľ snímanie celej obrazovky a prepni na HDMI s PlayStationom."),
         "help_6" to ("6. Titulky si aplikace najde sama. Kdyby je nenašla, nastav oblast ručně v Oblastech titulků." to "6. Titulky si aplikácia nájde sama. Keby ich nenašla, nastav oblasť ručne v Oblastiach titulkov."),
         "help_tips" to ("Rady" to "Rady"),
-        "help_t1" to ("PlayStation i TV připoj kabelem – obraz bude ostřejší a čtení přesnější." to "PlayStation aj TV pripoj káblom – obraz bude ostrejší a čítanie presnejšie."),
         "help_t2" to ("Když nic nenaskakuje, zapni Diagnostický režim a podívej se, co aplikace čte." to "Keď nič nenaskakuje, zapni Diagnostický režim a pozri sa, čo aplikácia číta."),
         "help_t3" to ("Pozastavit a zastavit jde i z notifikace." to "Pozastaviť a zastaviť sa dá aj z notifikácie."),
         "help_t4" to ("Překlad je offline a zdarma. Internet je potřeba jen jednou na stažení jazykového modelu." to "Preklad je offline a zadarmo. Internet treba len raz na stiahnutie jazykového modelu."),

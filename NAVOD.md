@@ -25,11 +25,17 @@ Televize a PS5 musí být ve stejné domácí síti.
 2. Tamtéž zvol „Propojit zařízení“ – ukáže se osmimístné číslo (platí pár minut).
 3. V aplikaci na stránce PlayStation zvol „Najít PlayStation v síti“ (nebo zadej adresu ručně:
    PS5 → Nastavení → Síť → Stav připojení → Adresa IPv4).
-4. Zvol „Přihlásit se účtem PlayStation (e-mail a heslo)“ a přihlas se na stránce Sony
-   (šipky pohybují ukazatelem, OK kliká). Aplikace si tím zjistí číslo tvého účtu.
-5. Zadej číslo z PS5 a zvol Spárovat.
+4. **Přihlas se k účtu PlayStation přes telefon** (jednou, asi dvě minuty):
+   - televize ukáže QR kód – namiř na něj foťák telefonu a otevři odkaz,
+   - v telefonu se přihlas e-mailem a heslem ke svému účtu PlayStation,
+   - zůstane skoro prázdná stránka s nápisem „redirect“; klepni nahoře na její adresu,
+     na konci je „code=“ a za ním krátký kód,
+   - ten kód opiš do televize a zvol „Ověřit kód“.
+   Přihlášení jde zkusit i přímo v televizi („Zkusit přihlášení přímo v televizi“), ale ochrana
+   Sony ho tam často odmítne hláškou „Can't connect to the server“. Pak použij telefon.
+5. Na PS5 zvol „Propojit zařízení“, osmimístné číslo opiš do televize a zvol Spárovat.
 
-Všechno se dělá jen v televizi a na PlayStationu – telefon ani počítač není potřeba.
+Telefon je potřeba jen k tomuto jednomu přihlášení. K hraní už ne.
 
 ## 5. Hraní
 1. Na stránce Domů zvol „Spustit překlad“ a počkej na „Překlad běží“ (objeví se i malý náhled
@@ -42,6 +48,8 @@ Na stránce Domů zvol „Zkouška bez PlayStationu“. Ukáže se ukázková hr
 a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televizi fungují.
 
 ## 7. Problémy
+- **Přihlášení v televizi hlásí „Can't connect to the server“ nebo „Something went wrong“** – odmítla tě ochrana Sony; přihlas se přes telefon (bod 4.4).
+- **Kód z telefonu neplatí** – platí jen krátce; přihlas se v telefonu znovu a opiš nový.
 - **Nejde spárovat** – číslo z PS5 platí jen pár minut, vyžádej si nové. Zkontroluj adresu a účet.
 - **„PlayStation neodpovídá“** – je konzole zapnutá (ne vypnutá ze zásuvky) a ve stejné síti?
 - **Účet na PS5 má přihlašovací kód** – zadej ho na stránce PlayStation (4 číslice).

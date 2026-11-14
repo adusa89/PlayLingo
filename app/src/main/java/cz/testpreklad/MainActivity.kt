@@ -83,7 +83,8 @@ class MainActivity : Activity() {
     private var pairMsgColor = Theme.MUTED
     private var pairBusy = false
     private var pairStep = 0
-    private var phoneLogin = false
+    /** Přihlášení k účtu přes telefon (výchozí – v televizi ho Sony často odmítne). */
+    private var phoneLogin = true
     private var draftAuth = ""
     private var skipDraftSave = false
     private var lastLink = Ps5.Link.OFF
@@ -551,11 +552,11 @@ class MainActivity : Activity() {
                     }, "wvupd"), 8)
                 }
                 if (!phoneLogin) {
-                    add(tagged(ui.button(t("ps5_acc_btn"), primary = !have) {
+                    add(tagged(ui.button(t("ps5_acc_btn")) {
                         saveDrafts()
                         try { startActivity(Intent(this, PsnLoginActivity::class.java)) } catch (_: Exception) { pairNote(t("ps5_acc_err"), Theme.BAD) }
                     }, "pacc"), 10)
-                    add(tagged(ui.button(t("ph_btn")) { saveDrafts(); phoneLogin = true; pairMsg = null; render() }, "pphone"), 8)
+                    add(tagged(ui.button(t("ph_btn"), primary = !have) { saveDrafts(); phoneLogin = true; pairMsg = null; render() }, "pphone"), 8)
                 } else {
                     // přihlášení v telefonu: QR kód s adresou Sony, zpět se do televize opíše krátký kód
                     val row = ui.hbox().apply { gravity = Gravity.TOP }
@@ -639,7 +640,7 @@ class MainActivity : Activity() {
             val id = PsnLoginActivity.accountIdForCode(code)
             if (id != null) {
                 Prefs.setPsnId(this, id)
-                pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = id; draftAuth = ""; phoneLogin = false; pairStep = 3 }
+                pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = id; draftAuth = ""; pairStep = 3 }
             } else pairNote(t("ph_bad"), Theme.BAD)
         }, "tp-code").start()
     }
@@ -1180,8 +1181,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.18"
-    const val VERSION_CODE = 18
+    const val VERSION = "verze 0.19"
+    const val VERSION_CODE = 19
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }
