@@ -83,10 +83,6 @@ object Prefs {
     fun psnId(c: Context): String = p(c).getString("psn_id", "") ?: ""
     fun setPsnId(c: Context, v: String) = p(c).edit().putString("psn_id", v).apply()
 
-    /** Kolikrát (v různých spuštěních) spojení v režimu „jen se dívat“ nevydrželo; od 2 se už nezkouší. */
-    fun viewOnlyFails(c: Context) = p(c).getInt("view_only_fails", 0)
-    fun setViewOnlyFails(c: Context, v: Int) = p(c).edit().putInt("view_only_fails", v).apply()
-
     /** S obrazem 1080p spojení na tomto zařízení nedrželo → automatika bere 720p. */
     fun highResFailed(c: Context) = p(c).getBoolean("high_res_failed", false)
     fun setHighResFailed(c: Context, v: Boolean) = p(c).edit().putBoolean("high_res_failed", v).apply()

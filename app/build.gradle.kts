@@ -11,8 +11,8 @@ android {
         applicationId = "cz.testpreklad"
         minSdk = 26          // Android 8 a novější (prakticky všechny Android TV a boxy)
         targetSdk = 34
-        versionCode = 34
-        versionName = "0.34"
+        versionCode = 33
+        versionName = "0.33"
 
         // televize a boxy mají procesory ARM; emulátor při zkoušce x86 (-Pabis=x86)
         val abis = ((project.findProperty("abis") as String?) ?: "armeabi-v7a,arm64-v8a").split(",")
@@ -72,31 +72,7 @@ val patchChiaki by tasks.registering(Copy::class) {
     from("src/main/cpp")
     into("../third_party/chiaki-ng/android/app")
 }
-
-// Úprava knihovny: režim „jen se dívat“. Aplikace obraz jen čte, proto se konzoli nemá hlásit jako
-// další ovladač ani mikrofon – jinak konzole přehazuje ovladače hráčům u televize.
-// Zapíná se za běhu proměnnou chiaki_view_only (viz chiaki-jni.c); vypnuto = původní chování.
-val patchChiakiLib by tasks.registering {
-    val f = file("../third_party/chiaki-ng/lib/src/streamconnection.c")
-    inputs.property("v", 1)
-    doLast {
-        var t = f.readText()
-        if (!t.contains("chiaki_view_only")) {
-            fun rep(old: String, new: String) {
-                check(t.contains(old)) { "úprava knihovny: nenalezeno: $old" }
-                t = t.replaceFirst(old, new)
-            }
-            rep("static ChiakiErrorCode stream_connection_send_controller_connection(ChiakiStreamConnection *stream_connection);",
-                "int chiaki_view_only = 0;\nstatic ChiakiErrorCode stream_connection_send_controller_connection(ChiakiStreamConnection *stream_connection);")
-            rep("ChiakiErrorCode err = stream_connection_send_controller_connection(stream_connection);",
-                "ChiakiErrorCode err = chiaki_view_only ? CHIAKI_ERR_SUCCESS : stream_connection_send_controller_connection(stream_connection);")
-            rep("err = stream_connection_enable_microphone(stream_connection);",
-                "err = chiaki_view_only ? CHIAKI_ERR_SUCCESS : stream_connection_enable_microphone(stream_connection);")
-            f.writeText(t)
-        }
-    }
-}
-tasks.named("preBuild") { dependsOn(patchChiaki, patchChiakiLib) }
+tasks.named("preBuild") { dependsOn(patchChiaki) }
 
 dependencies {
     implementation("com.google.mlkit:text-recognition:16.0.1")
