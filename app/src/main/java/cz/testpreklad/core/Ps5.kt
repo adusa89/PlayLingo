@@ -192,6 +192,29 @@ object Ps5 {
         else -> 30000
     }
 
+    /** Připojení tohoto zařízení k domácí síti. */
+    enum class Net { CABLE, WIFI_5, WIFI_24, UNKNOWN }
+
+    /** Na Wi-Fi 2,4 GHz se bere vždy menší obraz: stejné pásmo používají ovladače konzole (Bluetooth). */
+    fun allowHighRes(net: Net): Boolean = net != Net.WIFI_24
+
+    /**
+     * Kolik dat za sekundu (kb/s) si od konzole vyžádat. Pro čtení titulků stačí zlomek toho, co
+     * potřebuje hraní na dálku; méně dat = stabilnější spojení a méně rušení Wi-Fi a ovladačů.
+     * [preset] = hodnota, kterou by použilo hraní na dálku.
+     */
+    fun streamBitrate(net: Net, preset: Int, highRes: Boolean): Int {
+        val cap = when (net) {
+            Net.CABLE -> if (highRes) 12000 else 8000
+            Net.WIFI_5, Net.UNKNOWN -> if (highRes) 8000 else 5000
+            Net.WIFI_24 -> 3500
+        }
+        return minOf(preset, cap).coerceAtLeast(2000)
+    }
+
+    /** Po spojení, které se rozpadlo, se s dalším pokusem čeká aspoň takhle dlouho. */
+    const val AFTER_DROP_MS = 15_000L
+
     /** Spojení, které vydrží aspoň takhle dlouho, se bere jako v pořádku. */
     const val STABLE_SESSION_MS = 60_000L
 

@@ -86,8 +86,13 @@ class Ps5Link(
         try {
             val f = logFile(ctx)
             try { if (f.length() > 400_000) f.delete() } catch (_: Exception) {}
-            val profile = ConnectVideoProfile.preset(
-                if (useHigh) VideoResolutionPreset.RES_1080P else VideoResolutionPreset.RES_720P, VideoFPSPreset.FPS_30, Codec.CODEC_H264)
+            // Podle připojení televize: na Wi-Fi 2,4 GHz jen menší obraz a všude jen tolik dat, kolik čtení potřebuje.
+            val net = NetInfo.kind(ctx)
+            val high = useHigh && Ps5.allowHighRes(net)
+            val preset = ConnectVideoProfile.preset(
+                if (high) VideoResolutionPreset.RES_1080P else VideoResolutionPreset.RES_720P, VideoFPSPreset.FPS_30, Codec.CODEC_H264)
+            val profile = preset.copy(bitrate = Ps5.streamBitrate(net, preset.bitrate, high))
+            log("profile ${profile.width}x${profile.height} ${profile.bitrate}kb net=$net")
             val s = Session(ConnectInfo(true, host.ip, host.registKey, host.morning, profile), f.absolutePath, false)
             s.eventCallback = { e -> onEvent(s, e) }
             s.videoCallback = onVideo
@@ -145,6 +150,7 @@ class Ps5Link(
         // Jak dopadla relace, která právě skončila?
         val since = sessionConnectedAt
         sessionConnectedAt = 0
+        val dropped = since > 0     // relace byla připojená a rozpadla se
         if (since > 0) {
             if (SystemClock.uptimeMillis() - since >= Ps5.STABLE_SESSION_MS) { failures = 0; shortSessions = 0 }
             else shortSessions++
@@ -168,7 +174,8 @@ class Ps5Link(
         }
         failures++
         state = if (failures >= 3) Ps5.Link.FAILED else Ps5.Link.WAITING
-        val delay = Ps5.retryDelayMs(failures)
+        // po rozpadlém spojení se nezkouší hned znovu – rychlé připojování dokola ruší konzoli i ovladače
+        val delay = maxOf(Ps5.retryDelayMs(failures), if (dropped) Ps5.AFTER_DROP_MS else 0L)
         retry?.cancel(false)
         retry = exec.schedule({
             if (stopped) return@schedule

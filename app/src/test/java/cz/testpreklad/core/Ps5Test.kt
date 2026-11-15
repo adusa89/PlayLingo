@@ -211,3 +211,29 @@ class UnstableLinkTest {
         assertEquals(Ps5.Unstable.GIVE_UP, Ps5.afterShortSessions(9, false))
     }
 }
+
+class NetworkProtectionTest {
+    @Test fun cableKeepsQuality() {
+        assertTrue(Ps5.allowHighRes(Ps5.Net.CABLE))
+        assertEquals(8000, Ps5.streamBitrate(Ps5.Net.CABLE, 10000, false))
+        assertEquals(12000, Ps5.streamBitrate(Ps5.Net.CABLE, 15000, true))
+    }
+
+    @Test fun wifiGetsLessData() {
+        assertTrue(Ps5.allowHighRes(Ps5.Net.WIFI_5))
+        assertEquals(5000, Ps5.streamBitrate(Ps5.Net.WIFI_5, 10000, false))
+        assertEquals(8000, Ps5.streamBitrate(Ps5.Net.WIFI_5, 15000, true))
+        assertEquals(5000, Ps5.streamBitrate(Ps5.Net.UNKNOWN, 10000, false))
+    }
+
+    @Test fun wifi24IsTheGentlest() {
+        // stejné pásmo jako ovladače konzole: jen menší obraz a nejméně dat
+        assertFalse(Ps5.allowHighRes(Ps5.Net.WIFI_24))
+        assertEquals(3500, Ps5.streamBitrate(Ps5.Net.WIFI_24, 10000, false))
+    }
+
+    @Test fun neverAboveWhatTheConsoleOffersNorUselesslyLow() {
+        assertEquals(3000, Ps5.streamBitrate(Ps5.Net.CABLE, 3000, false))
+        assertEquals(2000, Ps5.streamBitrate(Ps5.Net.WIFI_24, 500, false))
+    }
+}

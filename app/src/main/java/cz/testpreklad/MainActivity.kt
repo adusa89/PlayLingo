@@ -398,7 +398,7 @@ class MainActivity : Activity() {
             running && link == Ps5.Link.CONNECTED -> {
                 title = t("st_running"); color = Theme.OK
                 // rychlost čtení titulků na tomto zařízení (číslo je srozumitelné ve všech jazycích)
-                sub = t("st_running_sub") + (TranslatorService.readMs.takeIf { it > 0 }?.let {
+                sub = t("st_running_sub") + netLine() + (TranslatorService.readMs.takeIf { it > 0 }?.let {
                     "\n⏱ $it ms · ${TranslatorService.videoSize}" + (TranslatorService.lastRead.takeIf { r -> r.isNotEmpty() }?.let { r -> "\n„$r“" } ?: "")
                 } ?: "")
             }
@@ -1099,6 +1099,14 @@ class MainActivity : Activity() {
     }
 
     /** Sestaví hlášení chyby (zařízení, nastavení, poslední události) a uloží ho do souboru. */
+    /** Řádek o připojení televize k síti; u Wi-Fi s radou, protože slabá síť je nejčastější příčina potíží. */
+    private fun netLine(): String = when (NetInfo.kind(this)) {
+        Ps5.Net.CABLE -> "\n" + t("net_cable")
+        Ps5.Net.WIFI_5 -> "\n" + t("net_wifi5")
+        Ps5.Net.WIFI_24 -> "\n" + t("net_wifi24")
+        Ps5.Net.UNKNOWN -> ""
+    }
+
     private fun makeReport() {
         val sb = StringBuilder()
         sb.append("Test Překlad ").append(BuildInfo.VERSION).append(" (").append(BuildInfo.VERSION_CODE).append(")\n")
@@ -1118,6 +1126,7 @@ class MainActivity : Activity() {
         sb.append("Prohlížeč televize: ").append(PsnLoginActivity.webViewVersion())
             .append(", přibalený prohlížeč: ").append(LoginBrowser.bundledAvailable(this))
             .append(", procesor: ").append(Build.SUPPORTED_ABIS.joinToString("/")).append("\n")
+        sb.append("Síť televize: ").append(NetInfo.kind(this)).append("\n")
         sb.append("Dekodér bez hardwaru: ").append(Prefs.softDecoder(this)).append("\n")
         sb.append("--- záznam (i z minulých spuštění) ---\n").append(EventFile.tail(200)).append("\n")
         sb.append("--- poslední události ---\n").append(DiagLog.dump())
@@ -1228,8 +1237,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.36"
-    const val VERSION_CODE = 36
+    const val VERSION = "verze 0.37"
+    const val VERSION_CODE = 37
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }
