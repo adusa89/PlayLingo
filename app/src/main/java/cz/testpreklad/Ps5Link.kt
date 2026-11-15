@@ -71,7 +71,7 @@ class Ps5Link(
     @Volatile private var connectedAt = 0L
     @Volatile private var everConnected = false
 
-    private fun log(msg: String) { Log.i("TP_TEST", "PS5|$msg"); DiagLog.add("PS5|$msg") }
+    private fun log(msg: String) { Log.i("TP_TEST", "PS5|$msg"); DiagLog.add("PS5|$msg"); EventFile.add("PS5|$msg") }
 
     fun start() {
         stopped = false

@@ -22,7 +22,14 @@ import kotlin.math.min
  * dekóduje je a drží poslední obrázek připravený pro čtení titulků.
  * Nic se nezobrazuje ani nepřehrává – obraz i zvuk hry jdou do televize kabelem HDMI.
  */
-class StreamReader(private val width: Int, private val height: Int) {
+class StreamReader(
+    private val width: Int, private val height: Int,
+    /**
+     * Nejdřív softwarové dekodéry. Některé televize mají jedinou hardwarovou cestu pro video a ta
+     * musí zůstat obrazu z HDMI – jinak je hra na televizi černá, dokud aplikace běží.
+     */
+    private val softwareFirst: Boolean = false,
+) {
 
     companion object {
         private const val TAG = "TestPreklad"
@@ -122,8 +129,9 @@ class StreamReader(private val width: Int, private val height: Int) {
         workingPlan?.let { plans.add(it) }
         // Nejdřív přímý výstup (obrázek předá dekodér sám – nejspolehlivější napříč zařízeními),
         // výstup do plochy jen jako záloha a jen u hardwarových dekodérů.
-        plans.add(Plan(null, surface = false, lowLatency = false))
         val names = decoderNames()
+        if (softwareFirst) for (n in names) if (isSoftware(n)) plans.add(Plan(n, false, false))
+        plans.add(Plan(null, surface = false, lowLatency = false))
         for (n in names) plans.add(Plan(n, false, false))
         plans.add(Plan(null, surface = true, lowLatency = false))
         for (n in names) if (!isSoftware(n)) plans.add(Plan(n, true, false))

@@ -106,6 +106,7 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        EventFile.init(this)
         ui = Ui(this)
         buildShell()
         if (!Prefs.wizardDone(this)) wizard = 0
@@ -902,6 +903,12 @@ class MainActivity : Activity() {
             }
         }, "quality"), 0)
         add(ui.text(t("q_desc"), 14f, Theme.MUTED), 6)
+        add(tagged(ui.settingRow(t("s_softdec"), onOff(Prefs.softDecoder(this))) {
+            Prefs.setSoftDecoder(this, !Prefs.softDecoder(this))
+            if (TranslatorService.running) { stopService(Intent(this, TranslatorService::class.java)); toast(t("q_restart")) }
+            render(true)
+        }, "softdec"), 8)
+        add(ui.text(t("s_softdec_desc"), 14f, Theme.MUTED), 6)
         add(tagged(ui.settingRow(t("s_debug"), onOff(Prefs.debug(this))) {
             Prefs.setDebug(this, !Prefs.debug(this)); applyToService(); render(true)
         }, "debug"), 8)
@@ -1111,6 +1118,8 @@ class MainActivity : Activity() {
         sb.append("Prohlížeč televize: ").append(PsnLoginActivity.webViewVersion())
             .append(", přibalený prohlížeč: ").append(LoginBrowser.bundledAvailable(this))
             .append(", procesor: ").append(Build.SUPPORTED_ABIS.joinToString("/")).append("\n")
+        sb.append("Dekodér bez hardwaru: ").append(Prefs.softDecoder(this)).append("\n")
+        sb.append("--- záznam (i z minulých spuštění) ---\n").append(EventFile.tail(200)).append("\n")
         sb.append("--- poslední události ---\n").append(DiagLog.dump())
         // konec záznamu spojení s konzolí (pomůže najít, proč se nepřipojila)
         try {
@@ -1125,9 +1134,12 @@ class MainActivity : Activity() {
             f.absolutePath
         } catch (e: Exception) { "?" }
         // na obrazovce (kvůli fotce) nejdřív hlavička a pak to podstatné: přihlášení, párování a spojení
-        val key = DiagLog.dump().split('\n').filter { l ->
-            listOf("PSN|", "PAIR|", "PS5|", "LINK|", "ERROR", "SOURCE|", "START|", "PERF|").any { l.contains(it) }
-        }.takeLast(45).joinToString("\n")
+        // záznam ze souboru: obsahuje i to, co se dělo před posledním vypnutím aplikace
+        val key = EventFile.tail(40).ifEmpty {
+            DiagLog.dump().split('\n').filter { l ->
+                listOf("PSN|", "PAIR|", "PS5|", "LINK|", "ERROR", "SOURCE|", "START|", "PERF|").any { l.contains(it) }
+            }.takeLast(40).joinToString("\n")
+        }
         reportText = t("rep_saved") + " " + where + "\n\n" + text.substringBefore("--- poslední události ---").take(900) + "---\n" + key
         render(true)
     }
@@ -1216,8 +1228,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.35"
-    const val VERSION_CODE = 35
+    const val VERSION = "verze 0.36"
+    const val VERSION_CODE = 36
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

@@ -178,7 +178,12 @@ class TranslatorService : Service() {
     @Volatile private var glossary: Glossary? = null
 
     /** Záznam pro automatickou zkoušku i pro hlášení chyby. */
-    private fun tp(msg: String) { Log.i("TP_TEST", msg); DiagLog.add(msg) }
+    private fun tp(msg: String) {
+        Log.i("TP_TEST", msg); DiagLog.add(msg)
+        if (KEEP.any { msg.startsWith(it) }) EventFile.add(msg)
+    }
+    /** Události, které se ukládají i do souboru (viz [EventFile]). */
+    private val KEEP = listOf("START|", "LINK|", "VIDEO|", "PERF|", "SOURCE|", "STOP|")
 
     @Volatile private var lastError: String? = null
 
@@ -189,6 +194,7 @@ class TranslatorService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        EventFile.init(this)
         when (intent?.action) {
             ACTION_STOP -> { stopSelf(); return START_NOT_STICKY }
             ACTION_PAUSE -> {
@@ -217,7 +223,7 @@ class TranslatorService : Service() {
         if (!wantDemo && Prefs.ps5Host(this) == null) { startError = "ps5"; stopSelf(); return START_NOT_STICKY }
 
         setupScreenSize()
-        val r = StreamReader(perf.captureWidth, perf.captureHeight)
+        val r = StreamReader(perf.captureWidth, perf.captureHeight, softwareFirst = Prefs.softDecoder(this))
         if (!r.start()) {
             startError = "video: " + (r.lastError ?: "?")
             tp("ERROR|decoder|" + r.lastError)
@@ -403,7 +409,7 @@ class TranslatorService : Service() {
         val st = Ps5Link.state
         if (st != lastLinkLogged) {
             lastLinkLogged = st
-            tp("LINK|$st|" + (Ps5Link.reason ?: ""))
+            tp("LINK|$st|" + (Ps5Link.reason ?: "") + "|dec=${r.decoderName}|${r.frameWidth}x${r.frameHeight}|fed=${r.fed}|decoded=${r.decoded}")
             // spojení spadlo → starý překlad nenechávej viset na obrazovce
             if (st != Ps5.Link.CONNECTED) { hideAt = 0; overlay?.hide(); tracker.reset(); lastSig = null; r.clearFrames() }
             updateNotification()
