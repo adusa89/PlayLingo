@@ -39,15 +39,14 @@ class TextScale(private val maxPixels: Int = 950_000) {
 /** Velikost písma překladu podle anglického originálu. */
 object MatchSize {
     /**
-     * [lineHeight] = výška řádku originálu jako zlomek výšky obrazu, [screenH] = výška obrazovky v pixelech.
+     * [lineHeight] = velikost písma originálu jako zlomek výšky obrazu (viz TextLogic.fontSizeOf),
+     * [screenH] = výška obrazovky v pixelech.
      * Vrací velikost písma v pixelech.
      * Drží se v rozumných mezích a zaokrouhluje na sudé pixely, aby velikost mezi čteními neposkakovala.
      */
     fun textPx(lineHeight: Float, screenH: Int): Int {
         if (lineHeight <= 0f || screenH <= 0) return 0
-        // Čtečka měří jen výšku samotných písmen řádku (bez volného místa nad a pod), což je zhruba
-        // 0,8 velikosti písma. Součinitel je změřený na snímcích: překlad pak vychází stejně velký jako originál.
-        val px = lineHeight * screenH * 1.25f
+        val px = lineHeight * screenH
         val lo = screenH * 0.022f
         val hi = screenH * 0.075f
         return (px.coerceIn(lo, hi) / 2f).toInt() * 2

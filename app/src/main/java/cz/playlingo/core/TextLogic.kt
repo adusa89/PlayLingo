@@ -21,7 +21,7 @@ data class Picked(
     val text: String, val lineCount: Int, val top: Int = -1, val bottom: Int = -1,
     /** Vodorovný rozsah použitých řádků v pixelech oblasti (-1, když nic). */
     val left: Int = -1, val right: Int = -1,
-    /** Obvyklá výška jednoho řádku titulku v pixelech (0, když nic) – podle ní se řídí velikost písma překladu. */
+    /** Velikost písma titulku v pixelech (0, když nic), odhadnutá z výšky řádků – podle ní se řídí velikost písma překladu. */
     val lineHeight: Int = 0,
 )
 
@@ -146,6 +146,20 @@ object TextLogic {
 
     private val UI_HINT = Regex("^(?i:press|hold|tap|click|push|select|choose|loading|connecting|signed in|available)\\b")
 
+    /**
+     * Velikost písma řádku v pixelech, odhadnutá z jeho výšky. Čtečka měří jen výšku písmen, která
+     * v řádku opravdu jsou: řádek bez vysokých písmen a bez písmen pod linku ("we are so sure") je
+     * mnohem nižší než řádek s nimi ("Type quickly!"), i když je písmo stejně velké. Proto se výška
+     * přepočítá podle toho, jaká písmena řádek obsahuje (poměry běžného bezpatkového písma).
+     */
+    fun fontSizeOf(line: OcrLine): Int {
+        val t = line.text
+        val tall = t.any { it.isUpperCase() || it.isDigit() || it in "bdfhklt!?'\"" }
+        val below = t.any { it in "gjpqy,;()[]" }
+        val part = (if (tall) 0.74f else 0.55f) + (if (below) 0.20f else 0f)
+        return (line.height / part).toInt()
+    }
+
     /** Od tolika řádků textu v oblasti je to menu nebo jiná plná obrazovka, ne titulek. */
     const val MENU_LINES = 7
 
@@ -232,7 +246,7 @@ object TextLogic {
         return Picked(
             text, ls.size,
             ls.minOf { it.top }, ls.maxOf { it.bottom }, ls.minOf { it.left }, ls.maxOf { it.right },
-            lineHeight = ls.map { it.height }.sorted()[ls.size / 2],
+            lineHeight = ls.map { fontSizeOf(it) }.sorted()[ls.size / 2],
         )
     }
 
