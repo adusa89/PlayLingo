@@ -36,7 +36,7 @@ Kdyby se připojila tvým herním účtem, konzole by ti při hraní vypínala o
 2. Pod tím druhým uživatelem zapni Nastavení → Systém → Remote Play → Povolit Remote Play.
 3. V aplikaci se v průvodci přihlas tím druhým účtem (QR kód v telefonu).
 4. Číslo pro propojení zobraz na konzoli také pod druhým uživatelem.
-5. Potom se na ovladači přepni zpět na svůj účet a hraj jako vždy, se svými hrami.
+5. Hned po spárování se na ovladači přihlas na účet, na kterém hraješ, a hraj jako vždy, se svými hrami.
    Druhý účet se jen „dívá“ – nic na něm nekupuješ ani nehraješ.
 
 Aplikace tě provede šesti kroky, na každé obrazovce je jedna věc. Televize a PS5 musí být
