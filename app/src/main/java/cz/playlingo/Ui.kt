@@ -16,7 +16,6 @@ object Theme {
     val BG = Color.rgb(0x0E, 0x10, 0x14)
     val SIDEBAR = Color.rgb(0x14, 0x17, 0x1D)
     val CARD = Color.rgb(0x1B, 0x1F, 0x27)
-    val CARD_FOCUS = Color.rgb(0x27, 0x2D, 0x38)
     /** Plocha vybraného prvku – výrazně světlejší, do zlatova. */
     val FOCUS = Color.rgb(0x4A, 0x40, 0x22)
     val ACCENT_FOCUS = Color.rgb(0xFF, 0xE3, 0x8F)

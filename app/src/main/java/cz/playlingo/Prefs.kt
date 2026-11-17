@@ -141,12 +141,6 @@ object Prefs {
         if (first != saved && first != 0L) p(c).edit().putLong("first_run", first).apply()
         return License.state(unlocked(c), first, now)
     }
-
-    /** Další hodnota v cyklu (neznámá hodnota → první). */
-    fun nextOf(values: IntArray, current: Int): Int {
-        val i = values.indexOf(current)
-        return values[if (i < 0) 0 else (i + 1) % values.size]
-    }
 }
 
 /** Zkratka pro texty v jazyce, který si uživatel vybral. */

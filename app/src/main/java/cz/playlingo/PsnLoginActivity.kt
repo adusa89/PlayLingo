@@ -54,11 +54,6 @@ class PsnLoginActivity : Activity() {
             if (android.os.Build.VERSION.SDK_INT >= 26) WebView.getCurrentWebViewPackage()?.versionName ?: "?" else "?"
         } catch (_: Throwable) { "?" }
 
-        /** Balíček vestavěného prohlížeče (kvůli odkazu na aktualizaci v Google Play). */
-        fun webViewPackage(): String = try {
-            (if (android.os.Build.VERSION.SDK_INT >= 26) WebView.getCurrentWebViewPackage()?.packageName else null) ?: "com.google.android.webview"
-        } catch (_: Throwable) { "com.google.android.webview" }
-
         /** Vymění jednorázový kód za číslo účtu. Volat mimo hlavní vlákno. */
         fun accountIdForCode(code: String): String? {
             val auth = "Basic " + Base64.encodeToString("$CLIENT_ID:$CLIENT_SECRET".toByteArray(), Base64.NO_WRAP)
