@@ -213,12 +213,12 @@ class TextScaleTest {
 
 class MatchSizeTest {
     @Test fun translationIsAsBigAsTheOriginal() {
-        // řádek originálu vysoký 3,2 % obrazu na obrazovce 1080 px → písmo kolem 30 px
-        val px = MatchSize.textPx(0.032f, 1080)
-        assertTrue(px in 28..31)
+        // písmo originálu 3,2 % výšky obrazu (35 px na 1080) → čtečka naměří řádek vysoký asi 2,6 % → písmo překladu zase kolem 35 px
+        val px = MatchSize.textPx(0.026f, 1080)
+        assertTrue("$px", px in 33..37)
         // větší originál → větší překlad, menší → menší
-        assertTrue(MatchSize.textPx(0.05f, 1080) > px)
-        assertTrue(MatchSize.textPx(0.024f, 1080) < px)
+        assertTrue(MatchSize.textPx(0.045f, 1080) > px)
+        assertTrue(MatchSize.textPx(0.019f, 1080) < px)
     }
 
     @Test fun staysReadableAndNotHuge() {
@@ -227,11 +227,11 @@ class MatchSizeTest {
     }
 
     @Test fun smallJitterDoesNotChangeTheSize() {
-        val first = MatchSize.textPx(0.0320f, 1080)
-        assertEquals(first, MatchSize.steady(first, MatchSize.textPx(0.0326f, 1080)))
-        assertEquals(first, MatchSize.steady(first, MatchSize.textPx(0.0310f, 1080)))
+        val first = MatchSize.textPx(0.0260f, 1080)
+        assertEquals(first, MatchSize.steady(first, MatchSize.textPx(0.0266f, 1080)))
+        assertEquals(first, MatchSize.steady(first, MatchSize.textPx(0.0252f, 1080)))
         // skutečně jiná velikost písma se projeví
-        assertTrue(MatchSize.steady(first, MatchSize.textPx(0.050f, 1080)) > first)
+        assertTrue(MatchSize.steady(first, MatchSize.textPx(0.045f, 1080)) > first)
         assertEquals(first, MatchSize.steady(0, first))
     }
 
