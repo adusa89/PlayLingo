@@ -27,6 +27,18 @@ Stejný postup najdeš i v aplikaci na stránce Nápověda.
 4. Spáruj PlayStation – viz další bod.
 
 ## 4. Spárování PlayStationu (jen jednou)
+
+**Důležité: aplikace se připojuje DRUHÝM účtem PlayStation, ne tím, na kterém hraješ.**
+Kdyby se připojila tvým herním účtem, konzole by ti při hraní vypínala ovladač a zhasínala obraz
+(bere to tak, že ses přesunul hrát jinam).
+
+1. Na PlayStationu zvol Přidat uživatele a založ nový účet PlayStation s jiným e-mailem (je zdarma).
+2. Pod tím druhým uživatelem zapni Nastavení → Systém → Remote Play → Povolit Remote Play.
+3. V aplikaci se v průvodci přihlas tím druhým účtem (QR kód v telefonu).
+4. Číslo pro propojení zobraz na konzoli také pod druhým uživatelem.
+5. Potom se na ovladači přepni zpět na svůj účet a hraj jako vždy, se svými hrami.
+   Druhý účet se jen „dívá“ – nic na něm nekupuješ ani nehraješ.
+
 Aplikace tě provede šesti kroky, na každé obrazovce je jedna věc. Televize a PS5 musí být
 ve stejné domácí síti. Připrav si telefon – bude potřeba jen teď, k hraní už ne.
 

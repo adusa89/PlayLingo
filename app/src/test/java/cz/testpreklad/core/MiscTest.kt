@@ -156,3 +156,57 @@ class SubtitleHistoryTest {
         SubtitleHistory.clear()
     }
 }
+
+class TextScaleTest {
+    private val crop = 1152 * 202          // zapamatovaný spodní pás obrazu 720p
+
+    @Test fun smallLinesTurnScalingOnAfterTwoReadings() {
+        val t = TextScale()
+        assertFalse(t.update(listOf(15, 16), crop))
+        assertEquals(1f, t.scale, 0f)
+        assertTrue(t.update(listOf(15, 16), crop))
+        assertEquals(1.5f, t.scale, 0f)
+    }
+
+    @Test fun tinyLinesGetDoubleSize() {
+        val t = TextScale()
+        t.update(listOf(11, 12), crop); t.update(listOf(11, 12), crop)
+        assertEquals(2f, t.scale, 0f)
+    }
+
+    @Test fun largeLinesAreReadWithoutScaling() {
+        val t = TextScale()
+        t.update(listOf(12), crop); t.update(listOf(12), crop)
+        assertEquals(2f, t.scale, 0f)
+        t.update(listOf(40, 44), crop); t.update(listOf(40, 44), crop)
+        assertEquals(1f, t.scale, 0f)
+    }
+
+    @Test fun middleSizesDoNotFlipBackAndForth() {
+        val t = TextScale()
+        t.update(listOf(16), crop); t.update(listOf(16), crop)
+        assertEquals(1.5f, t.scale, 0f)
+        repeat(5) { t.update(listOf(24), crop) }
+        assertEquals(1.5f, t.scale, 0f)
+    }
+
+    @Test fun oneOddReadingChangesNothing() {
+        val t = TextScale()
+        t.update(listOf(30), crop); t.update(listOf(12), crop); t.update(listOf(30), crop); t.update(listOf(12), crop)
+        assertEquals(1f, t.scale, 0f)
+    }
+
+    @Test fun bigCropIsNotScaledBeyondTheBudget() {
+        val t = TextScale()
+        val big = 1728 * 367                 // spodní třetina 1080p
+        t.update(listOf(12), big); t.update(listOf(12), big)
+        assertTrue(big * t.scale * t.scale <= 950_000)
+    }
+
+    @Test fun noLinesNoChange() {
+        val t = TextScale()
+        assertFalse(t.update(emptyList(), crop))
+        assertFalse(t.update(listOf(3, 4), crop))
+        assertEquals(1f, t.scale, 0f)
+    }
+}

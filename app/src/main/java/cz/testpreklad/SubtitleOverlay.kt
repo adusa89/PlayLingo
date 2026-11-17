@@ -75,7 +75,7 @@ class SubtitleOverlay(
                 typeface = Typeface.create("sans-serif-medium", if (bold) Typeface.BOLD else Typeface.NORMAL)
                 setShadowLayer(3f, 0f, 1f, Color.BLACK)
                 setLineSpacing(0f, 1.08f)
-                setPadding(dp(18), dp(6), dp(18), dp(8))
+                setPadding(dp(22), dp(7), dp(22), dp(9))
                 visibility = View.GONE
             }
             val lp = params((screenW * this.layout.barWidth).toInt()).apply {
@@ -166,7 +166,7 @@ class SubtitleOverlay(
             // černý podklad s lehce zaoblenými rohy
             tv.background = android.graphics.drawable.GradientDrawable().apply {
                 setColor(Color.argb(bgAlpha, 0, 0, 0))
-                cornerRadius = dp(8).toFloat()
+                cornerRadius = dp(14).toFloat()
             }
             tv.text = format(segments, original)
 

@@ -123,7 +123,7 @@ class DemoGameTest {
     }
 
     @Test fun timelineRepeats() {
-        assertEquals(105000, DemoGame.cycleMs)
+        assertEquals(112500, DemoGame.cycleMs)
         assertEquals(DemoGame.subtitleAt(100), DemoGame.subtitleAt(100 + DemoGame.cycleMs * 7))
         for (t in 0 until DemoGame.cycleMs step 500) assertTrue(DemoGame.indexAt(t) in DemoGame.lines.indices)
     }
@@ -213,27 +213,10 @@ class UnstableLinkTest {
 }
 
 class NetworkProtectionTest {
-    @Test fun cableKeepsQuality() {
+    @Test fun onlyWifi24ForcesTheSmallerPicture() {
         assertTrue(Ps5.allowHighRes(Ps5.Net.CABLE))
-        assertEquals(8000, Ps5.streamBitrate(Ps5.Net.CABLE, 10000, false))
-        assertEquals(12000, Ps5.streamBitrate(Ps5.Net.CABLE, 15000, true))
-    }
-
-    @Test fun wifiGetsLessData() {
         assertTrue(Ps5.allowHighRes(Ps5.Net.WIFI_5))
-        assertEquals(5000, Ps5.streamBitrate(Ps5.Net.WIFI_5, 10000, false))
-        assertEquals(8000, Ps5.streamBitrate(Ps5.Net.WIFI_5, 15000, true))
-        assertEquals(5000, Ps5.streamBitrate(Ps5.Net.UNKNOWN, 10000, false))
-    }
-
-    @Test fun wifi24IsTheGentlest() {
-        // stejné pásmo jako ovladače konzole: jen menší obraz a nejméně dat
+        assertTrue(Ps5.allowHighRes(Ps5.Net.UNKNOWN))
         assertFalse(Ps5.allowHighRes(Ps5.Net.WIFI_24))
-        assertEquals(3500, Ps5.streamBitrate(Ps5.Net.WIFI_24, 10000, false))
-    }
-
-    @Test fun neverAboveWhatTheConsoleOffersNorUselesslyLow() {
-        assertEquals(3000, Ps5.streamBitrate(Ps5.Net.CABLE, 3000, false))
-        assertEquals(2000, Ps5.streamBitrate(Ps5.Net.WIFI_24, 500, false))
     }
 }

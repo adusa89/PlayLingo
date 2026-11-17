@@ -46,7 +46,7 @@ sleep 12; shot 08_po_spusteni
 # 4) ukázková hra s titulky – jde do aplikace jako video (stejná cesta jako z PlayStationu);
 #    aplikace ji má dekódovat, přečíst, přeložit a zakrýt pruhem
 adb shell am start -n $PKG/.TestCardActivity
-for i in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48; do sleep 3; shot "09_hra_$i"; done
+for i in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52; do sleep 3; shot "09_hra_$i"; done
 
 # 5) spojení s PlayStationem: konzole tu není, ale ověří se, že se nativní část načte,
 #    hledání v síti a párování skončí slušně a spojení se zkouší znovu – bez pádu
@@ -128,10 +128,10 @@ LINK=$(grep -c "TP_TEST.*LINK|\(WAITING\|FAILED\)" $OUT/log.txt)
 PAIR=$(grep -c "TP_TEST.*PAIR|\(failed\|timeout\|error\)" $OUT/log.txt)
 # kolik z deseti různých ukázkových titulků (velká písmena, jména, krátká slova…) se přeložilo
 KINDS=0
-for k in "We need money" "reckon" "ride at dawn" "keep going like this" "right way" "no idea" "GET OUT OF HERE" "|Wait|" "never supposed to meet" "left door" "voice down" "been here for years" "lantern" "bridge is out"; do
+for k in "We need money" "reckon" "ride at dawn" "keep going like this" "right way" "no idea" "GET OUT OF HERE" "|Wait|" "never supposed to meet" "left door" "voice down" "been here for years" "lantern" "bridge is out" "Run for the gate"; do
   grep -qF -- "$k" <(grep "TP_TEST.*SHOW|" $OUT/log.txt) && KINDS=$((KINDS+1)) || echo "NEPRELOZENO: $k" >> $OUT/missing.txt
 done
-echo "ruznych_titulku=$KINDS/14" > $OUT/kinds.txt
+echo "ruznych_titulku=$KINDS/15" > $OUT/kinds.txt
 echo "prelozenych_titulku=$SHOWS pady=$CRASH knihovna_ps5=$LIB dekodovano_snimku=${DECODED:-0} pokusy_o_spojeni=$LINK parovani_bez_konzole=$PAIR" > $OUT/result.txt
 if [ "$SHOWS" -ge 3 ] && [ "$KINDS" -ge 7 ] && [ "$CRASH" -eq 0 ] && [ "$LIB" -ge 1 ] && [ "${DECODED:-0}" -ge 20 ] && [ "$LINK" -ge 1 ] && [ "$PAIR" -ge 1 ]; then
   echo "VYSLEDEK=OK" >> $OUT/result.txt

@@ -22,6 +22,7 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import cz.testpreklad.core.AutoZone
 import cz.testpreklad.core.DemoGame
 import cz.testpreklad.core.QuickWords
+import cz.testpreklad.core.TextScale
 import cz.testpreklad.core.DiagLog
 import cz.testpreklad.core.FrameSignature
 import cz.testpreklad.core.Glossary
@@ -178,12 +179,14 @@ class TranslatorService : Service() {
     @Volatile private var glossary: Glossary? = null
 
     /** Záznam pro automatickou zkoušku i pro hlášení chyby. */
+    private val textScale = TextScale()
+
     private fun tp(msg: String) {
         Log.i("TP_TEST", msg); DiagLog.add(msg)
         if (KEEP.any { msg.startsWith(it) }) EventFile.add(msg)
     }
     /** Události, které se ukládají i do souboru (viz [EventFile]). */
-    private val KEEP = listOf("START|", "LINK|", "VIDEO|", "PERF|", "SOURCE|", "STOP|")
+    private val KEEP = listOf("START|", "LINK|", "VIDEO|", "PERF|", "SOURCE|", "STOP|", "SCALE|")
 
     @Volatile private var lastError: String? = null
 
@@ -223,7 +226,7 @@ class TranslatorService : Service() {
         if (!wantDemo && Prefs.ps5Host(this) == null) { startError = "ps5"; stopSelf(); return START_NOT_STICKY }
 
         setupScreenSize()
-        val r = StreamReader(perf.captureWidth, perf.captureHeight, softwareFirst = Prefs.softDecoder(this))
+        val r = StreamReader(perf.captureWidth, perf.captureHeight)
         if (!r.start()) {
             startError = "video: " + (r.lastError ?: "?")
             tp("ERROR|decoder|" + r.lastError)
@@ -388,7 +391,7 @@ class TranslatorService : Service() {
             val spent = SystemClock.uptimeMillis() - t0
             // Po každém čtení krátká pauza úměrná jeho délce: procesor televize musí stíhat i příjem
             // videa a spojení s konzolí, jinak se spojení rozpadá.
-            delay(max(max(30L, spent / 2), perf.intervalMs - spent))
+            delay(max(minOf(100L, max(20L, spent / 4)), perf.intervalMs - spent))
         }
     }
 
@@ -459,15 +462,22 @@ class TranslatorService : Service() {
         lastSig = sig
 
         val ocrStart = SystemClock.uptimeMillis()
-        val result = recognizer.process(InputImage.fromBitmap(crop, 0)).await()
+        // drobné titulky: výřez se před čtením zvětší (viz TextScale)
+        val k = textScale.scale
+        val input = if (k > 1f) Bitmap.createScaledBitmap(crop, (crop.width * k).toInt(), (crop.height * k).toInt(), true) else crop
+        val result = recognizer.process(InputImage.fromBitmap(input, 0)).await()
+        if (input !== crop) input.recycle()
         ocrRuns++
         lastOcrMs = SystemClock.uptimeMillis() - ocrStart
+        val blocks = toBlocks(result, k)
+        if (textScale.update(blocks.flatMap { b -> b.lines.filter { it.text.count { c -> c.isLetter() } >= 3 }.map { it.height } }, crop.width * crop.height))
+            tp("SCALE|${textScale.scale}")
 
         // V oblasti je text v jiném jazyce než v angličtině (česká nabídka konzole, hra už je přeložená):
         // to není anglický titulek ze hry – nepřekládá se nic, ani anglické nápisy vedle.
         val foreignScreen = (onlySubtitles || autoFind) && TextLogic.looksForeign(result.text)
         val picked = if (foreignScreen) Picked("", 0) else TextLogic.assemble(
-            toBlocks(result),
+            blocks,
             minLineHeight = (capH * 0.013f).toInt(),
             subtitlesOnly = onlySubtitles || autoFind,   // automatika čte velkou plochu → vždy jen titulky
             screenCenterX = capW / 2 - x0,
@@ -532,10 +542,11 @@ class TranslatorService : Service() {
         lastSig = null
     }
 
-    private fun toBlocks(t: Text): List<OcrBlock> = t.textBlocks.map { block ->
+    /** Řádky z čtečky; souřadnice se přepočítají zpět na nezvětšený výřez ([k] = zvětšení). */
+    private fun toBlocks(t: Text, k: Float): List<OcrBlock> = t.textBlocks.map { block ->
         OcrBlock(block.lines.mapNotNull { l ->
             val bb = l.boundingBox ?: return@mapNotNull null
-            OcrLine(l.text, bb.left, bb.top, bb.right, bb.bottom)
+            OcrLine(l.text, (bb.left / k).toInt(), (bb.top / k).toInt(), (bb.right / k).toInt(), (bb.bottom / k).toInt())
         })
     }
 

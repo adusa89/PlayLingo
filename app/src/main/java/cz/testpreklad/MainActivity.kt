@@ -552,6 +552,7 @@ class MainActivity : Activity() {
             2 -> {
                 // telefon: velký QR kód s přihlašovací adresou Sony
                 if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
+                add(ui.card().apply { addView(ui.text(t("acc2"), 16f, Theme.ACCENT)) }, 10)
                 val row = ui.hbox().apply { gravity = Gravity.TOP }
                 qrBitmap(PsnLoginActivity.LOGIN_URL)?.let { qr ->
                     row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(10), ui.dp(10), ui.dp(10), ui.dp(10)) },
@@ -561,7 +562,10 @@ class MainActivity : Activity() {
                     LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
                 add(row, 10)
             }
-            3 -> add(ui.card().apply { addView(ui.text(t("pa_2_text"), 17f, Theme.TEXT)) }, 10)
+            3 -> {
+                add(ui.card().apply { addView(ui.text(t("acc2"), 16f, Theme.ACCENT)) }, 10)
+                add(ui.card().apply { addView(ui.text(t("pa_2_text"), 17f, Theme.TEXT)) }, 10)
+            }
             4 -> {
                 add(ui.card().apply {
                     addView(ui.text(t("pa_3_text"), 17f, Theme.TEXT))
@@ -903,12 +907,6 @@ class MainActivity : Activity() {
             }
         }, "quality"), 0)
         add(ui.text(t("q_desc"), 14f, Theme.MUTED), 6)
-        add(tagged(ui.settingRow(t("s_softdec"), onOff(Prefs.softDecoder(this))) {
-            Prefs.setSoftDecoder(this, !Prefs.softDecoder(this))
-            if (TranslatorService.running) { stopService(Intent(this, TranslatorService::class.java)); toast(t("q_restart")) }
-            render(true)
-        }, "softdec"), 8)
-        add(ui.text(t("s_softdec_desc"), 14f, Theme.MUTED), 6)
         add(tagged(ui.settingRow(t("s_debug"), onOff(Prefs.debug(this))) {
             Prefs.setDebug(this, !Prefs.debug(this)); applyToService(); render(true)
         }, "debug"), 8)
@@ -1127,7 +1125,6 @@ class MainActivity : Activity() {
             .append(", přibalený prohlížeč: ").append(LoginBrowser.bundledAvailable(this))
             .append(", procesor: ").append(Build.SUPPORTED_ABIS.joinToString("/")).append("\n")
         sb.append("Síť televize: ").append(NetInfo.kind(this)).append("\n")
-        sb.append("Dekodér bez hardwaru: ").append(Prefs.softDecoder(this)).append("\n")
         sb.append("--- záznam (i z minulých spuštění) ---\n").append(EventFile.tail(200)).append("\n")
         sb.append("--- poslední události ---\n").append(DiagLog.dump())
         // konec záznamu spojení s konzolí (pomůže najít, proč se nepřipojila)
@@ -1237,8 +1234,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.37"
-    const val VERSION_CODE = 37
+    const val VERSION = "verze 0.39"
+    const val VERSION_CODE = 39
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }
