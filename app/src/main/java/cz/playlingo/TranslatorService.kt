@@ -180,27 +180,6 @@ class TranslatorService : Service() {
 
     /** Záznam pro automatickou zkoušku i pro hlášení chyby. */
     private val textScale = TextScale()
-    // Zvětšený výřez se kreslí pořád do téže bitmapy. Nová bitmapa při každém čtení (až 4 MB, několikrát
-    // za sekundu) by zbytečně zaměstnávala úklid paměti a na starších televizích způsobovala záseky.
-    private var scaledBmp: Bitmap? = null
-    private var scaledCanvas: android.graphics.Canvas? = null
-    private val scaledRect = android.graphics.Rect()
-    private val scaledPaint = android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG)
-
-    private fun upscaled(crop: Bitmap, k: Float): Bitmap {
-        val w = (crop.width * k).toInt()
-        val h = (crop.height * k).toInt()
-        var b = scaledBmp
-        if (b == null || b.width != w || b.height != h) {
-            // starou bitmapu neuvolňovat ručně – čtečka ji ještě může držet; uklidí ji systém
-            b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-            scaledBmp = b
-            scaledCanvas = android.graphics.Canvas(b)
-        }
-        scaledRect.set(0, 0, w, h)
-        scaledCanvas?.drawBitmap(crop, null, scaledRect, scaledPaint)
-        return b
-    }
     private var shownW = 0
     private var shownH = 0
     private var steadyText = ""
@@ -491,8 +470,9 @@ class TranslatorService : Service() {
         val ocrStart = SystemClock.uptimeMillis()
         // drobné titulky: výřez se před čtením zvětší (viz TextScale)
         val k = textScale.scale
-        val input = if (k > 1f) upscaled(crop, k) else crop
+        val input = if (k > 1f) Bitmap.createScaledBitmap(crop, (crop.width * k).toInt(), (crop.height * k).toInt(), true) else crop
         val result = recognizer.process(InputImage.fromBitmap(input, 0)).await()
+        if (input !== crop) input.recycle()
         ocrRuns++
         lastOcrMs = SystemClock.uptimeMillis() - ocrStart
         val blocks = toBlocks(result, k)
