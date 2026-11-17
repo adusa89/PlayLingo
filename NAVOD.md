@@ -6,7 +6,7 @@ v černém pruhu přes obraz. Hra jde do televize dál kabelem HDMI.
 
 ## 1. APK
 Stáhni `TestPreklad.apk`:
-https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk
+https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk
 
 ## 2. Instalace
 Nahraj APK do televize (USB flash + správce souborů, nebo aplikace Downloader) a nainstaluj.

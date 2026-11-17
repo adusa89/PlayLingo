@@ -1254,8 +1254,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.51"
-    const val VERSION_CODE = 51
-    const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/PlayLingo.apk"
-    const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
+    const val VERSION = "verze 0.52"
+    const val VERSION_CODE = 52
+    const val DOWNLOAD_URL = "https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk"
+    const val VERSION_URL = "https://github.com/adusa89/PlayLingo/releases/download/latest/version.txt"
 }

@@ -1,6 +1,6 @@
 # PlayLingo
 
-**Nejnovější APK ke stažení:** https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk  
+**Nejnovější APK ke stažení:** https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk  
 Číslo verze je vidět v aplikaci v sekci Nápověda.
 
 Aplikace pro Android TV: sama se po domácí síti připojí k PlayStationu 5, přečte anglické
