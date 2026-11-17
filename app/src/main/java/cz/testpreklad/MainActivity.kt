@@ -462,6 +462,9 @@ class MainActivity : Activity() {
 
         if (running && !demoRun) preview()
 
+        // jazyk překladu hned na první stránce
+        langRow("homelang", 18)
+
         content.addView(ui.section(t("check_title")))
         val check = ui.card()
         check.addView(ui.checkRow(overlayOk, false, t("chk_overlay"), t("ok"), t("fix")) { section = Section.SETTINGS; render() })
@@ -741,8 +744,8 @@ class MainActivity : Activity() {
 
     // ======================= VZHLED =======================
 
-    private fun look() {
-        val sizeIdx = Prefs.TEXT_SIZES.indexOf(Prefs.textSize(this)).let { if (it < 0) 2 else it }
+    /** Řádek s výběrem jazyka (je na stránce Domů i v Titulcích, ať ho nikdo nehledá). */
+    private fun langRow(tag: String, top: Int) {
         add(tagged(ui.settingRow(t("l_lang"), Prefs.lang(this).label) {
             val langs = cz.testpreklad.core.Lang.values()
             choose(t("l_lang"), langs.map { it.label }, langs.indexOf(Prefs.lang(this))) { i ->
@@ -750,7 +753,12 @@ class MainActivity : Activity() {
                 OfflineTranslator.ensureModel(langs[i]) { }
                 applyToService(); render(true)
             }
-        }, "lang"), 16)
+        }, tag), top)
+    }
+
+    private fun look() {
+        val sizeIdx = Prefs.TEXT_SIZES.indexOf(Prefs.textSize(this)).let { if (it < 0) 2 else it }
+        langRow("lang", 16)
         add(tagged(ui.settingRow(t("l_size"), t("size_$sizeIdx")) {
             choose(t("l_size"), Prefs.TEXT_SIZES.indices.map { t("size_$it") }, sizeIdx) { i ->
                 Prefs.setTextSize(this, Prefs.TEXT_SIZES[i]); applyToService(); render(true); showDemo()
@@ -1242,8 +1250,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.42"
-    const val VERSION_CODE = 42
+    const val VERSION = "verze 0.43"
+    const val VERSION_CODE = 43
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

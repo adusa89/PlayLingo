@@ -29,6 +29,9 @@ object QuickWords {
         "of course" to "Samozrejme", "i know" to "Ja viem", "got it" to "Rozumiem", "goodbye" to "Zbohom", "bye" to "Ahoj",
     )
 
+    /** Je to běžná krátká replika ("wait", "come on")? Podle toho se pozná replika od nápisu nebo šumu. */
+    fun isKnown(text: String): Boolean = text.trim().trimEnd('.', '!', '?', '…', ',').lowercase() in CS
+
     /** Pevný překlad krátké repliky, nebo null. Interpunkce na konci ("Wait!") se zachová. */
     fun lookup(langCode: String, text: String): String? {
         val table = when (langCode) { "cs" -> CS; "sk" -> SK; else -> return null }

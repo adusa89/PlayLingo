@@ -318,3 +318,53 @@ class DialogueBoxTest {
         assertEquals("", TextLogic.assemble(blocks, 10, true, 640, 150).text)
     }
 }
+
+class DialogueOnlyTest {
+    private fun line(t: String, l: Int, r: Int, top: Int, h: Int = 24) = OcrLine(t, l, top, r, top + h)
+    private fun pick(vararg ls: OcrLine) =
+        TextLogic.assemble(listOf(OcrBlock(ls.toList())), 10, true, 640, 150, maxLineHeight = 60).text
+
+    @Test fun realRepliesAreDialogue() {
+        for (t in listOf(
+            "We need to leave before sunrise.", "Mira: Are you sure?", "MIRA: no idea", "Wait", "Come on!",
+            "No.", "I don't know", "WE HAVE TO GET OUT OF HERE!", "[Old Kessler] You two were never supposed to meet.",
+            "Tobin: no idea, but we can't stay here", "Keep going, we're almost there",
+            "Silas: If we keep going like this,\nthe marshals will find us.",
+        )) assertTrue(t, TextLogic.looksLikeDialogue(t))
+    }
+
+    @Test fun menuItemsAndNoiseAreNot() {
+        for (t in listOf(
+            "Som", "New Game", "OPTIONS", "Load Game", "Continue", "Settings", "Old Mill Road", "Chapter Three",
+            "GREAT GAMES GREAT VALUE", "Graphics Audio Controls", "Continue\nNew Game\nOptions\nQuit",
+            "Inventory", "Level 12", "Back", "Select",
+        )) assertFalse(t, TextLogic.looksLikeDialogue(t))
+    }
+
+    @Test fun menuItemInTheMiddleOfTheScreenIsNotTranslated() {
+        assertEquals("", pick(line("New Game", 560, 720, 300)))
+        assertEquals("", pick(line("Som", 600, 680, 300)))
+    }
+
+    @Test fun hugeLettersAreNotSubtitles() {
+        // logo nebo nadpis: řádek vyšší než strop
+        assertEquals("", pick(line("Welcome back, traveller.", 300, 980, 200, h = 90)))
+        assertEquals("Welcome back, traveller.", pick(line("Welcome back, traveller.", 300, 980, 200, h = 40)))
+    }
+
+    @Test fun screenFullOfTextIsAMenu() {
+        val blocks = (0 until 8).map { i -> OcrBlock(listOf(line("We ride at dawn, friend.", 400, 880, i * 40))) }
+        assertEquals("", TextLogic.assemble(blocks, 10, true, 640, 150).text)
+        // pár údajů v rozích kolem titulku nevadí
+        val hud = listOf(
+            OcrBlock(listOf(line("Find the missing key", 30, 330, 0))),
+            OcrBlock(listOf(line("Northern Outpost", 980, 1250, 0))),
+            OcrBlock(listOf(line("We ride at dawn, friend.", 400, 880, 300))),
+        )
+        assertEquals("We ride at dawn, friend.", TextLogic.assemble(hud, 10, true, 640, 150).text)
+    }
+
+    @Test fun withoutSubtitleModeNothingIsDropped() {
+        assertEquals("New Game", TextLogic.assemble(listOf(OcrBlock(listOf(line("New Game", 560, 720, 300)))), 10).text)
+    }
+}

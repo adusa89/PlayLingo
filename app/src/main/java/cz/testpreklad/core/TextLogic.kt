@@ -100,6 +100,37 @@ object TextLogic {
         return letters >= 5 || (endsLikeSentence && letters >= 2) || SINGLE_WORD.matches(t)
     }
 
+    /**
+     * Vypadá text jako mluvená replika, a ne jako položka menu, nápis nebo šum?
+     * Replika má jméno mluvčího, nebo větnou interpunkci, nebo je to delší věta s malými písmeny,
+     * nebo běžné krátké zvolání ("Wait", "Come on"). Položky menu ("New Game", "OPTIONS", "Load")
+     * a náhodně přečtené útržky ("Som") nic z toho nemají.
+     */
+    fun looksLikeDialogue(text: String): Boolean {
+        val lines = text.split('\n').map { it.trim() }.filter { it.isNotEmpty() }
+        if (lines.isEmpty()) return false
+        // seznam krátkých položek pod sebou = menu
+        if (lines.size >= 3 && lines.all { l -> wordCount(l) <= 3 && l.none { it in ".!?…," } && splitSpeaker(l).speaker == null }) return false
+        return lines.any { lineIsDialogue(it) }
+    }
+
+    private fun wordCount(t: String) = t.split(' ').count { w -> w.any { it.isLetter() } }
+
+    private fun lineIsDialogue(line: String): Boolean {
+        val seg = splitSpeaker(line)
+        if (seg.speaker != null) return seg.body.count { it.isLetter() } >= 2
+        val t = seg.body
+        if (QuickWords.isKnown(t)) return true
+        val words = wordCount(t)
+        val punct = t.any { it in ".!?…," } || t.contains('\'') || t.contains('"')
+        val lower = t.count { it.isLowerCase() }
+        return when {
+            words >= 5 -> lower >= 4 || punct           // dlouhá věta (i psaná VELKÝMI, když má interpunkci)
+            words >= 2 -> punct                         // krátká: musí mít interpunkci nebo apostrof
+            else -> t.lastOrNull()?.let { it in ".!?…" } == true && t.count { it.isLetter() } >= 2
+        }
+    }
+
     // "Press X to mount", "Hold [] to aim", "Tap @ for ..." – nápovědy k ovládání, nejsou to titulky
     private val CONTROL_PROMPT = Regex(
         "^(?i:press|hold|tap|mash|click|push)\\s+" +
@@ -108,6 +139,9 @@ object TextLogic {
             "(?:\\s*\\+\\s*(?:[A-Z0-9]{1,3}|[^\\sA-Za-z0-9]{1,3}))?" +
             "\\s+(?i:to|for)\\b"
     )
+
+    /** Od tolika řádků textu v oblasti je to menu nebo jiná plná obrazovka, ne titulek. */
+    const val MENU_LINES = 7
 
     /** Nápověda k ovládání hry (ne titulek). */
     fun isControlPrompt(raw: String): Boolean = CONTROL_PROMPT.containsMatchIn(clean(raw))
@@ -127,8 +161,15 @@ object TextLogic {
         subtitlesOnly: Boolean = false,
         screenCenterX: Int = 0,
         centerTolerance: Int = Int.MAX_VALUE,
+        /** Vyšší řádky nejsou titulky (nadpisy, loga, nápisy ve scéně). */
+        maxLineHeight: Int = Int.MAX_VALUE,
     ): Picked {
         val sorted = blocks.sortedBy { b -> b.lines.minOfOrNull { it.top } ?: Int.MAX_VALUE }
+        // Obrazovka plná textu (menu, inventář, mapa) není scéna s titulky.
+        if (subtitlesOnly) {
+            val all = blocks.sumOf { b -> b.lines.count { it.height >= minLineHeight && isUseful(it.text) } }
+            if (all >= MENU_LINES) return Picked("", 0)
+        }
         // 1) řádky, které vypadají jako titulek (podle velikosti, obsahu a vycentrování)
         val kept = ArrayList<Pair<Int, OcrLine>>()      // (pořadí bloku, řádek)
         sorted.forEachIndexed { bi, block ->
@@ -142,7 +183,7 @@ object TextLogic {
                     (centerTolerance != Int.MAX_VALUE && bl < screenCenterX && br > screenCenterX)
                 )
             block.lines
-                .filter { it.height >= minLineHeight && isUseful(it.text) }
+                .filter { it.height in minLineHeight..maxLineHeight && isUseful(it.text) }
                 .filter { l ->
                     !subtitlesOnly || (
                         !isControlPrompt(l.text) &&
@@ -179,8 +220,11 @@ object TextLogic {
         // samotné jméno bez textu není titulek
         if (parts.all { SPEAKER_ONLY.matches(it) }) return Picked("", 0)
         val ls = used.map { it.second }
+        val text = mergeSpeakerLines(parts).joinToString("\n").trim()
+        // "jen titulky": položky menu, nápisy a šum se nepřekládají – jen to, co vypadá jako replika
+        if (subtitlesOnly && !looksLikeDialogue(text)) return Picked("", 0)
         return Picked(
-            mergeSpeakerLines(parts).joinToString("\n").trim(), ls.size,
+            text, ls.size,
             ls.minOf { it.top }, ls.maxOf { it.bottom }, ls.minOf { it.left }, ls.maxOf { it.right },
         )
     }

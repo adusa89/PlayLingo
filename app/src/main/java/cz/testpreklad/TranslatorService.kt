@@ -180,6 +180,10 @@ class TranslatorService : Service() {
 
     /** Záznam pro automatickou zkoušku i pro hlášení chyby. */
     private val textScale = TextScale()
+    private var steadyText = ""
+    private var steadySince = 0L
+    /** Jak dlouho smí stejný text stát na obrazovce, než se přestane brát jako titulek. */
+    private val STALE_MS = 15_000L
 
     private fun tp(msg: String) {
         Log.i("TP_TEST", msg); DiagLog.add(msg)
@@ -482,6 +486,7 @@ class TranslatorService : Service() {
             subtitlesOnly = onlySubtitles || autoFind,   // automatika čte velkou plochu → vždy jen titulky
             screenCenterX = capW / 2 - x0,
             centerTolerance = (capW * 0.14f).toInt(),
+            maxLineHeight = (capH * 0.085f).toInt(),
         )
         if (picked.text.isNotEmpty()) lastOcrText = picked.text
 
@@ -498,6 +503,15 @@ class TranslatorService : Service() {
         readMs = if (readMs == 0L) lastOcrMs else (readMs * 4 + lastOcrMs) / 5
         videoSize = "${capW}×${capH}"
         if (picked.text.isNotEmpty()) lastRead = picked.text.replace('\n', ' ').take(60)
+        // Titulek je na obrazovce pár sekund. Text, který stojí beze změny dlouho, je nápis nebo menu:
+        // pruh se schová a znovu se ukáže, až se text změní.
+        val nowMs = SystemClock.uptimeMillis()
+        if (picked.text.isEmpty() || !TextLogic.similar(picked.text, steadyText)) { steadyText = picked.text; steadySince = nowMs }
+        val stale = (onlySubtitles || autoFind) && picked.text.isNotEmpty() && nowMs - steadySince > STALE_MS
+        if (stale) {
+            if (overlay?.isShown == true) { overlay?.hide(); tp("HIDE|stale") }
+            return
+        }
         when (val action = tracker.onOcr(picked.text, slowDevice = lastOcrMs > 500)) {
             is SubtitleTracker.Action.Show -> {
                 // překlad už většinou běží (spuštěný po prvním přečtení) – jen se počká na výsledek

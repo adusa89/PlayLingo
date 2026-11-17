@@ -174,7 +174,8 @@ class SubtitleOverlay(
             val tTop = if (hasText) textTop else l.read.top
             val tBottom = if (hasText) textBottom else l.read.bottom
             // v režimu "přes titulky" musí pruh zakrýt celou angličtinu
-            tv.minHeight = if (l.cover) (l.coverHeight(tTop, tBottom) * screenH).toInt() else 0
+            // pruh zakryje anglický text, ale nikdy není vyšší než čtvrtina obrazovky
+            tv.minHeight = if (l.cover) (l.coverHeight(tTop, tBottom) * screenH).toInt().coerceAtMost(screenH / 4) else 0
             // Šířka pruhu podle textu: jen tak široký, aby se vešel překlad a zakryla se angličtina
             // (ne pruh přes celou obrazovku).
             val hasSpan = hasText && textLeft >= 0f && textRight > textLeft
