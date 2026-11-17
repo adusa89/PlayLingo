@@ -121,6 +121,8 @@ object TextLogic {
         if (seg.speaker != null) return seg.body.count { it.isLetter() } >= 2
         val t = seg.body
         if (QuickWords.isKnown(t)) return true
+        // pokyny hry ("Press to Start", "Press any button to continue", "Select a mode") nejsou repliky
+        if (UI_HINT.containsMatchIn(t) && t.lastOrNull()?.let { it in ".!?…" } != true) return false
         val words = wordCount(t)
         val punct = t.any { it in ".!?…," } || t.contains('\'') || t.contains('"')
         val lower = t.count { it.isLowerCase() }
@@ -139,6 +141,8 @@ object TextLogic {
             "(?:\\s*\\+\\s*(?:[A-Z0-9]{1,3}|[^\\sA-Za-z0-9]{1,3}))?" +
             "\\s+(?i:to|for)\\b"
     )
+
+    private val UI_HINT = Regex("^(?i:press|hold|tap|click|push|select|choose|loading|connecting|signed in|available)\\b")
 
     /** Od tolika řádků textu v oblasti je to menu nebo jiná plná obrazovka, ne titulek. */
     const val MENU_LINES = 7

@@ -368,3 +368,19 @@ class DialogueOnlyTest {
         assertEquals("New Game", TextLogic.assemble(listOf(OcrBlock(listOf(line("New Game", 560, 720, 300)))), 10).text)
     }
 }
+
+class GameMenuPhotosTest {
+    // přesně to, co aplikace přeložila na fotkách z televize – nic z toho není replika
+    @Test fun textsFromTheGameMenuAreNotTranslated() {
+        for (t in listOf(
+            "Press to Start", "Press any button to continue", "Passes & Fn CREW", "Passes & Fn Crew",
+            "GET BATTLE PASS", "Bonus Rewards", "Available through DEC 04 2026", "Choose a Set to Unlock",
+            "Signed in as: player", "Loading", "Select a mode",
+        )) assertFalse(t, TextLogic.looksLikeDialogue(t))
+    }
+
+    @Test fun repliesStartingWithTheSameWordsStillPass() {
+        for (t in listOf("Hold on to me.", "Press on, we're almost there!", "Choose wisely, my friend."))
+            assertTrue(t, TextLogic.looksLikeDialogue(t))
+    }
+}
