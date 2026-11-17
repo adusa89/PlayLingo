@@ -7,8 +7,8 @@ Aplikace pro Android TV: sama se po domácí síti připojí k PlayStationu 5, p
 titulky hry a v reálném čase je ukáže přeložené (čeština, slovenština a dalších 7 jazyků)
 v černém pruhu přes obraz. Hra jde do televize dál kabelem HDMI. Překlad je offline a zdarma.
 
-- `app/src/main/java/cz/testpreklad/core` – logika bez Androidu (čtení jen titulků, stabilizace, oblasti, slovník, paměť překladů, texty), pokrytá testy
-- `app/src/main/java/cz/testpreklad` – Android část (spojení s PlayStationem, dekódování videa, ML Kit OCR, offline překlad, překryv, obrazovky)
+- `app/src/main/java/cz/playlingo/core` – logika bez Androidu (čtení jen titulků, stabilizace, oblasti, slovník, paměť překladů, texty), pokrytá testy
+- `app/src/main/java/cz/playlingo` – Android část (spojení s PlayStationem, dekódování videa, ML Kit OCR, offline překlad, překryv, obrazovky)
 - `app/src/main/java/com/metallic/chiaki/lib`, `app/src/main/cpp`, `third_party/chiaki-ng` – spojení s PlayStationem (knihovna chiaki-ng, AGPL-3.0; naše úpravy jsou popsané v hlavičkách souborů)
 - `app/src/test` – unit testy včetně simulace hraní
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení APK a automatická zkouška v emulátoru Android TV (Android 9, 11, 13, 14); APK se vydá až po úspěšné zkoušce

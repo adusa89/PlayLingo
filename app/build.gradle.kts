@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "cz.testpreklad"
+    namespace = "cz.playlingo"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "cz.testpreklad"
+        applicationId = "cz.playlingo"
         minSdk = 26          // Android 8 a novější (prakticky všechny Android TV a boxy)
         targetSdk = 34
-        versionCode = 46
-        versionName = "0.46"
+        versionCode = 47
+        versionName = "0.47"
 
         // televize a boxy mají procesory ARM; emulátor při zkoušce x86 (-Pabis=x86)
         val abis = ((project.findProperty("abis") as String?) ?: "armeabi-v7a,arm64-v8a").split(",")
