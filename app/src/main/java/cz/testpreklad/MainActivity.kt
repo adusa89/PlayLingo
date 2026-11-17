@@ -562,10 +562,11 @@ class MainActivity : Activity() {
                 if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
                 val row = ui.hbox().apply { gravity = Gravity.TOP }
                 qrBitmap(PsnLoginActivity.LOGIN_URL)?.let { qr ->
-                    row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(10), ui.dp(10), ui.dp(10), ui.dp(10)) },
-                        LinearLayout.LayoutParams(ui.dp(280), ui.dp(280)))
+                    row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8)) },
+                        // velikost tak, aby se kód i s tlačítky vešel na obrazovku celý, bez posouvání
+                        LinearLayout.LayoutParams(ui.dp(200), ui.dp(200)))
                 }
-                row.addView(ui.text(t("pa_1_text"), 17f, Theme.TEXT).apply { setPadding(ui.dp(20), 0, 0, 0) },
+                row.addView(ui.text(t("pa_1_text"), 16f, Theme.TEXT).apply { setPadding(ui.dp(20), 0, 0, 0) },
                     LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
                 add(row, 10)
             }
@@ -1241,8 +1242,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.41"
-    const val VERSION_CODE = 41
+    const val VERSION = "verze 0.42"
+    const val VERSION_CODE = 42
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }
