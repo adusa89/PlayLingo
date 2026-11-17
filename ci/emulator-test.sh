@@ -118,6 +118,8 @@ adb shell wm size reset; adb shell wm density reset; sleep 2
 
 adb logcat -d -v time > $OUT/logcat_full.txt
 grep -E "TP_TEST|TestPreklad|AndroidRuntime|FATAL|libchiaki|DEBUG   :" $OUT/logcat_full.txt > $OUT/log.txt
+# pád aplikace i s okolím (příčina bývá na řádcích hned pod "Fatal signal")
+grep -n -B8 -A70 -E "Fatal signal|Process: cz.playlingo" $OUT/logcat_full.txt | head -400 > $OUT/crash.txt || true
 SHOWS=$(grep -c "TP_TEST.*SHOW|" $OUT/log.txt)
 adb shell dumpsys meminfo $PKG | grep -E "TOTAL|Native Heap|Dalvik Heap" | head -4 > $OUT/memory.txt
 # počítají se jen pády naší aplikace (na Androidu 9 padá vestavěná aplikace emulátoru, to není naše chyba)

@@ -62,7 +62,8 @@ jobs:
   publish:
     name: Vydat APK ke stažení
     needs: [build, emulator]
-    if: github.ref == 'refs/heads/main'
+    # hlavní větev a zálohy (větve zaloha-…); ostatní větve se jen sestaví a vyzkouší
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/zaloha-')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -77,9 +78,14 @@ jobs:
           NAME=$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | cut -d'"' -f2)
           echo "$CODE $NAME" > version.txt
           cat version.txt
-          gh release delete latest --yes --cleanup-tag || true
           # nový název souboru; starý zůstává, aby fungoval odkaz ve starších verzích aplikace
           cp TestPreklad.apk PlayLingo.apk
+          # Každá verze zůstává ke stažení natrvalo pod vlastním číslem (záloha, ke které se dá vrátit).
+          cp PlayLingo.apk "PlayLingo-$NAME.apk"
+          gh release view "v$NAME" >/dev/null 2>&1 || gh release create "v$NAME" "PlayLingo-$NAME.apk" --target "$GITHUB_SHA" --latest=false --title "PlayLingo $NAME" --notes "Verze $NAME, sestavená a vyzkoušená v emulátoru Android TV."
+          # „nejnovější“ se mění jen z hlavní větve
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then exit 0; fi
+          gh release delete latest --yes --cleanup-tag || true
           gh release create latest PlayLingo.apk TestPreklad.apk version.txt --title "PlayLingo – nejnovější APK" --notes "Součástí je prohlížeč GeckoView (Mozilla, MPL 2.0) pro přihlášení k účtu PlayStation. Automaticky sestaveno z posledního kódu a vyzkoušeno v emulátoru Android TV (Android 9, 11, 13, 14). Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng (AGPL-3.0); zdrojový kód je v tomto repozitáři."
 
   emulator:
