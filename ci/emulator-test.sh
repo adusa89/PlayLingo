@@ -30,7 +30,7 @@ adb shell am start -n $PKG/.MainActivity --ez nowizard true
 sleep 3; shot 06_domu
 
 # 2) všechny stránky menu
-for i in 1 2 3 4 5 6 7; do key 20; key 23; sleep 2; shot "07_menu_$i"; done
+for i in 1 2 3 4 5; do key 20; key 23; sleep 2; shot "07_menu_$i"; done
 
 # 3) povolení a spuštění překladu (povolení snímání udělí test místo člověka)
 adb shell appops set $PKG SYSTEM_ALERT_WINDOW allow
@@ -93,7 +93,7 @@ sleep 3; shot 12m_cislo_z_ps5
 
 # 7) nabídka se seznamem (jazyk): stránka Titulky → první řádek → OK
 adb shell am start -n $PKG/.MainActivity --ez nowizard true
-sleep 2; key 20; key 20; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk
+sleep 2; key 20; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk
 key 4; sleep 1
 
 # 8) jiné rozlišení obrazovky televize: 720p. Pruh se má i tam postavit přesně na titulek.

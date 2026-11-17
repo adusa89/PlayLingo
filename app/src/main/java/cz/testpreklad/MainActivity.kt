@@ -217,11 +217,19 @@ class MainActivity : Activity() {
         setContentView(root)
     }
 
+    /** Pod kterou položkou menu právě zobrazená stránka patří. */
+    private fun menuSection(): Section = when (section) {
+        Section.ZONES -> Section.LOOK
+        Section.TRANSLATE, Section.HISTORY -> Section.SETTINGS
+        else -> section
+    }
+
     private fun renderMenu() {
         menu.removeAllViews()
         for (s in Section.values()) {
-            if (s == Section.HISTORY) continue
-            val active = s == section || (s == Section.TRANSLATE && section == Section.HISTORY)
+            // V menu je jen šest položek: oblasti jsou součástí Titulků, překlad a historie součástí Nastavení.
+            if (s == Section.HISTORY || s == Section.ZONES || s == Section.TRANSLATE) continue
+            val active = s == menuSection()
             val item = ui.hbox().apply {
                 isFocusable = true
                 isClickable = true
@@ -253,20 +261,20 @@ class MainActivity : Activity() {
         if (wizard >= 0) { renderWizard(focusedTag); return }
         renderMenu()
         content.removeAllViews()
-        content.addView(ui.text(t(section.key), 30f, Theme.TEXT, bold = true))
+        content.addView(ui.text(t(if (section == Section.HISTORY) section.key else menuSection().key), 30f, Theme.TEXT, bold = true))
         when (section) {
             Section.HOME -> home()
             Section.PS5 -> ps5()
-            Section.ZONES -> zones()
-            Section.LOOK -> look()
-            Section.TRANSLATE -> translate()
-            Section.SETTINGS -> settings()
+            // Titulky: nejdřív vzhled, pod ním kde se čtou
+            Section.LOOK, Section.ZONES -> { look(); content.addView(ui.section(t("m_zones"))); zones() }
+            // Nastavení: nejdřív povolení a chování, pod ním překlad
+            Section.SETTINGS, Section.TRANSLATE -> { settings(); content.addView(ui.section(t("m_translate"))); translate() }
             Section.HISTORY -> history()
             Section.LICENSE -> license()
             Section.HELP -> help()
         }
         val target = focusedTag?.let { window.decorView.findViewWithTag<View>(it) }
-            ?: menu.findViewWithTag<View>("menu_${section.name}")
+            ?: menu.findViewWithTag<View>("menu_${menuSection().name}")
         target?.requestFocus()
     }
 
@@ -1234,8 +1242,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.39"
-    const val VERSION_CODE = 39
+    const val VERSION = "verze 0.40"
+    const val VERSION_CODE = 40
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }
