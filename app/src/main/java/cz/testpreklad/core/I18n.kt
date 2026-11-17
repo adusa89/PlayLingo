@@ -17,8 +17,8 @@ object I18n {
         "wz_s2" to ("Jazyk překladu" to "Jazyk prekladu"),
         "wz_s3" to ("Připojení PlayStationu" to "Pripojenie PlayStationu"),
         "wz_s4" to ("Hotovo" to "Hotovo"),
-        "wz_welcome" to ("Test Překlad překládá anglické titulky ve hrách do tvého jazyka. Nastavení zabere asi minutu. Nejdřív si vyber jazyk, do kterého chceš překládat." to "Test Překlad prekladá anglické titulky v hrách do tvojho jazyka. Nastavenie zaberie asi minútu. Najprv si vyber jazyk, do ktorého chceš prekladať."),
-        "wz_perm" to ("Aby aplikace mohla ukázat titulky přes hru, zapni ji v nastavení televize: Usnadnění → Test Překlad → Zapnout. Pak se tlačítkem Zpět vrať sem." to "Aby aplikácia mohla ukázať titulky cez hru, zapni ju v nastaveniach televízora: Zjednodušenie ovládania → Test Překlad → Zapnúť. Potom sa tlačidlom Späť vráť sem."),
+        "wz_welcome" to ("PlayLingo překládá anglické titulky ve hrách do tvého jazyka. Nastavení zabere asi minutu. Nejdřív si vyber jazyk, do kterého chceš překládat." to "PlayLingo prekladá anglické titulky v hrách do tvojho jazyka. Nastavenie zaberie asi minútu. Najprv si vyber jazyk, do ktorého chceš prekladať."),
+        "wz_perm" to ("Aby aplikace mohla ukázat titulky přes hru, zapni ji v nastavení televize: Usnadnění → PlayLingo → Zapnout. Pak se tlačítkem Zpět vrať sem." to "Aby aplikácia mohla ukázať titulky cez hru, zapni ju v nastaveniach televízora: Zjednodušenie ovládania → PlayLingo → Zapnúť. Potom sa tlačidlom Späť vráť sem."),
         "wz_perm_open" to ("Otevřít nastavení televize" to "Otvoriť nastavenia televízora"),
         "wz_model" to ("Překlad běží přímo v televizi, zdarma a bez internetu. Jen teď jednou stáhnu jazykový model (asi 30 MB)." to "Preklad beží priamo v televízore, zadarmo a bez internetu. Len teraz raz stiahnem jazykový model (asi 30 MB)."),
         "wz_done" to ("Všechno je připravené. Spusť překlad, ve hře zapni titulky a hraj." to "Všetko je pripravené. Spusti preklad, v hre zapni titulky a hraj."),
@@ -164,7 +164,7 @@ object I18n {
         "s_debug" to ("Diagnostický režim (co aplikace čte, rychlost)" to "Diagnostický režim (čo aplikácia číta, rýchlosť)"),
         "on" to ("ZAP" to "ZAP"),
         "off" to ("VYP" to "VYP"),
-        "a11y_hint" to ("V nastavení TV najdi Usnadnění → Test Překlad a zapni ho." to "V nastaveniach TV nájdi Zjednodušenie ovládania → Test Překlad a zapni ho."),
+        "a11y_hint" to ("V nastavení TV najdi Usnadnění → PlayLingo a zapni ho." to "V nastaveniach TV nájdi Zjednodušenie ovládania → PlayLingo a zapni ho."),
         "overlay_hint" to ("Zapni „Zobrazení přes jiné aplikace“ a vrať se zpět." to "Zapni „Zobrazenie cez iné aplikácie“ a vráť sa späť."),
         "adb_title" to ("Povolení přes počítač" to "Povolenie cez počítač"),
         "adb_text" to ("Tahle televize nemá obrazovku pro toto povolení. Použij Usnadnění, nebo povol přes ADB:" to "Tento televízor nemá obrazovku pre toto povolenie. Použi Zjednodušenie ovládania, alebo povoľ cez ADB:"),
@@ -184,8 +184,8 @@ object I18n {
         "help_t4" to ("Překlad je offline a zdarma. Internet je potřeba jen jednou na stažení jazykového modelu." to "Preklad je offline a zadarmo. Internet treba len raz na stiahnutie jazykového modelu."),
 
         // ---- notifikace ----
-        "n_running" to ("Test Překlad běží" to "Test Překlad beží"),
-        "n_paused" to ("Test Překlad – pozastaveno" to "Test Překlad – pozastavené"),
+        "n_running" to ("PlayLingo běží" to "PlayLingo beží"),
+        "n_paused" to ("PlayLingo – pozastaveno" to "PlayLingo – pozastavené"),
         "n_text" to ("Anglické titulky se překládají." to "Anglické titulky sa prekladajú."),
     )
 

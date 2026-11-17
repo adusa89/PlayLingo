@@ -35,7 +35,7 @@ object Prefs {
     fun lang(c: Context): Lang = Lang.of(p(c).getString("lang", null))
     fun setLang(c: Context, v: Lang) = p(c).edit().putString("lang", v.code).apply()
 
-    fun textSize(c: Context): Int = p(c).getInt("text_size", 26)
+    fun textSize(c: Context): Int = p(c).getInt("text_size", 22)
     fun setTextSize(c: Context, v: Int) = p(c).edit().putInt("text_size", v).apply()
 
     fun opacity(c: Context): Int = p(c).getInt("opacity", 100)

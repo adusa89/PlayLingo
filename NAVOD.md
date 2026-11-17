@@ -1,4 +1,4 @@
-# Test Překlad – stručný návod
+# PlayLingo – stručný návod
 
 Aplikace pro Android TV, boxy, Chromecast a projektory. Sama se po domácí síti připojí
 k PlayStationu 5, přečte anglické titulky hry, přeloží je (offline, zdarma) a ukáže je
@@ -22,7 +22,7 @@ Stejný postup najdeš i v aplikaci na stránce Nápověda.
 
 ## 3. První nastavení (průvodce tě provede)
 1. Vyber jazyk překladu.
-2. Zapni aplikaci v nastavení televize: Usnadnění → Test Překlad → Zapnout.
+2. Zapni aplikaci v nastavení televize: Usnadnění → PlayLingo → Zapnout.
 3. Počkej na stažení jazykového modelu (jednou, asi 30 MB).
 4. Spáruj PlayStation – viz další bod.
 

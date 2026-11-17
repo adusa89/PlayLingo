@@ -201,8 +201,8 @@ class MainActivity : Activity() {
         val logoRow = ui.hbox()
         logoRow.addView(ImageView(this).apply { setImageResource(R.drawable.ic_logo) }, LinearLayout.LayoutParams(ui.dp(56), ui.dp(56)))
         val names = ui.vbox().apply { setPadding(ui.dp(12), 0, 0, 0) }
-        names.addView(ui.text("Test Překlad", 21f, Theme.TEXT, bold = true))
-        names.addView(ui.text("CZ · SK", 13f, Theme.ACCENT, bold = true))
+        names.addView(ui.text("PlayLingo", 21f, Theme.TEXT, bold = true))
+        names.addView(ui.text(Prefs.lang(this).label, 13f, Theme.ACCENT, bold = true))
         logoRow.addView(names)
         side.addView(logoRow)
 
@@ -1015,7 +1015,7 @@ class MainActivity : Activity() {
         add(tagged(ui.button(t("wz_again")) { wizard = 0; render() }, "wagain"), 16)
         add(tagged(ui.button(t("rep_btn")) { makeReport() }, "report"), 8)
         reportText?.let { add(ui.card().apply { addView(ui.text(it, 13f, Theme.MUTED)) }, 10) }
-        add(ui.text("Test Překlad · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 24)
+        add(ui.text("PlayLingo · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 24)
     }
 
     // ======================= akce =======================
@@ -1123,7 +1123,7 @@ class MainActivity : Activity() {
 
     private fun makeReport() {
         val sb = StringBuilder()
-        sb.append("Test Překlad ").append(BuildInfo.VERSION).append(" (").append(BuildInfo.VERSION_CODE).append(")\n")
+        sb.append("PlayLingo ").append(BuildInfo.VERSION).append(" (").append(BuildInfo.VERSION_CODE).append(")\n")
         sb.append("Zařízení: ").append(Build.MANUFACTURER).append(' ').append(Build.MODEL).append(", Android ").append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")\n")
         val (w, h) = screenSize()
         sb.append("Obrazovka: ").append(w).append('×').append(h).append(", televize: ").append(Prefs.isTv(this)).append("\n")
@@ -1151,7 +1151,7 @@ class MainActivity : Activity() {
         val text = sb.toString()
         val where = try {
             val dir = getExternalFilesDir(null) ?: filesDir
-            val f = java.io.File(dir, "TestPreklad-hlaseni.txt")
+            val f = java.io.File(dir, "PlayLingo-hlaseni.txt")
             f.writeText(text, Charsets.UTF_8)
             f.absolutePath
         } catch (e: Exception) { "?" }
@@ -1250,8 +1250,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.45"
-    const val VERSION_CODE = 45
-    const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
+    const val VERSION = "verze 0.46"
+    const val VERSION_CODE = 46
+    const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/PlayLingo.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

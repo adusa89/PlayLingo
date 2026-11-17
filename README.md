@@ -1,4 +1,4 @@
-# Test Překlad
+# PlayLingo
 
 **Nejnovější APK ke stažení:** https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk  
 Číslo verze je vidět v aplikaci v sekci Nápověda.
