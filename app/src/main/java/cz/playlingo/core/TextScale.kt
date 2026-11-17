@@ -51,8 +51,34 @@ object MatchSize {
         val hi = screenH * 0.075f
         return (px.coerceIn(lo, hi) / 2f).toInt() * 2
     }
+}
 
-    /** Drobný rozdíl proti minulé velikosti se nebere (čtečka měří řádek pokaždé o pixel jinak). */
-    fun steady(previous: Int, next: Int): Int =
-        if (previous > 0 && next > 0 && kotlin.math.abs(next - previous) <= 3) previous else next
+/**
+ * Drží velikost písma překladu stálou. Hra má titulky pořád stejně velké, ale čtečka naměří každý
+ * řádek trochu jinak. Bere se proto prostřední hodnota z posledních měření; na opravdu jinou
+ * velikost (jiná scéna, jiné nastavení hry) se přejde, až když ji potvrdí dvě měření po sobě.
+ */
+class SizeKeeper {
+    private val recent = ArrayList<Int>()
+    private var odd = 0
+    private var oddCount = 0
+
+    /** [measured] = právě naměřená velikost písma v pixelech (0 = neznámá). Vrací velikost, která se má použít. */
+    fun next(measured: Int): Int {
+        if (measured <= 0) return current()
+        val cur = current()
+        if (cur > 0 && kotlin.math.abs(measured - cur) > cur * 0.3f) {
+            // výrazně jiná velikost: nejdřív jen poznamenat, přejít až napodruhé
+            if (oddCount > 0 && kotlin.math.abs(measured - odd) <= odd * 0.3f) {
+                recent.clear(); recent.add(odd); recent.add(measured); oddCount = 0
+            } else { odd = measured; oddCount = 1 }
+            return current()
+        }
+        oddCount = 0
+        recent.add(measured)
+        if (recent.size > 9) recent.removeAt(0)
+        return current()
+    }
+
+    private fun current(): Int = if (recent.isEmpty()) 0 else recent.sorted()[recent.size / 2]
 }

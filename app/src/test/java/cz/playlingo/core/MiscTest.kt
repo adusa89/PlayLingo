@@ -225,12 +225,32 @@ class MatchSizeTest {
         assertTrue(MatchSize.textPx(0.30f, 1080) <= 82)        // obří nápis: nepřeroste
     }
 
-    @Test fun smallJitterDoesNotChangeTheSize() {
-        val first = MatchSize.textPx(0.0320f, 1080)
-        assertEquals(first, MatchSize.steady(first, MatchSize.textPx(0.0330f, 1080)))
-        assertEquals(first, MatchSize.steady(first, MatchSize.textPx(0.0310f, 1080)))
-        assertTrue(MatchSize.steady(first, MatchSize.textPx(0.060f, 1080)) > first)
-        assertEquals(first, MatchSize.steady(0, first))
+    @Test fun sizeStaysTheSameWhileMeasurementsWobble() {
+        val k = SizeKeeper()
+        val out = listOf(34, 30, 38, 33, 36, 31, 35, 34).map { k.next(it) }
+        // po prvních pár měřeních se velikost ustálí a drží
+        assertTrue("$out", out.drop(3).all { it in 33..35 })
+    }
+
+    @Test fun oneWildMeasurementIsIgnored() {
+        val k = SizeKeeper()
+        repeat(4) { k.next(34) }
+        assertEquals(34, k.next(60))
+        assertEquals(34, k.next(34))
+    }
+
+    @Test fun reallyDifferentSizeIsTakenAfterTwoMeasurements() {
+        val k = SizeKeeper()
+        repeat(4) { k.next(34) }
+        assertEquals(34, k.next(62))
+        assertTrue(k.next(64) in 62..64)
+    }
+
+    @Test fun unknownMeasurementKeepsTheLastSize() {
+        val k = SizeKeeper()
+        assertEquals(0, k.next(0))
+        k.next(34)
+        assertEquals(34, k.next(0))
     }
 
     @Test fun unknownHeightMeansFixedSize() {

@@ -63,7 +63,7 @@ class SubtitleOverlay(
     @Volatile private var debugView: TextView? = null
     @Volatile private var layout: ScreenLayout = layout
     @Volatile private var textSize = textSizeSp
-    private var lastMatched = 0
+    private val sizeKeeper = cz.playlingo.core.SizeKeeper()
     @Volatile private var bgAlpha = (255 * opacityPercent / 100).coerceIn(0, 255)
 
     /** Je pruh právě zobrazený? */
@@ -167,9 +167,7 @@ class SubtitleOverlay(
             val lp = barParams ?: return@post
             val l = layout
             val maxWidth = (screenW * l.barWidth).toInt()
-            val matched = if (matchOriginalSize)
-                cz.playlingo.core.MatchSize.steady(lastMatched, cz.playlingo.core.MatchSize.textPx(lineHeight, screenH)) else 0
-            if (matched > 0) lastMatched = matched
+            val matched = if (matchOriginalSize) sizeKeeper.next(cz.playlingo.core.MatchSize.textPx(lineHeight, screenH)) else 0
             if (matched > 0) tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, matched.toFloat())
             else tv.textSize = textSize.toFloat()
             // černý podklad s lehce zaoblenými rohy
