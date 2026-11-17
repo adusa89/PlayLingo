@@ -759,7 +759,11 @@ class MainActivity : Activity() {
     private fun look() {
         val sizeIdx = Prefs.TEXT_SIZES.indexOf(Prefs.textSize(this)).let { if (it < 0) 2 else it }
         langRow("lang", 16)
-        add(tagged(ui.settingRow(t("l_size"), t("size_$sizeIdx")) {
+        add(tagged(ui.settingRow(t("l_size_auto"), onOff(Prefs.matchSize(this))) {
+            Prefs.setMatchSize(this, !Prefs.matchSize(this)); applyToService(); render(true)
+        }, "sizeauto"), 8)
+        // pevná velikost se nabízí jen tehdy, když se písmo neřídí originálem
+        if (!Prefs.matchSize(this)) add(tagged(ui.settingRow(t("l_size"), t("size_$sizeIdx")) {
             choose(t("l_size"), Prefs.TEXT_SIZES.indices.map { t("size_$it") }, sizeIdx) { i ->
                 Prefs.setTextSize(this, Prefs.TEXT_SIZES[i]); applyToService(); render(true); showDemo()
             }
@@ -1250,8 +1254,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.47"
-    const val VERSION_CODE = 47
+    const val VERSION = "verze 0.48"
+    const val VERSION_CODE = 48
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/PlayLingo.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

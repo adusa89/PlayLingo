@@ -35,3 +35,23 @@ class TextScale(private val maxPixels: Int = 950_000) {
         return true
     }
 }
+
+/** Velikost písma překladu podle anglického originálu. */
+object MatchSize {
+    /**
+     * [lineHeight] = výška řádku originálu jako zlomek výšky obrazu, [screenH] = výška obrazovky v pixelech.
+     * Vrací velikost písma v pixelech: řádek, jak ho vidí čtečka, je o něco vyšší než samotné písmo.
+     * Drží se v rozumných mezích a zaokrouhluje na sudé pixely, aby velikost mezi čteními neposkakovala.
+     */
+    fun textPx(lineHeight: Float, screenH: Int): Int {
+        if (lineHeight <= 0f || screenH <= 0) return 0
+        val px = lineHeight * screenH * 0.86f
+        val lo = screenH * 0.022f
+        val hi = screenH * 0.075f
+        return (px.coerceIn(lo, hi) / 2f).toInt() * 2
+    }
+
+    /** Drobný rozdíl proti minulé velikosti se nebere (čtečka měří řádek pokaždé o pixel jinak). */
+    fun steady(previous: Int, next: Int): Int =
+        if (previous > 0 && next > 0 && kotlin.math.abs(next - previous) <= 3) previous else next
+}

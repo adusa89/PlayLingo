@@ -103,6 +103,7 @@ internal val I18N_PL: Map<String, String> = mapOf(
     "cal_read_label" to "Napisy gry (odczyt)",
     "cal_bar_label" to "Tu będzie tłumaczenie",
     "cal_cover_note" to "Pasek zostanie położony bezpośrednio na angielskich napisach.",
+    "l_size_auto" to "Czcionka tej samej wielkości co oryginał",
     "l_size" to "Rozmiar czcionki",
     "l_opacity" to "Nieprzezroczystość paska",
     "l_original" to "Pokazuj też angielski oryginał (małą czcionką)",

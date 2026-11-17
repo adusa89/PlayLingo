@@ -210,3 +210,37 @@ class TextScaleTest {
         assertEquals(1f, t.scale, 0f)
     }
 }
+
+class MatchSizeTest {
+    @Test fun translationIsAsBigAsTheOriginal() {
+        // řádek originálu vysoký 3,2 % obrazu na obrazovce 1080 px → písmo kolem 30 px
+        val px = MatchSize.textPx(0.032f, 1080)
+        assertTrue(px in 28..31)
+        // větší originál → větší překlad, menší → menší
+        assertTrue(MatchSize.textPx(0.05f, 1080) > px)
+        assertTrue(MatchSize.textPx(0.024f, 1080) < px)
+    }
+
+    @Test fun staysReadableAndNotHuge() {
+        assertTrue(MatchSize.textPx(0.005f, 1080) >= 22)       // drobný originál: pořád čitelné
+        assertTrue(MatchSize.textPx(0.30f, 1080) <= 82)        // obří nápis: nepřeroste
+    }
+
+    @Test fun smallJitterDoesNotChangeTheSize() {
+        val first = MatchSize.textPx(0.0320f, 1080)
+        assertEquals(first, MatchSize.steady(first, MatchSize.textPx(0.0326f, 1080)))
+        assertEquals(first, MatchSize.steady(first, MatchSize.textPx(0.0310f, 1080)))
+        // skutečně jiná velikost písma se projeví
+        assertTrue(MatchSize.steady(first, MatchSize.textPx(0.050f, 1080)) > first)
+        assertEquals(first, MatchSize.steady(0, first))
+    }
+
+    @Test fun unknownHeightMeansFixedSize() {
+        assertEquals(0, MatchSize.textPx(0f, 1080))
+    }
+
+    @Test fun pickedCarriesTheLineHeight() {
+        val b = OcrBlock(listOf(OcrLine("We ride at dawn, friend.", 400, 300, 880, 330), OcrLine("Get some sleep.", 500, 334, 780, 362)))
+        assertTrue(TextLogic.assemble(listOf(b), 10, true, 640, 150).lineHeight in 28..30)
+    }
+}

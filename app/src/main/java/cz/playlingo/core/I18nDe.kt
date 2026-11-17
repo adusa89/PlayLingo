@@ -103,6 +103,7 @@ internal val I18N_DE: Map<String, String> = mapOf(
     "cal_read_label" to "Spieluntertitel (Lesen)",
     "cal_bar_label" to "Hier steht die Übersetzung",
     "cal_cover_note" to "Der Balken wird direkt über die englischen Untertitel gelegt.",
+    "l_size_auto" to "Schrift so groß wie das Original",
     "l_size" to "Schriftgröße",
     "l_opacity" to "Deckkraft des Balkens",
     "l_original" to "Auch das englische Original anzeigen (kleine Schrift)",

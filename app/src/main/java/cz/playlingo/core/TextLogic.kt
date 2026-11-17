@@ -21,6 +21,8 @@ data class Picked(
     val text: String, val lineCount: Int, val top: Int = -1, val bottom: Int = -1,
     /** Vodorovný rozsah použitých řádků v pixelech oblasti (-1, když nic). */
     val left: Int = -1, val right: Int = -1,
+    /** Obvyklá výška jednoho řádku titulku v pixelech (0, když nic) – podle ní se řídí velikost písma překladu. */
+    val lineHeight: Int = 0,
 )
 
 /**
@@ -230,6 +232,7 @@ object TextLogic {
         return Picked(
             text, ls.size,
             ls.minOf { it.top }, ls.maxOf { it.bottom }, ls.minOf { it.left }, ls.maxOf { it.right },
+            lineHeight = ls.map { it.height }.sorted()[ls.size / 2],
         )
     }
 

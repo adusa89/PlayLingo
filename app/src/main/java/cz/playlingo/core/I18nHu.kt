@@ -103,6 +103,7 @@ internal val I18N_HU: Map<String, String> = mapOf(
     "cal_read_label" to "Játék feliratai (olvasás)",
     "cal_bar_label" to "Itt lesz a fordítás",
     "cal_cover_note" to "A sáv közvetlenül az angol feliratokra kerül.",
+    "l_size_auto" to "A betű akkora, mint az eredeti",
     "l_size" to "Betűméret",
     "l_opacity" to "A sáv átlátszatlansága",
     "l_original" to "Az angol eredeti megjelenítése is (kis betűvel)",

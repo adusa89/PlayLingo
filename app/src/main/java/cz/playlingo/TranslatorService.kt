@@ -309,7 +309,7 @@ class TranslatorService : Service() {
         overlay = SubtitleOverlay(
             this, screenW, screenH, layout, Prefs.textSize(this), Prefs.opacity(this),
             debug, Prefs.coloredSpeaker(this),
-            Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this)
+            Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this)
         )
         tracker.reset()
         lastSig = null
@@ -527,7 +527,8 @@ class TranslatorService : Service() {
                 if (demo) tp("LAT|${DemoGame.shownFor(SystemClock.uptimeMillis() - DemoFeeder.epoch)}ms|ocr=${lastOcrMs}ms")
                 val left = if (picked.left >= 0) (x0 + picked.left).toFloat() / capW else -1f
                 val right = if (picked.right >= 0) (x0 + picked.right).toFloat() / capW else -1f
-                ov.show(segs, if (showOriginal) action.text else null, top, bottom, left, right)
+                ov.show(segs, if (showOriginal) action.text else null, top, bottom, left, right,
+                    lineHeight = picked.lineHeight.toFloat() / capH)
                 statsFor(this).line()
                 // automatika: zapamatuj si, kde na obrazovce titulky jsou
                 if (autoFind && autoZone.onSubtitle(top, bottom, SystemClock.uptimeMillis())) zoneChanged()

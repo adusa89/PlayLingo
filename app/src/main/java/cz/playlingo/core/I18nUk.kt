@@ -103,6 +103,7 @@ internal val I18N_UK: Map<String, String> = mapOf(
     "cal_read_label" to "Субтитри гри (зчитування)",
     "cal_bar_label" to "Тут буде переклад",
     "cal_cover_note" to "Смуга ляже прямо на англійські субтитри.",
+    "l_size_auto" to "Шрифт такого ж розміру, як оригінал",
     "l_size" to "Розмір шрифту",
     "l_opacity" to "Непрозорість смуги",
     "l_original" to "Показувати й англійський оригінал (дрібним шрифтом)",

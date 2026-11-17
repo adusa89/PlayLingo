@@ -116,6 +116,7 @@ object I18n {
         "cal_cover_note" to ("Pruh se položí přímo přes anglické titulky." to "Pruh sa položí priamo cez anglické titulky."),
 
         // ---- vzhled ----
+        "l_size_auto" to ("Písmo stejně velké jako originál" to "Písmo rovnako veľké ako originál"),
         "l_size" to ("Velikost písma" to "Veľkosť písma"),
         "l_opacity" to ("Neprůhlednost pruhu" to "Nepriehľadnosť pruhu"),
         "l_original" to ("Zobrazit i anglický originál (malým písmem)" to "Zobraziť aj anglický originál (malým písmom)"),

@@ -103,6 +103,7 @@ internal val I18N_ES: Map<String, String> = mapOf(
     "cal_read_label" to "Subtítulos del juego (lectura)",
     "cal_bar_label" to "Aquí irá la traducción",
     "cal_cover_note" to "La franja se coloca directamente sobre los subtítulos en inglés.",
+    "l_size_auto" to "Letra del mismo tamaño que el original",
     "l_size" to "Tamaño de letra",
     "l_opacity" to "Opacidad de la franja",
     "l_original" to "Mostrar también el original en inglés (letra pequeña)",

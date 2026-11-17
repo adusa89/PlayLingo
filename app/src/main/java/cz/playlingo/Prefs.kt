@@ -36,6 +36,9 @@ object Prefs {
     fun setLang(c: Context, v: Lang) = p(c).edit().putString("lang", v.code).apply()
 
     fun textSize(c: Context): Int = p(c).getInt("text_size", 22)
+    /** Písmo překladu stejně velké jako anglický originál (výchozí). Vypnuto = pevná velikost. */
+    fun matchSize(c: Context) = p(c).getBoolean("match_size", true)
+    fun setMatchSize(c: Context, v: Boolean) = p(c).edit().putBoolean("match_size", v).apply()
     fun setTextSize(c: Context, v: Int) = p(c).edit().putInt("text_size", v).apply()
 
     fun opacity(c: Context): Int = p(c).getInt("opacity", 100)
