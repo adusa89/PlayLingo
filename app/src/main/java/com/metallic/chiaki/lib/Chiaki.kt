@@ -73,12 +73,6 @@ data class ConnectInfo(
 	val videoProfile: ConnectVideoProfile
 )
 
-/**
- * Režim „jen se dívat“ pro další relace: aplikace se konzoli nehlásí jako ovladač ani mikrofon,
- * jen přijímá obraz. Platí pro relace vytvořené po zavolání.
- */
-fun setViewOnly(value: Boolean) = ChiakiNative.setViewOnly(value)
-
 private class ChiakiNative
 {
 	data class CreateResult(var errorCode: Int, var ptr: Long)
@@ -88,7 +82,6 @@ private class ChiakiNative
 		{
 			System.loadLibrary("chiaki-jni")
 		}
-		@JvmStatic external fun setViewOnly(value: Boolean)
 		@JvmStatic external fun errorCodeToString(value: Int): String
 		@JvmStatic external fun quitReasonToString(value: Int): String
 		@JvmStatic external fun quitReasonIsError(value: Int): Boolean

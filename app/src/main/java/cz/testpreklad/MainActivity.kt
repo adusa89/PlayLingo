@@ -399,7 +399,7 @@ class MainActivity : Activity() {
                 title = t("st_running"); color = Theme.OK
                 // rychlost čtení titulků na tomto zařízení (číslo je srozumitelné ve všech jazycích)
                 sub = t("st_running_sub") + netLine() + (TranslatorService.readMs.takeIf { it > 0 }?.let {
-                    "\n⏱ $it ms · ${TranslatorService.videoSize}" + (if (Ps5Link.quiet) " · 🔇" else "") + (TranslatorService.lastRead.takeIf { r -> r.isNotEmpty() }?.let { r -> "\n„$r“" } ?: "")
+                    "\n⏱ $it ms · ${TranslatorService.videoSize}" + (TranslatorService.lastRead.takeIf { r -> r.isNotEmpty() }?.let { r -> "\n„$r“" } ?: "")
                 } ?: "")
             }
             running && link == Ps5.Link.FAILED -> {
@@ -1126,7 +1126,6 @@ class MainActivity : Activity() {
         sb.append("Prohlížeč televize: ").append(PsnLoginActivity.webViewVersion())
             .append(", přibalený prohlížeč: ").append(LoginBrowser.bundledAvailable(this))
             .append(", procesor: ").append(Build.SUPPORTED_ABIS.joinToString("/")).append("\n")
-        sb.append("Tichý režim: ").append(Ps5Link.quiet).append(" (neúspěchů: ").append(Prefs.viewOnlyFails(this)).append(")\n")
         sb.append("Síť televize: ").append(NetInfo.kind(this)).append("\n")
         sb.append("Dekodér bez hardwaru: ").append(Prefs.softDecoder(this)).append("\n")
         sb.append("--- záznam (i z minulých spuštění) ---\n").append(EventFile.tail(200)).append("\n")
@@ -1238,8 +1237,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.38"
-    const val VERSION_CODE = 38
+    const val VERSION = "verze 0.37"
+    const val VERSION_CODE = 37
     const val DOWNLOAD_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/TestPreklad.apk"
     const val VERSION_URL = "https://github.com/adusa89/Test-Preklad/releases/download/latest/version.txt"
 }

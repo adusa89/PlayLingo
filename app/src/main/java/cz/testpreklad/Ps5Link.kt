@@ -45,9 +45,6 @@ class Ps5Link(
         /** Poslední důvod odpojení (text z konzole), nebo null. */
         @Volatile var reason: String? = null
             private set
-        /** Běží poslední spojení v tichém režimu (aplikace se konzoli nehlásí jako ovladač)? */
-        @Volatile var quiet = false
-            private set
         @Volatile var needsLoginPin = false
             private set
 
@@ -65,11 +62,6 @@ class Ps5Link(
     private var failures = 0
     /** Obraz 1080p; když s ním spojení nedrží, přejde se natrvalo na 720p. */
     private var useHigh = highRes
-    /**
-     * Režim „jen se dívat“: aplikace se konzoli nehlásí jako další ovladač, takže neruší ovladače
-     * hráčů u televize. Kdyby s ním konzole spojení nedržela, vrátí se běžný způsob.
-     */
-    private var viewOnly = Prefs.viewOnlyFails(ctx) < 2
     /** Kolikrát po sobě se spojení navázalo a hned zase spadlo (nebo nepřišlo video). */
     private var shortSessions = 0
     /** Kdy se právě běžící relace připojila (0 = ještě ne). */
@@ -101,14 +93,12 @@ class Ps5Link(
                 if (high) VideoResolutionPreset.RES_1080P else VideoResolutionPreset.RES_720P, VideoFPSPreset.FPS_30, Codec.CODEC_H264)
             val profile = preset.copy(bitrate = Ps5.streamBitrate(net, preset.bitrate, high))
             log("profile ${profile.width}x${profile.height} ${profile.bitrate}kb net=$net")
-            com.metallic.chiaki.lib.setViewOnly(viewOnly)
-            quiet = viewOnly
             val s = Session(ConnectInfo(true, host.ip, host.registKey, host.morning, profile), f.absolutePath, false)
             s.eventCallback = { e -> onEvent(s, e) }
             s.videoCallback = onVideo
             session = s
             val err = s.start()
-            log("connect ${host.ip} → $err" + (if (viewOnly) " (view only)" else "") + (if (useHigh) " 1080p" else " 720p"))
+            log("connect ${host.ip} → $err")
             if (!err.isSuccess) { reason = err.toString(); drop(s); failed() }
         } catch (e: CreateError) {
             reason = e.errorCode.toString()
@@ -162,19 +152,8 @@ class Ps5Link(
         sessionConnectedAt = 0
         val dropped = since > 0     // relace byla připojená a rozpadla se
         if (since > 0) {
-            if (SystemClock.uptimeMillis() - since >= Ps5.STABLE_SESSION_MS) {
-                failures = 0; shortSessions = 0
-                if (viewOnly && Prefs.viewOnlyFails(ctx) != 0) Prefs.setViewOnlyFails(ctx, 0)
-            } else {
-                shortSessions++
-                // první podezřelý je nový režim „jen se dívat“ → dál běžným způsobem
-                if (viewOnly) {
-                    log("short session in view-only mode → standard mode")
-                    viewOnly = false
-                    Prefs.setViewOnlyFails(ctx, Prefs.viewOnlyFails(ctx) + 1)
-                    shortSessions = 0
-                }
-            }
+            if (SystemClock.uptimeMillis() - since >= Ps5.STABLE_SESSION_MS) { failures = 0; shortSessions = 0 }
+            else shortSessions++
         }
         // Spojení se naváže a hned spadne: každé takové připojení konzole hlásí na obrazovce a ruší
         // ovladač, proto se to nesmí opakovat donekonečna.
