@@ -1,0 +1,115 @@
+# PlayLingo – pokyny pro Claude Code
+
+Aplikace pro Android TV. Po domácí síti se připojí k PlayStationu 5 (stejně jako Remote Play),
+z kopie obrazu čte anglické titulky, offline je přeloží a ukáže v černém pruhu přes obraz.
+Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
+
+## Jak se tu píše
+
+- Všechno česky: commity, komentáře v kódu, texty aplikace, návod.
+- Commit popisuje, co se změnilo z pohledu hráče, ne jak je to naprogramované
+  (např. „0.45: pokyny hry (Press to Start, Select…) nejsou repliky“).
+- Uživateli odpovídej česky a bez programátorského žargonu.
+
+## Kde co je
+
+- `app/src/main/java/cz/playlingo/core` – logika bez Androidu (výběr a skládání titulků, oblasti,
+  slovník, paměť překladů, texty aplikace, licence). Má unit testy v `app/src/test`.
+- `app/src/main/java/cz/playlingo` – Android část:
+  - `TranslatorService.kt` – srdce aplikace (čtení → OCR → překlad → pruh)
+  - `StreamReader.kt` – dekódování videa z konzole
+  - `Ps5Link.kt`, `Ps5Pairing.kt`, `PsnLoginActivity.kt`, `LoginBrowser.kt` – spojení, párování, přihlášení
+  - `SubtitleOverlay.kt`, `TitulkyAccessibility.kt` – pruh s překladem přes Usnadnění
+  - `MainActivity.kt` – všechny obrazovky a průvodce
+  - `DemoFeeder.kt`, `TestCardActivity.kt` – ukázková „hra“ pro zkoušku bez PlayStationu
+- `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
+  knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
+- `third_party/chiaki-ng` – submodul. Needituj ho; před sestavením se do něj kopíruje
+  `app/src/main/cpp` (úloha `patchChiaki` v `app/build.gradle.kts`).
+- `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení, zkouška, vydání.
+
+## Sestavení a zkouška
+
+Každý push (na jakoukoli větev) spustí GitHub Actions:
+
+1. unit testy (`./gradlew testDebugUnitTest`),
+2. sestavení APK pro televize (ARM) a zkušebního APK pro emulátor (x86),
+3. zkoušku v emulátoru Android TV na Androidu 9, 11, 13 a 14 (`ci/emulator-test.sh`),
+4. vydání – jen z `main` a z větví `zaloha-…`, a jen když zkouška prošla.
+
+Když v sezení není Android SDK (`ANDROID_HOME` je prázdné), nejde nic sestavit ani otestovat
+místně. Ověřuje se pushem a přečtením výsledku v GitHub Actions.
+
+Výsledky zkoušky se ukládají do větví `test-results-api28`, `-api30`, `-api33`, `-api34`
+(přepisují se při každém běhu): `result.txt`, `crash.txt`, `log.txt` a snímky obrazovky.
+Když zkouška spadne nebo jde o vzhled, stáhni si větev a na snímky se podívej:
+`git fetch origin test-results-api34`.
+
+Změny jen v dokumentaci commituj s `[skip ci]` v názvu, ať zbytečně neběží hodinová zkouška.
+
+Emulátor Androidu 9 se občas zasekne sám od sebe (limit 50 minut). Jedno selhání může být
+náhoda, opakované selhání po změně kódu ne.
+
+## Nová verze
+
+- Při každé změně aplikace zvyš v `app/build.gradle.kts` obojí: `versionCode` (54 → 55)
+  i `versionName` ("0.54" → "0.55"). Název commitu začíná číslem verze: `0.55: …`.
+- Vydání pod číslem verze (`v0.55`) vznikne jen jednou a už se nepřepisuje. Push na `main`
+  bez zvýšení čísla by tedy nechal pod starým číslem starý soubor.
+- Vydání `latest` z `main` se nabídne všem uživatelům jako aktualizace (aplikace čte
+  `version.txt`). Co je v `main` a projde zkouškou, jde rovnou k lidem.
+- Záloha verze, ke které se má jít vrátit: větev `zaloha-<číslo>`.
+
+## Texty aplikace (9 jazyků)
+
+Každý nový text musí být ve všech jazycích, jinak neprojde test `AllLanguagesTest`:
+
+- obecné texty: čeština + slovenština v `core/I18n.kt`, ostatní v `core/I18nPl.kt`, `I18nDe.kt`,
+  `I18nHu.kt`, `I18nUk.kt`, `I18nEs.kt`, `I18nFr.kt`, `I18nIt.kt`;
+- texty kolem PlayStationu: `core/I18nPs5.kt` (`PS5_S` pro češtinu a slovenštinu, `PS5_X` pro ostatní).
+
+Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
+uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
+
+## Na co zkouška spoléhá (neměnit jen tak)
+
+- Řádky v logu se značkou `TP_TEST` (`SHOW|`, `VIDEO|`, `LINK|`, `PAIR|`, `START|`…) –
+  podle nich `ci/emulator-test.sh` počítá výsledek.
+- Věty ukázkové hry v `core/DemoGame.kt` – skript hledá 15 z nich podle textu. Měníš-li věty,
+  uprav i skript.
+- Parametry spuštění `nowizard`, `autostart`, `ps5test`, `psnlogin`, `phonelogin`, `pairstep`
+  a `TestCardActivity`.
+- Pořadí položek menu a kroků průvodce – skript se jimi prokliká naslepo šipkami.
+- Zbytky starého názvu „TestPreklad“ (značka logu, `rootProject.name`, názvy souborů
+  v sestavování, `TestPreklad.apk` ve vydání, sůl odemykacího kódu v `License.kt`).
+  Nepřejmenovávej je: visí na nich zkouška, odkaz ve starších verzích a platnost kódů.
+
+## Poučení z historie (co už se zkoušelo)
+
+- **Spojení s konzolí neměň bez výslovného zadání.** Emulátor PlayStation nemá, takže zkouška
+  projde, i když to na skutečné konzoli nefunguje. Ověřit to umí jen uživatel na své televizi.
+  Dva pokusy nehlásit se konzoli jako ovladač (0.34 „jen se dívat“, 0.38 „tichý režim“)
+  se musely vrátit.
+- **Druhý účet PlayStation je záměr.** Když se aplikace připojí herním účtem, konzole hráči
+  vypne ovladač a zhasne obraz. Průvodce proto vede na druhý účet.
+- **Obraz 1080p jen pro televize s 3 GB paměti a víc** (`core/Perf.kt`). S 1080p na slabších
+  televizích se od 0.29 odpojovaly ovladače; od 0.32 berou zase 720p.
+- **Opakované připojování ruší ovladače u konzole.** Proto se pokusy po čtyřech krátkých
+  spojeních zastaví (0.32) a další pokus se odkládá aspoň o 15 s (0.37).
+- **Zvětšený výřez pro drobné titulky nekresli do jedné znovupoužívané bitmapy.** Ve 0.53 se
+  to na Androidu 9 třikrát po sobě zaseklo, 0.54 to vrátila.
+- **Otisk snímku se počítá ze všech pixelů výřezu** (0.31). Ze vzorků se drobný titulek
+  na klidné tmavé scéně přehlédl.
+- **Pruh se neschovává podle toho, co je na obrazovce** (0.20) – při HDMI to televize nehlásí.
+- **Překládají se jen repliky**, ne menu hry, pokyny k ovládání ani text v jiném jazyce
+  (0.33, 0.43, 0.45). Čte se jen spodní třetina obrazu.
+- **Přibalený prohlížeč má vypnutou ochranu proti sledování** (0.16) – jinak přihlášení
+  u Sony skončí chybou. Doporučená cesta je stejně přihlášení přes telefon (0.19).
+- Úpravy výkonu ověřuj na snímcích a časech ze zkoušky, ne odhadem.
+
+## Licence
+
+- chiaki-ng je pod AGPL-3.0, proto musí zdrojový kód aplikace zůstat veřejný. Hlavičky
+  převzatých souborů s popisem našich úprav zachovej.
+- GeckoView je pod MPL 2.0; zmínka zůstává v README a u vydání.
+- Věta „Aplikace není produktem společnosti Sony Interactive Entertainment…“ v README zůstává.
