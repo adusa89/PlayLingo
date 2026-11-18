@@ -11,8 +11,8 @@ android {
         applicationId = "cz.playlingo"
         minSdk = 26          // Android 8 a novější (prakticky všechny Android TV a boxy)
         targetSdk = 34
-        versionCode = 58
-        versionName = "0.58"
+        versionCode = 59
+        versionName = "0.59"
 
         // televize a boxy mají procesory ARM; emulátor při zkoušce x86 (-Pabis=x86)
         val abis = ((project.findProperty("abis") as String?) ?: "armeabi-v7a,arm64-v8a").split(",")
@@ -44,14 +44,19 @@ android {
     }
 
     // Stálý podpis: všechny verze musí být podepsané stejným klíčem, jinak je televize nenainstaluje
-    // přes starší verzi a uživatel přijde o spárování i nastavení. Klíč leží zašifrovaný
-    // v podpis/playlingo.p12; heslo k němu je jen v tajných údajích GitHubu (PLAYLINGO_KEY_PASSWORD).
-    // Bez hesla (např. sestavení mimo GitHub) se podepíše dočasným klíčem – takové APK nejde
+    // přes starší verzi a uživatel přijde o spárování i nastavení. Klíč v repozitáři není: sestavení
+    // ho při běhu rozbalí z tajného údaje GitHubu (PLAYLINGO_KEY_BASE64) do souboru, jehož cestu
+    // dostane v PLAYLINGO_KEY_FILE; heslo je v PLAYLINGO_KEY_PASSWORD.
+    // Bez nich (např. sestavení mimo GitHub) se podepíše dočasným klíčem – takové APK nejde
     // nainstalovat přes vydanou verzi.
     val signingPassword: String? = System.getenv("PLAYLINGO_KEY_PASSWORD")?.takeIf { it.isNotBlank() }
+    val signingFile: File? = System.getenv("PLAYLINGO_KEY_FILE")?.takeIf { it.isNotBlank() }
+        ?.let { File(it) }?.takeIf { it.isFile }
+    val stableSigning = signingPassword != null && signingFile != null
     signingConfigs {
-        if (signingPassword != null) create("stable") {
-            storeFile = rootProject.file("podpis/playlingo.p12")
+        if (stableSigning) create("stable") {
+            storeFile = signingFile
+
             storeType = "pkcs12"
             storePassword = signingPassword
             keyAlias = "playlingo"
@@ -62,7 +67,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName(if (signingPassword != null) "stable" else "debug")
+            signingConfig = signingConfigs.getByName(if (stableSigning) "stable" else "debug")
         }
     }
 

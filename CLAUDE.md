@@ -30,7 +30,6 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   `app/src/main/cpp` (úloha `patchChiaki` v `app/build.gradle.kts`).
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení, zkouška, vydání.
 - `ci/mistni-kontrola` – překlad a unit testy bez Android SDK (viz níže).
-- `podpis/playlingo.p12` – zašifrovaný podpisový klíč (viz Podpis).
 
 ## Sestavení a zkouška
 
@@ -80,9 +79,13 @@ náhoda, opakované selhání po změně kódu ne.
 - Všechny verze musí být podepsané stejným klíčem. S jiným podpisem televize novou verzi přes
   starou nenainstaluje a uživatel přijde o spárování i nastavení. Verze do 0.55 měly každá
   jiný (dočasný) podpis – proto se musely pokaždé odinstalovat.
-- Klíč je v `podpis/playlingo.p12`, zašifrovaný. Heslo je jen v tajných údajích repozitáře na
-  GitHubu (`PLAYLINGO_KEY_PASSWORD`) a u uživatele. Soubor nikdy nenahrazuj novým klíčem a heslo
-  nikam nezapisuj.
+- Klíč v repozitáři není a nesmí být (repozitář je veřejný, co se jednou dostane do historie,
+  tam zůstane). Je jen v tajných údajích repozitáře na GitHubu: `PLAYLINGO_KEY_BASE64` (soubor
+  p12 v base64) a `PLAYLINGO_KEY_PASSWORD`; otisk certifikátu je v proměnné `PLAYLINGO_KEY_SHA256`.
+  Sestavení klíč při běhu rozbalí do dočasného souboru. Klíč ani heslo nikam nezapisuj a klíč
+  nikdy nevkládej do repozitáře; `*.p12`, `*.jks` a `*.keystore` jsou v `.gitignore`.
+- Klíč nikdy nevyměňuj, jen když je to nutné: po výměně si každý uživatel musí aplikaci
+  odinstalovat a znovu spárovat.
 - Krok „Kontrola podpisu“ v sestavení vypíše, jestli je podpis stálý. Když heslo chybí, sestaví
   se s dočasným podpisem a u vydání je to napsané – takovou verzi do `main` neposílej.
 

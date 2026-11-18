@@ -6,3 +6,8 @@ local.properties
 *.iml
 .cxx/
 app/.cxx/
+
+# podpisové klíče nikdy do repozitáře
+*.p12
+*.jks
+*.keystore

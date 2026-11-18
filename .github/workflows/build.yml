@@ -34,9 +34,18 @@ jobs:
 
       - name: Sestavení APK pro televize (ARM)
         env:
-          # heslo ke stálému podpisovému klíči (podpis/playlingo.p12); bez něj se podepíše dočasným klíčem
+          # stálý podpisový klíč (soubor p12 v kódování base64) a jeho heslo – jen v tajných údajích
+          # repozitáře; bez nich se podepíše dočasným klíčem
+          PLAYLINGO_KEY_BASE64: ${{ secrets.PLAYLINGO_KEY_BASE64 }}
           PLAYLINGO_KEY_PASSWORD: ${{ secrets.PLAYLINGO_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          if [ -n "$PLAYLINGO_KEY_BASE64" ]; then
+            KLIC="$RUNNER_TEMP/playlingo.p12"
+            echo "$PLAYLINGO_KEY_BASE64" | base64 -d > "$KLIC"
+            export PLAYLINGO_KEY_FILE="$KLIC"
+          fi
+          ./gradlew assembleRelease --no-daemon
+          rm -f "$RUNNER_TEMP/playlingo.p12"
 
       - name: Přejmenovat APK
         run: |
@@ -49,14 +58,16 @@ jobs:
       - name: Kontrola podpisu
         run: |
           # Všechny verze musí mít stejný podpis, jinak je televize nenainstaluje přes starší verzi.
-          STALY=c76386adce220d4641a566f78af7291e547da45eb09df7d69e74aa13e7409450
+          # otisk (SHA-256) certifikátu stálého klíče – veřejný údaj, uložený v nastavení repozitáře
+          # (Settings → Secrets and variables → Actions → Variables → PLAYLINGO_KEY_SHA256)
+          STALY="${{ vars.PLAYLINGO_KEY_SHA256 }}"
           OTISK=$("$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs TestPreklad.apk | grep -m1 "SHA-256" | grep -oE "[0-9a-f]{64}" || true)
           echo "otisk podpisu: $OTISK"
-          if [ "$OTISK" = "$STALY" ]; then
+          if [ -n "$STALY" ] && [ "$OTISK" = "$STALY" ]; then
             echo "stálý" > podpis.txt
           else
             echo "dočasný" > podpis.txt
-            echo "::warning::APK je podepsané dočasným klíčem – nepůjde nainstalovat přes vydanou verzi. V nastavení repozitáře chybí tajný údaj PLAYLINGO_KEY_PASSWORD."
+            echo "::warning::APK je podepsané dočasným klíčem – nepůjde nainstalovat přes vydanou verzi. V nastavení repozitáře chybí tajný údaj PLAYLINGO_KEY_BASE64 nebo PLAYLINGO_KEY_PASSWORD (případně proměnná PLAYLINGO_KEY_SHA256)."
           fi
           cat podpis.txt
 
