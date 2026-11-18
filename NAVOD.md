@@ -5,7 +5,7 @@ k PlayStationu 5, přečte anglické titulky hry, přeloží je (offline, zdarma
 v černém pruhu přes obraz. Hra jde do televize dál kabelem HDMI.
 
 ## 1. APK
-Stáhni `TestPreklad.apk`:
+Stáhni `PlayLingo.apk`:
 https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk
 
 ## 2. Instalace
