@@ -349,7 +349,7 @@ class TranslatorService : Service() {
     // ---------------- notifikace ----------------
 
     private fun buildNotification(): Notification {
-        val l = Prefs.lang(this)
+        val l = Prefs.uiLang(this)
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(NotificationChannel(CHANNEL, "PlayLingo", NotificationManager.IMPORTANCE_LOW))
         val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT

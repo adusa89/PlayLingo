@@ -69,7 +69,8 @@ jejich ochranné známky.
 
 ### Pokyny pro testery (podklad pro UX scenario)
 
-1. **Home.** Six buttons: HDMI 1–4 (first row), Demo and How it works (second row). Arrow keys move
+1. **Home.** Seven buttons: HDMI 1–4 (first row), Demo, How it works and Language (second row).
+   Language switches the app between English and Czech; the choice is remembered. Arrow keys move
    the yellow highlight, OK confirms, the Magic Remote pointer highlights and clicks. Back on this
    screen leaves the app.
 2. **Demo** (no other device needed). A sample scene with an English subtitle and its translation

@@ -133,7 +133,8 @@ object I18n {
         "l_speaker" to ("Jména mluvčích barevně" to "Mená hovoriacich farebne"),
         "l_hold" to ("Nechat překlad déle na obrazovce" to "Nechať preklad dlhšie na obrazovke"),
         "l_demo" to ("Ukázka na obrazovce" to "Ukážka na obrazovke"),
-        "l_lang" to ("Jazyk aplikace a překladu" to "Jazyk aplikácie a prekladu"),
+        "l_lang" to ("Jazyk překladu" to "Jazyk prekladu"),
+        "l_ui_lang" to ("Jazyk aplikace" to "Jazyk aplikácie"),
         "size_0" to ("Velmi malé" to "Veľmi malé"), "size_1" to ("Malé" to "Malé"), "size_2" to ("Střední" to "Stredné"),
         "size_3" to ("Velké" to "Veľké"), "size_4" to ("Velmi velké" to "Veľmi veľké"), "size_5" to ("Obří" to "Obrie"),
         "l_pos" to ("Poloha titulků" to "Poloha titulkov"),
@@ -208,7 +209,7 @@ object I18n {
 
     private val EXTRA: Map<Lang, Map<String, String>> = mapOf(
         Lang.PL to I18N_PL, Lang.DE to I18N_DE, Lang.HU to I18N_HU, Lang.UK to I18N_UK,
-        Lang.ES to I18N_ES, Lang.FR to I18N_FR, Lang.IT to I18N_IT,
+        Lang.ES to I18N_ES, Lang.FR to I18N_FR, Lang.IT to I18N_IT, Lang.EN to I18N_EN,
     )
 
     /** Texty kolem PlayStationu a přihlášení přes telefon – mají přednost před obecnými se stejným klíčem. */

@@ -34,8 +34,24 @@ object Prefs {
     private fun bool(c: Context, k: String, d: Boolean) = p(c).getBoolean(k, d)
     private fun setBool(c: Context, k: String, v: Boolean) = p(c).edit().putBoolean(k, v).apply()
 
-    fun lang(c: Context): Lang = Lang.of(p(c).getString("lang", null))
-    fun setLang(c: Context, v: Lang) = p(c).edit().putString("lang", v.code).apply()
+    /**
+     * Jazyk překladu. Dokud ho uživatel nezvolil, bere se jazyk aplikace (je-li to jazyk, do kterého
+     * se překládá), jinak čeština.
+     */
+    fun lang(c: Context): Lang = p(c).getString("lang", null)?.let { Lang.of(it) }
+        ?: Lang.ui(p(c).getString("ui_lang", null))?.takeIf { it.isTarget } ?: Lang.CS
+    fun setLang(c: Context, v: Lang) { if (v.isTarget) p(c).edit().putString("lang", v.code).apply() }
+
+    /**
+     * Jazyk aplikace (nabídky, nápověda). Dokud ho uživatel nezvolil: kdo má zvolený jazyk překladu,
+     * má aplikaci v něm (tak to bylo do verze 0.63); nová instalace se řídí jazykem zařízení
+     * a pro jazyk, který aplikace neumí, je anglicky.
+     */
+    fun uiLang(c: Context): Lang = Lang.ui(p(c).getString("ui_lang", null))
+        ?: p(c).getString("lang", null)?.let { Lang.of(it) }
+        ?: Lang.ui(java.util.Locale.getDefault().language) ?: Lang.EN
+    fun setUiLang(c: Context, v: Lang) = p(c).edit().putString("ui_lang", v.code).apply()
+    fun uiLangChosen(c: Context) = p(c).contains("ui_lang") || p(c).contains("lang")
     /** Vybral si už uživatel jazyk (nebo se jen bere výchozí)? */
     fun langChosen(c: Context) = p(c).contains("lang")
 
@@ -167,4 +183,4 @@ object Prefs {
 }
 
 /** Zkratka pro texty v jazyce, který si uživatel vybral. */
-fun Context.tx(key: String): String = I18n.t(Prefs.lang(this), key)
+fun Context.tx(key: String): String = I18n.t(Prefs.uiLang(this), key)

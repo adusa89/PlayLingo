@@ -24,6 +24,7 @@
       otazka: 'Do kterého vstupu je zapojený PlayStation?',
       tl_ukazka: 'Ukázka',
       tl_napoveda: 'Jak to funguje',
+      tl_jazyk: 'Jazyk: čeština',
       tl_zpet: 'Zpět',
       ovladani: 'Šipkami vyberte, potvrďte tlačítkem OK. Tlačítko Zpět vrátí tuto obrazovku.',
       hledam: 'Hledám PlayLingo v domácí síti… V aplikaci PlayLingo na Androidu zapněte ' +
@@ -47,6 +48,7 @@
       otazka: 'Which input is your PlayStation connected to?',
       tl_ukazka: 'Demo',
       tl_napoveda: 'How it works',
+      tl_jazyk: 'Language: English',
       tl_zpet: 'Back',
       ovladani: 'Select with the arrow keys and press OK. The Back button returns to this screen.',
       hledam: 'Looking for PlayLingo in your home network… In PlayLingo on Android, turn on ' +
@@ -387,17 +389,22 @@
     oznac(index);
     var akce = tlacitka[vybrane].getAttribute('data-akce');
     if (akce === 'hdmi') { spustHru(parseInt(tlacitka[vybrane].getAttribute('data-hdmi'), 10)); }
+    else if (akce === 'jazyk') {
+      // Jazyk aplikace v televizi (česky / anglicky). Jazyk překladu se volí v PlayLingu na Androidu.
+      nastavJazyk(jazyk === 'cs' ? 'en' : 'cs');
+      pamet('jazyk', jazyk);
+    }
     else if (akce === 'ukazka') { spustUkazku(); }
     else { prejdi('napoveda'); }
   }
 
-  // Domů jsou dvě řady: čtyři vstupy (0–3) a pod nimi Ukázka (4) a Jak to funguje (5).
+  // Domů jsou dvě řady: čtyři vstupy (0–3) a pod nimi Ukázka (4), Jak to funguje (5) a Jazyk (6).
   function sipka(klavesa) {
     var v = vybrane;
     if (klavesa === 37) { if (v !== 0 && v !== 4) { oznac(v - 1); } }
-    else if (klavesa === 39) { if (v !== 3 && v !== 5) { oznac(v + 1); } }
-    else if (klavesa === 40) { if (v < 4) { oznac(v < 2 ? 4 : 5); } }
-    else if (klavesa === 38) { if (v >= 4) { oznac(v === 4 ? 0 : 2); } }
+    else if (klavesa === 39) { if (v !== 3 && v !== 6) { oznac(v + 1); } }
+    else if (klavesa === 40) { if (v < 4) { oznac([4, 5, 5, 6][v]); } }
+    else if (klavesa === 38) { if (v >= 4) { oznac([0, 1, 3][v - 4]); } }
   }
 
   document.addEventListener('keydown', function (udalost) {
@@ -440,15 +447,17 @@
   var znacka = String(window.location.hash || '').replace('#', '').split('-');
   var vynuceny = znacka.indexOf('cs') >= 0 ? 'cs' : (znacka.indexOf('en') >= 0 ? 'en' : '');
 
-  nastavJazyk(vynuceny || navigator.language);
+  // Pořadí: značka v adrese (snímky), jazyk zvolený tlačítkem, jinak jazyk televize.
+  var zvoleny = vynuceny || pamet('jazyk');
+  nastavJazyk(zvoleny || navigator.language);
   prejdi('domu');
   oznac((parseInt(pamet('hdmi'), 10) || 1) - 1);
   zjistiTelevizi();
-  if (!vynuceny) {
+  if (!zvoleny) {
     // Jazyk nabídky televize je spolehlivější než jazyk prohlížeče.
     sluzba('luna://com.webos.settingsservice/getSystemSettings', { keys: ['localeInfo'] }, function (o) {
       var kod = o && o.settings && o.settings.localeInfo && o.settings.localeInfo.locales && o.settings.localeInfo.locales.UI;
-      if (kod) { nastavJazyk(kod); }
+      if (kod && !pamet('jazyk')) { nastavJazyk(kod); }
     });
   }
 

@@ -17,6 +17,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -230,7 +231,52 @@ class MainActivity : Activity() {
 
     // ======================= kostra: menu + obsah =======================
 
+    /**
+     * Úzká obrazovka (telefon na výšku). Aplikace je kreslená pro televizi – menu vlevo, obsah vpravo.
+     * Na úzké obrazovce by na obsah zbyl proužek, proto je tam menu nahoře jako řada a obsah pod ním
+     * přes celou šířku. Na televizi se nic nemění.
+     */
+    private val narrow: Boolean get() = resources.configuration.screenWidthDp in 1 until 600
+
+    /** Řada tlačítek; na úzké obrazovce jsou tlačítka pod sebou, aby se vešla. */
+    private fun row(): LinearLayout = if (narrow) ui.vbox() else ui.hbox()
+
+    private fun menuLp() = if (narrow)
+        LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { rightMargin = ui.dp(6) }
+        else ui.lp(top = 4)
+
+    private fun buildNarrowShell() {
+        val root = ui.vbox().apply { setBackgroundColor(Theme.BG) }
+        val top = ui.vbox().apply {
+            setBackgroundColor(Theme.SIDEBAR)
+            setPadding(ui.dp(14), ui.dp(12), ui.dp(14), ui.dp(8))
+        }
+        val logoRow = ui.hbox()
+        logoRow.addView(ImageView(this).apply { setImageResource(R.drawable.ic_logo) }, LinearLayout.LayoutParams(ui.dp(36), ui.dp(36)))
+        logoRow.addView(ui.text("PlayLingo", 19f, Theme.TEXT, bold = true).apply { setPadding(ui.dp(10), 0, ui.dp(10), 0) })
+        logoRow.addView(ui.text(Prefs.lang(this).label, 13f, Theme.ACCENT, bold = true))
+        top.addView(logoRow)
+        menu = ui.hbox()
+        top.addView(HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(menu) }, ui.lp(top = 8))
+        root.addView(top, ui.lp())
+
+        val scroll = ScrollView(this).apply { isFillViewport = true; clipChildren = false; clipToPadding = false }
+        content = ui.vbox().apply { setPadding(ui.dp(16), ui.dp(18), ui.dp(16), ui.dp(32)) }
+        scroll.addView(content)
+        root.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+        setContentView(root)
+    }
+
+    /** Zpět k pomocníkovi pro přihlášení (telefon, na kterém byla omylem nebo dočasně otevřená celá aplikace). */
+    private fun backToPhoneHelper() {
+        if (TranslatorService.running) stopService(Intent(this, TranslatorService::class.java))
+        Prefs.setForceTv(this, false)
+        startActivity(Intent(this, PhoneHelperActivity::class.java))
+        finish()
+    }
+
     private fun buildShell() {
+        if (narrow) { buildNarrowShell(); return }
         val root = ui.hbox().apply {
             setBackgroundColor(Theme.BG)
             gravity = Gravity.TOP
@@ -283,7 +329,7 @@ class MainActivity : Activity() {
                 setOnClickListener { section = s; render(keepFocus = true) }
                 tag = "menu_${s.name}"
             }
-            menu.addView(item, ui.lp(top = 4))
+            menu.addView(item, menuLp())
         }
     }
 
@@ -329,7 +375,7 @@ class MainActivity : Activity() {
                 addView(ui.text("${i + 1}", 15f, if (i <= wizard) Theme.ACCENT else Theme.MUTED, bold = true),
                     LinearLayout.LayoutParams(ui.dp(24), LinearLayout.LayoutParams.WRAP_CONTENT))
                 addView(ui.text(t(key), 16f, if (active) Theme.ACCENT else if (i < wizard) Theme.TEXT else Theme.MUTED, bold = active))
-            }, ui.lp(top = 4))
+            }, menuLp())
         }
         content.removeAllViews()
         content.addView(ui.text(t("wz_title"), 15f, Theme.ACCENT, bold = true))
@@ -341,7 +387,7 @@ class MainActivity : Activity() {
             0 -> {
                 add(ui.text(t("wz_welcome"), 17f, Theme.MUTED), 12)
                 add(tagged(ui.settingRow(t("l_lang"), lang.label) {
-                    val langs = cz.playlingo.core.Lang.values()
+                    val langs = cz.playlingo.core.Lang.targets
                     choose(t("l_lang"), langs.map { it.label }, langs.indexOf(lang)) { i ->
                         Prefs.setLang(this, langs[i])
                         OfflineTranslator.ensureModel(langs[i]) { runOnUiThread { if (wizard >= 0) render(true) } }
@@ -386,7 +432,7 @@ class MainActivity : Activity() {
             }
         }
 
-        val row = ui.hbox()
+        val row = row()
         val pairing = wizard == 3 && Prefs.ps5Host(this) == null
         row.addView(tagged(ui.button(nextLabel, primary = !pairing) {
             if (wizard < wizardSteps.size - 1) { wizard++; render() }
@@ -399,6 +445,7 @@ class MainActivity : Activity() {
         if (wizard > 0) row.addView(tagged(ui.button(t("wz_back")) { wizard--; render() }, "wback"), wrapLp())
         row.addView(tagged(ui.button(t(if (wizard == wizardSteps.size - 1) "wz_finish" else "wz_skip")) { finishWizard() }, "wskip"), wrapLp())
         add(row, 28)
+        if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 16)
 
         val target = focusedTag?.let { window.decorView.findViewWithTag<View>(it) }
             ?: window.decorView.findViewWithTag<View>(if (pairing) "pnext" else "wnext")
@@ -419,7 +466,8 @@ class MainActivity : Activity() {
     private fun onOff(b: Boolean) = if (b) t("on") else t("off")
 
     private fun wrapLp(left: Int = 12) =
-        LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(left) }
+        if (narrow) ui.lp(top = 8)   // tlačítka pod sebou přes celou šířku
+        else LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(left) }
 
     // ======================= DOMŮ =======================
 
@@ -491,7 +539,7 @@ class MainActivity : Activity() {
                     ui.lp(w = LinearLayout.LayoutParams.WRAP_CONTENT, top = 10))
             }, 12)
         }
-        val buttons = ui.hbox()
+        val buttons = row()
         if (!lic.canRun) {
             buttons.addView(tagged(ui.button(t("lic_open"), primary = true) { section = Section.LICENSE; render() }, "start"))
         } else if (!running) {
@@ -525,6 +573,8 @@ class MainActivity : Activity() {
         check.addView(ui.checkRow(host != null, false, t("chk_ps5") + (host?.let { " (${it.name})" } ?: ""), t("ok"), t("set_up")) { section = Section.PS5; render() })
         add(check, 0)
         add(ui.text(t("tip_ps5"), 14f, Theme.MUTED), 16)
+        // telefon, na kterém běží celá aplikace: cesta zpět k pomocníkovi pro přihlášení
+        if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 20)
     }
 
     /** Náhled: co aplikace z PlayStationu právě vidí (důkaz, že spojení funguje). */
@@ -618,14 +668,14 @@ class MainActivity : Activity() {
                 // (když se ji vystavit nepodařilo, vede kód rovnou na přihlášení Sony)
                 if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
                 val pageUrl = loginPageUrl()
-                val row = ui.hbox().apply { gravity = Gravity.TOP }
+                val row = if (narrow) ui.vbox() else ui.hbox().apply { gravity = Gravity.TOP }
                 qrBitmap(pageUrl ?: PsnAuth.LOGIN_URL)?.let { qr ->
                     row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8)) },
                         // velikost tak, aby se kód i s tlačítky vešel na obrazovku celý, bez posouvání
                         LinearLayout.LayoutParams(ui.dp(200), ui.dp(200)))
                 }
-                row.addView(ui.text(t("pa_1_text"), 16f, Theme.TEXT).apply { setPadding(ui.dp(20), 0, 0, 0) },
-                    LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+                row.addView(ui.text(t("pa_1_text"), 16f, Theme.TEXT).apply { if (narrow) setPadding(0, ui.dp(12), 0, 0) else setPadding(ui.dp(20), 0, 0, 0) },
+                    if (narrow) ui.lp() else LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
                 add(row, 10)
                 // adresa i slovy – pro telefon, kterému se čtvereček nedaří přečíst
                 if (pageUrl != null) add(ui.text(pageUrl, 13f, Theme.MUTED), 6)
@@ -660,7 +710,7 @@ class MainActivity : Activity() {
             }
         }
         pairMsg?.let { add(ui.text(it, 15f, pairMsgColor), 10) }
-        val row = ui.hbox()
+        val row = row()
         when {
             nextOk -> row.addView(tagged(ui.button(t("wz_next"), primary = true) { pairNext() }, "pnext"))
             step == 4 -> row.addView(tagged(ui.button(t(if (pairBusy) "ps5_acc_wait" else "ph_check"), primary = true) { if (!pairBusy) checkPhoneCode() }, "pnext"))
@@ -715,7 +765,7 @@ class MainActivity : Activity() {
         val want = pairing && pairStep.coerceIn(0, 5) in 2..4
         if (want && loginServer == null) {
             loginServer = LoginServer(
-                lang = { Prefs.lang(this) },
+                lang = { Prefs.uiLang(this) },
                 loginUrl = PsnAuth.LOGIN_URL,
                 apkUrl = { UpdateCheck.url(if (Prefs.testChannel(this)) UpdateCheck.Channel.TEST else UpdateCheck.Channel.STABLE, "PlayLingo.apk") },
                 resolveCode = { PsnAuth.accountForCode(it) },
@@ -834,7 +884,7 @@ class MainActivity : Activity() {
     /** Řádek s výběrem jazyka (je na stránce Domů i v Titulcích, ať ho nikdo nehledá). */
     private fun langRow(tag: String, top: Int) {
         add(tagged(ui.settingRow(t("l_lang"), Prefs.lang(this).label) {
-            val langs = cz.playlingo.core.Lang.values()
+            val langs = cz.playlingo.core.Lang.targets
             choose(t("l_lang"), langs.map { it.label }, langs.indexOf(Prefs.lang(this))) { i ->
                 Prefs.setLang(this, langs[i])
                 OfflineTranslator.ensureModel(langs[i]) { }
@@ -917,7 +967,7 @@ class MainActivity : Activity() {
             15f, if (ready) Theme.OK else Theme.WARN), ui.lp(top = 8))
         add(mode, 16)
 
-        val row = ui.hbox()
+        val row = row()
         row.addView(tagged(ui.button(t("t_test")) { testTranslation() }, "testtr"))
         if (!ready) row.addView(tagged(ui.button(t("download")) { downloadModel() }, "dl"), wrapLp())
         add(row, 12)
@@ -980,7 +1030,7 @@ class MainActivity : Activity() {
         stat(t("t_lines"), s.lines.toString())
         stat(t("t_hits"), s.cacheHits.toString())
         add(card, 0)
-        val row2 = ui.hbox()
+        val row2 = row()
         row2.addView(tagged(ui.button(t("t_reset_stats")) {
             s.reset(); Prefs.setStats(this, s); toast(t("t_cleared")); render(true)
         }, "rstats"))
@@ -1026,6 +1076,14 @@ class MainActivity : Activity() {
             Prefs.setTvSend(this, !Prefs.tvSend(this)); applyToService(); render(true)
         }, "tvsend"), 8)
         add(ui.text(t("s_tv_desc"), 14f, Theme.MUTED), 6)
+        // jazyk aplikace je nezávislý na jazyku překladu (ten je na stránce Překlad)
+        val uiLang = Prefs.uiLang(this)
+        add(tagged(ui.settingRow(t("l_ui_lang"), uiLang.label) {
+            val all = cz.playlingo.core.Lang.values().toList()
+            choose(t("l_ui_lang"), all.map { it.label }, all.indexOf(uiLang)) { i ->
+                Prefs.setUiLang(this, all[i]); applyToService(); buildShell(); render()
+            }
+        }, "uilang"), 8)
     }
 
     // ======================= HISTORIE =======================
@@ -1362,6 +1420,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.63"
-    const val VERSION_CODE = 63
+    const val VERSION = "verze 0.64"
+    const val VERSION_CODE = 64
 }

@@ -55,7 +55,7 @@ class PhoneHelperActivity : Activity() {
         super.onCreate(savedInstanceState)
         ui = Ui(this)
         // jazyk: poprvé podle telefonu (později ho může přepsat jazyk televize z odkazu, nebo uživatel)
-        if (!Prefs.langChosen(this)) Lang.values().firstOrNull { it.code == Locale.getDefault().language }?.let { Prefs.setLang(this, it) }
+        if (!Prefs.uiLangChosen(this)) Prefs.setUiLang(this, Lang.ui(Locale.getDefault().language) ?: Lang.EN)
         val scroll = ScrollView(this).apply { isFillViewport = true; setBackgroundColor(Theme.BG) }
         content = ui.vbox().apply { setPadding(ui.dp(20), ui.dp(28), ui.dp(20), ui.dp(36)) }
         scroll.addView(content)
@@ -97,7 +97,7 @@ class PhoneHelperActivity : Activity() {
                 log("link " + if (tg != null) "ok" else "bad")
                 if (tg != null) {
                     target = tg; sent = false; msg = null
-                    if (!Prefs.langChosen(this)) PhoneLogin.langFromAppLink(link)?.let { Prefs.setLang(this, it) }
+                    if (!Prefs.uiLangChosen(this)) PhoneLogin.langFromAppLink(link)?.let { Prefs.setUiLang(this, it) }
                 }
                 render()
             }
@@ -121,14 +121,14 @@ class PhoneHelperActivity : Activity() {
         head.addView(names)
         content.addView(head)
 
-        add(ui.card().apply { addView(ui.text(t("hp_intro"), 15f, Theme.MUTED)) }, 18)
         // Televize LG si titulky sama nepřečte: číst, překládat a posílat je do ní může tento telefon.
         // Pak tu místo pomocníka běží celá aplikace (viz core/TvSender).
         add(ui.card().apply {
             addView(ui.text(t("hp_lg_title"), 18f, Theme.TEXT, bold = true))
             addView(ui.text(t("hp_lg_text"), 15f, Theme.MUTED), ui.lp(top = 6))
-            addView(ui.button(t("hp_lg_btn")) { if (!busy) useForLgTv() }, ui.lp(top = 12))
-        }, 10)
+            addView(ui.button(t("hp_lg_btn"), primary = true) { if (!busy) useForLgTv() }, ui.lp(top = 12))
+        }, 18)
+        add(ui.card().apply { addView(ui.text(t("hp_intro"), 15f, Theme.MUTED)) }, 10)
         val tg = target
         if (!sent) add(ui.card().apply {
             addView(ui.text(t(if (tg != null) "hp_tv_ready" else "hp_scan"), 16f, if (tg != null) Theme.OK else Theme.TEXT, bold = tg != null))
@@ -151,8 +151,8 @@ class PhoneHelperActivity : Activity() {
         add(ui.button(t("wp_login_btn"), primary = accounts.isEmpty()) { if (!busy) openLogin() }, 22)
         add(ui.button(t("hp_browser")) { if (!busy) openBrowser() }, 8)
 
-        val lang = Prefs.lang(this)
-        add(ui.settingRow(t("l_lang"), lang.label) { Prefs.setLang(this, lang.next()); render() }, 26)
+        val lang = Prefs.uiLang(this)
+        add(ui.settingRow(t("l_ui_lang"), lang.label) { Prefs.setUiLang(this, lang.next()); render() }, 26)
         add(ui.button(t("hp_is_tv")) {
             Prefs.setForceTv(this, true)
             startActivity(Intent(this, MainActivity::class.java))

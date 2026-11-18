@@ -151,18 +151,34 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
 - Změny jen ve složkách `webos` a `pc` nemění verzi aplikace pro Android TV a commitují se
   s `[skip ci]`. Balíčky `.ipk` se necommitují.
 
-## Texty aplikace (9 jazyků)
+## Texty aplikace a jazyky
 
-Každý nový text musí být ve všech jazycích, jinak neprojde test `AllLanguagesTest`:
+Aplikace má dvě na sobě nezávislá nastavení jazyka (`core/Lang.kt`):
 
-- obecné texty: čeština + slovenština v `core/I18n.kt`, ostatní v `core/I18nPl.kt`, `I18nDe.kt`,
-  `I18nHu.kt`, `I18nUk.kt`, `I18nEs.kt`, `I18nFr.kt`, `I18nIt.kt`;
-- texty kolem PlayStationu: `core/I18nPs5.kt` (`PS5_S` pro češtinu a slovenštinu, `PS5_X` pro ostatní);
+- **jazyk překladu** (`Prefs.lang`, stránka Překlad a průvodce) – do čeho se titulky překládají;
+  jen `Lang.targets`, tedy bez angličtiny,
+- **jazyk aplikace** (`Prefs.uiLang`, Nastavení a pomocník v telefonu) – nabídky a nápověda;
+  všech deset jazyků včetně angličtiny. Texty na obrazovce ber vždy přes `tx()` / `Prefs.uiLang`,
+  nikdy podle jazyka překladu.
+
+Kdo si jazyk aplikace nezvolil, má ji v jazyce překladu (tak to bylo do 0.63); nová instalace se
+řídí jazykem zařízení a pro jazyk, který aplikace neumí, je anglicky. Další jazyk překladu, pro
+který aplikace texty nemá, se přidá jen do `Lang.targets`.
+
+Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `AllLanguagesTest`:
+
+- obecné texty: čeština + slovenština v `core/I18n.kt`, angličtina v `core/I18nEn.kt`, ostatní
+  v `core/I18nPl.kt`, `I18nDe.kt`, `I18nHu.kt`, `I18nUk.kt`, `I18nEs.kt`, `I18nFr.kt`, `I18nIt.kt`;
+- texty kolem PlayStationu: `core/I18nPs5.kt` (`PS5_S` pro češtinu a slovenštinu, `PS5_X` pro ostatní
+  včetně angličtiny);
 - texty přihlášení přes telefon (kroky `pa_…`, stránka z televize `wp_…`, pomocník v telefonu
   `hp_…`): `core/I18nLogin.kt` (`LOGIN_S`, `LOGIN_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
+
+Aplikace pro televizi LG (`webos/obchod`) má vlastní texty česky a anglicky přímo v `app.js`
+a tlačítko Jazyk na úvodní obrazovce; do obchodu LG se podává s anglickými podklady.
 
 ## Na co zkouška spoléhá (neměnit jen tak)
 
