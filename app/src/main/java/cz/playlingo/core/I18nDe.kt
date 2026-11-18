@@ -73,6 +73,7 @@ internal val I18N_DE: Map<String, String> = mapOf(
     "upd_cancel" to "Die Installation wurde abgebrochen. Wähle Aktualisieren und bestätige sie im Fenster des Fernsehers.",
     "upd_fail" to "Die Aktualisierung ist fehlgeschlagen. Versuche es erneut oder spiele die neue Version manuell von der Adresse unten auf. Wenn der Fernseher die Installation nicht erlaubt: Einstellungen → Apps → Sicherheit & Einschränkungen → Unbekannte Quellen → PlayLingo erlauben.",
     "upd_test" to "Testversion",
+    "upd_done" to "Aktualisiert auf Version",
     "rep_btn" to "Fehlerbericht erstellen",
     "rep_saved" to "Bericht gespeichert in der Datei:",
     "b_start" to "Übersetzung starten",

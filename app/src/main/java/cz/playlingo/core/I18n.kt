@@ -78,6 +78,7 @@ object I18n {
         "upd_cancel" to ("Instalace byla zrušena. Zvol Aktualizovat a v okně televize ji potvrď." to "Inštalácia bola zrušená. Zvoľ Aktualizovať a v okne televízora ju potvrď."),
         "upd_fail" to ("Aktualizace se nepovedla. Zkus to znovu, nebo novou verzi nahraj ručně z adresy níže. Když televize instalaci nedovolí: Nastavení → Aplikace → Zabezpečení a omezení → Neznámé zdroje → povol PlayLingo." to "Aktualizácia sa nepodarila. Skús to znova, alebo novú verziu nahraj ručne z adresy nižšie. Keď televízor inštaláciu nedovolí: Nastavenia → Aplikácie → Zabezpečenie a obmedzenia → Neznáme zdroje → povoľ PlayLingo."),
         "upd_test" to ("zkušební" to "skúšobná"),
+        "upd_done" to ("Aktualizováno na verzi" to "Aktualizované na verziu"),
         "rep_btn" to ("Vytvořit hlášení chyby" to "Vytvoriť hlásenie chyby"),
         "rep_saved" to ("Hlášení uloženo do souboru:" to "Hlásenie uložené do súboru:"),
         "b_start" to ("Spustit překlad" to "Spustiť preklad"),

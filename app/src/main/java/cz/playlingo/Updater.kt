@@ -41,6 +41,8 @@ object Updater {
     /** Klíč textu s důvodem, proč se aktualizace nepovedla. */
     @Volatile var problem: String? = null; private set
     @Volatile private var since = 0L
+    /** Číslo právě běžící instalace; odpovědi systému k dřívějším (opuštěným) pokusům se ignorují. */
+    @Volatile private var session = -1
 
     /**
      * Právě se stahuje nebo se čeká na potvrzení instalace. Čekání na potvrzení se po minutě
@@ -71,7 +73,7 @@ object Updater {
         if (busy) return
         val app = ctx.applicationContext
         val local = source.startsWith("/")
-        state = State.DOWNLOADING; percent = -1; problem = null
+        state = State.DOWNLOADING; percent = -1; problem = null; session = -1
         log("start " + (if (local) "file" else source.substringAfter("/download/")) +
             " allowed=" + app.packageManager.canRequestPackageInstalls())
         Thread({
@@ -163,6 +165,7 @@ object Updater {
         // Android 12+: když aplikaci naposledy instalovala ona sama, systém další aktualizaci pustí bez dotazu.
         if (Build.VERSION.SDK_INT >= 31) params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
         val id = installer.createSession(params)
+        session = id
         try {
             installer.openSession(id).use { s ->
                 s.openWrite("PlayLingo.apk", 0, file.length()).use { out ->
@@ -189,6 +192,8 @@ object Updater {
         if (i?.action != ACTION_STATUS) return false
         val status = i.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
         val msg = i.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
+        // Zpráva o dřívějším pokusu (např. že byl opuštěn) nesmí přepsat stav toho, který právě běží.
+        if (i.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1) != session) { log("status=$status old session"); return true }
         log("status=$status" + (msg?.let { " $it" } ?: ""))
         when (status) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {

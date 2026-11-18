@@ -50,6 +50,9 @@ object Prefs {
     /** Brát i zkušební verze (sestavené z rozpracované větve, ještě neschválené pro všechny). */
     fun testChannel(c: Context) = bool(c, "test_channel", false)
     fun setTestChannel(c: Context, v: Boolean) = setBool(c, "test_channel", v)
+    /** Číslo verze, která běžela naposledy (0 = první spuštění) – aby šlo po aktualizaci říct, že proběhla. */
+    fun seenVersion(c: Context): Int = p(c).getInt("seen_version", 0)
+    fun setSeenVersion(c: Context, v: Int) = p(c).edit().putInt("seen_version", v).apply()
 
     fun onlySubtitles(c: Context) = bool(c, "only_subs", true)
     fun setOnlySubtitles(c: Context, v: Boolean) = setBool(c, "only_subs", v)
