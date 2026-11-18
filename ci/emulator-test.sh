@@ -90,14 +90,34 @@ done
 adb shell am force-stop $PKG
 adb shell wm size reset; adb shell wm density reset; sleep 2
 
-# 9) aktualizace z aplikace: stáhne běžnou vydanou verzi, předá ji systému a ten se zeptá na instalaci.
-#    Emulátor ji nenainstaluje (jiný procesor a podpis) – ověřuje se stažení, předání a okno s dotazem.
-#    Do výsledku zkoušky se nepočítá (závisí na internetu a na tom, co je zrovna vydané), jen se zapíše.
+# 9) aktualizace z aplikace. Do výsledku zkoušky se nepočítá, jen se zapíše a vyfotí.
+#  a) úplně poprvé, bez povolení „neznámé zdroje“: co televize uživateli ukáže
+adb shell am start -n $PKG/.MainActivity --ez updself true
+sleep 12; shot 15a_poprve_bez_povoleni
+key 4; sleep 2; key 4; sleep 2
+adb shell am force-stop $PKG
+#  b) stažení vydané verze z internetu a předání systému. Emulátor ji nenainstaluje (jiný procesor
+#     a podpis, na Androidu 13+ ji systém odmítne hned) – ověřuje se stažení a kontrola souboru.
 adb shell appops set $PKG REQUEST_INSTALL_PACKAGES allow
 adb shell am start -n $PKG/.MainActivity --ez updtest true
-sleep 12; shot 15_aktualizace_stahovani
-sleep 50; shot 15_aktualizace_dotaz
-key 4; sleep 4; shot 15_aktualizace_po_zruseni
+sleep 40; shot 15b_stazeni
+key 4; sleep 3
+adb shell am force-stop $PKG
+#  c) celá aktualizace: aplikace nainstaluje sama sebe (stejná verze i podpis) a instalace se potvrdí.
+#     Stav jako u uživatele: Usnadnění zapnuté, povolení překryvu ne.
+adb shell appops set $PKG SYSTEM_ALERT_WINDOW default
+adb shell settings put secure enabled_accessibility_services $PKG/$PKG.TitulkyAccessibility
+adb shell settings put secure accessibility_enabled 1
+sleep 3
+adb shell am start -n $PKG/.MainActivity --ez updself true
+sleep 12; shot 15c_dotaz
+key 22; key 22; key 23
+sleep 25; shot 15c_po_instalaci
+adb shell dumpsys activity activities | grep -m1 -E "ResumedActivity" > $OUT/po_aktualizaci.txt
+#  d) podruhé: na Androidu 12+ má instalace projít bez dotazu
+adb shell am start -n $PKG/.MainActivity --ez updself true
+sleep 25; shot 15d_podruhe
+key 4; sleep 2
 adb shell am force-stop $PKG
 
 adb logcat -d -v time > $OUT/logcat_full.txt
@@ -112,14 +132,16 @@ LIB=$(grep -c "TP_TEST.*START|.*lib=ok" $OUT/log.txt)
 DECODED=$(grep "TP_TEST.*VIDEO|" $OUT/log.txt | grep -oE "decoded=[0-9]+" | cut -d= -f2 | sort -n | tail -1)
 LINK=$(grep -c "TP_TEST.*LINK|\(WAITING\|FAILED\)" $OUT/log.txt)
 PAIR=$(grep -c "TP_TEST.*PAIR|\(failed\|timeout\|error\)" $OUT/log.txt)
-UPD=$(grep -c "TP_TEST.*UPD|confirm shown" $OUT/log.txt)
+UPD_DL=$(grep -c "TP_TEST.*UPD|downloaded" $OUT/log.txt)
+UPD_ASK=$(grep -c "TP_TEST.*UPD|confirm shown" $OUT/log.txt)
+UPD_DONE=$(grep -c "TP_TEST.*UPD|replaced" $OUT/log.txt)
 # kolik z deseti různých ukázkových titulků (velká písmena, jména, krátká slova…) se přeložilo
 KINDS=0
 for k in "We need money" "reckon" "ride at dawn" "keep going like this" "right way" "no idea" "GET OUT OF HERE" "|Wait|" "never supposed to meet" "left door" "voice down" "been here for years" "lantern" "bridge is out" "Run for the gate"; do
   grep -qF -- "$k" <(grep "TP_TEST.*SHOW|" $OUT/log.txt) && KINDS=$((KINDS+1)) || echo "NEPRELOZENO: $k" >> $OUT/missing.txt
 done
 echo "ruznych_titulku=$KINDS/15" > $OUT/kinds.txt
-echo "prelozenych_titulku=$SHOWS pady=$CRASH knihovna_ps5=$LIB dekodovano_snimku=${DECODED:-0} pokusy_o_spojeni=$LINK parovani_bez_konzole=$PAIR dotaz_na_aktualizaci=$UPD" > $OUT/result.txt
+echo "prelozenych_titulku=$SHOWS pady=$CRASH knihovna_ps5=$LIB dekodovano_snimku=${DECODED:-0} pokusy_o_spojeni=$LINK parovani_bez_konzole=$PAIR aktualizace_stazeno=$UPD_DL aktualizace_dotaz=$UPD_ASK aktualizace_nahrazeno=$UPD_DONE" > $OUT/result.txt
 if [ "$SHOWS" -ge 3 ] && [ "$KINDS" -ge 7 ] && [ "$CRASH" -eq 0 ] && [ "$LIB" -ge 1 ] && [ "${DECODED:-0}" -ge 20 ] && [ "$LINK" -ge 1 ] && [ "$PAIR" -ge 1 ]; then
   echo "VYSLEDEK=OK" >> $OUT/result.txt
 else

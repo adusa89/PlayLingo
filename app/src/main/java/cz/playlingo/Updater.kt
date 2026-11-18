@@ -62,20 +62,25 @@ object Updater {
     }
 
     /**
-     * Stáhne a nainstaluje novou verzi z [url]. [force] (jen pro automatickou zkoušku) přeskočí
-     * kontrolu, že je stažená verze novější a má stejný podpis. [onChange] se volá při každé změně
+     * Stáhne a nainstaluje novou verzi z adresy [source]. [onChange] se volá při každé změně
      * stavu, mimo hlavní vlákno.
+     * Jen pro automatickou zkoušku: [source] může být i cesta k souboru v zařízení (nic se
+     * nestahuje) a [force] přeskočí kontrolu, že je verze novější a má stejný podpis.
      */
-    fun start(ctx: Context, url: String, force: Boolean, onChange: () -> Unit) {
+    fun start(ctx: Context, source: String, force: Boolean, onChange: () -> Unit) {
         if (busy) return
         val app = ctx.applicationContext
+        val local = source.startsWith("/")
         state = State.DOWNLOADING; percent = -1; problem = null
-        log("start " + url.substringAfter("/download/"))
+        log("start " + (if (local) "file" else source.substringAfter("/download/")) +
+            " allowed=" + app.packageManager.canRequestPackageInstalls())
         Thread({
-            val file = File(app.cacheDir, FILE)
+            val file = if (local) File(source) else File(app.cacheDir, FILE)
             try {
-                download(url, file) { p -> if (p != percent) { percent = p; onChange() } }
-                log("downloaded bytes=${file.length()}")
+                if (!local) {
+                    download(source, file) { p -> if (p != percent) { percent = p; onChange() } }
+                    log("downloaded bytes=${file.length()}")
+                }
                 val why = check(app, file, force)
                 if (why != null) fail(why, null)
                 else { since = android.os.SystemClock.uptimeMillis(); state = State.INSTALLING; onChange(); install(app, file) }
@@ -85,7 +90,7 @@ object Updater {
                 fail(if (space) "upd_space" else if (state == State.INSTALLING) "upd_fail" else "upd_net", e.javaClass.simpleName + " " + (e.message ?: ""))
             }
             // soubor už je předaný systému (nebo k ničemu) – v televizi nesmí zabírat místo
-            try { file.delete() } catch (_: Exception) {}
+            if (!local) try { file.delete() } catch (_: Exception) {}
             onChange()
         }, "tp-update").start()
     }

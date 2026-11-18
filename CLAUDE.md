@@ -102,10 +102,12 @@ uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
   podle nich `ci/emulator-test.sh` počítá výsledek.
 - Věty ukázkové hry v `core/DemoGame.kt` – skript hledá 15 z nich podle textu. Měníš-li věty,
   uprav i skript.
-- Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`, `updtest`
-  a `TestCardActivity`.
-- Zkouška aktualizace (`updtest`, řádky `UPD|`) se do výsledku nepočítá – závisí na internetu.
-  Na snímku `15_aktualizace_dotaz` má být okno systému s dotazem na instalaci.
+- Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`, `updtest`,
+  `updself` a `TestCardActivity`.
+- Zkouška aktualizace (řádky `UPD|`, snímky `15a`–`15d`) se do výsledku nepočítá. `updtest`
+  stáhne vydanou verzi (závisí na internetu; emulátor ji nenainstaluje). `updself` nainstaluje
+  aplikaci samu přes sebe – na snímku `15c_dotaz` má být dotaz systému na instalaci a v
+  `result.txt` má být `aktualizace_nahrazeno` aspoň 1.
 - Pořadí položek menu a kroků průvodce – skript se jimi prokliká naslepo šipkami.
 - Zbytky starého názvu „TestPreklad“ (značka logu, `rootProject.name`, názvy souborů
   v sestavování, `TestPreklad.apk` ve vydání, sůl odemykacího kódu v `License.kt`).

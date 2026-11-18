@@ -144,12 +144,14 @@ class MainActivity : Activity() {
             Prefs.setPs5Host(this, null)
             section = Section.PS5; pairStep = i?.getIntExtra("pairstep", 2) ?: 2; render(); return
         }
-        // zkouška aktualizace: stáhne běžnou verzi a dojde až k dotazu systému na instalaci
-        if (i?.getBooleanExtra("updtest", false) == true && applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+        // Zkouška aktualizace. „updtest“: stáhne běžnou vydanou verzi a předá ji systému.
+        // „updself“: aplikace nainstaluje sama sebe (stejná verze i podpis) – projde celá instalace.
+        val updSelf = i?.getBooleanExtra("updself", false) == true
+        if ((updSelf || i?.getBooleanExtra("updtest", false) == true) && applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
             Prefs.setWizardDone(this, true); wizard = -1; section = Section.HOME
             val o = UpdateCheck.Offer(UpdateCheck.Remote(BuildInfo.VERSION_CODE + 1, "zkouška"), UpdateCheck.Channel.STABLE)
             update = o
-            startUpdate(o, force = true)
+            startUpdate(o, force = true, source = if (updSelf) packageCodePath else null)
             return
         }
         val ip = i?.getStringExtra("ps5test") ?: return
@@ -442,7 +444,7 @@ class MainActivity : Activity() {
                 addView(ui.text(line, 14f, if (st == Updater.State.FAILED) Theme.BAD else Theme.MUTED), ui.lp(top = 4))
                 // když to z aplikace nejde, zbývá ruční cesta – adresa souboru
                 if (st == Updater.State.FAILED) addView(ui.text(UpdateCheck.url(o.channel, "PlayLingo.apk"), 13f, Theme.MUTED), ui.lp(top = 6))
-                if (!Updater.busy) addView(tagged(ui.button(t("upd_btn")) { startUpdate(o) }, "update"),
+                if (!Updater.busy) addView(tagged(ui.button(t("upd_btn"), primary = true) { startUpdate(o) }, "update"),
                     ui.lp(w = LinearLayout.LayoutParams.WRAP_CONTENT, top = 10))
             }, 12)
         }
@@ -1130,8 +1132,8 @@ class MainActivity : Activity() {
     }
 
     /** Stáhne nabídnutou verzi a předá ji systému k instalaci; obrazovka ukazuje průběh. */
-    private fun startUpdate(o: UpdateCheck.Offer, force: Boolean = false) {
-        Updater.start(this, UpdateCheck.url(o.channel, "PlayLingo.apk"), force) {
+    private fun startUpdate(o: UpdateCheck.Offer, force: Boolean = false, source: String? = null) {
+        Updater.start(this, source ?: UpdateCheck.url(o.channel, "PlayLingo.apk"), force) {
             runOnUiThread { if (!isFinishing && !isDestroyed && section == Section.HOME && wizard < 0 && currentFocus !is EditText) render(true) }
         }
         render(true)
