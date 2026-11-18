@@ -45,15 +45,11 @@ object TranslationProbe {
      * co vyjde dobře, přidá se do [OfflinePrep] jako náhrada, a odsud se to smaže.
      */
     private val CANDIDATES: List<String> get() = listOf(
-        "Wait a second.", "He is not telling the truth.", "He is a liar.", "He escaped.", "He ran away.",
-        "We do not have much time.", "Time is running out.", "Raise your hands!", "Hands up!", "Run to the gate!",
-        "Are you crazy?", "Have you lost your mind?", "Let's finish this.", "Let's end this.", "That is none of your business.",
-        "It is not your business.", "The bridge is destroyed, we have to swim.", "The bridge is gone, we have to swim.",
-        "If we continue like this, they will find us.", "Give me the lantern and stay close.", "Speak quietly, they can hear us.",
-        "Be quiet, they can hear us.", "Let's go!", "Everyone out!", "Boys, mount your horses.", "You all wait here.",
-        "Mount your horse, we ride at dawn.", "Mount your horse, we leave at dawn.", "Stand still!", "Do not move!",
-        "Give it back to me.", "Stay near me.", "You were right about him.", "What you said about him was true.",
-        "Have you seen my brother?", "Did you see my brother?", "Come with me.", "Will you go with me?",
-        "It has been a long time.", "I do not think anyone was here for years.", "Nobody has been here for years.",
+        "Run to the gate.", "Run towards the gate!", "Hurry to the gate!", "Stay close to me.", "Stay by my side.",
+        "Nobody was here for many years.", "We ride out at dawn.", "We leave at sunrise.",
+        "Get on the horse, we leave in the morning.", "You and your friends must leave.", "Come with me, both of you.",
+        "It will be fine.", "Everything will be all right.", "I am fine.", "Leave it to me.", "Watch your back.",
+        "Cover me!", "I am out of ammo.", "Reloading!", "He is dead.", "Is anyone there?", "Who is there?",
+        "Show yourself!", "What was that?", "This way!", "Over here!", "Behind you!",
     )
 }
