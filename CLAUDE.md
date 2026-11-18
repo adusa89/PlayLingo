@@ -30,7 +30,6 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   `app/src/main/cpp` (úloha `patchChiaki` v `app/build.gradle.kts`).
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení, zkouška, vydání.
 - `ci/mistni-kontrola` – překlad a unit testy bez Android SDK (viz níže).
-- `podpis/playlingo.p12` – zašifrovaný podpisový klíč (viz Podpis).
 - `webos` – zkušební aplikace pro televize LG (viz Televize LG). Nesouvisí s aplikací pro
   Android TV a do APK se nedostane.
 
@@ -82,11 +81,20 @@ náhoda, opakované selhání po změně kódu ne.
 - Všechny verze musí být podepsané stejným klíčem. S jiným podpisem televize novou verzi přes
   starou nenainstaluje a uživatel přijde o spárování i nastavení. Verze do 0.55 měly každá
   jiný (dočasný) podpis – proto se musely pokaždé odinstalovat.
-- Klíč je v `podpis/playlingo.p12`, zašifrovaný. Heslo je jen v tajných údajích repozitáře na
-  GitHubu (`PLAYLINGO_KEY_PASSWORD`) a u uživatele. Soubor nikdy nenahrazuj novým klíčem a heslo
-  nikam nezapisuj.
-- Krok „Kontrola podpisu“ v sestavení vypíše, jestli je podpis stálý. Když heslo chybí, sestaví
-  se s dočasným podpisem a u vydání je to napsané – takovou verzi do `main` neposílej.
+- Klíč v repozitáři není a nesmí být (repozitář je veřejný a co se jednou dostane do historie,
+  tam zůstane). Je jen v tajných údajích repozitáře na GitHubu: `PLAYLINGO_KEY_BASE64` (soubor
+  p12 v base64) a `PLAYLINGO_KEY_PASSWORD`. Sestavení ho při běhu rozbalí do dočasného souboru
+  a po sobě smaže. Zálohu klíče a hesla má jen uživatel. Klíč ani heslo nikam nezapisuj,
+  nevypisuj je do logu a neukládej do repozitáře; `*.p12`, `*.jks`, `*.keystore` jsou v `.gitignore`.
+- Krok „Kontrola podpisu“ porovná otisk certifikátu s otiskem stálého klíče zapsaným přímo
+  v `build.yml` (otisk je veřejný údaj). Verze s jiným podpisem se **nevydá**: ve zkušebním
+  kanálu zůstane předchozí verze a na `main` sestavení skončí chybou.
+- Klíč se nemění. Po výměně si každý musí aplikaci odinstalovat a znovu spárovat. Jediná výměna
+  proběhla ve verzi 0.61: první stálý klíč (0.56–0.60) ležel zašifrovaný v repozitáři, proto byl
+  nahrazen novým, který v repozitáři nikdy nebyl. Starý soubor `podpis/playlingo.p12` zůstal
+  v historii větví, ale nic se jím už nepodepisuje.
+- K tajným údajům se při sestavení dostane každý, kdo může do repozitáře zapisovat (stačí upravit
+  `build.yml` ve své větvi). Právo zápisu proto dávej jen lidem, kterým bys svěřil i klíč.
 
 ## Přihlášení přes telefon
 

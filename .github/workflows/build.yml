@@ -34,9 +34,18 @@ jobs:
 
       - name: Sestavení APK pro televize (ARM)
         env:
-          # heslo ke stálému podpisovému klíči (podpis/playlingo.p12); bez něj se podepíše dočasným klíčem
+          # Stálý podpisový klíč (soubor p12 v kódování base64) a jeho heslo. Jsou jen v tajných
+          # údajích repozitáře, nikdy v repozitáři samotném; bez nich se podepíše dočasným klíčem.
+          PLAYLINGO_KEY_BASE64: ${{ secrets.PLAYLINGO_KEY_BASE64 }}
           PLAYLINGO_KEY_PASSWORD: ${{ secrets.PLAYLINGO_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          KLIC="$RUNNER_TEMP/playlingo.p12"
+          trap 'rm -f "$KLIC"' EXIT     # klíč na stroji nezůstane, ani když sestavení spadne
+          if [ -n "$PLAYLINGO_KEY_BASE64" ]; then
+            printf '%s' "$PLAYLINGO_KEY_BASE64" | tr -d ' \r\n\t' | base64 -d > "$KLIC"
+            export PLAYLINGO_KEY_FILE="$KLIC"
+          fi
+          ./gradlew assembleRelease --no-daemon
 
       - name: Přejmenovat APK
         run: |
@@ -49,14 +58,16 @@ jobs:
       - name: Kontrola podpisu
         run: |
           # Všechny verze musí mít stejný podpis, jinak je televize nenainstaluje přes starší verzi.
-          STALY=c76386adce220d4641a566f78af7291e547da45eb09df7d69e74aa13e7409450
+          # Otisk (SHA-256) certifikátu stálého klíče. Je to veřejný údaj – pozná se podle něj jen,
+          # že APK podepsal správný klíč; podepsat s ním nic nejde.
+          STALY=9cc0a5e6719dbe63d87bf893452e6f1205dda322d2a027f7508acf96ee38c317
           OTISK=$("$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs TestPreklad.apk | grep -m1 "SHA-256" | grep -oE "[0-9a-f]{64}" || true)
           echo "otisk podpisu: $OTISK"
           if [ "$OTISK" = "$STALY" ]; then
             echo "stálý" > podpis.txt
           else
             echo "dočasný" > podpis.txt
-            echo "::warning::APK je podepsané dočasným klíčem – nepůjde nainstalovat přes vydanou verzi. V nastavení repozitáře chybí tajný údaj PLAYLINGO_KEY_PASSWORD."
+            echo "::warning::APK je podepsané dočasným klíčem – nepůjde nainstalovat přes vydanou verzi. V nastavení repozitáře chybí nebo nesedí tajné údaje PLAYLINGO_KEY_BASE64 a PLAYLINGO_KEY_PASSWORD."
           fi
           cat podpis.txt
 
@@ -100,7 +111,17 @@ jobs:
           cat version.txt
           # nový název souboru; starý zůstává, aby fungoval odkaz ve starších verzích aplikace
           cp TestPreklad.apk PlayLingo.apk
-          PODPIS="Podpis: $(cat podpis.txt 2>/dev/null || echo neznámý)."
+          # Vydává se jen APK podepsané stálým klíčem. Jinak by ho televize nenainstalovala přes
+          # vydanou verzi a každý, kdo by si ho nahrál ručně, by pak nemohl aktualizovat.
+          if [ "$(cat podpis.txt 2>/dev/null)" != "stálý" ]; then
+            if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+              echo "::error::APK není podepsané stálým klíčem, proto se nevydává. Zkontroluj tajné údaje PLAYLINGO_KEY_BASE64 a PLAYLINGO_KEY_PASSWORD."
+              exit 1
+            fi
+            echo "::warning::APK není podepsané stálým klíčem, proto se do zkušebního kanálu nevydává (zůstává tam předchozí verze)."
+            exit 0
+          fi
+          PODPIS="Podpis: $(cat podpis.txt)."
           # Rozpracované větve: zkušební kanál. Nemění „latest“ ani vydání pod číslem verze.
           if [ "$GITHUB_REF" != "refs/heads/main" ] && [ "${GITHUB_REF#refs/heads/zaloha-}" = "$GITHUB_REF" ]; then
             gh release delete zkusebni --yes --cleanup-tag || true

@@ -7,3 +7,8 @@ local.properties
 .cxx/
 app/.cxx/
 webos/*.ipk
+
+# podpisové klíče nikdy do repozitáře
+*.p12
+*.jks
+*.keystore
