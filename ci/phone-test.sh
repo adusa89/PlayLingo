@@ -8,6 +8,10 @@ mkdir -p $OUT
 PKG=cz.playlingo
 APK=${APK:-TestPreklad-emulator.apk}
 LINK="playlingo://login?h=10.0.2.15&p=8765&k=abcd2345&l=cs"
+# Žádný příkaz pro emulátor nesmí zkoušku zablokovat: emulátor Androidu 14 občas přestane
+# odpovídat (výpis záznamu po aktualizaci, stisk klávesy) a celá zkouška pak visela až do limitu.
+ADB_BIN=$(command -v adb)
+adb() { timeout 180 "$ADB_BIN" "$@"; }
 shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
 key() { adb shell input keyevent "$1"; sleep 1; }
 # velikost displeje, hustota a velikost písma: "šířka x výška  hustota  písmo  název"
