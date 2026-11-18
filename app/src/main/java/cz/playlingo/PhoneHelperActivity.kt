@@ -132,7 +132,10 @@ class PhoneHelperActivity : Activity() {
             Intent.ACTION_SEND -> shared(i.getStringExtra(Intent.EXTRA_TEXT) ?: "")
         }
         // jen ve zkušebním sestavení: rovnou otevřít přihlášení (snímek ze zkoušky v emulátoru)
-        if (i?.getBooleanExtra("helperlogin", false) == true && applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) openLogin()
+        val debuggable = applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0
+        if (i?.getBooleanExtra("helperlogin", false) == true && debuggable) openLogin()
+        // jen ve zkušebním sestavení: celá aplikace v telefonu (stejně jako tlačítko pro televizi LG)
+        if (i?.getBooleanExtra("fullapp", false) == true && debuggable) useForLgTv()
     }
 
     private fun add(v: View, top: Int = 12) = content.addView(v, ui.lp(top = top))

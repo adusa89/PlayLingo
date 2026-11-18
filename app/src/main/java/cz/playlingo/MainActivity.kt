@@ -33,6 +33,7 @@ import cz.playlingo.core.Ps5
 import cz.playlingo.core.Ps5Host
 import cz.playlingo.core.UpdateCheck
 import cz.playlingo.core.SubtitleHistory
+import cz.playlingo.core.TranslationProbe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -163,6 +164,32 @@ class MainActivity : Activity() {
             Prefs.setWizardDone(this, true); wizard = -1
             Prefs.setPs5Host(this, null)
             section = Section.PS5; pairStep = i?.getIntExtra("pairstep", 2) ?: 2; render(); return
+        }
+        val debuggable = applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0
+        // Zkouška rozložení (snímky v různých velikostech displeje): rovnou na danou stránku.
+        i?.getStringExtra("page")?.let { p ->
+            if (debuggable) Section.values().firstOrNull { it.name == p }?.let {
+                Prefs.setWizardDone(this, true); wizard = -1; section = it; render(); return
+            }
+        }
+        // Zkouška překladu: typické herní repliky projdou stejnou cestou jako titulky ze hry
+        // a výsledek jde do záznamu (řádky TR|anglicky|překlad).
+        if (i?.getBooleanExtra("trtest", false) == true && debuggable) {
+            Prefs.setWizardDone(this, true); wizard = -1; section = Section.HOME; render()
+            val lang = Prefs.lang(this)
+            val glossary = Prefs.glossary(this)
+            scope.launch(Dispatchers.Default) {
+                fun log(m: String) { android.util.Log.i("TP_TEST", "TR|$m") }
+                var ready = OfflineTranslator.isReady(lang)
+                for (n in 0 until 90) { if (ready) break; kotlinx.coroutines.delay(1000); ready = OfflineTranslator.isReady(lang) }
+                log("start ${lang.code} model=$ready")
+                for (line in TranslationProbe.LINES) {
+                    val out = try { OfflineTranslator.translateSubtitle(lang, line, glossary) } catch (e: Exception) { "!" + e.javaClass.simpleName }
+                    log("$line|$out")
+                }
+                log("done ${TranslationProbe.LINES.size}")
+            }
+            return
         }
         // Zkouška přihlášení přes telefon: stránka z televize odpovídá, špatný klíč odmítne a účet
         // poslaný „z telefonu“ posune průvodce na krok s číslem z PS5.
@@ -1426,6 +1453,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.67"
-    const val VERSION_CODE = 67
+    const val VERSION = "verze 0.68"
+    const val VERSION_CODE = 68
 }

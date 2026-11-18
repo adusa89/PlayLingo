@@ -57,6 +57,15 @@ před každým pushem – odhalí překlepy a chyby v typech dřív než zkoušk
 (`res/`), manifest ani nativní část; nový zdroj `R.…` nebo novou funkci knihoven Google použitou
 v kódu je potřeba doplnit do `ci/mistni-kontrola/stub`.
 
+Od 0.68 běží vedle toho i **zkouška v emulátoru telefonu** (`ci/phone-test.sh`, Android 11 a 14):
+pomocník, celá aplikace v telefonu v šesti velikostech displeje a písma (malý, běžný, velké písmo,
+velký, na šířku, tablet) a překlad ukázkové hry. Výsledky a snímky jsou ve větvích
+`test-results-phone30` a `-phone34` (snímky `p1_…` pomocník, `p2_<velikost>_<stránka>` celá
+aplikace). Zatím vydání nezdržuje. Po každé změně rozložení si ty snímky prohlédni.
+
+Zkouška na Android TV navíc nechá přeložit typické herní repliky (`core/TranslationProbe.kt`)
+a uloží je do `preklad.txt` ve větvích s výsledky – podle něj se ladí přirozenost překladu.
+
 Výsledky zkoušky se ukládají do větví `test-results-api28`, `-api30`, `-api33`, `-api34`
 (přepisují se při každém běhu): `result.txt`, `crash.txt`, `log.txt` a snímky obrazovky.
 Když zkouška spadne nebo jde o vzhled, stáhni si větev a na snímky se podívej:
@@ -199,7 +208,8 @@ a tlačítko Jazyk na úvodní obrazovce; do obchodu LG se podává s anglickým
 - Věty ukázkové hry v `core/DemoGame.kt` – skript hledá 15 z nich podle textu. Měníš-li věty,
   uprav i skript.
 - Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`, `updtest`,
-  `updself`, `logintest`, `helperlogin` a `TestCardActivity`, `PhoneHelperActivity`.
+  `updself`, `logintest`, `helperlogin`, `fullapp`, `page`, `trtest` a `TestCardActivity`,
+  `PhoneHelperActivity`.
 - Zkouška přihlášení přes telefon (řádky `LOGIN|`, `HELPER|`, snímky `12n`–`12p`) se do výsledku
   nepočítá. V `result.txt` má být `ucet_z_telefonu` aspoň 1 (stránka z televize přijala účet)
   a `pomocnik` aspoň 1 (pomocník přijal odkaz ze stránky televize); na snímku `12n` má být

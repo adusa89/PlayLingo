@@ -79,6 +79,11 @@ adb shell "am start -n $PKG/.PhoneHelperActivity -a android.intent.action.VIEW -
 sleep 25; shot 12p_pomocnik_prihlaseni
 key 4; sleep 1; key 4; sleep 1; key 4; sleep 1
 
+# 6c) zkouška překladu: typické herní repliky projdou překladem stejně jako titulky ze hry.
+#     Do výsledku se nepočítá; věty a jejich překlad jsou v preklad.txt (podle nich se ladí přirozenost).
+adb shell am start -n $PKG/.MainActivity --ez trtest true
+for i in $(seq 1 60); do sleep 3; adb logcat -d | grep -q "TP_TEST.*TR|done" && break; done
+
 # 7) nabídka se seznamem (jazyk): stránka Titulky → první řádek → OK
 adb shell am start -n $PKG/.MainActivity --ez nowizard true
 sleep 2; key 20; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk
@@ -168,7 +173,8 @@ else
   echo "VYSLEDEK=CHYBA" >> $OUT/result.txt
 fi
 cat $OUT/kinds.txt $OUT/missing.txt >> $OUT/result.txt 2>/dev/null
-grep "TP_TEST" $OUT/log.txt | grep -v "READ|" >> $OUT/result.txt
+grep "TP_TEST" $OUT/log.txt | grep -v "READ|\|TR|" >> $OUT/result.txt
+grep "TP_TEST.*TR|" $OUT/log.txt | sed 's/.*TR|//' > $OUT/preklad.txt
 adb shell dumpsys package com.google.android.webview 2>/dev/null | grep -m1 versionName >> $OUT/device.txt || true
 grep "TP_TEST" $OUT/log.txt > $OUT/reads.txt
 tail -c 400000 $OUT/logcat_full.txt > $OUT/logcat_tail.txt; rm $OUT/logcat_full.txt

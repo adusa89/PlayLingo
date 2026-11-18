@@ -89,6 +89,20 @@ jobs:
           name: emulator-apk
           path: TestPreklad-emulator.apk
 
+      # Emulátor telefonu s Androidem 14 má 64bitový procesor – potřebuje vlastní zkušební APK.
+      # Když se nepovede, zkouška na Android TV běží dál (jen zkouška telefonu s Androidem 14 spadne).
+      - name: Sestavení zkušební verze pro emulátor telefonu (x86_64)
+        continue-on-error: true
+        run: |
+          ./gradlew assembleDebug --no-daemon -Pabis=x86_64
+          cp app/build/outputs/apk/debug/app-debug.apk TestPreklad-emulator64.apk
+
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: emulator-apk64
+          path: TestPreklad-emulator64.apk
+
   publish:
     name: Vydat APK ke stažení
     needs: [build, emulator]
@@ -183,4 +197,59 @@ jobs:
       - name: Vyhodnocení
         run: |
           cat test-results/result.txt
+          grep -q "^VYSLEDEK=OK" test-results/result.txt
+
+  # Zkouška v emulátoru telefonu: pomocník, celá aplikace v různých velikostech displeje a překlad.
+  # Zatím jen hlásí výsledek a vydání nezdržuje (až se ustálí, přidej ji do „needs“ u vydání).
+  phone:
+    name: Emulátor telefonu (API ${{ matrix.api }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { api: 30, arch: x86, artifact: emulator-apk, apk: TestPreklad-emulator.apk }         # Android 11
+          - { api: 34, arch: x86_64, artifact: emulator-apk64, apk: TestPreklad-emulator64.apk }   # Android 14
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+
+      - name: Povolit KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Zkouška v emulátoru telefonu
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          APK: ${{ matrix.apk }}
+        with:
+          api-level: ${{ matrix.api }}
+          target: google_apis
+          arch: ${{ matrix.arch }}
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -memory 3072
+          script: bash ci/phone-test.sh
+
+      - name: Uložit výsledky
+        if: always()
+        run: |
+          cd test-results || exit 0
+          git init -q -b test-results-phone${{ matrix.api }}
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git commit -q -m "Výsledky zkoušky v emulátoru telefonu"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" test-results-phone${{ matrix.api }}
+
+      - name: Vyhodnocení
+        run: |
+          head -3 test-results/result.txt
           grep -q "^VYSLEDEK=OK" test-results/result.txt
