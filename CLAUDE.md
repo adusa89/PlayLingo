@@ -113,6 +113,12 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   zkopíruje adresu bílé stránky „redirect“ a vloží ji na stránku; televize si z ní vezme kód
   a pokračuje sama. Funguje i na iPhonu. Stránka přijme jen požadavky s jednorázovým klíčem
   z čtverečku a mimo tyto kroky neběží.
+- **Co stránka v prohlížeči umí a neumí** (`SCRIPT` v `core/PhoneLogin.kt`, od 0.67): přihlášení
+  Sony otevírá sama na nové kartě a po úspěchu ji zavře; vloženou adresu odešle sama na pozadí.
+  Adresu z karty Sony si přečíst nemůže (cizí stránka) a schránku prohlížeč stránce z domácí sítě
+  bez zabezpečeného spojení nevydá. Zkopírovat adresu a vrátit se na kartu PlayLingo proto musí
+  člověk – na iPhonu to jinak nejde, nezkoušej to obcházet. Úplně bez kopírování je jen pomocník
+  v telefonu s Androidem.
 - **PlayLingo v telefonu.** Stejné APK nainstalované v telefonu (pozná se podle mobilní sítě,
   `NetInfo.isPhone`) ukáže místo aplikace jen pomocníka. Otevírá ho odkaz `playlingo://login?…`
   ze stránky televize. Přihlášení Sony běží v něm, kód si vezme sám, číslo účtu pošle televizi

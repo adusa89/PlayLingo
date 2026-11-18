@@ -157,6 +157,34 @@ object PhoneLogin {
 
     // ---------------- stránka ----------------
 
+    /**
+     * Chování stránky v prohlížeči telefonu:
+     *  - PlayLingo do telefonu je jen pro Android, jinde se ta nabídka schová;
+     *  - přihlášení Sony otevře stránka sama na nové kartě, aby ji po úspěchu mohla sama zavřít
+     *    (když to prohlížeč nedovolí, zůstane obyčejný odkaz);
+     *  - po vložení adresy se formulář odešle sám, na pozadí – výsledek se ukáže na téže kartě;
+     *    kartu Sony zavře jen po úspěchu (značka úspěchu je ve skriptu schválně rozdělená na dva
+     *    kusy – stránka s chybou obsahuje skript taky a celou značku by v něm našla);
+     *  - po návratu z karty Sony je políčko rovnou připravené na vložení.
+     * Adresu z karty Sony si stránka sama přečíst nemůže (cizí stránka) a schránku prohlížeč
+     * stránce z domácí sítě bez zabezpečeného spojení nevydá – zkopírovat a vložit musí člověk.
+     */
+    private const val SCRIPT = "<script>(function(){" +
+        "if(!/Android/i.test(navigator.userAgent)){var a=document.getElementById('app');if(a)a.style.display='none'}" +
+        "var u=document.getElementById('u'),f=u.form,l=document.getElementById('l'),b=f.querySelector('button'),busy=false;" +
+        "l.addEventListener('click',function(e){var w=null;try{w=window.open(l.href,'_blank')}catch(x){}" +
+        "if(w){window.sonyTab=w;e.preventDefault()}});" +
+        "function send(){if(busy)return;busy=true;b.style.opacity='.5';var x=new XMLHttpRequest();" +
+        "x.open('POST',f.getAttribute('action'));x.setRequestHeader('Content-Type','application/x-www-form-urlencoded');" +
+        "x.onload=function(){if(x.responseText.indexOf('class=\"o'+'k\"')>=0){try{if(window.sonyTab)window.sonyTab.close()}catch(e){}}" +
+        "document.open();document.write(x.responseText);document.close()};" +
+        "x.onerror=function(){f.submit()};x.send('url='+encodeURIComponent(u.value))}" +
+        "f.addEventListener('submit',function(e){e.preventDefault();send()});" +
+        "u.addEventListener('paste',function(){setTimeout(function(){if(u.value.indexOf('code=')>=0)send()},80)});" +
+        "document.addEventListener('visibilitychange',function(){if(!document.hidden&&window.sonyTab){" +
+        "try{u.focus();u.scrollIntoView({block:'center'})}catch(e){}}});" +
+        "})();</script>"
+
     /** Co stránka ukazuje: postup, postup s chybou, hotovo, nebo že odkaz už neplatí. */
     enum class Page { ASK, BAD, DONE, GONE }
 
@@ -194,7 +222,7 @@ object PhoneLogin {
                 sb.append("<div class=\"card note\"><p>").append(para(t("acc2"))).append("</p></div>")
                 sb.append("<h2>").append(esc(t("wp_web_h"))).append("</h2><div class=\"card\">")
                     .append("<p>").append(para(t("wp_1"))).append("</p>")
-                    .append("<a class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(esc(loginUrl)).append("\">").append(esc(t("wp_login_btn"))).append("</a>")
+                    .append("<a id=\"l\" class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(esc(loginUrl)).append("\">").append(esc(t("wp_login_btn"))).append("</a>")
                     .append("<p>").append(para(t("wp_2"))).append("</p>")
                     .append("<form method=\"post\" action=\"").append(esc(path(key))).append("\">")
                     .append("<p>").append(para(t("wp_3"))).append("</p>")
@@ -207,10 +235,7 @@ object PhoneLogin {
                         .append("<a class=\"btn plain\" href=\"").append(esc(apkUrl)).append("\">").append(esc(t("wp_app_get"))).append("</a>")
                         .append("</div></div>")
                 }
-                // PlayLingo do telefonu je jen pro Android; po vložení adresy se formulář odešle sám
-                sb.append("<script>if(!/Android/i.test(navigator.userAgent)){var a=document.getElementById('app');if(a)a.style.display='none'}")
-                    .append("var u=document.getElementById('u');u.addEventListener('paste',function(){setTimeout(function(){")
-                    .append("if(u.value.indexOf('code=')>=0)u.form.submit()},80)});</script>")
+                sb.append(SCRIPT)
             }
         }
         sb.append("</main></body></html>")

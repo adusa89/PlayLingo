@@ -82,6 +82,8 @@ class PhoneLoginTest {
             val ask = PhoneLogin.page(lang, PhoneLogin.Page.ASK, t.key, t, "https://sony.example/login?a=1&b=2", "https://example.com/PlayLingo.apk")
             assertTrue("$lang formulář", ask.contains("action=\"/p/abcd2345\"") && ask.contains("name=\"url\""))
             assertTrue("$lang přihlášení", ask.contains("href=\"https://sony.example/login?a=1&amp;b=2\""))
+            // stránka si přihlášení otevírá sama (aby kartu po úspěchu mohla zavřít) a odesílá na pozadí
+            assertTrue("$lang chování stránky", ask.contains("id=\"l\"") && ask.contains("window.sonyTab") && ask.contains("XMLHttpRequest"))
             assertTrue("$lang odkaz do aplikace", ask.contains("playlingo://login?h=192.168.1.20&amp;p=8765&amp;k=abcd2345&amp;l=${lang.code}"))
             assertTrue("$lang texty", ask.contains(PhoneLogin.esc(I18n.t(lang, "wp_send"))) && ask.contains(PhoneLogin.esc(I18n.t(lang, "wp_app_btn"))))
             for (state in PhoneLogin.Page.values()) {
@@ -90,6 +92,10 @@ class PhoneLoginTest {
             }
             assertTrue(PhoneLogin.page(lang, PhoneLogin.Page.DONE, t.key, t, "x", "y").contains(PhoneLogin.esc(I18n.t(lang, "wp_ok"))))
         }
+        // kartu Sony smí stránka zavřít jen po úspěchu: značka úspěchu je jen ve stránce „hotovo“
+        for (state in listOf(PhoneLogin.Page.ASK, PhoneLogin.Page.BAD, PhoneLogin.Page.GONE))
+            assertFalse("$state", PhoneLogin.page(Lang.CS, state, t.key, t, "x", "y").contains("class=\"ok\""))
+        assertTrue(PhoneLogin.page(Lang.CS, PhoneLogin.Page.DONE, t.key, t, "x", "y").contains("class=\"ok\""))
         // bez adresy televize v domácí síti se odkaz do aplikace nenabízí, formulář ale funguje
         val noApp = PhoneLogin.page(Lang.CS, PhoneLogin.Page.BAD, t.key, null, "x", "y")
         assertFalse(noApp.contains("playlingo://"))

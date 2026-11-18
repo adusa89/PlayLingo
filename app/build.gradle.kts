@@ -11,8 +11,8 @@ android {
         applicationId = "cz.playlingo"
         minSdk = 26          // Android 8 a novější (prakticky všechny Android TV a boxy)
         targetSdk = 34
-        versionCode = 66
-        versionName = "0.66"
+        versionCode = 67
+        versionName = "0.67"
 
         // televize a boxy mají procesory ARM; emulátor při zkoušce x86 (-Pabis=x86)
         val abis = ((project.findProperty("abis") as String?) ?: "armeabi-v7a,arm64-v8a").split(",")
