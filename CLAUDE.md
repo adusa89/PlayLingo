@@ -30,8 +30,12 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   `app/src/main/cpp` (úloha `patchChiaki` v `app/build.gradle.kts`).
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení, zkouška, vydání.
 - `ci/mistni-kontrola` – překlad a unit testy bez Android SDK (viz níže).
-- `webos` – zkušební aplikace pro televize LG (viz Televize LG). Nesouvisí s aplikací pro
-  Android TV a do APK se nedostane.
+- `webos` – PlayLingo pro televize LG (viz Televize LG): `webos/obchod` je aplikace pro televizi,
+  `webos/zkouska` diagnostika. Do APK se nic z toho nedostane.
+- `pc` – zkušební čtečka pro počítač s Windows (viz `pc/CTI-ME.md`): čte titulky z okna s obrazem
+  hry, přeloží je a pošle do televize LG. Překládá se proti téže složce `core` jako aplikace,
+  takže změna v `core` se týká i jí – po úpravě `core` ověř i `gradlew -p pc installDist`.
+  Do APK se nedostane a sestavení na GitHubu o ní neví.
 
 ## Sestavení a zkouška
 
@@ -75,6 +79,9 @@ náhoda, opakované selhání po změně kódu ne.
 - Záloha verze, ke které se má jít vrátit: větev `zaloha-<číslo>`.
 - Aplikace nabízí novou verzi tlačítkem „Aktualizovat“ na stránce Domů (`Updater.kt`). Bere
   vyšší číslo z `latest` a (se zapnutým zkušebním kanálem) ze `zkusebni`.
+  Od 0.65 nabízí aktualizaci i pomocník v telefonu (`PhoneHelperActivity`), kde jde zapnout
+  i zkušební kanál. Odpověď systému na instalaci chodí vždy do `MainActivity`; v telefonu ji jen
+  vyřídí a zmizí.
 
 ## Podpis
 
@@ -106,43 +113,84 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   zkopíruje adresu bílé stránky „redirect“ a vloží ji na stránku; televize si z ní vezme kód
   a pokračuje sama. Funguje i na iPhonu. Stránka přijme jen požadavky s jednorázovým klíčem
   z čtverečku a mimo tyto kroky neběží.
+- **Co stránka v prohlížeči umí a neumí** (`SCRIPT` v `core/PhoneLogin.kt`, od 0.67): přihlášení
+  Sony otevírá sama na nové kartě a po úspěchu ji zavře; vloženou adresu odešle sama na pozadí.
+  Adresu z karty Sony si přečíst nemůže (cizí stránka) a schránku prohlížeč stránce z domácí sítě
+  bez zabezpečeného spojení nevydá. Zkopírovat adresu a vrátit se na kartu PlayLingo proto musí
+  člověk – na iPhonu to jinak nejde, nezkoušej to obcházet. Úplně bez kopírování je jen pomocník
+  v telefonu s Androidem.
 - **PlayLingo v telefonu.** Stejné APK nainstalované v telefonu (pozná se podle mobilní sítě,
   `NetInfo.isPhone`) ukáže místo aplikace jen pomocníka. Otevírá ho odkaz `playlingo://login?…`
   ze stránky televize. Přihlášení Sony běží v něm, kód si vezme sám, číslo účtu pošle televizi
   (`LoginClient`) a zapamatuje si ho (`Prefs.phoneAccounts`; jen číslo a jméno, žádné heslo).
   Účet posílá jen na adresy domácí sítě. Záloha: přihlášení v prohlížeči a Sdílet → PlayLingo.
-- Ruční opsání kódu (krok 5 průvodce) zůstává jako poslední záloha. Pořadí a počet kroků
-  průvodce se nezměnily.
+- Ruční opsání kódu (krok 5 průvodce) zůstává jako poslední záloha a od 0.66 je úplné samo
+  o sobě: má vlastní čtvereček, který vede rovnou na přihlášení Sony (jako před 0.57), a z kroku
+  se čtverečkem na něj vede tlačítko „Stránka se neotevřela“. Je pro případ, že se stránka
+  z televize v telefonu neotevře (telefon na jiné Wi-Fi nebo na mobilních datech). Tuhle cestu
+  neodstraňuj. Pořadí a počet kroků průvodce se nezměnily.
 - Zkouška v emulátoru umí ověřit jen stránku a posílání účtu, ne přihlášení u Sony. Jestli Sony
   pustí přihlášení uvnitř pomocníka na skutečném telefonu, umí ověřit jen uživatel.
 
 ## Televize LG (webOS)
 
-- Ve složce `webos` je zatím jen **zkušební aplikace**, ne překladač. Na skutečné televizi má
-  zjistit, jestli aplikace umí ukázat vstup HDMI s pruhem přes obraz a jestli si obraz umí sama
-  přečíst. Podle výsledku se teprve rozhodne, jak verzi pro LG postavit.
-- Televize uživatele je LG OLED55B7 (rok 2017, webOS 3.x, prohlížeč Chromium 38). Kód proto
-  musí zůstat ve starém zápisu JavaScriptu: žádné `let`/`const`, šipkové funkce, `Promise`,
-  `fetch` ani šablonové řetězce.
-- Aplikace na LG se nejspíš nepřipojí k PlayStationu po síti jako na Android TV (to dělá
-  nativní knihovna chiaki-ng). Musela by číst obraz přímo z HDMI, nebo by čtení a překlad
-  dělalo jiné zařízení a televize jen ukazovala pruh.
-- `python3 webos/sestavit.py` vytvoří `webos/PlayLingo-zkouska.ipk` (soubor se necommituje).
-  Postup instalace do televize je ve `webos/CTI-ME.md`. Změny jen ve složce `webos` nemění
-  verzi aplikace pro Android TV a commitují se s `[skip ci]`.
+Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět při úpravách.
 
-## Texty aplikace (9 jazyků)
+- Televize LG si obraz hry nepřečte (ověřeno na OLED55B7: aplikace vidí jen černou a snímek
+  obrazovky jí systém nedovolí; výsledky jsou ve `webos/zkouska/CTI-ME.md`). Na LG proto PlayLingo
+  běží jen jako obrazovka – hra z HDMI a přes ni pruh. Čte a překládá PlayLingo na Androidu
+  (telefon nebo box) a televizi posílá hotové věty po domácí síti.
+- **`webos/obchod` je jediná aplikace PlayLingo pro televizi** (id `cz.playlingo.tv`, česky
+  a anglicky, podává se do obchodu LG; postup podání je ve `webos/obchod/CTI-ME.md`).
+  `webos/zkouska` je jen diagnostika, co která televize dovolí, a po síti nic nepřijímá.
+- Zprávy mezi Androidem a televizí jsou popsané na jednom místě, v `core/TvSender.kt`. V televizi
+  je obsluhuje jen `webos/obchod/app/app.js` (`hledej`, `zkus`, `prevezmi`). Televize si zařízení
+  najde sama: projde adresy své sítě na portu 8787. Spojení je WebSocket obsloužený ručně na obou
+  stranách.
+- Android: volba Nastavení → „Posílat titulky do televize LG“ (`Prefs.tvSend`, výchozí vypnuto).
+  `SubtitleOverlay` předává `TvSender` každou změnu pruhu. S vypnutou volbou se nic neotevírá ani
+  neposílá a aplikace se chová jako dřív. Se zapnutou se čte i tehdy, když je vidět aplikace,
+  a nevyžaduje se povolení pruhu.
+- Telefon: pomocník (`PhoneHelperActivity`) má od 0.63 tlačítko „Použít telefon pro televizi LG“.
+  Zapne `Prefs.forceTv` a `Prefs.tvSend`, předá už ověřený účet do párování a otevře celou
+  aplikaci. Jestli se celá aplikace dá na telefonu pohodlně ovládat, umí ověřit jen uživatel.
+- Televize uživatele má prohlížeč Chromium 38. Kód pro televizi proto musí zůstat ve starém zápisu
+  JavaScriptu: žádné `let`/`const`, šipkové funkce, `Promise`, `fetch` ani šablonové řetězce.
+- Zkoušení bez Androidu: `node webos/posilac.js` posílá z počítače zkušební věty, `pc/` čte
+  a překládá na počítači. Nástroj LG (`ares-package`, `ares-install`, `ares-launch`, `ares-inspect`
+  z `@webos-tools/cli`) nahraje aplikaci do televize ve vývojářském režimu; `ares-inspect` dá živý
+  přístup do běžící aplikace.
+- Změny jen ve složkách `webos` a `pc` nemění verzi aplikace pro Android TV a commitují se
+  s `[skip ci]`. Balíčky `.ipk` se necommitují.
 
-Každý nový text musí být ve všech jazycích, jinak neprojde test `AllLanguagesTest`:
+## Texty aplikace a jazyky
 
-- obecné texty: čeština + slovenština v `core/I18n.kt`, ostatní v `core/I18nPl.kt`, `I18nDe.kt`,
-  `I18nHu.kt`, `I18nUk.kt`, `I18nEs.kt`, `I18nFr.kt`, `I18nIt.kt`;
-- texty kolem PlayStationu: `core/I18nPs5.kt` (`PS5_S` pro češtinu a slovenštinu, `PS5_X` pro ostatní);
+Aplikace má dvě na sobě nezávislá nastavení jazyka (`core/Lang.kt`):
+
+- **jazyk překladu** (`Prefs.lang`, stránka Překlad a průvodce) – do čeho se titulky překládají;
+  jen `Lang.targets`, tedy bez angličtiny,
+- **jazyk aplikace** (`Prefs.uiLang`, Nastavení a pomocník v telefonu) – nabídky a nápověda;
+  všech deset jazyků včetně angličtiny. Texty na obrazovce ber vždy přes `tx()` / `Prefs.uiLang`,
+  nikdy podle jazyka překladu.
+
+Kdo si jazyk aplikace nezvolil, má ji v jazyce překladu (tak to bylo do 0.63); nová instalace se
+řídí jazykem zařízení a pro jazyk, který aplikace neumí, je anglicky. Další jazyk překladu, pro
+který aplikace texty nemá, se přidá jen do `Lang.targets`.
+
+Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `AllLanguagesTest`:
+
+- obecné texty: čeština + slovenština v `core/I18n.kt`, angličtina v `core/I18nEn.kt`, ostatní
+  v `core/I18nPl.kt`, `I18nDe.kt`, `I18nHu.kt`, `I18nUk.kt`, `I18nEs.kt`, `I18nFr.kt`, `I18nIt.kt`;
+- texty kolem PlayStationu: `core/I18nPs5.kt` (`PS5_S` pro češtinu a slovenštinu, `PS5_X` pro ostatní
+  včetně angličtiny);
 - texty přihlášení přes telefon (kroky `pa_…`, stránka z televize `wp_…`, pomocník v telefonu
   `hp_…`): `core/I18nLogin.kt` (`LOGIN_S`, `LOGIN_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
+
+Aplikace pro televizi LG (`webos/obchod`) má vlastní texty česky a anglicky přímo v `app.js`
+a tlačítko Jazyk na úvodní obrazovce; do obchodu LG se podává s anglickými podklady.
 
 ## Na co zkouška spoléhá (neměnit jen tak)
 

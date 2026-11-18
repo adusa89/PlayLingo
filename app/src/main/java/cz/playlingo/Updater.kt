@@ -58,6 +58,19 @@ object Updater {
         log("fail $key" + (detail?.let { " $it" } ?: ""))
     }
 
+    /** Číslo nejnovější verze v daném kanálu; null, když se nedá zjistit. Volat mimo hlavní vlákno. */
+    fun remoteVersion(channel: UpdateCheck.Channel): UpdateCheck.Remote? = try {
+        val c = java.net.URL(UpdateCheck.url(channel, "version.txt")).openConnection() as java.net.HttpURLConnection
+        c.connectTimeout = 5000; c.readTimeout = 5000
+        try {
+            if (c.responseCode == 200) UpdateCheck.parse(c.inputStream.bufferedReader().use { it.readText().take(100) }) else null
+        } finally { c.disconnect() }
+    } catch (_: Exception) { null }
+
+    /** Novější verze, která je ke stažení (se zkušebním kanálem i v něm); null = žádná. Volat mimo hlavní vlákno. */
+    fun offer(test: Boolean): UpdateCheck.Offer? = UpdateCheck.pick(remoteVersion(UpdateCheck.Channel.STABLE),
+        if (test) remoteVersion(UpdateCheck.Channel.TEST) else null, BuildInfo.VERSION_CODE)
+
     /** Smaže zbytky po stahování (volá se při spuštění aplikace). */
     fun cleanUp(ctx: Context) {
         try { File(ctx.cacheDir, FILE).delete(); File(ctx.cacheDir, "$FILE.part").delete() } catch (_: Exception) {}

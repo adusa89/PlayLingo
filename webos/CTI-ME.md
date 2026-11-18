@@ -1,28 +1,54 @@
-# PlayLingo pro televize LG (webOS) – zkouška
+# PlayLingo a televize LG (webOS)
 
-Zatím to není překladač, jen **zkušební aplikace**. Na skutečné televizi zjistí, na čem se dá
-verze pro LG postavit:
+Televize LG si obraz hry sama přečíst neumí (ověřeno na OLED55B7, viz `zkouska/`). Proto na LG
+běží PlayLingo jen jako obrazovka: ukáže hru ze vstupu HDMI a přes ni pruh s překladem. Číst
+a překládat musí jiné zařízení v téže domácí síti a televizi posílat hotové věty.
 
-1. jestli aplikace umí ukázat hru ze vstupu HDMI a nakreslit přes ni pruh s titulkem,
-2. jestli si aplikace umí obraz sama přečíst (pak by se nemusela připojovat k PlayStationu po síti),
-3. jakou verzi systému a prohlížeče televize má.
+```
+PlayStation ──HDMI──────────────────────────▶ televize LG  (aplikace z obchod/)
+     │                                             ▲
+     └─ obraz po síti ─▶ PlayLingo na Androidu ────┘ hotové věty po domácí síti (port 8787)
+                         (telefon nebo box; čte a překládá)
+```
 
-Je psaná tak, aby běžela i na televizích z let 2016–2017 (webOS 3.x, např. OLED55B7).
+## Co je kde
 
-## Jak ji dostat do televize
+| Složka / soubor | Co to je | Kdy se použije |
+|---|---|---|
+| `obchod/` | **Aplikace pro televizi** (id `cz.playlingo.tv`), česky a anglicky. Podává se do obchodu LG. | Tohle je PlayLingo pro LG. |
+| `zkouska/` | Diagnostická aplikace (id `cz.playlingo.zkouska`): zjistí, co daná televize aplikaci dovolí. | Jen při zkoumání nového modelu televize. |
+| `posilac.js` | Zkušební posílač vět z počítače (`node webos/posilac.js`). Nic nečte ani nepřekládá. | Zkouška aplikace v televizi bez Androidu. |
+| `../pc/` | Zkušební čtečka pro počítač: čte a překládá jako Android. | Ladění čtení a překladu. |
+| `../app/…/core/TvSender.kt` | Strana Androidu: posílání vět do televize a popis zpráv. | Volba „Posílat titulky do televize LG“. |
 
-1. V televizi nainstalujte z LG Content Store aplikaci **Developer Mode**. Přihlaste se v ní
-   účtem z webu webostv.developer.lge.com (je zdarma), zapněte **Dev Mode Status** a **Key Server**.
-   Televize se restartuje.
-2. Na počítači ve stejné síti nainstalujte program **webOS Dev Manager**
-   (github.com/webosbrew/dev-manager-desktop), přidejte televizi (adresu a heslo ukazuje aplikace
-   Developer Mode) a přes **Install** vyberte soubor `PlayLingo-zkouska.ipk`.
-3. Na televizi spusťte **PlayLingo zkouška**, vyberte vstup, do kterého je zapojený PlayStation,
-   a výslednou obrazovku vyfoťte.
+Jak spolu televize a zařízení mluví, je popsané na jediném místě: v `TvSender.kt`. V televizi to
+obsluhuje jediný soubor, `obchod/app/app.js` (funkce `hledej`, `zkus`, `prevezmi`).
 
-Vývojářský režim se po čase sám vypne a aplikaci odstraní; v aplikaci Developer Mode jde prodloužit.
+## Jak to zprovoznit doma
 
-## Sestavení
+1. **Telefon:** v PlayLingu (od 0.63) klepnout na „Použít telefon pro televizi LG“. V boxu
+   s Android TV: Nastavení → „Posílat titulky do televize LG“.
+2. **Televize:** spustit PlayLingo a vybrat vstup HDMI s PlayStationem. Televize si zařízení
+   v síti najde sama a zapamatuje si ho.
+3. V telefonu spustit překlad (nebo zkoušku bez PlayStationu).
 
-`python3 webos/sestavit.py` vytvoří `webos/PlayLingo-zkouska.ipk` (nic se neinstaluje).
-Zdroj aplikace je ve složce `webos/app`.
+## Nahrání do televize při vývoji
+
+Televize musí mít zapnutý vývojářský režim (aplikace Developer Mode z LG Content Store, účet
+z webostv.developer.lge.com, zapnout Dev Mode Status a Key Server). Na počítači nástroj LG:
+`npm install -g @webos-tools/cli`.
+
+```
+ares-setup-device -a lgtv -i "host=ADRESA_TELEVIZE" -i "port=9922" -i "username=prisoner"
+ares-novacom --device lgtv --getkey --passphrase KOD_Z_TELEVIZE
+ares-package --no-minify webos/obchod/app -o webos/obchod
+ares-install -d lgtv webos/obchod/cz.playlingo.tv_1.0.0_all.ipk
+ares-launch  -d lgtv cz.playlingo.tv
+ares-inspect -d lgtv -a cz.playlingo.tv      # živý přístup do běžící aplikace
+```
+
+Vývojářský režim se po čase sám vypne a aplikace z televize zmizí; v aplikaci Developer Mode
+jde prodloužit. Trvalá cesta pro uživatele je obchod LG – viz `obchod/CTI-ME.md`.
+
+Televize z roku 2017 má prohlížeč Chromium 38: kód pro televizi musí zůstat ve starém zápisu
+JavaScriptu (žádné `let`/`const`, šipkové funkce, `Promise`, `fetch` ani šablonové řetězce).

@@ -54,11 +54,17 @@ object NetInfo {
      * Televize a boxy se poznají bezpečně: nemají mobilní síť. Kdyby se přesto spletla,
      * dá se to v pomocníkovi jedním tlačítkem opravit ([Prefs.forceTv]).
      */
-    fun isPhone(ctx: Context): Boolean = try {
+    fun isPhone(ctx: Context): Boolean = isHandheld(ctx) && !Prefs.forceTv(ctx)
+
+    /**
+     * Je to telefon – bez ohledu na to, jestli na něm zrovna běží pomocník, nebo celá aplikace
+     * ([Prefs.forceTv])? Celá aplikace pak nabízí cestu zpět k pomocníkovi.
+     */
+    fun isHandheld(ctx: Context): Boolean = try {
         val pm = ctx.packageManager
         val tv = pm.hasSystemFeature("android.software.leanback") || pm.hasSystemFeature("android.software.leanback_only") ||
             pm.hasSystemFeature("android.hardware.type.television") || pm.hasSystemFeature("android.software.live_tv") ||
             ctx.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_TYPE_MASK == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
-        !tv && !Prefs.forceTv(ctx) && pm.hasSystemFeature("android.hardware.telephony") && pm.hasSystemFeature("android.hardware.touchscreen")
+        !tv && pm.hasSystemFeature("android.hardware.telephony") && pm.hasSystemFeature("android.hardware.touchscreen")
     } catch (_: Throwable) { false }
 }

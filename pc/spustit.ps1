@@ -1,0 +1,16 @@
+﻿# Spustí čtečku pro počítač (nejdřív jednou pc\priprava.ps1).
+#
+#   powershell -File pc\spustit.ps1                  ukázka bez PlayStationu
+#   powershell -File pc\spustit.ps1 -Okno chiaki     čte okno, jehož titulek obsahuje „chiaki“
+#
+# Ukončení: Ctrl+C.
+param([string]$Okno = "", [string]$Jazyk = "cs")
+$slozka = "$env:LOCALAPPDATA\PlayLingoTools"
+$model = Get-ChildItem "$slozka\modely\en_$Jazyk" -Directory | Select-Object -First 1
+if (-not $model) { throw "Chybí překladový model – nejdřív spusť pc\priprava.ps1 -Jazyk $Jazyk" }
+$env:JAVA_OPTS = "-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8"
+[Console]::OutputEncoding = [Text.Encoding]::UTF8
+$parametry = @("--python", "$slozka\venv\Scripts\python.exe", "--pomocnik", "$PSScriptRoot\cteni.py",
+    "--model", $model.FullName, "--jazyk", $Jazyk)
+if ($Okno) { $parametry += @("--okno", $Okno) }
+& "$PSScriptRoot\build\install\playlingo-pc\bin\playlingo-pc.bat" @parametry

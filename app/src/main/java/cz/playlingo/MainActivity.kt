@@ -17,6 +17,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -113,7 +114,9 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         // v telefonu aplikace nepřekládá – je tam jen pomocník pro přihlášení účtem PlayStation
         if (NetInfo.isPhone(this)) {
-            startActivity(Intent(this, PhoneHelperActivity::class.java))
+            // Odpověď systému na aktualizaci spuštěnou z pomocníka přijde sem: jen ji vyřídit (ukázat
+            // dotaz na instalaci) a zmizet – pomocník zůstává pod tím.
+            if (!Updater.onStatus(this, intent)) startActivity(Intent(this, PhoneHelperActivity::class.java))
             finish()
             return
         }
@@ -230,7 +233,52 @@ class MainActivity : Activity() {
 
     // ======================= kostra: menu + obsah =======================
 
+    /**
+     * Úzká obrazovka (telefon na výšku). Aplikace je kreslená pro televizi – menu vlevo, obsah vpravo.
+     * Na úzké obrazovce by na obsah zbyl proužek, proto je tam menu nahoře jako řada a obsah pod ním
+     * přes celou šířku. Na televizi se nic nemění.
+     */
+    private val narrow: Boolean get() = resources.configuration.screenWidthDp in 1 until 600
+
+    /** Řada tlačítek; na úzké obrazovce jsou tlačítka pod sebou, aby se vešla. */
+    private fun row(): LinearLayout = if (narrow) ui.vbox() else ui.hbox()
+
+    private fun menuLp() = if (narrow)
+        LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { rightMargin = ui.dp(6) }
+        else ui.lp(top = 4)
+
+    private fun buildNarrowShell() {
+        val root = ui.vbox().apply { setBackgroundColor(Theme.BG) }
+        val top = ui.vbox().apply {
+            setBackgroundColor(Theme.SIDEBAR)
+            setPadding(ui.dp(14), ui.dp(12), ui.dp(14), ui.dp(8))
+        }
+        val logoRow = ui.hbox()
+        logoRow.addView(ImageView(this).apply { setImageResource(R.drawable.ic_logo) }, LinearLayout.LayoutParams(ui.dp(36), ui.dp(36)))
+        logoRow.addView(ui.text("PlayLingo", 19f, Theme.TEXT, bold = true).apply { setPadding(ui.dp(10), 0, ui.dp(10), 0) })
+        logoRow.addView(ui.text(Prefs.lang(this).label, 13f, Theme.ACCENT, bold = true))
+        top.addView(logoRow)
+        menu = ui.hbox()
+        top.addView(HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(menu) }, ui.lp(top = 8))
+        root.addView(top, ui.lp())
+
+        val scroll = ScrollView(this).apply { isFillViewport = true; clipChildren = false; clipToPadding = false }
+        content = ui.vbox().apply { setPadding(ui.dp(16), ui.dp(18), ui.dp(16), ui.dp(32)) }
+        scroll.addView(content)
+        root.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+        setContentView(root)
+    }
+
+    /** Zpět k pomocníkovi pro přihlášení (telefon, na kterém byla omylem nebo dočasně otevřená celá aplikace). */
+    private fun backToPhoneHelper() {
+        if (TranslatorService.running) stopService(Intent(this, TranslatorService::class.java))
+        Prefs.setForceTv(this, false)
+        startActivity(Intent(this, PhoneHelperActivity::class.java))
+        finish()
+    }
+
     private fun buildShell() {
+        if (narrow) { buildNarrowShell(); return }
         val root = ui.hbox().apply {
             setBackgroundColor(Theme.BG)
             gravity = Gravity.TOP
@@ -283,7 +331,7 @@ class MainActivity : Activity() {
                 setOnClickListener { section = s; render(keepFocus = true) }
                 tag = "menu_${s.name}"
             }
-            menu.addView(item, ui.lp(top = 4))
+            menu.addView(item, menuLp())
         }
     }
 
@@ -329,7 +377,7 @@ class MainActivity : Activity() {
                 addView(ui.text("${i + 1}", 15f, if (i <= wizard) Theme.ACCENT else Theme.MUTED, bold = true),
                     LinearLayout.LayoutParams(ui.dp(24), LinearLayout.LayoutParams.WRAP_CONTENT))
                 addView(ui.text(t(key), 16f, if (active) Theme.ACCENT else if (i < wizard) Theme.TEXT else Theme.MUTED, bold = active))
-            }, ui.lp(top = 4))
+            }, menuLp())
         }
         content.removeAllViews()
         content.addView(ui.text(t("wz_title"), 15f, Theme.ACCENT, bold = true))
@@ -341,7 +389,7 @@ class MainActivity : Activity() {
             0 -> {
                 add(ui.text(t("wz_welcome"), 17f, Theme.MUTED), 12)
                 add(tagged(ui.settingRow(t("l_lang"), lang.label) {
-                    val langs = cz.playlingo.core.Lang.values()
+                    val langs = cz.playlingo.core.Lang.targets
                     choose(t("l_lang"), langs.map { it.label }, langs.indexOf(lang)) { i ->
                         Prefs.setLang(this, langs[i])
                         OfflineTranslator.ensureModel(langs[i]) { runOnUiThread { if (wizard >= 0) render(true) } }
@@ -349,7 +397,8 @@ class MainActivity : Activity() {
                     }
                 }, "wlang"), 20)
             }
-            1 -> {
+            // titulky jdou do televize LG → povolení pruhu na tomto zařízení není potřeba
+            1 -> if (Prefs.tvSend(this)) add(ui.text(t("s_tv_desc"), 17f, Theme.MUTED), 12) else {
                 val ok = SubtitleOverlay.canShow(this)
                 add(ui.text(t("wz_perm"), 17f, Theme.MUTED), 12)
                 add(ui.card().apply { addView(ui.checkRow(ok, false, t("chk_overlay"), t("ok"), null, null)) }, 16)
@@ -385,7 +434,7 @@ class MainActivity : Activity() {
             }
         }
 
-        val row = ui.hbox()
+        val row = row()
         val pairing = wizard == 3 && Prefs.ps5Host(this) == null
         row.addView(tagged(ui.button(nextLabel, primary = !pairing) {
             if (wizard < wizardSteps.size - 1) { wizard++; render() }
@@ -398,6 +447,7 @@ class MainActivity : Activity() {
         if (wizard > 0) row.addView(tagged(ui.button(t("wz_back")) { wizard--; render() }, "wback"), wrapLp())
         row.addView(tagged(ui.button(t(if (wizard == wizardSteps.size - 1) "wz_finish" else "wz_skip")) { finishWizard() }, "wskip"), wrapLp())
         add(row, 28)
+        if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 16)
 
         val target = focusedTag?.let { window.decorView.findViewWithTag<View>(it) }
             ?: window.decorView.findViewWithTag<View>(if (pairing) "pnext" else "wnext")
@@ -418,7 +468,8 @@ class MainActivity : Activity() {
     private fun onOff(b: Boolean) = if (b) t("on") else t("off")
 
     private fun wrapLp(left: Int = 12) =
-        LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(left) }
+        if (narrow) ui.lp(top = 8)   // tlačítka pod sebou přes celou šířku
+        else LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(left) }
 
     // ======================= DOMŮ =======================
 
@@ -426,7 +477,8 @@ class MainActivity : Activity() {
         val running = TranslatorService.running
         val paused = TranslatorService.paused
         val demoRun = running && TranslatorService.demo
-        val overlayOk = SubtitleOverlay.canShow(this)
+        // titulky jdou do televize LG → pruh na tomto zařízení není potřeba
+        val overlayOk = SubtitleOverlay.canShow(this) || Prefs.tvSend(this)
         val lang = Prefs.lang(this)
         val modelOk = OfflineTranslator.isReady(lang)
         val host = Prefs.ps5Host(this)
@@ -460,6 +512,8 @@ class MainActivity : Activity() {
             else -> { title = t("st_setup"); sub = t("st_setup_sub"); color = Theme.WARN }
         }
         if (running && !demoRun && link != Ps5.Link.CONNECTED) Ps5Link.reason?.let { sub += "\n($it)" }
+        // posílání titulků do televize LG: je televize připojená?
+        if (running && Prefs.tvSend(this)) sub += "\n" + t(if (TranslatorService.tvConnected > 0) "st_tv_on" else "st_tv_wait")
         val status = ui.card()
         val head = ui.hbox()
         head.addView(View(this).apply { background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(color) } },
@@ -487,7 +541,7 @@ class MainActivity : Activity() {
                     ui.lp(w = LinearLayout.LayoutParams.WRAP_CONTENT, top = 10))
             }, 12)
         }
-        val buttons = ui.hbox()
+        val buttons = row()
         if (!lic.canRun) {
             buttons.addView(tagged(ui.button(t("lic_open"), primary = true) { section = Section.LICENSE; render() }, "start"))
         } else if (!running) {
@@ -521,6 +575,8 @@ class MainActivity : Activity() {
         check.addView(ui.checkRow(host != null, false, t("chk_ps5") + (host?.let { " (${it.name})" } ?: ""), t("ok"), t("set_up")) { section = Section.PS5; render() })
         add(check, 0)
         add(ui.text(t("tip_ps5"), 14f, Theme.MUTED), 16)
+        // telefon, na kterém běží celá aplikace: cesta zpět k pomocníkovi pro přihlášení
+        if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 20)
     }
 
     /** Náhled: co aplikace z PlayStationu právě vidí (důkaz, že spojení funguje). */
@@ -614,15 +670,7 @@ class MainActivity : Activity() {
                 // (když se ji vystavit nepodařilo, vede kód rovnou na přihlášení Sony)
                 if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
                 val pageUrl = loginPageUrl()
-                val row = ui.hbox().apply { gravity = Gravity.TOP }
-                qrBitmap(pageUrl ?: PsnAuth.LOGIN_URL)?.let { qr ->
-                    row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8)) },
-                        // velikost tak, aby se kód i s tlačítky vešel na obrazovku celý, bez posouvání
-                        LinearLayout.LayoutParams(ui.dp(200), ui.dp(200)))
-                }
-                row.addView(ui.text(t("pa_1_text"), 16f, Theme.TEXT).apply { setPadding(ui.dp(20), 0, 0, 0) },
-                    LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-                add(row, 10)
+                add(qrRow(pageUrl ?: PsnAuth.LOGIN_URL, t("pa_1_text")), 10)
                 // adresa i slovy – pro telefon, kterému se čtvereček nedaří přečíst
                 if (pageUrl != null) add(ui.text(pageUrl, 13f, Theme.MUTED), 6)
                 else add(ui.text(t("pa_nolan"), 15f, Theme.WARN), 6)
@@ -632,19 +680,19 @@ class MainActivity : Activity() {
                 add(ui.card().apply { addView(ui.text(t("pa_2_text"), 17f, Theme.TEXT)) }, 10)
             }
             4 -> {
-                add(ui.card().apply {
-                    addView(ui.text(t("pa_3_text"), 17f, Theme.TEXT))
-                    addView(ui.text(t("pa_example"), 14f, Theme.MUTED), ui.lp(top = 12))
-                    // ukázka adresy se zvýrazněným kódem
-                    val ex = android.text.SpannableStringBuilder("…playstation.net/remoteplay/redirect?code=")
-                    val from = ex.length
-                    ex.append("v3.Ab12Cd")
-                    ex.setSpan(android.text.style.ForegroundColorSpan(Theme.ACCENT), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    ex.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    ex.append("&cid=0000…")
-                    addView(ui.text(ex, 17f, Theme.TEXT), ui.lp(top = 4))
-                }, 10)
-                add(input("ph_code", draftAuth, "pauth", number = false), 10)
+                // záloha, když se stránka z televize v telefonu neotevře (jiná Wi-Fi, mobilní data):
+                // čtvereček rovnou na přihlášení Sony a kód opsaný z adresy prázdné stránky „redirect“
+                add(qrRow(PsnAuth.LOGIN_URL, t("pa_3_text")), 10)
+                add(ui.text(t("pa_example"), 14f, Theme.MUTED), 8)
+                // ukázka adresy se zvýrazněným kódem
+                val ex = android.text.SpannableStringBuilder("…playstation.net/remoteplay/redirect?code=")
+                val from = ex.length
+                ex.append("v3.Ab12Cd")
+                ex.setSpan(android.text.style.ForegroundColorSpan(Theme.ACCENT), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                ex.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                ex.append("&cid=0000…")
+                add(ui.text(ex, 16f, Theme.TEXT), 2)
+                add(input("ph_code", draftAuth, "pauth", number = false), 8)
                 nextOk = false
             }
             else -> {
@@ -656,7 +704,7 @@ class MainActivity : Activity() {
             }
         }
         pairMsg?.let { add(ui.text(it, 15f, pairMsgColor), 10) }
-        val row = ui.hbox()
+        val row = row()
         when {
             nextOk -> row.addView(tagged(ui.button(t("wz_next"), primary = true) { pairNext() }, "pnext"))
             step == 4 -> row.addView(tagged(ui.button(t(if (pairBusy) "ps5_acc_wait" else "ph_check"), primary = true) { if (!pairBusy) checkPhoneCode() }, "pnext"))
@@ -668,6 +716,11 @@ class MainActivity : Activity() {
             pairStep = if (step == 5 && have) 1 else step - 1
             pairMsg = null; render()
         }, "pback"), wrapLp())
+        // stránka z televize se v telefonu neotevřela → rovnou na záložní krok se čtverečkem na Sony
+        if (step == 2) row.addView(tagged(ui.button(t("pa_stuck")) {
+            saveDrafts()
+            pairStep = 4; pairMsg = null; render()
+        }, "pstuck"), wrapLp())
         add(row, 14)
         // účet už je uložený: nabídnout nové přihlášení (jiný účet, nebo když spárování s tímhle nejde)
         if (step == 5 && have && !pairBusy) add(tagged(ui.button(t("ps5_acc_again")) {
@@ -711,7 +764,7 @@ class MainActivity : Activity() {
         val want = pairing && pairStep.coerceIn(0, 5) in 2..4
         if (want && loginServer == null) {
             loginServer = LoginServer(
-                lang = { Prefs.lang(this) },
+                lang = { Prefs.uiLang(this) },
                 loginUrl = PsnAuth.LOGIN_URL,
                 apkUrl = { UpdateCheck.url(if (Prefs.testChannel(this)) UpdateCheck.Channel.TEST else UpdateCheck.Channel.STABLE, "PlayLingo.apk") },
                 resolveCode = { PsnAuth.accountForCode(it) },
@@ -737,6 +790,19 @@ class MainActivity : Activity() {
     private fun accountFromPhone(a: PhoneLogin.Account) {
         Prefs.setPsnId(this, a.id)
         pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = a.id; draftAuth = ""; pairStep = 5 }
+    }
+
+    /** Čtvereček (QR kód) s adresou a vedle něj text; na úzké obrazovce je text pod čtverečkem. */
+    private fun qrRow(url: String, text: String): LinearLayout {
+        val row = if (narrow) ui.vbox() else ui.hbox().apply { gravity = Gravity.TOP }
+        qrBitmap(url)?.let { qr ->
+            row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8)) },
+                // velikost tak, aby se kód i s tlačítky vešel na obrazovku celý, bez posouvání
+                LinearLayout.LayoutParams(ui.dp(200), ui.dp(200)))
+        }
+        row.addView(ui.text(text, 16f, Theme.TEXT).apply { if (narrow) setPadding(0, ui.dp(12), 0, 0) else setPadding(ui.dp(20), 0, 0, 0) },
+            if (narrow) ui.lp() else LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        return row
     }
 
     /** QR kód s adresou (černobílý obrázek); null, když se ho nepodaří vytvořit. */
@@ -830,7 +896,7 @@ class MainActivity : Activity() {
     /** Řádek s výběrem jazyka (je na stránce Domů i v Titulcích, ať ho nikdo nehledá). */
     private fun langRow(tag: String, top: Int) {
         add(tagged(ui.settingRow(t("l_lang"), Prefs.lang(this).label) {
-            val langs = cz.playlingo.core.Lang.values()
+            val langs = cz.playlingo.core.Lang.targets
             choose(t("l_lang"), langs.map { it.label }, langs.indexOf(Prefs.lang(this))) { i ->
                 Prefs.setLang(this, langs[i])
                 OfflineTranslator.ensureModel(langs[i]) { }
@@ -913,7 +979,7 @@ class MainActivity : Activity() {
             15f, if (ready) Theme.OK else Theme.WARN), ui.lp(top = 8))
         add(mode, 16)
 
-        val row = ui.hbox()
+        val row = row()
         row.addView(tagged(ui.button(t("t_test")) { testTranslation() }, "testtr"))
         if (!ready) row.addView(tagged(ui.button(t("download")) { downloadModel() }, "dl"), wrapLp())
         add(row, 12)
@@ -976,7 +1042,7 @@ class MainActivity : Activity() {
         stat(t("t_lines"), s.lines.toString())
         stat(t("t_hits"), s.cacheHits.toString())
         add(card, 0)
-        val row2 = ui.hbox()
+        val row2 = row()
         row2.addView(tagged(ui.button(t("t_reset_stats")) {
             s.reset(); Prefs.setStats(this, s); toast(t("t_cleared")); render(true)
         }, "rstats"))
@@ -1017,6 +1083,19 @@ class MainActivity : Activity() {
             Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
         }, "testch"), 8)
         add(ui.text(t("s_test_desc"), 14f, Theme.MUTED), 6)
+        // Na konci, aby se nezměnilo pořadí položek nad tím (zkouška se jimi prokliká naslepo).
+        add(tagged(ui.settingRow(t("s_tv"), onOff(Prefs.tvSend(this))) {
+            Prefs.setTvSend(this, !Prefs.tvSend(this)); applyToService(); render(true)
+        }, "tvsend"), 8)
+        add(ui.text(t("s_tv_desc"), 14f, Theme.MUTED), 6)
+        // jazyk aplikace je nezávislý na jazyku překladu (ten je na stránce Překlad)
+        val uiLang = Prefs.uiLang(this)
+        add(tagged(ui.settingRow(t("l_ui_lang"), uiLang.label) {
+            val all = cz.playlingo.core.Lang.values().toList()
+            choose(t("l_ui_lang"), all.map { it.label }, all.indexOf(uiLang)) { i ->
+                Prefs.setUiLang(this, all[i]); applyToService(); buildShell(); render()
+            }
+        }, "uilang"), 8)
     }
 
     // ======================= HISTORIE =======================
@@ -1136,7 +1215,7 @@ class MainActivity : Activity() {
     private fun startFlow() {
         if (!Prefs.license(this).canRun) { section = Section.LICENSE; render(); return }
         if (TranslatorService.running && !TranslatorService.demo) { moveTaskToBack(true); return }
-        if (!SubtitleOverlay.canShow(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
+        if (!SubtitleOverlay.canShow(this) && !Prefs.tvSend(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
         if (Prefs.ps5Host(this) == null) { section = Section.PS5; render(); return }
         busyText = t("prep_model"); render(true)
         OfflineTranslator.ensureModel(Prefs.lang(this)) { ok ->
@@ -1154,7 +1233,7 @@ class MainActivity : Activity() {
     /** Zkouška bez PlayStationu: ukázková hra jde do aplikace stejnou cestou jako video z konzole. */
     private fun startDemo() {
         if (!Prefs.license(this).canRun) { section = Section.LICENSE; render(); return }
-        if (!SubtitleOverlay.canShow(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
+        if (!SubtitleOverlay.canShow(this) && !Prefs.tvSend(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
         OfflineTranslator.ensureModel(Prefs.lang(this)) { }
         launchService(TranslatorService.ACTION_START_DEMO)
         main.postDelayed({
@@ -1185,13 +1264,7 @@ class MainActivity : Activity() {
     }
 
     /** Číslo nejnovější verze v daném kanálu; null, když se nedá zjistit. Volat mimo hlavní vlákno. */
-    private fun remoteVersion(channel: UpdateCheck.Channel): UpdateCheck.Remote? = try {
-        val c = java.net.URL(UpdateCheck.url(channel, "version.txt")).openConnection() as java.net.HttpURLConnection
-        c.connectTimeout = 5000; c.readTimeout = 5000
-        try {
-            if (c.responseCode == 200) UpdateCheck.parse(c.inputStream.bufferedReader().use { it.readText().take(100) }) else null
-        } finally { c.disconnect() }
-    } catch (_: Exception) { null }
+    private fun remoteVersion(channel: UpdateCheck.Channel): UpdateCheck.Remote? = Updater.remoteVersion(channel)
 
     /** Na pozadí zjistí, jestli není ke stažení novější verze (se zapnutým zkušebním kanálem i v něm). */
     private fun checkForUpdate() {
@@ -1353,6 +1426,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.61"
-    const val VERSION_CODE = 61
+    const val VERSION = "verze 0.67"
+    const val VERSION_CODE = 67
 }

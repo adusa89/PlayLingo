@@ -60,9 +60,11 @@ ve stejné domácí síti. Připrav si telefon – bude potřeba jen teď, k hra
    nahoře na adresu a zvol Kopírovat), vrať se na stránku PlayLingo a adresu tam vlož.
    Televize pak pokračuje sama, nic se neopisuje.
 5. **Záloha: opiš kód ručně.** Tenhle krok televize sama přeskočí. Potřebuješ ho, jen když
-   stránka v telefonu nejde otevřít: klepni nahoře na adresu prázdné stránky, najdi v ní
-   „code=“ a opiš do televize to, co je hned za ním, až po znak & (i s tečkou a velkými
-   písmeny). Zvol „Ověřit kód“. Kód platí jen pár minut.
+   se stránka z čtverečku v telefonu neotevře (v kroku 3 pak zvol „Stránka se neotevřela“).
+   Krok má vlastní čtvereček, který vede rovnou na přihlášení Sony: naskenuj ho, přihlas se,
+   na prázdné stránce „redirect“ klepni nahoře na adresu, najdi v ní „code=“ a opiš do
+   televize to, co je hned za ním, až po znak & (i s tečkou a velkými písmeny). Zvol
+   „Ověřit kód“. Kód platí jen pár minut.
 6. **Opiš číslo z PlayStationu.** Na PS5: Nastavení → Systém → Remote Play → Propojit
    zařízení. Osmimístné číslo opiš do televize a zvol Spárovat.
 
@@ -83,7 +85,7 @@ Na stránce Domů zvol „Zkouška bez PlayStationu“. Ukáže se ukázková hr
 a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televizi fungují.
 
 ## 7. Problémy
-- **Stránka z čtverečku se v telefonu neotevře** – telefon není na stejné Wi-Fi jako televize (nebo je na mobilních datech). Připoj ho k domácí Wi-Fi a naskenuj čtvereček znovu; krajní možnost je opsat kód ručně (krok 5).
+- **Stránka z čtverečku se v telefonu neotevře** – telefon nejspíš není na stejné Wi-Fi jako televize (nebo je na mobilních datech). Připoj ho k domácí Wi-Fi a naskenuj čtvereček znovu. Když to nejde, zvol v televizi „Stránka se neotevřela“: záložní čtvereček vede rovnou na přihlášení Sony a kód pak opíšeš ručně (krok 5).
 - **Adresa nebo kód z telefonu neplatí** – platí jen pár minut; přihlas se v telefonu znovu a vlož novou adresu.
 - **PlayLingo v telefonu nepustí přihlášení Sony** – zvol v něm „Nejde to? Přihlásit se v prohlížeči“ a prázdnou stránku „redirect“ pak nasdílej do PlayLinga (Sdílet → PlayLingo).
 - **Nejde spárovat** – číslo z PS5 platí jen pár minut, vyžádej si nové. Zkontroluj adresu a účet.

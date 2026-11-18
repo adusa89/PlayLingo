@@ -20,6 +20,7 @@ import cz.playlingo.core.Lang
 import cz.playlingo.core.LoginClient
 import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.Ps5
+import cz.playlingo.core.UpdateCheck
 import java.util.Locale
 
 /**
@@ -47,6 +48,8 @@ class PhoneHelperActivity : Activity() {
     private var sent = false
     /** Otevřená přihlašovací stránka Sony (null = je vidět hlavní obrazovka pomocníka). */
     private var web: WebView? = null
+    /** Novější verze aplikace, která je ke stažení (null = žádná, nebo se to ještě nezjistilo). */
+    private var update: UpdateCheck.Offer? = null
 
     private fun t(key: String) = tx(key)
     private fun log(m: String) { Log.i("TP_TEST", "HELPER|$m"); DiagLog.add("HELPER|$m") }
@@ -55,15 +58,40 @@ class PhoneHelperActivity : Activity() {
         super.onCreate(savedInstanceState)
         ui = Ui(this)
         // jazyk: poprvé podle telefonu (později ho může přepsat jazyk televize z odkazu, nebo uživatel)
-        if (!Prefs.langChosen(this)) Lang.values().firstOrNull { it.code == Locale.getDefault().language }?.let { Prefs.setLang(this, it) }
+        if (!Prefs.uiLangChosen(this)) Prefs.setUiLang(this, Lang.ui(Locale.getDefault().language) ?: Lang.EN)
         val scroll = ScrollView(this).apply { isFillViewport = true; setBackgroundColor(Theme.BG) }
         content = ui.vbox().apply { setPadding(ui.dp(20), ui.dp(28), ui.dp(20), ui.dp(36)) }
         scroll.addView(content)
         root = scroll
         setContentView(root)
         log("start")
+        Updater.cleanUp(this)
         render()
         if (savedInstanceState == null) take(intent)
+        checkForUpdate()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // po návratu z dotazu systému na instalaci ukázat, jak aktualizace dopadla
+        if (web == null) render()
+    }
+
+    /** Na pozadí zjistí, jestli není ke stažení novější verze (se zapnutým zkušebním kanálem i v něm). */
+    private fun checkForUpdate() {
+        val test = Prefs.testChannel(this)
+        Thread({
+            val offer = Updater.offer(test)
+            runOnUiThread { if (!isFinishing && offer != update && !Updater.busy) { update = offer; if (web == null) render() } }
+        }, "tp-helper-update").start()
+    }
+
+    /** Stáhne nabídnutou verzi a předá ji systému k instalaci – stejně jako v televizi. */
+    private fun startUpdate(o: UpdateCheck.Offer) {
+        Updater.start(this, UpdateCheck.url(o.channel, "PlayLingo.apk"), false) {
+            runOnUiThread { if (!isFinishing && web == null) render() }
+        }
+        render()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -97,7 +125,7 @@ class PhoneHelperActivity : Activity() {
                 log("link " + if (tg != null) "ok" else "bad")
                 if (tg != null) {
                     target = tg; sent = false; msg = null
-                    if (!Prefs.langChosen(this)) PhoneLogin.langFromAppLink(link)?.let { Prefs.setLang(this, it) }
+                    if (!Prefs.uiLangChosen(this)) PhoneLogin.langFromAppLink(link)?.let { Prefs.setUiLang(this, it) }
                 }
                 render()
             }
@@ -121,7 +149,31 @@ class PhoneHelperActivity : Activity() {
         head.addView(names)
         content.addView(head)
 
-        add(ui.card().apply { addView(ui.text(t("hp_intro"), 15f, Theme.MUTED)) }, 18)
+        // nová verze: stejná nabídka jako na stránce Domů v televizi
+        update?.let { o ->
+            val st = Updater.state
+            add(ui.card().apply {
+                addView(ui.text(t("upd_new") + " (${o.remote.name}" + (if (o.channel == UpdateCheck.Channel.TEST) " · " + t("upd_test") else "") + ")", 17f, Theme.ACCENT, bold = true))
+                val line = when {
+                    st == Updater.State.DOWNLOADING -> t("upd_down") + (if (Updater.percent >= 0) " ${Updater.percent} %" else "…")
+                    st == Updater.State.INSTALLING -> t("upd_inst")
+                    st == Updater.State.FAILED -> t(Updater.problem ?: "upd_fail")
+                    else -> null
+                }
+                line?.let { addView(ui.text(it, 14f, if (st == Updater.State.FAILED) Theme.BAD else Theme.MUTED), ui.lp(top = 4)) }
+                if (st == Updater.State.FAILED) addView(ui.text(UpdateCheck.url(o.channel, "PlayLingo.apk"), 13f, Theme.MUTED), ui.lp(top = 6))
+                if (!Updater.busy) addView(ui.button(t("upd_btn"), primary = true) { startUpdate(o) }, ui.lp(top = 10))
+            }, 14)
+        }
+
+        // Televize LG si titulky sama nepřečte: číst, překládat a posílat je do ní může tento telefon.
+        // Pak tu místo pomocníka běží celá aplikace (viz core/TvSender).
+        add(ui.card().apply {
+            addView(ui.text(t("hp_lg_title"), 18f, Theme.TEXT, bold = true))
+            addView(ui.text(t("hp_lg_text"), 15f, Theme.MUTED), ui.lp(top = 6))
+            addView(ui.button(t("hp_lg_btn"), primary = true) { if (!busy) useForLgTv() }, ui.lp(top = 12))
+        }, 18)
+        add(ui.card().apply { addView(ui.text(t("hp_intro"), 15f, Theme.MUTED)) }, 10)
         val tg = target
         if (!sent) add(ui.card().apply {
             addView(ui.text(t(if (tg != null) "hp_tv_ready" else "hp_scan"), 16f, if (tg != null) Theme.OK else Theme.TEXT, bold = tg != null))
@@ -144,14 +196,31 @@ class PhoneHelperActivity : Activity() {
         add(ui.button(t("wp_login_btn"), primary = accounts.isEmpty()) { if (!busy) openLogin() }, 22)
         add(ui.button(t("hp_browser")) { if (!busy) openBrowser() }, 8)
 
-        val lang = Prefs.lang(this)
-        add(ui.settingRow(t("l_lang"), lang.label) { Prefs.setLang(this, lang.next()); render() }, 26)
+        val lang = Prefs.uiLang(this)
+        add(ui.settingRow(t("l_ui_lang"), lang.label) { Prefs.setUiLang(this, lang.next()); render() }, 26)
+        // zkušební verze (dřív než ostatní) jdou zapnout i tady, bez celé aplikace
+        add(ui.settingRow(t("s_test"), t(if (Prefs.testChannel(this)) "on" else "off")) {
+            Prefs.setTestChannel(this, !Prefs.testChannel(this)); render(); checkForUpdate()
+        }, 8)
         add(ui.button(t("hp_is_tv")) {
             Prefs.setForceTv(this, true)
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }.apply { textSize = 14f; setTextColor(Theme.MUTED) }, 8)
         add(ui.text("PlayLingo · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 20)
+    }
+
+    /**
+     * Telefon bude číst a překládat pro televizi LG: otevře se celá aplikace se zapnutým posíláním
+     * titulků. Účet, který je tu už ověřený, si vezme rovnou – párování pak přeskočí přihlášení.
+     */
+    private fun useForLgTv() {
+        Prefs.setForceTv(this, true)
+        Prefs.setTvSend(this, true)
+        if (Ps5.parseAccountId(Prefs.psnId(this)) == null) Prefs.phoneAccounts(this).firstOrNull()?.let { Prefs.setPsnId(this, it.id) }
+        log("lg mode")
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 
     // ---------------- přihlášení u Sony ----------------
