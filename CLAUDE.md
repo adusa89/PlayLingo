@@ -129,7 +129,10 @@ uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
   `updself`, `logintest`, `helperlogin` a `TestCardActivity`, `PhoneHelperActivity`.
 - Zkouška přihlášení přes telefon (řádky `LOGIN|`, `HELPER|`, snímky `12n`–`12p`) se do výsledku
   nepočítá. V `result.txt` má být `ucet_z_telefonu` aspoň 1 (stránka z televize přijala účet)
-  a `pomocnik` aspoň 1; na snímku `12n` má být „Účet ověřen“.
+  a `pomocnik` aspoň 1 (pomocník přijal odkaz ze stránky televize); na snímku `12n` má být
+  „Účet ověřen“ a na `12o` „Televize čeká na účet“.
+- Kroky průvodce spárováním se mají vejít na obrazovku i s tlačítky (snímky `12j`–`12l`).
+  Podrobný postup proto patří na stránku pro telefon, v televizi jen krátce.
 - Zkouška aktualizace (řádky `UPD|`, snímky `15a`–`15d`) se do výsledku nepočítá. `updtest`
   stáhne vydanou verzi (závisí na internetu; emulátor ji nenainstaluje). `updself` nainstaluje
   aplikaci samu přes sebe – na snímku `15c_dotaz` má být dotaz systému na instalaci a v
