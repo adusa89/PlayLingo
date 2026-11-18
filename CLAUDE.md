@@ -21,12 +21,15 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `Ps5Link.kt`, `Ps5Pairing.kt`, `PsnAuth.kt` – spojení, párování, přihlášení účtem (přes telefon)
   - `SubtitleOverlay.kt`, `TitulkyAccessibility.kt` – pruh s překladem přes Usnadnění
   - `MainActivity.kt` – všechny obrazovky a průvodce
+  - `Updater.kt` – aktualizace z aplikace (stažení nové verze a předání systému k instalaci)
   - `DemoFeeder.kt`, `TestCardActivity.kt` – ukázková „hra“ pro zkoušku bez PlayStationu
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
   knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
 - `third_party/chiaki-ng` – submodul. Needituj ho; před sestavením se do něj kopíruje
   `app/src/main/cpp` (úloha `patchChiaki` v `app/build.gradle.kts`).
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení, zkouška, vydání.
+- `ci/mistni-kontrola` – překlad a unit testy bez Android SDK (viz níže).
+- `podpis/playlingo.p12` – zašifrovaný podpisový klíč (viz Podpis).
 
 ## Sestavení a zkouška
 
@@ -35,10 +38,18 @@ Každý push (na jakoukoli větev) spustí GitHub Actions:
 1. unit testy (`./gradlew testDebugUnitTest`),
 2. sestavení APK pro televize (ARM) a zkušebního APK pro emulátor (x86),
 3. zkoušku v emulátoru Android TV na Androidu 9, 11, 13 a 14 (`ci/emulator-test.sh`),
-4. vydání – jen z `main` a z větví `zaloha-…`, a jen když zkouška prošla.
+4. vydání, jen když zkouška prošla:
+   - z `main` → `latest` (nabídne se všem) a vydání pod číslem verze,
+   - z větví `zaloha-…` → jen vydání pod číslem verze,
+   - z ostatních větví → zkušební kanál `zkusebni` (nabídne se jen tomu, kdo má v aplikaci
+     zapnuté Nastavení → Zkušební verze). Tak se nové věci zkoušejí na televizi uživatele,
+     aniž by šly všem.
 
-Když v sezení není Android SDK (`ANDROID_HOME` je prázdné), nejde nic sestavit ani otestovat
-místně. Ověřuje se pushem a přečtením výsledku v GitHub Actions.
+Když v sezení není Android SDK (`ANDROID_HOME` je prázdné), nejde APK sestavit místně. Kód ale
+jde přeložit a unit testy pustit: `cd ci/mistni-kontrola && gradle test` (asi minuta). Dělej to
+před každým pushem – odhalí překlepy a chyby v typech dřív než zkouška na GitHubu. Nezná zdroje
+(`res/`), manifest ani nativní část; nový zdroj `R.…` nebo novou funkci knihoven Google použitou
+v kódu je potřeba doplnit do `ci/mistni-kontrola/stub`.
 
 Výsledky zkoušky se ukládají do větví `test-results-api28`, `-api30`, `-api33`, `-api34`
 (přepisují se při každém běhu): `result.txt`, `crash.txt`, `log.txt` a snímky obrazovky.
@@ -53,12 +64,26 @@ náhoda, opakované selhání po změně kódu ne.
 ## Nová verze
 
 - Při každé změně aplikace zvyš v `app/build.gradle.kts` obojí: `versionCode` (54 → 55)
-  i `versionName` ("0.54" → "0.55"). Název commitu začíná číslem verze: `0.55: …`.
+  i `versionName` ("0.54" → "0.55"), a stejná čísla v `BuildInfo` na konci `MainActivity.kt`.
+  Název commitu začíná číslem verze: `0.55: …`.
 - Vydání pod číslem verze (`v0.55`) vznikne jen jednou a už se nepřepisuje. Push na `main`
   bez zvýšení čísla by tedy nechal pod starým číslem starý soubor.
 - Vydání `latest` z `main` se nabídne všem uživatelům jako aktualizace (aplikace čte
   `version.txt`). Co je v `main` a projde zkouškou, jde rovnou k lidem.
 - Záloha verze, ke které se má jít vrátit: větev `zaloha-<číslo>`.
+- Aplikace nabízí novou verzi tlačítkem „Aktualizovat“ na stránce Domů (`Updater.kt`). Bere
+  vyšší číslo z `latest` a (se zapnutým zkušebním kanálem) ze `zkusebni`.
+
+## Podpis
+
+- Všechny verze musí být podepsané stejným klíčem. S jiným podpisem televize novou verzi přes
+  starou nenainstaluje a uživatel přijde o spárování i nastavení. Verze do 0.55 měly každá
+  jiný (dočasný) podpis – proto se musely pokaždé odinstalovat.
+- Klíč je v `podpis/playlingo.p12`, zašifrovaný. Heslo je jen v tajných údajích repozitáře na
+  GitHubu (`PLAYLINGO_KEY_PASSWORD`) a u uživatele. Soubor nikdy nenahrazuj novým klíčem a heslo
+  nikam nezapisuj.
+- Krok „Kontrola podpisu“ v sestavení vypíše, jestli je podpis stálý. Když heslo chybí, sestaví
+  se s dočasným podpisem a u vydání je to napsané – takovou verzi do `main` neposílej.
 
 ## Texty aplikace (9 jazyků)
 
@@ -77,8 +102,10 @@ uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
   podle nich `ci/emulator-test.sh` počítá výsledek.
 - Věty ukázkové hry v `core/DemoGame.kt` – skript hledá 15 z nich podle textu. Měníš-li věty,
   uprav i skript.
-- Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`
+- Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`, `updtest`
   a `TestCardActivity`.
+- Zkouška aktualizace (`updtest`, řádky `UPD|`) se do výsledku nepočítá – závisí na internetu.
+  Na snímku `15_aktualizace_dotaz` má být okno systému s dotazem na instalaci.
 - Pořadí položek menu a kroků průvodce – skript se jimi prokliká naslepo šipkami.
 - Zbytky starého názvu „TestPreklad“ (značka logu, `rootProject.name`, názvy souborů
   v sestavování, `TestPreklad.apk` ve vydání, sůl odemykacího kódu v `License.kt`).

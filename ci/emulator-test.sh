@@ -90,6 +90,16 @@ done
 adb shell am force-stop $PKG
 adb shell wm size reset; adb shell wm density reset; sleep 2
 
+# 9) aktualizace z aplikace: stáhne běžnou vydanou verzi, předá ji systému a ten se zeptá na instalaci.
+#    Emulátor ji nenainstaluje (jiný procesor a podpis) – ověřuje se stažení, předání a okno s dotazem.
+#    Do výsledku zkoušky se nepočítá (závisí na internetu a na tom, co je zrovna vydané), jen se zapíše.
+adb shell appops set $PKG REQUEST_INSTALL_PACKAGES allow
+adb shell am start -n $PKG/.MainActivity --ez updtest true
+sleep 12; shot 15_aktualizace_stahovani
+sleep 50; shot 15_aktualizace_dotaz
+key 4; sleep 4; shot 15_aktualizace_po_zruseni
+adb shell am force-stop $PKG
+
 adb logcat -d -v time > $OUT/logcat_full.txt
 grep -E "TP_TEST|TestPreklad|AndroidRuntime|FATAL|libchiaki|DEBUG   :" $OUT/logcat_full.txt > $OUT/log.txt
 # pád aplikace i s okolím (příčina bývá na řádcích hned pod "Fatal signal")
@@ -102,13 +112,14 @@ LIB=$(grep -c "TP_TEST.*START|.*lib=ok" $OUT/log.txt)
 DECODED=$(grep "TP_TEST.*VIDEO|" $OUT/log.txt | grep -oE "decoded=[0-9]+" | cut -d= -f2 | sort -n | tail -1)
 LINK=$(grep -c "TP_TEST.*LINK|\(WAITING\|FAILED\)" $OUT/log.txt)
 PAIR=$(grep -c "TP_TEST.*PAIR|\(failed\|timeout\|error\)" $OUT/log.txt)
+UPD=$(grep -c "TP_TEST.*UPD|confirm shown" $OUT/log.txt)
 # kolik z deseti různých ukázkových titulků (velká písmena, jména, krátká slova…) se přeložilo
 KINDS=0
 for k in "We need money" "reckon" "ride at dawn" "keep going like this" "right way" "no idea" "GET OUT OF HERE" "|Wait|" "never supposed to meet" "left door" "voice down" "been here for years" "lantern" "bridge is out" "Run for the gate"; do
   grep -qF -- "$k" <(grep "TP_TEST.*SHOW|" $OUT/log.txt) && KINDS=$((KINDS+1)) || echo "NEPRELOZENO: $k" >> $OUT/missing.txt
 done
 echo "ruznych_titulku=$KINDS/15" > $OUT/kinds.txt
-echo "prelozenych_titulku=$SHOWS pady=$CRASH knihovna_ps5=$LIB dekodovano_snimku=${DECODED:-0} pokusy_o_spojeni=$LINK parovani_bez_konzole=$PAIR" > $OUT/result.txt
+echo "prelozenych_titulku=$SHOWS pady=$CRASH knihovna_ps5=$LIB dekodovano_snimku=${DECODED:-0} pokusy_o_spojeni=$LINK parovani_bez_konzole=$PAIR dotaz_na_aktualizaci=$UPD" > $OUT/result.txt
 if [ "$SHOWS" -ge 3 ] && [ "$KINDS" -ge 7 ] && [ "$CRASH" -eq 0 ] && [ "$LIB" -ge 1 ] && [ "${DECODED:-0}" -ge 20 ] && [ "$LINK" -ge 1 ] && [ "$PAIR" -ge 1 ]; then
   echo "VYSLEDEK=OK" >> $OUT/result.txt
 else

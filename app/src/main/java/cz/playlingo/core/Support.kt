@@ -28,4 +28,43 @@ object UpdateCheck {
     }
 
     fun isNewer(remote: Remote?, currentCode: Int): Boolean = remote != null && remote.code > currentCode
+
+    /**
+     * Odkud se nová verze bere. Běžný kanál dostávají všichni; zkušební jen ten, kdo si ho
+     * v Nastavení zapne (verze sestavené z rozpracované větve, ještě neschválené pro všechny).
+     */
+    enum class Channel(val tag: String) { STABLE("latest"), TEST("zkusebni") }
+
+    /** Nabídka nové verze: co a ze kterého kanálu. */
+    data class Offer(val remote: Remote, val channel: Channel)
+
+    private const val BASE = "https://github.com/adusa89/PlayLingo/releases/download/"
+
+    /** Adresa souboru ve vydání daného kanálu (PlayLingo.apk, version.txt). */
+    fun url(channel: Channel, file: String): String = BASE + channel.tag + "/" + file
+
+    /**
+     * Která verze se má nabídnout. Zkušební jen tehdy, když je novější než běžná –
+     * jakmile běžný kanál zkušební verzi dožene nebo předběhne, bere se zase běžný.
+     */
+    fun pick(stable: Remote?, test: Remote?, currentCode: Int): Offer? {
+        val s = stable?.takeIf { isNewer(it, currentCode) }
+        val t = test?.takeIf { isNewer(it, currentCode) }
+        return when {
+            t != null && (s == null || t.code > s.code) -> Offer(t, Channel.TEST)
+            s != null -> Offer(s, Channel.STABLE)
+            else -> null
+        }
+    }
+
+    /**
+     * Proč systém aktualizaci nenainstaloval → klíč textu pro uživatele.
+     * Čísla jsou stavy z android.content.pm.PackageInstaller (3 zrušeno, 5 kolize, 6 místo).
+     */
+    fun problemKey(status: Int): String = when (status) {
+        3 -> "upd_cancel"
+        5 -> "upd_sig"
+        6 -> "upd_space"
+        else -> "upd_fail"
+    }
 }

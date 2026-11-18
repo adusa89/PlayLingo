@@ -69,7 +69,8 @@ class MainActivity : Activity() {
     private var wizard = -1
     private var draftEn = ""
     private var draftTr = ""
-    private var newVersion: String? = null
+    /** Nabídka nové verze (null = žádná není). */
+    private var update: UpdateCheck.Offer? = null
     private var reportText: String? = null
     private var draftCode = ""
     private var codeError = false
@@ -109,6 +110,9 @@ class MainActivity : Activity() {
         ui = Ui(this)
         buildShell()
         if (!Prefs.wizardDone(this)) wizard = 0
+        Updater.cleanUp(this)
+        // odpověď systému na aktualizaci (po úspěšné instalaci otevře už novou verzi)
+        if (savedInstanceState == null && Updater.onStatus(this, intent)) setIntent(Intent(this, MainActivity::class.java))
         // pro automatický test: přeskočit průvodce a rovnou spustit překlad
         val auto = intent?.getBooleanExtra("autostart", false) == true
         if (auto) { Prefs.setWizardDone(this, true); wizard = -1 }
@@ -125,6 +129,7 @@ class MainActivity : Activity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (Updater.onStatus(this, intent)) { render(true); return }
         ps5SelfTest(intent)
     }
 
@@ -138,6 +143,14 @@ class MainActivity : Activity() {
             Prefs.setWizardDone(this, true); wizard = -1
             Prefs.setPs5Host(this, null)
             section = Section.PS5; pairStep = i?.getIntExtra("pairstep", 2) ?: 2; render(); return
+        }
+        // zkouška aktualizace: stáhne běžnou verzi a dojde až k dotazu systému na instalaci
+        if (i?.getBooleanExtra("updtest", false) == true && applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            Prefs.setWizardDone(this, true); wizard = -1; section = Section.HOME
+            val o = UpdateCheck.Offer(UpdateCheck.Remote(BuildInfo.VERSION_CODE + 1, "zkouška"), UpdateCheck.Channel.STABLE)
+            update = o
+            startUpdate(o, force = true)
+            return
         }
         val ip = i?.getStringExtra("ps5test") ?: return
         if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE == 0) return
@@ -415,11 +428,22 @@ class MainActivity : Activity() {
         status.addView(ui.text(busyText ?: sub, 16f, Theme.MUTED), ui.lp(top = 6))
         add(status, 18)
 
-        newVersion?.let { v ->
+        update?.let { o ->
+            val st = Updater.state
+            val test = if (o.channel == UpdateCheck.Channel.TEST) " · " + t("upd_test") else ""
             add(ui.card().apply {
-                addView(ui.text(t("upd_new") + " ($v)", 17f, Theme.ACCENT, bold = true))
-                addView(ui.text(t("upd_how"), 14f, Theme.MUTED), ui.lp(top = 4))
-                addView(ui.text(BuildInfo.DOWNLOAD_URL, 14f, Theme.TEXT), ui.lp(top = 4))
+                addView(ui.text(t("upd_new") + " (${o.remote.name}$test)", 17f, Theme.ACCENT, bold = true))
+                val line = when {
+                    st == Updater.State.DOWNLOADING -> t("upd_down") + (if (Updater.percent >= 0) " ${Updater.percent} %" else "…")
+                    st == Updater.State.INSTALLING -> t("upd_inst")
+                    st == Updater.State.FAILED -> t(Updater.problem ?: "upd_fail")
+                    else -> t("upd_how")
+                }
+                addView(ui.text(line, 14f, if (st == Updater.State.FAILED) Theme.BAD else Theme.MUTED), ui.lp(top = 4))
+                // když to z aplikace nejde, zbývá ruční cesta – adresa souboru
+                if (st == Updater.State.FAILED) addView(ui.text(UpdateCheck.url(o.channel, "PlayLingo.apk"), 13f, Theme.MUTED), ui.lp(top = 6))
+                if (!Updater.busy) addView(tagged(ui.button(t("upd_btn")) { startUpdate(o) }, "update"),
+                    ui.lp(w = LinearLayout.LayoutParams.WRAP_CONTENT, top = 10))
             }, 12)
         }
         val buttons = ui.hbox()
@@ -909,6 +933,10 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("s_debug"), onOff(Prefs.debug(this))) {
             Prefs.setDebug(this, !Prefs.debug(this)); applyToService(); render(true)
         }, "debug"), 8)
+        add(tagged(ui.settingRow(t("s_test"), onOff(Prefs.testChannel(this))) {
+            Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
+        }, "testch"), 8)
+        add(ui.text(t("s_test_desc"), 14f, Theme.MUTED), 6)
     }
 
     // ======================= HISTORIE =======================
@@ -1076,23 +1104,37 @@ class MainActivity : Activity() {
         }
     }
 
-    /** Na pozadí zjistí, jestli není ke stažení novější verze. */
+    /** Číslo nejnovější verze v daném kanálu; null, když se nedá zjistit. Volat mimo hlavní vlákno. */
+    private fun remoteVersion(channel: UpdateCheck.Channel): UpdateCheck.Remote? = try {
+        val c = java.net.URL(UpdateCheck.url(channel, "version.txt")).openConnection() as java.net.HttpURLConnection
+        c.connectTimeout = 5000; c.readTimeout = 5000
+        try {
+            if (c.responseCode == 200) UpdateCheck.parse(c.inputStream.bufferedReader().use { it.readText().take(100) }) else null
+        } finally { c.disconnect() }
+    } catch (_: Exception) { null }
+
+    /** Na pozadí zjistí, jestli není ke stažení novější verze (se zapnutým zkušebním kanálem i v něm). */
     private fun checkForUpdate() {
+        val test = Prefs.testChannel(this)
         scope.launch {
-            val remote = kotlinx.coroutines.withContext(Dispatchers.IO) {
-                try {
-                    val c = java.net.URL(BuildInfo.VERSION_URL).openConnection() as java.net.HttpURLConnection
-                    c.connectTimeout = 5000; c.readTimeout = 5000
-                    try {
-                        if (c.responseCode == 200) UpdateCheck.parse(c.inputStream.bufferedReader().use { it.readText().take(100) }) else null
-                    } finally { c.disconnect() }
-                } catch (_: Exception) { null }
+            val offer = kotlinx.coroutines.withContext(Dispatchers.IO) {
+                UpdateCheck.pick(remoteVersion(UpdateCheck.Channel.STABLE),
+                    if (test) remoteVersion(UpdateCheck.Channel.TEST) else null, BuildInfo.VERSION_CODE)
             }
-            if (UpdateCheck.isNewer(remote, BuildInfo.VERSION_CODE)) {
-                newVersion = remote?.name
+            // rozběhnutou aktualizaci (nebo zkoušku aktualizace) nová kontrola nepřepíše
+            if (offer != update && !Updater.busy) {
+                update = offer
                 if (section == Section.HOME && wizard < 0) render(true)
             }
         }
+    }
+
+    /** Stáhne nabídnutou verzi a předá ji systému k instalaci; obrazovka ukazuje průběh. */
+    private fun startUpdate(o: UpdateCheck.Offer, force: Boolean = false) {
+        Updater.start(this, UpdateCheck.url(o.channel, "PlayLingo.apk"), force) {
+            runOnUiThread { if (!isFinishing && !isDestroyed && section == Section.HOME && wizard < 0 && currentFocus !is EditText) render(true) }
+        }
+        render(true)
     }
 
     /** Řádek o připojení televize k síti; u Wi-Fi s radou, protože slabá síť je nejčastější příčina potíží. */
@@ -1231,8 +1273,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.55"
-    const val VERSION_CODE = 55
-    const val DOWNLOAD_URL = "https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk"
-    const val VERSION_URL = "https://github.com/adusa89/PlayLingo/releases/download/latest/version.txt"
+    const val VERSION = "verze 0.56"
+    const val VERSION_CODE = 56
 }
