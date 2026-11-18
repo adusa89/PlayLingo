@@ -3,22 +3,24 @@ package cz.playlingo
 import android.util.Base64
 import android.util.Log
 import cz.playlingo.core.DiagLog
+import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.Ps5
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 
 /**
- * Přihlášení účtem PlayStation. Uživatel se přihlásí na stránce Sony ve svém telefonu (adresa je
- * v QR kódu) a do aplikace opíše jednorázový kód. Aplikace z něj potřebuje jedinou věc: číslo účtu,
- * které konzole vyžaduje při párování. Heslo aplikace nevidí ani neukládá.
- * Stejný postup používá otevřený klient chiaki-ng.
+ * Přihlášení účtem PlayStation. Uživatel se přihlásí na stránce Sony ve svém telefonu a aplikace
+ * dostane jednorázový kód: z adresy vložené na stránce televize, z PlayLinga v telefonu, nebo
+ * (záloha) opsaný ručně. Aplikace z něj potřebuje jedinou věc: číslo účtu, které konzole vyžaduje
+ * při párování. Heslo aplikace neukládá. Stejný postup používá otevřený klient chiaki-ng.
  */
 object PsnAuth {
     private const val TAG = "TestPreklad"
     private const val CLIENT_ID = "ba495a24-818c-472b-b12d-ff231c1b5745"
     private const val CLIENT_SECRET = "mvaiZkRsAsI1IBkY"
-    private const val REDIRECT = "https://remoteplay.dl.playstation.net/remoteplay/redirect"
+    /** Sem Sony po přihlášení přesměruje; v adresě je jednorázový kód. */
+    const val REDIRECT = "https://remoteplay.dl.playstation.net/remoteplay/redirect"
     private const val TOKEN_URL = "https://auth.api.sonyentertainmentnetwork.com/2.0/oauth/token"
 
     /** Přihlašovací stránka Sony (do QR kódu). */
@@ -28,7 +30,10 @@ object PsnAuth {
         "&layout_type=popup&smcid=remoteplay&prompt=always&PlatformPrivacyWs1=minimal&"
 
     /** Vymění jednorázový kód za číslo účtu. Volat mimo hlavní vlákno. */
-    fun accountIdForCode(code: String): String? {
+    fun accountIdForCode(code: String): String? = accountForCode(code)?.id
+
+    /** Vymění jednorázový kód za číslo účtu a jméno účtu (Online ID). Volat mimo hlavní vlákno. */
+    fun accountForCode(code: String): PhoneLogin.Account? {
         val auth = "Basic " + Base64.encodeToString("$CLIENT_ID:$CLIENT_SECRET".toByteArray(), Base64.NO_WRAP)
         return try {
             val body = "grant_type=authorization_code&code=" + URLEncoder.encode(code, "UTF-8") + "&redirect_uri=$REDIRECT&"
@@ -52,7 +57,9 @@ object PsnAuth {
                 if (c2.responseCode != 200) { DiagLog.add("PSN|info http ${c2.responseCode}"); return null }
                 c2.inputStream.bufferedReader().use { it.readText().take(8000) }
             } finally { c2.disconnect() }
-            Ps5.accountIdFromUserInfo(info).also { DiagLog.add("PSN|account " + if (it != null) "ok" else "missing") }
+            val id = Ps5.accountIdFromUserInfo(info)
+            DiagLog.add("PSN|account " + if (id != null) "ok" else "missing")
+            id?.let { PhoneLogin.Account(it, PhoneLogin.nameFromUserInfo(info) ?: "") }
         } catch (e: Exception) {
             Log.w(TAG, "psn", e)
             DiagLog.add("PSN|error " + e.javaClass.simpleName)

@@ -11,8 +11,8 @@ android {
         applicationId = "cz.playlingo"
         minSdk = 26          // Android 8 a novější (prakticky všechny Android TV a boxy)
         targetSdk = 34
-        versionCode = 55
-        versionName = "0.55"
+        versionCode = 61
+        versionName = "0.61"
 
         // televize a boxy mají procesory ARM; emulátor při zkoušce x86 (-Pabis=x86)
         val abis = ((project.findProperty("abis") as String?) ?: "armeabi-v7a,arm64-v8a").split(",")
@@ -43,11 +43,30 @@ android {
         }
     }
 
+    // Stálý podpis: všechny verze musí být podepsané stejným klíčem, jinak je televize nenainstaluje
+    // přes starší verzi a uživatel přijde o spárování i nastavení. Klíč v repozitáři není a nesmí
+    // být: sestavení na GitHubu ho rozbalí z tajného údaje PLAYLINGO_KEY_BASE64 do dočasného
+    // souboru a jeho cestu předá v PLAYLINGO_KEY_FILE; heslo je v PLAYLINGO_KEY_PASSWORD.
+    // Bez nich (např. sestavení mimo GitHub) se podepíše dočasným klíčem – takové APK nejde
+    // nainstalovat přes vydanou verzi a sestavení ho nevydá.
+    val signingPassword: String? = System.getenv("PLAYLINGO_KEY_PASSWORD")?.takeIf { it.isNotBlank() }
+    val signingFile: File? = System.getenv("PLAYLINGO_KEY_FILE")?.takeIf { it.isNotBlank() }
+        ?.let { File(it) }?.takeIf { it.isFile }
+    val stableSigning = signingPassword != null && signingFile != null
+    signingConfigs {
+        if (stableSigning) create("stable") {
+            storeFile = signingFile
+            storeType = "pkcs12"
+            storePassword = signingPassword
+            keyAlias = "playlingo"
+            keyPassword = signingPassword
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
-            // pro jednoduchost podepsáno debug klíčem, aby šlo APK rovnou nainstalovat
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (stableSigning) "stable" else "debug")
         }
     }
 

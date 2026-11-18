@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <!-- aktualizace přímo z aplikace: předání nové verze systému k instalaci -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Android 12+: další aktualizace bez dotazu, když poslední instalovala aplikace sama -->
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 
     <!-- funguje na televizích, boxech, Chromecastu i projektorech -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -36,6 +40,27 @@
             </intent-filter>
         </activity>
 
+        <!-- PlayLingo v telefonu: pomocník pro přihlášení účtem PlayStation. Otevírá ho odkaz ze
+             stránky, kterou televize vystavuje (čtvereček), nebo sdílení adresy z prohlížeče. -->
+        <activity
+            android:name=".PhoneHelperActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="playlingo" android:host="login" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".CalibrationActivity"
             android:exported="false"
@@ -45,6 +70,15 @@
             android:name=".TestCardActivity"
             android:exported="true"
             android:theme="@style/FullScreen" />
+
+        <!-- po aktualizaci aplikaci znovu otevře -->
+        <receiver
+            android:name=".UpdatedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
         <service
             android:name=".TranslatorService"

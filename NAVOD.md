@@ -20,6 +20,11 @@ Když aplikace nejde nainstalovat nebo aktualizovat:
 
 Stejný postup najdeš i v aplikaci na stránce Nápověda.
 
+**Další verze už nahrávat nemusíš.** Když vyjde nová verze, aplikace ji nabídne na stránce Domů.
+Zvol „Aktualizovat“ a instalaci potvrď na ovladači – spárování i nastavení zůstanou.
+Při prvním použití televize požádá o povolení instalace z aplikace PlayLingo (Neznámé zdroje).
+Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nahrát ručně.
+
 ## 3. První nastavení (průvodce tě provede)
 1. Vyber jazyk překladu.
 2. Zapni aplikaci v nastavení televize: Usnadnění → PlayLingo → Zapnout.
@@ -47,15 +52,25 @@ ve stejné domácí síti. Připrav si telefon – bude potřeba jen teď, k hra
 2. **Najdi PlayStation.** Aplikace ho v síti najde sama. Když ne, zadej adresu ručně
    (PS5 → Nastavení → Síť → Stav připojení → Adresa IPv4).
 3. **Naskenuj čtvereček telefonem.** Otevři v telefonu fotoaparát, namiř ho na čtvereček
-   v televizi a klepni na odkaz.
-4. **V telefonu se přihlas** e-mailem a heslem ke svému účtu PlayStation. Když se stránka
-   zeptá na „passkey“, zvol „Remind Me Later“. Nakonec zůstane skoro prázdná stránka
-   s jediným slovem „redirect“ – tak je to správně.
-5. **Opiš kód z telefonu.** Klepni v telefonu nahoře na adresu té prázdné stránky, najdi
-   v ní „code=“ a opiš do televize to, co je hned za ním, až po znak & (i s tečkou a velkými
+   v televizi a klepni na odkaz. Otevře se stránka PlayLingo z tvé televize – telefon proto
+   musí být na stejné Wi-Fi jako televize.
+4. **V telefonu se přihlas.** Na stránce klepni na „Přihlásit se u PlayStation“ a zadej e-mail
+   a heslo druhého účtu. Když se stránka zeptá na „passkey“, zvol „Remind Me Later“. Nakonec
+   zůstane skoro prázdná stránka s jediným slovem „redirect“. Zkopíruj její adresu (klepni
+   nahoře na adresu a zvol Kopírovat), vrať se na stránku PlayLingo a adresu tam vlož.
+   Televize pak pokračuje sama, nic se neopisuje.
+5. **Záloha: opiš kód ručně.** Tenhle krok televize sama přeskočí. Potřebuješ ho, jen když
+   stránka v telefonu nejde otevřít: klepni nahoře na adresu prázdné stránky, najdi v ní
+   „code=“ a opiš do televize to, co je hned za ním, až po znak & (i s tečkou a velkými
    písmeny). Zvol „Ověřit kód“. Kód platí jen pár minut.
 6. **Opiš číslo z PlayStationu.** Na PS5: Nastavení → Systém → Remote Play → Propojit
    zařízení. Osmimístné číslo opiš do televize a zvol Spárovat.
+
+**PlayLingo i v telefonu (jen Android, nepovinné).** Stejnou aplikaci můžeš nainstalovat i do
+telefonu – tam nepřekládá, jen pomáhá s přihlášením. Na stránce z čtverečku zvol „Otevřít
+v aplikaci PlayLingo“, přihlas se druhým účtem přímo v aplikaci a ta pošle účet do televize sama,
+bez kopírování. Účet si zapamatuje (jen jeho číslo, heslo ne), takže při příštím párování nebo
+na další televizi stačí naskenovat čtvereček a klepnout na „Odeslat do televize“.
 
 ## 5. Hraní
 1. Na stránce Domů zvol „Spustit překlad“ a počkej na „Překlad běží“ (objeví se i malý náhled
@@ -68,8 +83,9 @@ Na stránce Domů zvol „Zkouška bez PlayStationu“. Ukáže se ukázková hr
 a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televizi fungují.
 
 ## 7. Problémy
-- **Přihlášení v televizi hlásí „Can't connect to the server“ nebo „Something went wrong“** – odmítla tě ochrana Sony; přihlas se přes telefon (bod 4.4).
-- **Kód z telefonu neplatí** – platí jen krátce; přihlas se v telefonu znovu a opiš nový.
+- **Stránka z čtverečku se v telefonu neotevře** – telefon není na stejné Wi-Fi jako televize (nebo je na mobilních datech). Připoj ho k domácí Wi-Fi a naskenuj čtvereček znovu; krajní možnost je opsat kód ručně (krok 5).
+- **Adresa nebo kód z telefonu neplatí** – platí jen pár minut; přihlas se v telefonu znovu a vlož novou adresu.
+- **PlayLingo v telefonu nepustí přihlášení Sony** – zvol v něm „Nejde to? Přihlásit se v prohlížeči“ a prázdnou stránku „redirect“ pak nasdílej do PlayLinga (Sdílet → PlayLingo).
 - **Nejde spárovat** – číslo z PS5 platí jen pár minut, vyžádej si nové. Zkontroluj adresu a účet.
 - **„PlayStation neodpovídá“** – je konzole zapnutá (ne vypnutá ze zásuvky) a ve stejné síti?
 - **Účet na PS5 má přihlašovací kód** – zadej ho na stránce PlayStation (4 číslice).

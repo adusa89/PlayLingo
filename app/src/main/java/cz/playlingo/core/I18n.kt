@@ -68,7 +68,17 @@ object I18n {
         "t_dict_add" to ("Přidat do slovníku" to "Pridať do slovníka"),
         "t_dict_del" to ("Kliknutím na záznam ho smažeš." to "Kliknutím na záznam ho zmažeš."),
         "upd_new" to ("Je k dispozici nová verze" to "K dispozícii je nová verzia"),
-        "upd_how" to ("Stáhni ji aplikací Downloader z této adresy a nainstaluj přes stávající verzi (nastavení zůstane):" to "Stiahni ju aplikáciou Downloader z tejto adresy a nainštaluj cez súčasnú verziu (nastavenia zostanú):"),
+        "upd_how" to ("Zvol Aktualizovat. Aplikace si novou verzi stáhne a televize se zeptá, jestli ji má nainstalovat. Spárování i nastavení zůstanou." to "Zvoľ Aktualizovať. Aplikácia si novú verziu stiahne a televízor sa opýta, či ju má nainštalovať. Spárovanie aj nastavenia zostanú."),
+        "upd_btn" to ("Aktualizovat" to "Aktualizovať"),
+        "upd_down" to ("Stahuji novou verzi" to "Sťahujem novú verziu"),
+        "upd_inst" to ("Staženo. Potvrď instalaci v okně, které televize ukázala." to "Stiahnuté. Potvrď inštaláciu v okne, ktoré televízor zobrazil."),
+        "upd_net" to ("Novou verzi se nepodařilo stáhnout. Zkontroluj připojení televize k internetu a zkus to znovu." to "Novú verziu sa nepodarilo stiahnuť. Skontroluj pripojenie televízora k internetu a skús to znova."),
+        "upd_space" to ("V televizi není dost místa. Uvolni aspoň 100 MB a zkus to znovu." to "V televízore nie je dosť miesta. Uvoľni aspoň 100 MB a skús to znova."),
+        "upd_sig" to ("Tato verze má jiný podpis než ta nainstalovaná, proto ji televize přes starou nepustí. Jednou starou verzi odinstaluj a novou nahraj ručně z adresy níže; spárování s PlayStationem bude potřeba zopakovat. Další aktualizace už půjdou odsud." to "Táto verzia má iný podpis ako tá nainštalovaná, preto ju televízor cez starú nepustí. Raz starú verziu odinštaluj a novú nahraj ručne z adresy nižšie; spárovanie s PlayStationom bude treba zopakovať. Ďalšie aktualizácie už pôjdu odtiaľto."),
+        "upd_cancel" to ("Instalace byla zrušena. Zvol Aktualizovat a v okně televize ji potvrď." to "Inštalácia bola zrušená. Zvoľ Aktualizovať a v okne televízora ju potvrď."),
+        "upd_fail" to ("Aktualizace se nepovedla. Zkus to znovu, nebo novou verzi nahraj ručně z adresy níže. Když televize instalaci nedovolí: Nastavení → Aplikace → Zabezpečení a omezení → Neznámé zdroje → povol PlayLingo." to "Aktualizácia sa nepodarila. Skús to znova, alebo novú verziu nahraj ručne z adresy nižšie. Keď televízor inštaláciu nedovolí: Nastavenia → Aplikácie → Zabezpečenie a obmedzenia → Neznáme zdroje → povoľ PlayLingo."),
+        "upd_test" to ("zkušební" to "skúšobná"),
+        "upd_done" to ("Aktualizováno na verzi" to "Aktualizované na verziu"),
         "rep_btn" to ("Vytvořit hlášení chyby" to "Vytvoriť hlásenie chyby"),
         "rep_saved" to ("Hlášení uloženo do souboru:" to "Hlásenie uložené do súboru:"),
         "b_start" to ("Spustit překlad" to "Spustiť preklad"),
@@ -163,6 +173,8 @@ object I18n {
         "s_overlay" to ("Zobrazení přes jiné aplikace" to "Zobrazenie cez iné aplikácie"),
         "s_behavior" to ("Chování" to "Správanie"),
         "s_debug" to ("Diagnostický režim (co aplikace čte, rychlost)" to "Diagnostický režim (čo aplikácia číta, rýchlosť)"),
+        "s_test" to ("Zkušební verze (dřív než ostatní)" to "Skúšobné verzie (skôr ako ostatní)"),
+        "s_test_desc" to ("Aplikace nabídne i verze, které se teprve zkoušejí. Mohou obsahovat chyby." to "Aplikácia ponúkne aj verzie, ktoré sa ešte len skúšajú. Môžu obsahovať chyby."),
         "on" to ("ZAP" to "ZAP"),
         "off" to ("VYP" to "VYP"),
         "a11y_hint" to ("V nastavení TV najdi Usnadnění → PlayLingo a zapni ho." to "V nastaveniach TV nájdi Zjednodušenie ovládania → PlayLingo a zapni ho."),
@@ -195,20 +207,25 @@ object I18n {
         Lang.ES to I18N_ES, Lang.FR to I18N_FR, Lang.IT to I18N_IT,
     )
 
+    /** Texty kolem PlayStationu a přihlášení přes telefon – mají přednost před obecnými se stejným klíčem. */
+    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S
+    private val PX: Map<Lang, Map<String, String>> =
+        Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) }
+
     fun t(lang: Lang, key: String): String {
-        val p = PS5_S[key] ?: S[key] ?: return key
+        val p = PS[key] ?: S[key] ?: return key
         return when (lang) {
             Lang.CS -> p.first
             Lang.SK -> p.second
-            else -> PS5_X[lang]?.get(key) ?: (if (PS5_S.containsKey(key)) null else EXTRA[lang]?.get(key)) ?: p.first
+            else -> PX[lang]?.get(key) ?: (if (PS.containsKey(key)) null else EXTRA[lang]?.get(key)) ?: p.first
         }
     }
 
     /** Pro testy: má jazyk vlastní překlad daného textu? */
     fun hasOwn(lang: Lang, key: String): Boolean =
-        if (PS5_S.containsKey(key)) PS5_X[lang]?.containsKey(key) == true else EXTRA[lang]?.containsKey(key) == true
-    fun ownKeys(lang: Lang): Set<String> = (EXTRA[lang]?.keys ?: emptySet()) + (PS5_X[lang]?.keys ?: emptySet())
+        if (PS.containsKey(key)) PX[lang]?.containsKey(key) == true else EXTRA[lang]?.containsKey(key) == true
+    fun ownKeys(lang: Lang): Set<String> = (EXTRA[lang]?.keys ?: emptySet()) + (PX[lang]?.keys ?: emptySet())
 
     /** Pro testy: všechny klíče. */
-    val keys: Set<String> get() = S.keys + PS5_S.keys
+    val keys: Set<String> get() = S.keys + PS.keys
 }

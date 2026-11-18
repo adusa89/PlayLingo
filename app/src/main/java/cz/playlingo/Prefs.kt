@@ -8,6 +8,7 @@ import cz.playlingo.core.Glossary
 import cz.playlingo.core.I18n
 import cz.playlingo.core.Lang
 import cz.playlingo.core.License
+import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.ScreenLayout
 import cz.playlingo.core.Ps5Host
 import cz.playlingo.core.UsageStats
@@ -35,6 +36,8 @@ object Prefs {
 
     fun lang(c: Context): Lang = Lang.of(p(c).getString("lang", null))
     fun setLang(c: Context, v: Lang) = p(c).edit().putString("lang", v.code).apply()
+    /** Vybral si už uživatel jazyk (nebo se jen bere výchozí)? */
+    fun langChosen(c: Context) = p(c).contains("lang")
 
     fun textSize(c: Context): Int = p(c).getInt("text_size", DEFAULT_TEXT_SIZE)
     fun setTextSize(c: Context, v: Int) = p(c).edit().putInt("text_size", v).apply()
@@ -47,6 +50,12 @@ object Prefs {
 
     fun debug(c: Context) = bool(c, "debug", false)
     fun setDebug(c: Context, v: Boolean) = setBool(c, "debug", v)
+    /** Brát i zkušební verze (sestavené z rozpracované větve, ještě neschválené pro všechny). */
+    fun testChannel(c: Context) = bool(c, "test_channel", false)
+    fun setTestChannel(c: Context, v: Boolean) = setBool(c, "test_channel", v)
+    /** Číslo verze, která běžela naposledy (0 = první spuštění) – aby šlo po aktualizaci říct, že proběhla. */
+    fun seenVersion(c: Context): Int = p(c).getInt("seen_version", 0)
+    fun setSeenVersion(c: Context, v: Int) = p(c).edit().putInt("seen_version", v).apply()
 
     fun onlySubtitles(c: Context) = bool(c, "only_subs", true)
     fun setOnlySubtitles(c: Context, v: Boolean) = setBool(c, "only_subs", v)
@@ -103,6 +112,16 @@ object Prefs {
     fun isTv(c: Context): Boolean = try {
         c.packageManager.hasSystemFeature("android.software.live_tv")
     } catch (_: Exception) { false }
+
+    // ---- PlayLingo v telefonu (pomocník pro přihlášení účtem PlayStation) ----
+    /** Účty, které si telefon pamatuje: jen číslo účtu a jméno, žádné heslo. */
+    fun phoneAccounts(c: Context): List<PhoneLogin.Account> = PhoneLogin.parseAccounts(p(c).getString("phone_accounts", null))
+    fun setPhoneAccounts(c: Context, v: List<PhoneLogin.Account>) =
+        p(c).edit().putString("phone_accounts", PhoneLogin.serializeAccounts(v)).apply()
+
+    /** Uživatel řekl, že tohle zařízení je televize nebo box, i když se tváří jako telefon. */
+    fun forceTv(c: Context) = bool(c, "force_tv", false)
+    fun setForceTv(c: Context, v: Boolean) = setBool(c, "force_tv", v)
 
     // ---- hra a slovník ----
     fun gameId(c: Context): String = p(c).getString("game", "all") ?: "all"
