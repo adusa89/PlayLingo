@@ -84,12 +84,27 @@ h1 { margin: 10px 0 20px 0; font-size: 72px; font-weight: bold; color: #FFFFFF; 
   left: 0;
   bottom: 0;
   width: 1920px;
-  height: 150px;
+  min-height: 150px;
   background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-#titulek { font-size: 50px; color: #FFFFFF; text-align: center; padding: 0 80px; }
+/* pre-line: titulek o dvou mluvčích přijde po síti jako dva řádky */
+#titulek { font-size: 50px; line-height: 1.25; color: #FFFFFF; text-align: center; padding: 0 80px; white-space: pre-line; }
+
+/* Příjem titulků po síti: jen hra a pruh, tabulka výsledků se neukazuje. */
+body.prijem #vysledky { display: none; }
+#hlaseni {
+  display: none;
+  position: absolute;
+  left: 40px;
+  top: 30px;
+  padding: 10px 22px;
+  font-size: 26px;
+  color: #E9E6DF;
+  background: rgba(14, 16, 20, 0.8);
+  border-radius: 6px;
+}
 
 #platno { position: absolute; left: -500px; top: 0; }

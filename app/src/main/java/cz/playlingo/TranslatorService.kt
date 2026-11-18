@@ -39,6 +39,7 @@ import cz.playlingo.core.SubtitleHistory
 import cz.playlingo.core.SubtitleTracker
 import cz.playlingo.core.TextLogic
 import cz.playlingo.core.TranslationCache
+import cz.playlingo.core.TvSender
 import cz.playlingo.core.UsageStats
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -95,6 +96,11 @@ class TranslatorService : Service() {
 
         @Volatile private var activeReader: StreamReader? = null
 
+        @Volatile private var activeTv: TvSender? = null
+
+        /** Kolik televizí LG si právě bere titulky; -1 = posílání neběží (vypnuté, nebo nejde otevřít port). */
+        val tvConnected: Int get() = activeTv?.takeIf { it.running }?.connected ?: -1
+
         /** Poslední obrázek ze hry (zmenšený, barevný) – pro náhled a nastavení oblastí. */
         val snapshot: Bitmap? get() = activeReader?.colorSnapshot
 
@@ -131,6 +137,8 @@ class TranslatorService : Service() {
     /** Drží Wi-Fi v plném výkonu, ať video z konzole nevypadává kvůli úspornému režimu. */
     private var wifiLock: android.net.wifi.WifiManager.WifiLock? = null
     @Volatile private var overlay: SubtitleOverlay? = null
+    /** Posílání titulků do televize LG; null = vypnuté (výchozí). */
+    @Volatile private var tv: TvSender? = null
     private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
     private val cache = TranslationCache()
     // schovat až po třetím prázdném čtení: jeden nepovedený snímek videa nesmí překlad shodit
@@ -312,10 +320,18 @@ class TranslatorService : Service() {
         showOriginal = Prefs.showOriginal(this)
         hideAt = 0
         overlay?.destroy()
+        // Titulky do televize LG: jen když si to uživatel zapnul. Jinak se nic neotevírá ani neposílá.
+        if (Prefs.tvSend(this)) {
+            if (tv == null) TvSender { tp("TV|$it") }.also { it.start(); tv = it; activeTv = it }
+        } else {
+            tv?.stop(); tv = null; activeTv = null
+        }
+        val sender = tv
         overlay = SubtitleOverlay(
             this, screenW, screenH, layout, Prefs.textSize(this), Prefs.opacity(this),
             debug, Prefs.coloredSpeaker(this),
-            Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this)
+            Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this),
+            onText = sender?.let { s -> { text: String? -> if (text == null) s.hide() else s.show(text) } }
         )
         tracker.reset()
         lastSig = null
@@ -446,7 +462,9 @@ class TranslatorService : Service() {
      * že překlad nad hrou občas zmizí.
      */
     private fun appAllowed(): Boolean {
-        val allowed = if (demo) UiState.testCard else !UiState.visible
+        // S posíláním do televize LG se čte pořád: titulky jdou na jinou obrazovku, takže nevadí,
+        // že je na tomto zařízení (typicky telefonu) vidět aplikace.
+        val allowed = tv != null || (if (demo) UiState.testCard else !UiState.visible)
         if (!allowed && !hiddenForOtherApp) {
             hideAt = 0; overlay?.hide(); tracker.reset(); lastSig = null
         }
@@ -654,6 +672,7 @@ class TranslatorService : Service() {
         scope.cancel()
         saveCache()
         overlay?.destroy(); overlay = null
+        tv?.stop(); tv = null; activeTv = null
         link?.stop(); link = null
         feeder?.stop(); feeder = null
         try { wifiLock?.let { if (it.isHeld) it.release() } } catch (_: Throwable) {}

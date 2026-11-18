@@ -44,6 +44,12 @@ class SubtitleOverlay(
     private val bold: Boolean = false,
     /** Velikost písma překladu podle anglického originálu (jinak pevná [textSizeSp]). */
     private val matchOriginalSize: Boolean = false,
+    /**
+     * Dostane každou změnu pruhu: text překladu, nebo null při schování. Tudy jdou titulky
+     * i do televize LG (viz [cz.playlingo.core.TvSender]); volá se i tehdy, když se pruh na tomto zařízení
+     * zobrazit nepodařilo.
+     */
+    private val onText: ((String?) -> Unit)? = null,
 ) {
     companion object {
         private const val TAG = "TestPreklad"
@@ -171,6 +177,7 @@ class SubtitleOverlay(
         lineHeight: Float = 0f,
     ) {
         isShown = true
+        onText?.invoke(segments.joinToString("\n") { s -> if (s.speaker != null) "${s.speaker}: ${s.body}" else s.body })
         main.post {
             val tv = bar ?: return@post
             val lp = barParams ?: return@post
@@ -221,6 +228,7 @@ class SubtitleOverlay(
 
     fun hide() {
         isShown = false
+        onText?.invoke(null)
         main.post { bar?.visibility = View.GONE }
     }
 
@@ -231,6 +239,7 @@ class SubtitleOverlay(
 
     fun destroy() {
         isShown = false
+        onText?.invoke(null)
         main.post {
             listOfNotNull(bar, debugView).forEach { v -> try { wm.removeView(v) } catch (_: Exception) {} }
             bar = null; barParams = null; debugView = null

@@ -96,6 +96,196 @@
     napis('v-jadro', udaje.jadro);
   }
 
+  // ---- Obraz ze vstupu HDMI přímo v aplikaci ---------------------------
+
+  function ukazVstup(cislo) {
+    var stav = { hraje: false, chyba: false };
+    var video = document.createElement('video');
+    video.setAttribute('autoplay', 'autoplay');
+    var zdroj = document.createElement('source');
+    zdroj.setAttribute('src', 'ext://hdmi:' + cislo);
+    zdroj.setAttribute('type', 'service/webos-external');
+    video.addEventListener('playing', function () { stav.hraje = true; });
+    video.addEventListener('loadedmetadata', function () { stav.hraje = true; });
+    video.addEventListener('error', function () { stav.chyba = true; });
+    zdroj.addEventListener('error', function () { stav.chyba = true; });
+    video.appendChild(zdroj);
+    el('obraz').appendChild(video);
+    return { video: video, stav: stav };
+  }
+
+  // ---- Titulky po síti ------------------------------------------------
+  //
+  // Televize si obraz sama přečíst neumí (zjistila zkouška níže), proto čtení
+  // a překlad dělá jiné zařízení v domácí síti (PlayLingo v telefonu nebo v krabičce
+  // s Android TV) a sem posílá hotové věty. Televize si ho najde sama: zná svou adresu,
+  // tak postupně zkusí všechny adresy téže sítě na portu PORT. Kdo odpoví zprávou
+  // {"typ":"vitej"}, je PlayLingo. Adresa se zapamatuje a příště se zkusí první.
+  // Pro zkoušky jde adresu určit i napevno parametry spuštění
+  // {"titulky": "ws://adresa:port", "hdmi": 2}.
+  // Zprávy: {"typ":"ukaz","id":1,"text":"…"} a {"typ":"skryj","id":2}. Na každou
+  // televize po vykreslení odpoví {"typ":"hotovo","id":…}, aby šlo změřit zpoždění.
+
+  var PORT = 8787;
+  var spojeni = null;
+  var prijem = null;      // { hdmi: číslo vstupu, pevna: adresa z parametrů nebo null }
+  var hledani = 0;        // pořadové číslo hledání; starší rozběhnuté pokusy se podle něj zahodí
+  var ukazka = null;      // střídání zkušebních vět, dokud nepřijdou skutečné titulky
+
+  function hlaseni(text) {
+    var e = el('hlaseni');
+    e.textContent = text || '';
+    e.style.display = text ? 'block' : 'none';
+  }
+
+  function poVykresleni(fn) {
+    if (window.requestAnimationFrame) { window.requestAnimationFrame(fn); } else { setTimeout(fn, 0); }
+  }
+
+  function ulozenaAdresa() {
+    try { return window.localStorage.getItem('titulky') || ''; } catch (e) { return ''; }
+  }
+
+  function ulozAdresu(adresa) {
+    try { window.localStorage.setItem('titulky', adresa); } catch (e) { /* bez paměti se jen hledá déle */ }
+  }
+
+  function zavri(ws) {
+    if (!ws) { return; }
+    try { ws.onopen = ws.onmessage = ws.onerror = ws.onclose = null; ws.close(); } catch (e) { /* už zavřené */ }
+  }
+
+  // Zkusí jednu adresu. Když se do `ms` ozve PlayLingo, vrátí otevřené spojení, jinak null.
+  function zkus(adresa, ms, hotovo) {
+    var ws = null;
+    var vyrizeno = false;
+    function konec(ok) {
+      if (vyrizeno) { return; }
+      vyrizeno = true;
+      if (!ok) { zavri(ws); }
+      hotovo(ok ? ws : null);
+    }
+    try { ws = new WebSocket(adresa); } catch (e) { konec(false); return; }
+    ws.onmessage = function (udalost) {
+      var z = null;
+      try { z = JSON.parse(udalost.data); } catch (e) { /* není to PlayLingo */ }
+      konec(!!z && z.typ === 'vitej');
+    };
+    ws.onerror = function () { konec(false); };
+    ws.onclose = function () { konec(false); };
+    setTimeout(function () { konec(false); }, ms);
+  }
+
+  function cekam() {
+    return prijem && prijem.pevna ? 'Čekám na titulky z ' + prijem.pevna : 'Hledám v síti PlayLingo, které pošle titulky…';
+  }
+
+  // Nalezené spojení: od teď je na obrazovce jen hra a pruh.
+  function prevezmi(ws, adresa) {
+    spojeni = ws;
+    if (!prijem.pevna) { ulozAdresu(adresa); }
+    if (ukazka !== null) { clearInterval(ukazka); ukazka = null; }
+    document.body.className = 'hraje prijem';
+    el('pruh').style.display = 'none';
+    hlaseni('');
+    ws.onerror = null;
+    ws.onmessage = function (udalost) {
+      var z;
+      try { z = JSON.parse(udalost.data); } catch (e) { return; }
+      if (z.typ === 'ukaz') {
+        el('titulek').textContent = String(z.text || '');
+        el('pruh').style.display = '';
+      } else if (z.typ === 'skryj') {
+        el('pruh').style.display = 'none';
+      } else {
+        return;
+      }
+      poVykresleni(function () {
+        try { ws.send(JSON.stringify({ typ: 'hotovo', id: z.id })); } catch (e) { /* spojení mezitím spadlo */ }
+      });
+    };
+    ws.onclose = function () {
+      if (spojeni !== ws || !prijem) { return; }
+      spojeni = null;
+      el('pruh').style.display = 'none';
+      hlaseni(cekam());
+      pozdeji(hledej, 2000);
+    };
+    try {
+      ws.send(JSON.stringify({ typ: 'pripojeno', televize: udaje.model, system: udaje.system, hdmi: prijem.hdmi }));
+    } catch (e) { /* onclose se postará */ }
+  }
+
+  function hledej() {
+    if (!prijem || spojeni) { return; }
+    var moje = ++hledani;
+    function plati() { return !!prijem && !spojeni && moje === hledani; }
+    function znovu() { if (plati()) { pozdeji(hledej, 5000); } }
+    function jedna(adresa, ms, jinak) {
+      zkus(adresa, ms, function (ws) {
+        if (ws && plati()) { prevezmi(ws, adresa); return; }
+        zavri(ws);
+        if (plati()) { jinak(); }
+      });
+    }
+    function celaSit() {
+      sluzba('luna://com.palm.connectionmanager/getstatus', {}, function (o) {
+        if (!plati()) { return; }
+        var ip = o && ((o.wired && o.wired.ipAddress) || (o.wifi && o.wifi.ipAddress));
+        var m = /^(\d+\.\d+\.\d+\.)(\d+)$/.exec(ip || '');
+        if (!m) { znovu(); return; }
+        var fronta = [];
+        var bezi = 0;
+        var nalezeno = false;
+        var n;
+        for (n = 1; n < 255; n++) {
+          if (String(n) !== m[2]) { fronta.push('ws://' + m[1] + n + ':' + PORT); }
+        }
+        function spust(adresa) {
+          bezi++;
+          zkus(adresa, 1500, function (ws) {
+            bezi--;
+            if (ws && !nalezeno && plati()) { nalezeno = true; prevezmi(ws, adresa); return; }
+            zavri(ws);
+            dalsi();
+          });
+        }
+        function dalsi() {
+          if (nalezeno || !plati()) { return; }
+          while (bezi < 24 && fronta.length) { spust(fronta.shift()); }
+          if (bezi === 0 && !fronta.length) { znovu(); }
+        }
+        dalsi();
+      });
+    }
+    if (prijem.pevna) { jedna(prijem.pevna, 3000, znovu); return; }
+    var minula = ulozenaAdresa();
+    if (minula) { jedna(minula, 2000, celaSit); } else { celaSit(); }
+  }
+
+  // Spuštění s adresou napevno (zkoušky): rovnou jen hra a pruh.
+  function spustPrijem(adresa, cislo) {
+    if (hraje) { ukonciZkousku(); }
+    hraje = true;
+    prijem = { hdmi: cislo, pevna: adresa };
+    document.body.className = 'hraje prijem';
+    el('pruh').style.display = 'none';
+    hlaseni(cekam());
+    ukazVstup(cislo);
+    hledej();
+  }
+
+  // Parametry spuštění: při startu je má PalmSystem, při spuštění už běžící
+  // aplikace je nese událost webOSRelaunch.
+  function podleParametru(p) {
+    if (typeof p === 'string') {
+      try { p = JSON.parse(p || '{}'); } catch (e) { p = {}; }
+    }
+    if (p && typeof p.titulky === 'string' && /^wss?:\/\//.test(p.titulky)) {
+      spustPrijem(p.titulky, parseInt(p.hdmi, 10) || 1);
+    }
+  }
+
   // ---- Zkouška --------------------------------------------------------
 
   function spustZkousku(cislo) {
@@ -109,27 +299,19 @@
     napis('v-wasm', typeof WebAssembly === 'object' ? 'ano' : 'ne',
       typeof WebAssembly === 'object' ? 'ano' : 'ne');
 
-    // Obraz ze vstupu HDMI přímo v aplikaci.
-    var stav = { hraje: false, chyba: false };
-    var video = document.createElement('video');
-    video.setAttribute('autoplay', 'autoplay');
-    var zdroj = document.createElement('source');
-    zdroj.setAttribute('src', 'ext://hdmi:' + cislo);
-    zdroj.setAttribute('type', 'service/webos-external');
-    video.addEventListener('playing', function () { stav.hraje = true; });
-    video.addEventListener('loadedmetadata', function () { stav.hraje = true; });
-    video.addEventListener('error', function () { stav.chyba = true; });
-    zdroj.addEventListener('error', function () { stav.chyba = true; });
-    video.appendChild(zdroj);
-    el('obraz').appendChild(video);
+    var vstup = ukazVstup(cislo);
+    var stav = vstup.stav;
+    var video = vstup.video;
 
-    // Titulky v pruhu se střídají jako při hře.
+    // Titulky v pruhu se střídají jako při hře – dokud se neozve zařízení se skutečnými.
     var poradi = 0;
     el('titulek').textContent = VETY[0];
-    casovace.push(setInterval(function () {
+    ukazka = setInterval(function () {
       poradi = (poradi + 1) % VETY.length;
       el('titulek').textContent = VETY[poradi];
-    }, 3500));
+    }, 3500);
+    prijem = { hdmi: cislo, pevna: null };
+    hledej();
 
     pozdeji(function () {
       if (stav.chyba) {
@@ -200,6 +382,13 @@
       clearInterval(casovace[i]);
     }
     casovace = [];
+    if (ukazka !== null) { clearInterval(ukazka); ukazka = null; }
+    prijem = null;
+    hledani++;
+    zavri(spojeni);
+    spojeni = null;
+    hlaseni('');
+    el('pruh').style.display = '';
     el('obraz').innerHTML = '';
     hraje = false;
     document.body.className = '';
@@ -248,4 +437,7 @@
 
   oznac(0);
   zjistiTelevizi();
+
+  document.addEventListener('webOSRelaunch', function (udalost) { podleParametru(udalost.detail); });
+  podleParametru(window.PalmSystem && window.PalmSystem.launchParams);
 })();

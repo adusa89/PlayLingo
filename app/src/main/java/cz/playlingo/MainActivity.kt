@@ -426,7 +426,8 @@ class MainActivity : Activity() {
         val running = TranslatorService.running
         val paused = TranslatorService.paused
         val demoRun = running && TranslatorService.demo
-        val overlayOk = SubtitleOverlay.canShow(this)
+        // titulky jdou do televize LG → pruh na tomto zařízení není potřeba
+        val overlayOk = SubtitleOverlay.canShow(this) || Prefs.tvSend(this)
         val lang = Prefs.lang(this)
         val modelOk = OfflineTranslator.isReady(lang)
         val host = Prefs.ps5Host(this)
@@ -460,6 +461,8 @@ class MainActivity : Activity() {
             else -> { title = t("st_setup"); sub = t("st_setup_sub"); color = Theme.WARN }
         }
         if (running && !demoRun && link != Ps5.Link.CONNECTED) Ps5Link.reason?.let { sub += "\n($it)" }
+        // posílání titulků do televize LG: je televize připojená?
+        if (running && Prefs.tvSend(this)) sub += "\n" + t(if (TranslatorService.tvConnected > 0) "st_tv_on" else "st_tv_wait")
         val status = ui.card()
         val head = ui.hbox()
         head.addView(View(this).apply { background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(color) } },
@@ -1017,6 +1020,11 @@ class MainActivity : Activity() {
             Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
         }, "testch"), 8)
         add(ui.text(t("s_test_desc"), 14f, Theme.MUTED), 6)
+        // Na konci, aby se nezměnilo pořadí položek nad tím (zkouška se jimi prokliká naslepo).
+        add(tagged(ui.settingRow(t("s_tv"), onOff(Prefs.tvSend(this))) {
+            Prefs.setTvSend(this, !Prefs.tvSend(this)); applyToService(); render(true)
+        }, "tvsend"), 8)
+        add(ui.text(t("s_tv_desc"), 14f, Theme.MUTED), 6)
     }
 
     // ======================= HISTORIE =======================
@@ -1136,7 +1144,7 @@ class MainActivity : Activity() {
     private fun startFlow() {
         if (!Prefs.license(this).canRun) { section = Section.LICENSE; render(); return }
         if (TranslatorService.running && !TranslatorService.demo) { moveTaskToBack(true); return }
-        if (!SubtitleOverlay.canShow(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
+        if (!SubtitleOverlay.canShow(this) && !Prefs.tvSend(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
         if (Prefs.ps5Host(this) == null) { section = Section.PS5; render(); return }
         busyText = t("prep_model"); render(true)
         OfflineTranslator.ensureModel(Prefs.lang(this)) { ok ->
@@ -1154,7 +1162,7 @@ class MainActivity : Activity() {
     /** Zkouška bez PlayStationu: ukázková hra jde do aplikace stejnou cestou jako video z konzole. */
     private fun startDemo() {
         if (!Prefs.license(this).canRun) { section = Section.LICENSE; render(); return }
-        if (!SubtitleOverlay.canShow(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
+        if (!SubtitleOverlay.canShow(this) && !Prefs.tvSend(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
         OfflineTranslator.ensureModel(Prefs.lang(this)) { }
         launchService(TranslatorService.ACTION_START_DEMO)
         main.postDelayed({
@@ -1353,6 +1361,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.61"
-    const val VERSION_CODE = 61
+    const val VERSION = "verze 0.62"
+    const val VERSION_CODE = 62
 }

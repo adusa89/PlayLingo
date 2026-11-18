@@ -53,6 +53,9 @@ object Prefs {
     /** Brát i zkušební verze (sestavené z rozpracované větve, ještě neschválené pro všechny). */
     fun testChannel(c: Context) = bool(c, "test_channel", false)
     fun setTestChannel(c: Context, v: Boolean) = setBool(c, "test_channel", v)
+    /** Posílat přeložené titulky do televize LG, kde PlayLingo běží jen jako obrazovka (výchozí: ne). */
+    fun tvSend(c: Context) = bool(c, "tv_send", false)
+    fun setTvSend(c: Context, v: Boolean) = setBool(c, "tv_send", v)
     /** Číslo verze, která běžela naposledy (0 = první spuštění) – aby šlo po aktualizaci říct, že proběhla. */
     fun seenVersion(c: Context): Int = p(c).getInt("seen_version", 0)
     fun setSeenVersion(c: Context, v: Int) = p(c).edit().putInt("seen_version", v).apply()

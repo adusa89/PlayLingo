@@ -1,0 +1,216 @@
+package cz.playlingo.core
+
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.ServerSocket
+import java.net.Socket
+import java.security.MessageDigest
+import java.util.Base64
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
+/**
+ * Posílání přeložených titulků do televize LG (webOS) po domácí síti.
+ *
+ * Televize LG si obraz hry sama přečíst neumí, takže tam PlayLingo běží jen jako obrazovka
+ * (složka `webos`): ukazuje hru ze vstupu HDMI a přes ni pruh. Číst a překládat musí jiné
+ * zařízení – toto. Aplikace v televizi si ho v síti najde sama (zkouší port [PORT]) a připojí se;
+ * odsud jí pak chodí hotové věty.
+ *
+ * Spojení je WebSocket (starý prohlížeč televize nic jiného pro trvalé spojení nemá) a obslouží
+ * se tu ručně, bez knihoven. Zprávy jsou krátké texty:
+ *  - `{"typ":"vitej"}` hned po připojení (podle toho televize pozná PlayLingo),
+ *  - `{"typ":"ukaz","id":1,"text":"…"}` a `{"typ":"skryj","id":2}`.
+ * Co pošle televize, se jen přečte a zahodí. Bez Androidu, aby šlo vyzkoušet v unit testech.
+ */
+class TvSender(private val log: (String) -> Unit = {}) {
+
+    companion object {
+        const val PORT = 8787
+        private const val MAX_CLIENTS = 4
+        private const val MAX_HEAD = 8 * 1024
+        private const val MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+
+        const val HELLO = "{\"typ\":\"vitej\"}"
+        fun showMessage(id: Int, text: String) = "{\"typ\":\"ukaz\",\"id\":$id,\"text\":${json(text)}}"
+        fun hideMessage(id: Int) = "{\"typ\":\"skryj\",\"id\":$id}"
+
+        /** Text jako řetězec JSON (uvozovky, zpětná lomítka a řídicí znaky se zapíšou bezpečně). */
+        fun json(s: String): String {
+            val sb = StringBuilder(s.length + 2).append('"')
+            for (c in s) when {
+                c == '"' -> sb.append("\\\"")
+                c == '\\' -> sb.append("\\\\")
+                c == '\n' -> sb.append("\\n")
+                c == '\r' -> {}
+                c == '\t' -> sb.append(' ')
+                c < ' ' || c == ' ' || c == ' ' -> sb.append(String.format("\\u%04x", c.code))
+                else -> sb.append(c)
+            }
+            return sb.append('"').toString()
+        }
+
+        /** Odpověď na klíč z žádosti o WebSocket (podle ní prohlížeč pozná, že mluví se správným protějškem). */
+        fun acceptKey(key: String): String = Base64.getEncoder().encodeToString(
+            MessageDigest.getInstance("SHA-1").digest((key.trim() + MAGIC).toByteArray(Charsets.US_ASCII)))
+
+        /** Jedna textová zpráva WebSocketu směrem k televizi. */
+        fun frame(text: String): ByteArray {
+            val data = text.toByteArray(Charsets.UTF_8)
+            val out = ByteArrayOutputStream(data.size + 4)
+            out.write(0x81)
+            if (data.size < 126) out.write(data.size)
+            else { out.write(126); out.write(data.size shr 8 and 0xFF); out.write(data.size and 0xFF) }
+            out.write(data)
+            return out.toByteArray()
+        }
+
+        /** Klíč z hlaviček žádosti o WebSocket; null = obyčejný požadavek. */
+        fun keyFromHead(head: String): String? = head.split("\r\n").drop(1)
+            .firstOrNull { it.substringBefore(':').trim().equals("Sec-WebSocket-Key", ignoreCase = true) }
+            ?.substringAfter(':')?.trim()?.takeIf { it.isNotEmpty() && it.length < 100 }
+    }
+
+    @Volatile var port = 0
+        private set
+
+    @Volatile private var server: ServerSocket? = null
+    @Volatile private var acceptor: Thread? = null
+    @Volatile private var pool: ExecutorService? = null
+    /** Zprávy odcházejí z jednoho vlákna, aby pomalá televize nezdržela čtení titulků. */
+    @Volatile private var sendQueue: ExecutorService? = null
+    private val clients = CopyOnWriteArrayList<Socket>()
+    private var nextId = 0
+    /** Co je právě na obrazovce (null = pruh schovaný) – nově připojená televize to dostane hned. */
+    private var shown: String? = null
+
+    val running: Boolean get() = server?.isClosed == false
+
+    /** Kolik televizí je právě připojeno. */
+    val connected: Int get() = clients.size
+
+    /** Začne čekat na televizi. Vrací false, když port nejde otevřít (už ho drží něco jiného). */
+    @Synchronized fun start(preferredPort: Int = PORT, bind: InetAddress? = null): Boolean {
+        if (running) return true
+        val s = try {
+            ServerSocket().apply { reuseAddress = true; bind(InetSocketAddress(bind, preferredPort), 8) }
+        } catch (_: Throwable) { log("tv cannot listen"); return false }
+        server = s
+        port = s.localPort
+        val p = Executors.newCachedThreadPool { r -> Thread(r, "tp-tv").apply { isDaemon = true } }
+        pool = p
+        sendQueue = Executors.newSingleThreadExecutor { r -> Thread(r, "tp-tv-send").apply { isDaemon = true } }
+        acceptor = Thread({
+            while (!s.isClosed) {
+                val c = try { s.accept() } catch (_: Throwable) { break }
+                try { p.execute { handle(c) } } catch (_: Throwable) { close(c) }
+            }
+        }, "tp-tv-accept").apply { isDaemon = true; start() }
+        log("tv on port $port")
+        return true
+    }
+
+    @Synchronized fun stop() {
+        val s = server ?: return
+        server = null
+        try { s.close() } catch (_: Throwable) {}
+        clients.forEach { close(it) }
+        clients.clear()
+        pool?.shutdownNow(); pool = null
+        sendQueue?.shutdownNow(); sendQueue = null
+        acceptor = null
+        shown = null
+        log("tv closed")
+    }
+
+    /** Ukáže na televizi přeložený titulek. Stejný text podruhé se neposílá. */
+    @Synchronized fun show(text: String) {
+        if (text == shown) return
+        shown = text
+        broadcast(showMessage(++nextId, text))
+    }
+
+    /** Schová pruh na televizi. */
+    @Synchronized fun hide() {
+        if (shown == null) return
+        shown = null
+        broadcast(hideMessage(++nextId))
+    }
+
+    private fun broadcast(message: String) {
+        if (clients.isEmpty()) return
+        val bytes = frame(message)
+        try { sendQueue?.execute { clients.forEach { write(it, bytes) } } } catch (_: Throwable) {}
+    }
+
+    private fun write(c: Socket, bytes: ByteArray) {
+        try {
+            synchronized(c) { c.getOutputStream().apply { write(bytes); flush() } }
+        } catch (_: Throwable) { drop(c) }
+    }
+
+    private fun drop(c: Socket) {
+        if (clients.remove(c)) log("tv gone, left ${clients.size}")
+        close(c)
+    }
+
+    private fun close(c: Socket) { try { c.close() } catch (_: Throwable) {} }
+
+    private fun handle(c: Socket) {
+        try {
+            // titulky patří jen do domácí sítě
+            val from = c.inetAddress
+            if (from == null || !(from.isLoopbackAddress || PhoneLogin.isHomeAddress(from.hostAddress ?: ""))) { close(c); return }
+            c.soTimeout = 8000
+            c.tcpNoDelay = true
+            val input = c.getInputStream()
+            val head = readHead(input) ?: run { close(c); return }
+            val key = keyFromHead(head)
+            if (key == null) {
+                // obyčejný dotaz (např. z prohlížeče): jen dát vědět, že tu PlayLingo je
+                c.getOutputStream().apply {
+                    write("HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 9\r\nConnection: close\r\n\r\nPlayLingo".toByteArray(Charsets.US_ASCII))
+                    flush()
+                }
+                close(c); return
+            }
+            if (clients.size >= MAX_CLIENTS) { close(c); return }
+            c.getOutputStream().apply {
+                write(("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n" +
+                    "Sec-WebSocket-Accept: ${acceptKey(key)}\r\n\r\n").toByteArray(Charsets.US_ASCII))
+                flush()
+            }
+            c.soTimeout = 0
+            write(c, frame(HELLO))
+            // přidání a poslání právě zobrazeného titulku jsou pod stejným zámkem jako show/hide,
+            // aby se nová televize o žádnou změnu nepřipravila
+            synchronized(this) {
+                clients.add(c)
+                shown?.let { t -> val b = frame(showMessage(++nextId, t)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
+            }
+            log("tv connected, now ${clients.size}")
+            // Zprávy od televize se nepotřebují, jen se čtou, aby se poznalo zavření spojení.
+            val buf = ByteArray(512)
+            while (input.read(buf) >= 0) { /* zahodit */ }
+        } catch (_: Throwable) {
+        } finally { drop(c) }
+    }
+
+    /** Hlavičky žádosti (po prázdný řádek); null, když jsou podezřele dlouhé nebo spojení skončilo. */
+    private fun readHead(input: InputStream): String? {
+        val end = "\r\n\r\n"
+        val out = ByteArrayOutputStream()
+        var match = 0
+        while (out.size() < MAX_HEAD) {
+            val b = input.read()
+            if (b < 0) return null
+            out.write(b)
+            match = if (b == end[match].code) match + 1 else if (b == end[0].code) 1 else 0
+            if (match == end.length) return String(out.toByteArray(), 0, out.size() - end.length, Charsets.ISO_8859_1)
+        }
+        return null
+    }
+}

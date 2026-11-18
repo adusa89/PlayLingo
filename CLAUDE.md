@@ -127,6 +127,18 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
 - Aplikace na LG se nejspíš nepřipojí k PlayStationu po síti jako na Android TV (to dělá
   nativní knihovna chiaki-ng). Musela by číst obraz přímo z HDMI, nebo by čtení a překlad
   dělalo jiné zařízení a televize jen ukazovala pruh.
+- Zkouška na OLED55B7 dopadla takto: hru z HDMI s pruhem přes obraz aplikace ukáže, ale obraz
+  si nepřečte (vidí jen černou) a snímek obrazovky jí systém nedovolí. Proto od 0.62 platí druhá
+  cesta: čte a překládá PlayLingo na Androidu (telefon nebo box) a televizi posílá hotové věty.
+  - Android: volba Nastavení → „Posílat titulky do televize LG“ (`Prefs.tvSend`, výchozí vypnuto).
+    `core/TvSender.kt` otevře v domácí síti port 8787 a `SubtitleOverlay` mu předává každou změnu
+    pruhu. S vypnutou volbou se nic neotevírá ani neposílá a aplikace se chová jako dřív.
+    Se zapnutou volbou se čte i tehdy, když je vidět aplikace, a nevyžaduje se povolení pruhu.
+  - Televize: `webos/app/app.js` si zařízení najde sama (projde adresy své sítě) a připojí se.
+    Spojení je WebSocket obsloužený ručně na obou stranách; zprávy jsou popsané v `TvSender.kt`.
+  - `node webos/posilac.js` posílá z počítače zkušební věty (zkouška televize bez Androidu).
+- Nástroj LG (`ares-install`, `ares-launch`, `ares-inspect` z balíčku `@webos-tools/cli`) nahraje
+  aplikaci do televize ve vývojářském režimu; `ares-inspect` dá živý přístup do běžící aplikace.
 - `python3 webos/sestavit.py` vytvoří `webos/PlayLingo-zkouska.ipk` (soubor se necommituje).
   Postup instalace do televize je ve `webos/CTI-ME.md`. Změny jen ve složce `webos` nemění
   verzi aplikace pro Android TV a commitují se s `[skip ci]`.
