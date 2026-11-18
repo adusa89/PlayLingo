@@ -7,7 +7,7 @@ Výsledek: webos/PlayLingo-zkouska.ipk
 Dělá totéž co oficiální nástroj LG `ares-package`, jen bez instalace čehokoli:
 soubor .ipk je archiv `ar` se třemi částmi (debian-binary, control.tar.gz, data.tar.gz).
 """
-import io, json, os, subprocess, tarfile, tempfile
+import io, json, os, tarfile
 
 TADY = os.path.dirname(os.path.abspath(__file__))
 APP = os.path.join(TADY, "app")
@@ -72,11 +72,14 @@ def control(tar):
 
 
 vystup = os.path.join(TADY, "PlayLingo-zkouska.ipk")
-with tempfile.TemporaryDirectory() as tmp:
+# Archiv `ar` se skládá ručně, aby sestavení šlo i na Windows, kde program `ar` není:
+# hlavička souboru, pak za každou část řádek o 60 znacích, obsah a zarovnání na sudou délku.
+with open(vystup, "wb") as ipk:
+    ipk.write(b"!<arch>\n")
     for jmeno, obsah in [("debian-binary", b"2.0\n"), ("control.tar.gz", targz(control)),
                          ("data.tar.gz", targz(data))]:
-        open(os.path.join(tmp, jmeno), "wb").write(obsah)
-    if os.path.exists(vystup):
-        os.remove(vystup)
-    subprocess.check_call(["ar", "-qc", vystup, "debian-binary", "control.tar.gz", "data.tar.gz"], cwd=tmp)
+        ipk.write(("%-16s%-12d%-6d%-6d%-8s%-10d`\n" % (jmeno + "/", 0, 0, 0, "100644", len(obsah))).encode("ascii"))
+        ipk.write(obsah)
+        if len(obsah) % 2:
+            ipk.write(b"\n")
 print("Hotovo:", vystup, "(%d kB)" % (os.path.getsize(vystup) // 1024))
