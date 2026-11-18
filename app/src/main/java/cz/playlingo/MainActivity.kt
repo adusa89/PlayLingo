@@ -670,15 +670,7 @@ class MainActivity : Activity() {
                 // (když se ji vystavit nepodařilo, vede kód rovnou na přihlášení Sony)
                 if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
                 val pageUrl = loginPageUrl()
-                val row = if (narrow) ui.vbox() else ui.hbox().apply { gravity = Gravity.TOP }
-                qrBitmap(pageUrl ?: PsnAuth.LOGIN_URL)?.let { qr ->
-                    row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8)) },
-                        // velikost tak, aby se kód i s tlačítky vešel na obrazovku celý, bez posouvání
-                        LinearLayout.LayoutParams(ui.dp(200), ui.dp(200)))
-                }
-                row.addView(ui.text(t("pa_1_text"), 16f, Theme.TEXT).apply { if (narrow) setPadding(0, ui.dp(12), 0, 0) else setPadding(ui.dp(20), 0, 0, 0) },
-                    if (narrow) ui.lp() else LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-                add(row, 10)
+                add(qrRow(pageUrl ?: PsnAuth.LOGIN_URL, t("pa_1_text")), 10)
                 // adresa i slovy – pro telefon, kterému se čtvereček nedaří přečíst
                 if (pageUrl != null) add(ui.text(pageUrl, 13f, Theme.MUTED), 6)
                 else add(ui.text(t("pa_nolan"), 15f, Theme.WARN), 6)
@@ -688,19 +680,19 @@ class MainActivity : Activity() {
                 add(ui.card().apply { addView(ui.text(t("pa_2_text"), 17f, Theme.TEXT)) }, 10)
             }
             4 -> {
-                add(ui.card().apply {
-                    addView(ui.text(t("pa_3_text"), 17f, Theme.TEXT))
-                    addView(ui.text(t("pa_example"), 14f, Theme.MUTED), ui.lp(top = 12))
-                    // ukázka adresy se zvýrazněným kódem
-                    val ex = android.text.SpannableStringBuilder("…playstation.net/remoteplay/redirect?code=")
-                    val from = ex.length
-                    ex.append("v3.Ab12Cd")
-                    ex.setSpan(android.text.style.ForegroundColorSpan(Theme.ACCENT), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    ex.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    ex.append("&cid=0000…")
-                    addView(ui.text(ex, 17f, Theme.TEXT), ui.lp(top = 4))
-                }, 10)
-                add(input("ph_code", draftAuth, "pauth", number = false), 10)
+                // záloha, když se stránka z televize v telefonu neotevře (jiná Wi-Fi, mobilní data):
+                // čtvereček rovnou na přihlášení Sony a kód opsaný z adresy prázdné stránky „redirect“
+                add(qrRow(PsnAuth.LOGIN_URL, t("pa_3_text")), 10)
+                add(ui.text(t("pa_example"), 14f, Theme.MUTED), 8)
+                // ukázka adresy se zvýrazněným kódem
+                val ex = android.text.SpannableStringBuilder("…playstation.net/remoteplay/redirect?code=")
+                val from = ex.length
+                ex.append("v3.Ab12Cd")
+                ex.setSpan(android.text.style.ForegroundColorSpan(Theme.ACCENT), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                ex.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), from, ex.length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                ex.append("&cid=0000…")
+                add(ui.text(ex, 16f, Theme.TEXT), 2)
+                add(input("ph_code", draftAuth, "pauth", number = false), 8)
                 nextOk = false
             }
             else -> {
@@ -724,6 +716,11 @@ class MainActivity : Activity() {
             pairStep = if (step == 5 && have) 1 else step - 1
             pairMsg = null; render()
         }, "pback"), wrapLp())
+        // stránka z televize se v telefonu neotevřela → rovnou na záložní krok se čtverečkem na Sony
+        if (step == 2) row.addView(tagged(ui.button(t("pa_stuck")) {
+            saveDrafts()
+            pairStep = 4; pairMsg = null; render()
+        }, "pstuck"), wrapLp())
         add(row, 14)
         // účet už je uložený: nabídnout nové přihlášení (jiný účet, nebo když spárování s tímhle nejde)
         if (step == 5 && have && !pairBusy) add(tagged(ui.button(t("ps5_acc_again")) {
@@ -793,6 +790,19 @@ class MainActivity : Activity() {
     private fun accountFromPhone(a: PhoneLogin.Account) {
         Prefs.setPsnId(this, a.id)
         pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = a.id; draftAuth = ""; pairStep = 5 }
+    }
+
+    /** Čtvereček (QR kód) s adresou a vedle něj text; na úzké obrazovce je text pod čtverečkem. */
+    private fun qrRow(url: String, text: String): LinearLayout {
+        val row = if (narrow) ui.vbox() else ui.hbox().apply { gravity = Gravity.TOP }
+        qrBitmap(url)?.let { qr ->
+            row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8)) },
+                // velikost tak, aby se kód i s tlačítky vešel na obrazovku celý, bez posouvání
+                LinearLayout.LayoutParams(ui.dp(200), ui.dp(200)))
+        }
+        row.addView(ui.text(text, 16f, Theme.TEXT).apply { if (narrow) setPadding(0, ui.dp(12), 0, 0) else setPadding(ui.dp(20), 0, 0, 0) },
+            if (narrow) ui.lp() else LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        return row
     }
 
     /** QR kód s adresou (černobílý obrázek); null, když se ho nepodaří vytvořit. */
@@ -1416,6 +1426,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.65"
-    const val VERSION_CODE = 65
+    const val VERSION = "verze 0.66"
+    const val VERSION_CODE = 66
 }

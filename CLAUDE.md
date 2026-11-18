@@ -118,8 +118,11 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   ze stránky televize. Přihlášení Sony běží v něm, kód si vezme sám, číslo účtu pošle televizi
   (`LoginClient`) a zapamatuje si ho (`Prefs.phoneAccounts`; jen číslo a jméno, žádné heslo).
   Účet posílá jen na adresy domácí sítě. Záloha: přihlášení v prohlížeči a Sdílet → PlayLingo.
-- Ruční opsání kódu (krok 5 průvodce) zůstává jako poslední záloha. Pořadí a počet kroků
-  průvodce se nezměnily.
+- Ruční opsání kódu (krok 5 průvodce) zůstává jako poslední záloha a od 0.66 je úplné samo
+  o sobě: má vlastní čtvereček, který vede rovnou na přihlášení Sony (jako před 0.57), a z kroku
+  se čtverečkem na něj vede tlačítko „Stránka se neotevřela“. Je pro případ, že se stránka
+  z televize v telefonu neotevře (telefon na jiné Wi-Fi nebo na mobilních datech). Tuhle cestu
+  neodstraňuj. Pořadí a počet kroků průvodce se nezměnily.
 - Zkouška v emulátoru umí ověřit jen stránku a posílání účtu, ne přihlášení u Sony. Jestli Sony
   pustí přihlášení uvnitř pomocníka na skutečném telefonu, umí ověřit jen uživatel.
 
