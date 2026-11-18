@@ -40,6 +40,27 @@
             </intent-filter>
         </activity>
 
+        <!-- PlayLingo v telefonu: pomocník pro přihlášení účtem PlayStation. Otevírá ho odkaz ze
+             stránky, kterou televize vystavuje (čtvereček), nebo sdílení adresy z prohlížeče. -->
+        <activity
+            android:name=".PhoneHelperActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="playlingo" android:host="login" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".CalibrationActivity"
             android:exported="false"

@@ -19,6 +19,7 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `TranslatorService.kt` – srdce aplikace (čtení → OCR → překlad → pruh)
   - `StreamReader.kt` – dekódování videa z konzole
   - `Ps5Link.kt`, `Ps5Pairing.kt`, `PsnAuth.kt` – spojení, párování, přihlášení účtem (přes telefon)
+  - `PhoneHelperActivity.kt` – PlayLingo v telefonu: pomocník pro přihlášení (viz Přihlášení přes telefon)
   - `SubtitleOverlay.kt`, `TitulkyAccessibility.kt` – pruh s překladem přes Usnadnění
   - `MainActivity.kt` – všechny obrazovky a průvodce
   - `Updater.kt` – aktualizace z aplikace (stažení nové verze a předání systému k instalaci)
@@ -85,13 +86,35 @@ náhoda, opakované selhání po změně kódu ne.
 - Krok „Kontrola podpisu“ v sestavení vypíše, jestli je podpis stálý. Když heslo chybí, sestaví
   se s dočasným podpisem a u vydání je to napsané – takovou verzi do `main` neposílej.
 
+## Přihlášení přes telefon
+
+Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se). Od 0.57 se nic neopisuje:
+
+- **Stránka z televize.** Po dobu kroků přihlášení (kroky 2–4 průvodce spárováním) televize
+  vystaví v domácí síti malou stránku (`core/LoginServer.kt`, text stránky `core/PhoneLogin.kt`).
+  Čtvereček na obrazovce vede na ni, ne na Sony. Uživatel se přihlásí u Sony na nové kartě,
+  zkopíruje adresu bílé stránky „redirect“ a vloží ji na stránku; televize si z ní vezme kód
+  a pokračuje sama. Funguje i na iPhonu. Stránka přijme jen požadavky s jednorázovým klíčem
+  z čtverečku a mimo tyto kroky neběží.
+- **PlayLingo v telefonu.** Stejné APK nainstalované v telefonu (pozná se podle mobilní sítě,
+  `NetInfo.isPhone`) ukáže místo aplikace jen pomocníka. Otevírá ho odkaz `playlingo://login?…`
+  ze stránky televize. Přihlášení Sony běží v něm, kód si vezme sám, číslo účtu pošle televizi
+  (`LoginClient`) a zapamatuje si ho (`Prefs.phoneAccounts`; jen číslo a jméno, žádné heslo).
+  Účet posílá jen na adresy domácí sítě. Záloha: přihlášení v prohlížeči a Sdílet → PlayLingo.
+- Ruční opsání kódu (krok 5 průvodce) zůstává jako poslední záloha. Pořadí a počet kroků
+  průvodce se nezměnily.
+- Zkouška v emulátoru umí ověřit jen stránku a posílání účtu, ne přihlášení u Sony. Jestli Sony
+  pustí přihlášení uvnitř pomocníka na skutečném telefonu, umí ověřit jen uživatel.
+
 ## Texty aplikace (9 jazyků)
 
 Každý nový text musí být ve všech jazycích, jinak neprojde test `AllLanguagesTest`:
 
 - obecné texty: čeština + slovenština v `core/I18n.kt`, ostatní v `core/I18nPl.kt`, `I18nDe.kt`,
   `I18nHu.kt`, `I18nUk.kt`, `I18nEs.kt`, `I18nFr.kt`, `I18nIt.kt`;
-- texty kolem PlayStationu: `core/I18nPs5.kt` (`PS5_S` pro češtinu a slovenštinu, `PS5_X` pro ostatní).
+- texty kolem PlayStationu: `core/I18nPs5.kt` (`PS5_S` pro češtinu a slovenštinu, `PS5_X` pro ostatní);
+- texty přihlášení přes telefon (kroky `pa_…`, stránka z televize `wp_…`, pomocník v telefonu
+  `hp_…`): `core/I18nLogin.kt` (`LOGIN_S`, `LOGIN_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
@@ -103,7 +126,10 @@ uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
 - Věty ukázkové hry v `core/DemoGame.kt` – skript hledá 15 z nich podle textu. Měníš-li věty,
   uprav i skript.
 - Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`, `updtest`,
-  `updself` a `TestCardActivity`.
+  `updself`, `logintest`, `helperlogin` a `TestCardActivity`, `PhoneHelperActivity`.
+- Zkouška přihlášení přes telefon (řádky `LOGIN|`, `HELPER|`, snímky `12n`–`12p`) se do výsledku
+  nepočítá. V `result.txt` má být `ucet_z_telefonu` aspoň 1 (stránka z televize přijala účet)
+  a `pomocnik` aspoň 1; na snímku `12n` má být „Účet ověřen“.
 - Zkouška aktualizace (řádky `UPD|`, snímky `15a`–`15d`) se do výsledku nepočítá. `updtest`
   stáhne vydanou verzi (závisí na internetu; emulátor ji nenainstaluje). `updself` nainstaluje
   aplikaci samu přes sebe – na snímku `15c_dotaz` má být dotaz systému na instalaci a v
@@ -134,7 +160,8 @@ uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
   (0.33, 0.43, 0.45). Čte se jen spodní třetina obrazu.
 - **Přihlášení účtem PlayStation jde jen přes telefon** (QR kód, od 0.19). Přihlášení přímo
   v televizi v přibaleném prohlížeči GeckoView ochrana Sony odmítala a prohlížeč dělal z APK
-  176 MB; ve 0.55 bylo obojí odstraněno. Nevracej to.
+  176 MB; ve 0.55 bylo obojí odstraněno. Nevracej to. Od 0.57 se v telefonu nic neopisuje
+  (viz Přihlášení přes telefon).
 - **Velikost výřezu čtení nezrychlí.** Čas jednoho čtení (ML Kit) je ve zkoušce stejný při
   zvětšení 1× i 1,5× i při menší oblasti (měřeno na 0.54, řádky `READ|ocr=…` a `SCALE|`
   ve větvích `test-results-api…`). Menší výřez ani vypnuté zvětšování proto čtení nezrychlí.
