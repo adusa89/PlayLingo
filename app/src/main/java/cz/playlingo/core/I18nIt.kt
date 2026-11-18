@@ -73,6 +73,7 @@ internal val I18N_IT: Map<String, String> = mapOf(
     "upd_cancel" to "L’installazione è stata annullata. Scegli Aggiorna e confermala nella finestra del televisore.",
     "upd_fail" to "L’aggiornamento non è riuscito. Riprova oppure installa la nuova versione manualmente dall’indirizzo qui sotto. Se il televisore non consente l’installazione: Impostazioni → App → Sicurezza e limitazioni → Origini sconosciute → consenti PlayLingo.",
     "upd_test" to "di prova",
+    "upd_done" to "Aggiornato alla versione",
     "rep_btn" to "Crea segnalazione di errore",
     "rep_saved" to "Segnalazione salvata nel file:",
     "b_start" to "Avvia la traduzione",

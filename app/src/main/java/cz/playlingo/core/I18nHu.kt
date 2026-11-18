@@ -73,6 +73,7 @@ internal val I18N_HU: Map<String, String> = mapOf(
     "upd_cancel" to "A telepítés megszakadt. Válaszd a Frissítés gombot, és erősítsd meg a tévé ablakában.",
     "upd_fail" to "A frissítés nem sikerült. Próbáld újra, vagy telepítsd az új verziót kézzel az alábbi címről. Ha a tévé nem engedi a telepítést: Beállítások → Alkalmazások → Biztonság és korlátozások → Ismeretlen források → engedélyezd a PlayLingót.",
     "upd_test" to "tesztverzió",
+    "upd_done" to "Frissítve erre a verzióra:",
     "rep_btn" to "Hibajelentés készítése",
     "rep_saved" to "A jelentés fájlba mentve:",
     "b_start" to "Fordítás indítása",

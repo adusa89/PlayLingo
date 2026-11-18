@@ -113,6 +113,12 @@ class MainActivity : Activity() {
         Updater.cleanUp(this)
         // odpověď systému na aktualizaci (po úspěšné instalaci otevře už novou verzi)
         if (savedInstanceState == null && Updater.onStatus(this, intent)) setIntent(Intent(this, MainActivity::class.java))
+        // po aktualizaci dát vědět, že běží nová verze (na Androidu 12+ proběhne bez jediného okna)
+        val seen = Prefs.seenVersion(this)
+        if (seen != BuildInfo.VERSION_CODE) {
+            Prefs.setSeenVersion(this, BuildInfo.VERSION_CODE)
+            if (seen in 1 until BuildInfo.VERSION_CODE) toast(t("upd_done") + " " + BuildInfo.VERSION.substringAfter(' '))
+        }
         // pro automatický test: přeskočit průvodce a rovnou spustit překlad
         val auto = intent?.getBooleanExtra("autostart", false) == true
         if (auto) { Prefs.setWizardDone(this, true); wizard = -1 }

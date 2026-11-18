@@ -111,7 +111,11 @@ adb shell settings put secure accessibility_enabled 1
 sleep 3
 adb shell am start -n $PKG/.MainActivity --ez updself true
 sleep 12; shot 15c_dotaz
-key 22; key 22; key 23
+# Potvrdit jen tehdy, když se systém opravdu ptá (na Androidu 12+ projde instalace bez dotazu).
+# Dolů = na Androidu 9 teprve tím dostanou tlačítka výběr; dvakrát vpravo = Instalovat.
+if adb shell dumpsys activity activities | grep -E "ResumedActivity" | grep -q packageinstaller; then
+  key 20; key 22; key 22; key 23
+fi
 sleep 25; shot 15c_po_instalaci
 adb shell dumpsys activity activities | grep -m1 -E "ResumedActivity" > $OUT/po_aktualizaci.txt
 #  d) podruhé: na Androidu 12+ má instalace projít bez dotazu
