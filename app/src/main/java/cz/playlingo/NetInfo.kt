@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
+import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.Ps5
 
 /** Jak je toto zařízení připojené k domácí síti (kabel, Wi-Fi 5 GHz, Wi-Fi 2,4 GHz). */
@@ -27,4 +28,37 @@ object NetInfo {
             else -> Ps5.Net.UNKNOWN
         }
     } catch (_: Throwable) { Ps5.Net.UNKNOWN }
+
+    /**
+     * Adresa tohoto zařízení v domácí síti (IPv4), nebo null. Přednost má síť, přes kterou je
+     * zařízení právě připojené; jinak první domácí adresa, která se najde.
+     */
+    fun homeAddress(ctx: Context): String? {
+        try {
+            val cm = ctx.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            cm.getLinkProperties(cm.activeNetwork)?.linkAddresses
+                ?.mapNotNull { (it.address as? java.net.Inet4Address)?.hostAddress }
+                ?.firstOrNull { PhoneLogin.isHomeAddress(it) }?.let { return it }
+        } catch (_: Throwable) {}
+        return try {
+            java.util.Collections.list(java.net.NetworkInterface.getNetworkInterfaces())
+                .filter { it.isUp && !it.isLoopback }
+                .flatMap { java.util.Collections.list(it.inetAddresses) }
+                .mapNotNull { (it as? java.net.Inet4Address)?.hostAddress }
+                .firstOrNull { PhoneLogin.isHomeAddress(it) }
+        } catch (_: Throwable) { null }
+    }
+
+    /**
+     * Je to telefon? Pak aplikace neslouží k překladu, ale jen jako pomocník pro přihlášení.
+     * Televize a boxy se poznají bezpečně: nemají mobilní síť. Kdyby se přesto spletla,
+     * dá se to v pomocníkovi jedním tlačítkem opravit ([Prefs.forceTv]).
+     */
+    fun isPhone(ctx: Context): Boolean = try {
+        val pm = ctx.packageManager
+        val tv = pm.hasSystemFeature("android.software.leanback") || pm.hasSystemFeature("android.software.leanback_only") ||
+            pm.hasSystemFeature("android.hardware.type.television") || pm.hasSystemFeature("android.software.live_tv") ||
+            ctx.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_TYPE_MASK == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+        !tv && !Prefs.forceTv(ctx) && pm.hasSystemFeature("android.hardware.telephony") && pm.hasSystemFeature("android.hardware.touchscreen")
+    } catch (_: Throwable) { false }
 }

@@ -25,6 +25,9 @@ import cz.playlingo.core.ScreenLayout
 import cz.playlingo.core.Segment
 import cz.playlingo.core.DiagLog
 import cz.playlingo.core.GameProfiles
+import cz.playlingo.core.LoginClient
+import cz.playlingo.core.LoginServer
+import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.Ps5
 import cz.playlingo.core.Ps5Host
 import cz.playlingo.core.UpdateCheck
@@ -85,6 +88,8 @@ class MainActivity : Activity() {
     private var pairStep = 0
     private var draftAuth = ""
     private var skipDraftSave = false
+    /** Stránka pro telefon; běží jen po dobu kroků přihlášení účtem (null = neběží). */
+    private var loginServer: LoginServer? = null
     private var lastLink = Ps5.Link.OFF
     private var lastFrames = 0L
     private var ticks = 0
@@ -106,6 +111,12 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // v telefonu aplikace nepřekládá – je tam jen pomocník pro přihlášení účtem PlayStation
+        if (NetInfo.isPhone(this)) {
+            startActivity(Intent(this, PhoneHelperActivity::class.java))
+            finish()
+            return
+        }
         EventFile.init(this)
         ui = Ui(this)
         buildShell()
@@ -150,6 +161,26 @@ class MainActivity : Activity() {
             Prefs.setPs5Host(this, null)
             section = Section.PS5; pairStep = i?.getIntExtra("pairstep", 2) ?: 2; render(); return
         }
+        // Zkouška přihlášení přes telefon: stránka z televize odpovídá, špatný klíč odmítne a účet
+        // poslaný „z telefonu“ posune průvodce na krok s číslem z PS5.
+        if (i?.getBooleanExtra("logintest", false) == true && applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            Prefs.setWizardDone(this, true); wizard = -1
+            Prefs.setPs5Host(this, null); Prefs.setPsnId(this, ""); draftPsn = ""
+            section = Section.PS5; pairStep = 2; render()
+            val s = loginServer
+            Thread({
+                fun log(m: String) { android.util.Log.i("TP_TEST", "LOGIN|$m") }
+                if (s == null || !s.running) { log("test no page"); return@Thread }
+                try {
+                    val page = LoginClient.request("127.0.0.1", s.port, "GET", PhoneLogin.path(s.key))
+                    log("test page ${page.first} form=${page.second.contains("name=\"url\"")}")
+                    log("test wrong key " + LoginClient.request("127.0.0.1", s.port, "GET", PhoneLogin.path("spatnyklic")).first)
+                    val acc = PhoneLogin.Account(Ps5.accountIdToBase64(ByteArray(8) { (it + 1).toByte() }), "Zkouška")
+                    log("test app " + LoginClient.send(PhoneLogin.Target("127.0.0.1", s.port, s.key), acc))
+                } catch (e: Throwable) { log("test error $e") }
+            }, "tp-logintest").start()
+            return
+        }
         // Zkouška aktualizace. „updtest“: stáhne běžnou vydanou verzi a předá ji systému.
         // „updself“: aplikace nainstaluje sama sebe (stejná verze i podpis) – projde celá instalace.
         val updSelf = i?.getBooleanExtra("updself", false) == true
@@ -189,6 +220,7 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        loginServer?.stop(); loginServer = null
         demo?.destroy(); demo = null
         scope.cancel()
         super.onDestroy()
@@ -259,6 +291,7 @@ class MainActivity : Activity() {
     private fun render(keepFocus: Boolean = false) {
         val focusedTag = if (keepFocus) currentFocus?.tag else null
         if (!skipDraftSave) saveDrafts()
+        syncLoginPage()
         lastRunning = TranslatorService.running
         lastPaused = TranslatorService.paused
         lastLink = Ps5Link.state
@@ -577,10 +610,12 @@ class MainActivity : Activity() {
                 add(tagged(ui.button(t("ps5_find")) { findPs5() }, "pfind"), 8)
             }
             2 -> {
-                // telefon: velký QR kód s přihlašovací adresou Sony
+                // telefon: velký QR kód s adresou stránky, kterou televize vystavuje v domácí síti
+                // (když se ji vystavit nepodařilo, vede kód rovnou na přihlášení Sony)
                 if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
+                val pageUrl = loginPageUrl()
                 val row = ui.hbox().apply { gravity = Gravity.TOP }
-                qrBitmap(PsnAuth.LOGIN_URL)?.let { qr ->
+                qrBitmap(pageUrl ?: PsnAuth.LOGIN_URL)?.let { qr ->
                     row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8)) },
                         // velikost tak, aby se kód i s tlačítky vešel na obrazovku celý, bez posouvání
                         LinearLayout.LayoutParams(ui.dp(200), ui.dp(200)))
@@ -588,6 +623,9 @@ class MainActivity : Activity() {
                 row.addView(ui.text(t("pa_1_text"), 16f, Theme.TEXT).apply { setPadding(ui.dp(20), 0, 0, 0) },
                     LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
                 add(row, 10)
+                // adresa i slovy – pro telefon, kterému se čtvereček nedaří přečíst
+                if (pageUrl != null) add(ui.text(pageUrl, 13f, Theme.MUTED), 6)
+                else add(ui.text(t("pa_nolan"), 15f, Theme.WARN), 6)
             }
             3 -> {
                 add(ui.card().apply { addView(ui.text(t("acc2"), 16f, Theme.ACCENT)) }, 10)
@@ -665,6 +703,40 @@ class MainActivity : Activity() {
             2 -> { pairStep = if (have) 5 else 3; pairMsg = null; render() }
             3 -> { pairStep = 4; pairMsg = null; render() }
         }
+    }
+
+    /** Stránka pro telefon běží jen po dobu, kdy průvodce ukazuje kroky přihlášení účtem (2 až 4). */
+    private fun syncLoginPage() {
+        val pairing = Prefs.ps5Host(this) == null && (wizard == 3 || (wizard < 0 && section == Section.PS5))
+        val want = pairing && pairStep.coerceIn(0, 5) in 2..4
+        if (want && loginServer == null) {
+            loginServer = LoginServer(
+                lang = { Prefs.lang(this) },
+                loginUrl = PsnAuth.LOGIN_URL,
+                apkUrl = { UpdateCheck.url(if (Prefs.testChannel(this)) UpdateCheck.Channel.TEST else UpdateCheck.Channel.STABLE, "PlayLingo.apk") },
+                resolveCode = { PsnAuth.accountForCode(it) },
+                onAccount = { accountFromPhone(it) },
+                log = { android.util.Log.i("TP_TEST", "LOGIN|$it"); DiagLog.add("LOGIN|$it") },
+            ).also { it.start() }
+        } else if (!want && loginServer != null) {
+            loginServer?.stop(); loginServer = null
+        }
+        // přihlašování v telefonu trvá pár minut – televize mezitím nesmí zhasnout
+        if (want) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    /** Adresa stránky pro telefon (do čtverečku); null, když stránka neběží nebo televize nezná svou adresu. */
+    private fun loginPageUrl(): String? {
+        val s = loginServer?.takeIf { it.running } ?: return null
+        val ip = NetInfo.homeAddress(this) ?: return null
+        return PhoneLogin.pageUrl(PhoneLogin.Target(ip, s.port, s.key))
+    }
+
+    /** Telefon poslal ověřený účet (ze stránky nebo z PlayLinga v telefonu) → rovnou na číslo z PS5. */
+    private fun accountFromPhone(a: PhoneLogin.Account) {
+        Prefs.setPsnId(this, a.id)
+        pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = a.id; draftAuth = ""; pairStep = 5 }
     }
 
     /** QR kód s adresou (černobílý obrázek); null, když se ho nepodaří vytvořit. */
@@ -1281,6 +1353,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.56"
-    const val VERSION_CODE = 56
+    const val VERSION = "verze 0.57"
+    const val VERSION_CODE = 57
 }
