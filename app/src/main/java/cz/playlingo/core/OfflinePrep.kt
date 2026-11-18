@@ -117,6 +117,18 @@ object OfflinePrep {
         Regex("\\btake it easy\\b", RegexOption.IGNORE_CASE) to "calm down",
         Regex("\\b(?:I(?: have|'ve got| got)? )?no idea\\b", RegexOption.IGNORE_CASE) to "I do not know",
         Regex("\\b(?:good|nice|great) job\\b", RegexOption.IGNORE_CASE) to "well done",
+        Regex("\\bgot away\\b", RegexOption.IGNORE_CASE) to "ran away",
+        Regex("\\b(?:we are|we're) running out of time\\b", RegexOption.IGNORE_CASE) to "we do not have much time",
+        Regex("\\bput your hands up\\b", RegexOption.IGNORE_CASE) to "hands up",
+        Regex("\\bare you out of your mind\\b", RegexOption.IGNORE_CASE) to "are you crazy",
+        Regex("\\blet's get this over with\\b", RegexOption.IGNORE_CASE) to "let's finish this",
+        Regex("\\bbridge is out\\b", RegexOption.IGNORE_CASE) to "bridge is destroyed",
+        Regex("\\bkeep going like this\\b", RegexOption.IGNORE_CASE) to "continue like this",
+        Regex("\\bhand me\\b", RegexOption.IGNORE_CASE) to "give me",
+        Regex("\\bkeep your voice down\\b", RegexOption.IGNORE_CASE) to "speak quietly",
+        Regex("\\bcome on, let's go\\b", RegexOption.IGNORE_CASE) to "let's go",
+        Regex("\\bhave you seen my\\b", RegexOption.IGNORE_CASE) to "did you see my",
+        Regex("\\bwill you come with me\\b", RegexOption.IGNORE_CASE) to "will you go with me",
     )
 
     /** Převede slang do spisovné angličtiny. Zachová velké písmeno na začátku slova. */
