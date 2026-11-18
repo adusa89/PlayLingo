@@ -7,7 +7,7 @@ package cz.playlingo.core
  * i více lidí, rozkazy, otázky a běžné obraty, na kterých se strojový překlad nejčastěji splete.
  */
 object TranslationProbe {
-    val LINES: List<String> = listOf(
+    val LINES: List<String> get() = listOf(
         // otázky na jednu osobu
         "What are you doing here?", "Are you sure about this?", "Do you know who I am?", "Can you help me?",
         "What do you want?", "Where did you get that?", "Did you hear that?", "Are you out of your mind?",
@@ -38,5 +38,22 @@ object TranslationProbe {
         // minulý čas a podmínka
         "What did you do?", "Did you see that?", "You lied to me.", "You could have told me.", "Would you help me?",
         "If you had listened to me, we would be rich.", "You said you would come.", "Where have you been?",
+    ) + CANDIDATES
+
+    /**
+     * Náhradní znění pro obraty, které překladač překládá špatně. Zkouška ukáže, jak je přeloží;
+     * co vyjde dobře, přidá se do [OfflinePrep] jako náhrada, a odsud se to smaže.
+     */
+    private val CANDIDATES: List<String> get() = listOf(
+        "Wait a second.", "He is not telling the truth.", "He is a liar.", "He escaped.", "He ran away.",
+        "We do not have much time.", "Time is running out.", "Raise your hands!", "Hands up!", "Run to the gate!",
+        "Are you crazy?", "Have you lost your mind?", "Let's finish this.", "Let's end this.", "That is none of your business.",
+        "It is not your business.", "The bridge is destroyed, we have to swim.", "The bridge is gone, we have to swim.",
+        "If we continue like this, they will find us.", "Give me the lantern and stay close.", "Speak quietly, they can hear us.",
+        "Be quiet, they can hear us.", "Let's go!", "Everyone out!", "Boys, mount your horses.", "You all wait here.",
+        "Mount your horse, we ride at dawn.", "Mount your horse, we leave at dawn.", "Stand still!", "Do not move!",
+        "Give it back to me.", "Stay near me.", "You were right about him.", "What you said about him was true.",
+        "Have you seen my brother?", "Did you see my brother?", "Come with me.", "Will you go with me?",
+        "It has been a long time.", "I do not think anyone was here for years.", "Nobody has been here for years.",
     )
 }

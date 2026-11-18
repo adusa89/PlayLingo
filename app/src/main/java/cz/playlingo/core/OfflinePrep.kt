@@ -107,9 +107,22 @@ object OfflinePrep {
     private val TOKEN_RX = Regex("\\[\\s*(\\d{1,2})\\s*]")
     private val SPACES = Regex(" {2,}")
 
+    /**
+     * Ustálené obraty, které offline překladač překládá doslova („Hang on a second“ → „Viset na
+     * sekundu“, „No idea“ → „Žádný nápad“). Nahrazují se obyčejnou větou, kterou přeloží správně.
+     * Každá dvojice je ověřená na výstupu ze zkoušky překladu (preklad.txt) – nepřidávej naslepo.
+     */
+    private val IDIOMS: List<Pair<Regex, String>> = listOf(
+        Regex("\\bhang on(?=\\s+a (second|sec|minute|moment)\\b|\\s*[.!,]|\\s*$)", RegexOption.IGNORE_CASE) to "wait",
+        Regex("\\btake it easy\\b", RegexOption.IGNORE_CASE) to "calm down",
+        Regex("\\b(?:I(?: have|'ve got| got)? )?no idea\\b", RegexOption.IGNORE_CASE) to "I do not know",
+        Regex("\\b(?:good|nice|great) job\\b", RegexOption.IGNORE_CASE) to "well done",
+    )
+
     /** Převede slang do spisovné angličtiny. Zachová velké písmeno na začátku slova. */
     fun normalize(text: String): String {
         var t = DROPPED_G.replace(text) { it.groupValues[1] + "g" }
+        for ((rx, to) in IDIOMS) t = rx.replace(t) { matchCase(it.value, to) }
         t = AINT_I.replace(t) { "${it.groupValues[1]} am not" }
         t = AINT_ARE.replace(t) { "${it.groupValues[1]} are not" }
         t = AINT.replace(t) { m -> matchCase(m.value, "is not") }

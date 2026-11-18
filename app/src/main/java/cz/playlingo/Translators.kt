@@ -8,6 +8,7 @@ import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
 import cz.playlingo.core.Glossary
 import cz.playlingo.core.Lang
+import cz.playlingo.core.Natural
 import cz.playlingo.core.OfflinePrep
 import cz.playlingo.core.QuickWords
 import cz.playlingo.core.TextLogic
@@ -67,10 +68,14 @@ object OfflineTranslator {
         glossary?.sentence(text)?.let { return it }      // ručně zadaný překlad celé věty
         val p = glossary?.prepare(text) ?: OfflinePrep.prepare(text)
         if (p.names.isNotEmpty()) {
-            OfflinePrep.finish(p, translateRaw(lang, p.protectedText))?.let { return it }
+            OfflinePrep.finish(p, translateRaw(lang, p.protectedText))?.let { return natural(lang, text, it) }
         }
-        return translateRaw(lang, p.plain)
+        return natural(lang, text, translateRaw(lang, p.plain))
     }
+
+    /** Doladění překladu, aby zněl přirozeně (zatím čeština: sjednocení oslovení na tykání). */
+    private fun natural(lang: Lang, source: String, translated: String): String =
+        if (lang == Lang.CS) Natural.czech(source, translated) else translated
 
     /**
      * Celý titulek tak, jak ho překládá služba: po řádcích, jména mluvčích zůstávají, krátká slova

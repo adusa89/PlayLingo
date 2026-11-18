@@ -63,6 +63,10 @@ velký, na šířku, tablet) a překlad ukázkové hry. Výsledky a snímky jsou
 `test-results-phone30` a `-phone34` (snímky `p1_…` pomocník, `p2_<velikost>_<stránka>` celá
 aplikace). Zatím vydání nezdržuje. Po každé změně rozložení si ty snímky prohlédni.
 
+Přirozenost překladu (od 0.69): `core/Natural.kt` sjednocuje v češtině oslovení na tykání
+(překladač střídá tykání a vykání) a `IDIOMS` v `core/OfflinePrep.kt` nahrazuje obraty, které
+překladač překládá doslova. Obojí se ladí jen podle skutečných výstupů v `preklad.txt`, ne odhadem.
+
 Zkouška na Android TV navíc nechá přeložit typické herní repliky (`core/TranslationProbe.kt`)
 a uloží je do `preklad.txt` ve větvích s výsledky – podle něj se ladí přirozenost překladu.
 
