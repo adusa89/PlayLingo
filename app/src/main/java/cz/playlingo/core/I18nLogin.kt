@@ -36,6 +36,9 @@ internal val LOGIN_S: Map<String, Pair<String, String>> = mapOf(
     "hp_browser" to ("Nejde to? Přihlásit se v prohlížeči" to "Nejde to? Prihlásiť sa v prehliadači"),
     "hp_browser_text" to ("Přihlas se v prohlížeči. Na skoro prázdné stránce se slovem „redirect“ zvol Sdílet a vyber PlayLingo." to "Prihlás sa v prehliadači. Na takmer prázdnej stránke so slovom „redirect“ zvoľ Zdieľať a vyber PlayLingo."),
     "hp_is_tv" to ("Tohle je televize nebo box" to "Toto je televízor alebo box"),
+    "hp_lg_title" to ("Mám televizi LG" to "Mám televízor LG"),
+    "hp_lg_text" to ("Televize LG si titulky ze hry sama nepřečte. Tento telefon je může číst, překládat a posílat do televize – v televizi k tomu spusť PlayLingo." to "Televízor LG si titulky z hry sám neprečíta. Tento telefón ich môže čítať, prekladať a posielať do televízora – v televízore na to spusti PlayLingo."),
+    "hp_lg_btn" to ("Použít telefon pro televizi LG" to "Použiť telefón pre televízor LG"),
     "hp_acc" to ("Účet PlayStation" to "Účet PlayStation"),
 )
 
@@ -71,6 +74,9 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser" to "Nie działa? Zaloguj się w przeglądarce",
         "hp_browser_text" to "Zaloguj się w przeglądarce. Na prawie pustej stronie ze słowem „redirect” wybierz Udostępnij i wskaż PlayLingo.",
         "hp_is_tv" to "To jest telewizor albo przystawka",
+        "hp_lg_title" to "Mam telewizor LG",
+        "hp_lg_text" to "Telewizor LG sam nie odczyta napisów z gry. Ten telefon może je czytać, tłumaczyć i wysyłać do telewizora – uruchom w tym celu PlayLingo w telewizorze.",
+        "hp_lg_btn" to "Użyj telefonu dla telewizora LG",
         "hp_acc" to "Konto PlayStation",
     ),
     Lang.DE to mapOf(
@@ -104,6 +110,9 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser" to "Klappt es nicht? Im Browser anmelden",
         "hp_browser_text" to "Melde dich im Browser an. Wähle auf der fast leeren Seite mit dem Wort „redirect“ Teilen und dann PlayLingo.",
         "hp_is_tv" to "Das ist ein Fernseher oder eine TV-Box",
+        "hp_lg_title" to "Ich habe einen LG-Fernseher",
+        "hp_lg_text" to "Ein LG-Fernseher kann die Untertitel des Spiels nicht selbst lesen. Dieses Handy kann sie lesen, übersetzen und an den Fernseher senden – starte dazu PlayLingo auf dem Fernseher.",
+        "hp_lg_btn" to "Handy für den LG-Fernseher verwenden",
         "hp_acc" to "PlayStation-Konto",
     ),
     Lang.HU to mapOf(
@@ -137,6 +146,9 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser" to "Nem megy? Bejelentkezés a böngészőben",
         "hp_browser_text" to "Jelentkezz be a böngészőben. A szinte üres, „redirect” szót tartalmazó oldalon válaszd a Megosztás lehetőséget, majd a PlayLingót.",
         "hp_is_tv" to "Ez tévé vagy tévébox",
+        "hp_lg_title" to "LG tévém van",
+        "hp_lg_text" to "Az LG tévé maga nem tudja leolvasni a játék feliratait. Ez a telefon le tudja olvasni, lefordítani és elküldeni őket a tévére – ehhez indítsd el a PlayLingót a tévén.",
+        "hp_lg_btn" to "Telefon használata az LG tévéhez",
         "hp_acc" to "PlayStation-fiók",
     ),
     Lang.UK to mapOf(
@@ -170,6 +182,9 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser" to "Не виходить? Увійти в браузері",
         "hp_browser_text" to "Увійди в браузері. На майже порожній сторінці зі словом «redirect» вибери «Поділитися» та PlayLingo.",
         "hp_is_tv" to "Це телевізор або приставка",
+        "hp_lg_title" to "У мене телевізор LG",
+        "hp_lg_text" to "Телевізор LG сам не прочитає субтитри з гри. Цей телефон може читати їх, перекладати й надсилати на телевізор – для цього запусти PlayLingo на телевізорі.",
+        "hp_lg_btn" to "Використати телефон для телевізора LG",
         "hp_acc" to "Обліковий запис PlayStation",
     ),
     Lang.ES to mapOf(
@@ -203,6 +218,9 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser" to "¿No funciona? Iniciar sesión en el navegador",
         "hp_browser_text" to "Inicia sesión en el navegador. En la página casi vacía con la palabra «redirect», elige Compartir y selecciona PlayLingo.",
         "hp_is_tv" to "Esto es un televisor o un TV box",
+        "hp_lg_title" to "Tengo un televisor LG",
+        "hp_lg_text" to "El televisor LG no puede leer por sí mismo los subtítulos del juego. Este teléfono puede leerlos, traducirlos y enviarlos al televisor: para ello abre PlayLingo en el televisor.",
+        "hp_lg_btn" to "Usar el teléfono para el televisor LG",
         "hp_acc" to "Cuenta de PlayStation",
     ),
     Lang.FR to mapOf(
@@ -236,6 +254,9 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser" to "Ça ne marche pas ? Se connecter dans le navigateur",
         "hp_browser_text" to "Connecte-toi dans le navigateur. Sur la page presque vide avec le mot « redirect », choisis Partager puis PlayLingo.",
         "hp_is_tv" to "Ceci est un téléviseur ou un boîtier TV",
+        "hp_lg_title" to "J’ai un téléviseur LG",
+        "hp_lg_text" to "Le téléviseur LG ne peut pas lire lui-même les sous-titres du jeu. Ce téléphone peut les lire, les traduire et les envoyer au téléviseur – lance pour cela PlayLingo sur le téléviseur.",
+        "hp_lg_btn" to "Utiliser le téléphone pour le téléviseur LG",
         "hp_acc" to "Compte PlayStation",
     ),
     Lang.IT to mapOf(
@@ -269,6 +290,9 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser" to "Non funziona? Accedi nel browser",
         "hp_browser_text" to "Accedi nel browser. Nella pagina quasi vuota con la parola «redirect» scegli Condividi e poi PlayLingo.",
         "hp_is_tv" to "Questo è un televisore o un TV box",
+        "hp_lg_title" to "Ho un televisore LG",
+        "hp_lg_text" to "Il televisore LG non riesce a leggere da solo i sottotitoli del gioco. Questo telefono può leggerli, tradurli e inviarli al televisore: per farlo avvia PlayLingo sul televisore.",
+        "hp_lg_btn" to "Usa il telefono per il televisore LG",
         "hp_acc" to "Account PlayStation",
     ),
 )

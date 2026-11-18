@@ -7,8 +7,8 @@
  * tak postupně zkusí všechny adresy téže sítě na portu PORT. Kdo odpoví zprávou
  * {"typ":"vitej"}, je PlayLingo. Zprávy jsou popsané v app/…/core/TvSender.kt.
  *
- * Síťová část je stejná jako ve zkušební aplikaci (webos/app/app.js); při změně
- * zpráv je potřeba upravit obě.
+ * Tohle je jediné místo, kde televize zprávy přijímá. Zkoušet jde i bez Androidu:
+ * `node webos/posilac.js` posílá z počítače zkušební věty.
  *
  * Schválně psáno postaru (ES5: var, function, žádné šipky ani šablony),
  * protože televize z let 2016–2017 mají prohlížeč Chromium 38.
@@ -233,13 +233,14 @@
     el('obraz').appendChild(video);
   }
 
-  function spustHru(cislo, pevna) {
+  // bezVstupu: jen pro snímek obrazovky v počítači, kde žádný vstup HDMI není.
+  function spustHru(cislo, pevna, bezVstupu) {
     prejdi('hra');
     prijem = { hdmi: cislo, pevna: pevna || null };
     pamet('hdmi', String(cislo));
     oznac(cislo - 1);
     hlaseni(T.hledam);
-    ukazVstup(cislo);
+    if (!bezVstupu) { ukazVstup(cislo); }
     hledej();
   }
 
@@ -435,7 +436,7 @@
   // ---- Start --------------------------------------------------------------
 
   // Značka v adrese je jen pro snímky obrazovky a zkoušení v počítači:
-  // index.html#cs, #en, #ukazka, #napoveda (jde spojit: #en-ukazka).
+  // index.html#cs, #en, #ukazka, #napoveda, #hra (jde spojit: #en-ukazka).
   var znacka = String(window.location.hash || '').replace('#', '').split('-');
   var vynuceny = znacka.indexOf('cs') >= 0 ? 'cs' : (znacka.indexOf('en') >= 0 ? 'en' : '');
 
@@ -453,6 +454,7 @@
 
   if (znacka.indexOf('ukazka') >= 0) { spustUkazku(); }
   else if (znacka.indexOf('napoveda') >= 0) { prejdi('napoveda'); }
+  else if (znacka.indexOf('hra') >= 0) { spustHru(1, null, true); }
 
   document.addEventListener('webOSRelaunch', function (udalost) { podleParametru(udalost.detail); });
   podleParametru(window.PalmSystem && window.PalmSystem.launchParams);

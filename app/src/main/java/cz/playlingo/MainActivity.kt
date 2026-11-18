@@ -349,7 +349,8 @@ class MainActivity : Activity() {
                     }
                 }, "wlang"), 20)
             }
-            1 -> {
+            // titulky jdou do televize LG → povolení pruhu na tomto zařízení není potřeba
+            1 -> if (Prefs.tvSend(this)) add(ui.text(t("s_tv_desc"), 17f, Theme.MUTED), 12) else {
                 val ok = SubtitleOverlay.canShow(this)
                 add(ui.text(t("wz_perm"), 17f, Theme.MUTED), 12)
                 add(ui.card().apply { addView(ui.checkRow(ok, false, t("chk_overlay"), t("ok"), null, null)) }, 16)
@@ -1361,6 +1362,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.62"
-    const val VERSION_CODE = 62
+    const val VERSION = "verze 0.63"
+    const val VERSION_CODE = 63
 }

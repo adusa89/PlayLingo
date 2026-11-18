@@ -3,8 +3,7 @@
  * Zkušební posílač titulků z počítače do aplikace PlayLingo v televizi LG.
  *
  * Použití:  node webos/posilac.js [port]
- * Pak na televizi spustit aplikaci s parametry
- *   {"titulky": "ws://ADRESA_POCITACE:8787", "hdmi": 2}
+ * Pak na televizi spustit PlayLingo (webos/obchod) a vybrat vstup – počítač si najde sama.
  *
  * Nic nečte ani nepřekládá. Jen dokola posílá zkušební věty a měří, za jak dlouho
  * je televize vykreslí. Ověřuje tím cestu „jiné zařízení čte a překládá, televize

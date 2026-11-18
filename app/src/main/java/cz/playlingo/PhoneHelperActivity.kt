@@ -122,6 +122,13 @@ class PhoneHelperActivity : Activity() {
         content.addView(head)
 
         add(ui.card().apply { addView(ui.text(t("hp_intro"), 15f, Theme.MUTED)) }, 18)
+        // Televize LG si titulky sama nepřečte: číst, překládat a posílat je do ní může tento telefon.
+        // Pak tu místo pomocníka běží celá aplikace (viz core/TvSender).
+        add(ui.card().apply {
+            addView(ui.text(t("hp_lg_title"), 18f, Theme.TEXT, bold = true))
+            addView(ui.text(t("hp_lg_text"), 15f, Theme.MUTED), ui.lp(top = 6))
+            addView(ui.button(t("hp_lg_btn")) { if (!busy) useForLgTv() }, ui.lp(top = 12))
+        }, 10)
         val tg = target
         if (!sent) add(ui.card().apply {
             addView(ui.text(t(if (tg != null) "hp_tv_ready" else "hp_scan"), 16f, if (tg != null) Theme.OK else Theme.TEXT, bold = tg != null))
@@ -152,6 +159,19 @@ class PhoneHelperActivity : Activity() {
             finish()
         }.apply { textSize = 14f; setTextColor(Theme.MUTED) }, 8)
         add(ui.text("PlayLingo · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 20)
+    }
+
+    /**
+     * Telefon bude číst a překládat pro televizi LG: otevře se celá aplikace se zapnutým posíláním
+     * titulků. Účet, který je tu už ověřený, si vezme rovnou – párování pak přeskočí přihlášení.
+     */
+    private fun useForLgTv() {
+        Prefs.setForceTv(this, true)
+        Prefs.setTvSend(this, true)
+        if (Ps5.parseAccountId(Prefs.psnId(this)) == null) Prefs.phoneAccounts(this).firstOrNull()?.let { Prefs.setPsnId(this, it.id) }
+        log("lg mode")
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 
     // ---------------- přihlášení u Sony ----------------

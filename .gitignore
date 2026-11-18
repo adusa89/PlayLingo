@@ -6,10 +6,9 @@ local.properties
 *.iml
 .cxx/
 app/.cxx/
-webos/*.ipk
+webos/**/*.ipk
 
 # podpisové klíče nikdy do repozitáře
 *.p12
 *.jks
 *.keystore
-webos/obchod/*.ipk

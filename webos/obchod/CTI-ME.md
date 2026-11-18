@@ -1,11 +1,13 @@
 # PlayLingo pro televize LG – verze pro obchod
 
 Aplikace, která se podává do obchodu LG (LG Content Store). Televize ukáže hru ze vstupu HDMI
-a přes ni pruh s překladem. Číst a překládat musí PlayLingo na Androidu (od 0.62, volba
+a přes ni pruh s překladem. Číst a překládat musí PlayLingo na Androidu (od 0.63 tlačítko „Použít telefon pro televizi LG“, v boxu volba
 Nastavení → „Posílat titulky do televize LG“) ve stejné domácí síti.
 
-Zkušební aplikace ve `webos/app` zůstává zvlášť. Síťová část (`hledej`, `zkus`, `prevezmi`) je
-v obou stejná – při změně zpráv mezi Androidem a televizí uprav obě.
+Tohle je jediná aplikace PlayLingo pro televizi; přehled všeho kolem LG je v `../CTI-ME.md`.
+Zprávy mezi Androidem a televizí popisuje `app/src/main/java/cz/playlingo/core/TvSender.kt`
+a v televizi je obsluhuje jen `app/app.js` (`hledej`, `zkus`, `prevezmi`). Diagnostická zkouška
+ve `../zkouska` po síti nic nepřijímá.
 
 ## Co je ve složce
 
@@ -13,6 +15,13 @@ v obou stejná – při změně zpráv mezi Androidem a televizí uprav obě.
   změnit.** Texty jsou česky (i pro slovenštinu) a anglicky, podle jazyka televize.
 - `ikona-400.png` – ikona, která se nahrává do obchodu zvlášť. `ikony.py` nakreslí ji i ikony v balíčku.
 - `snimky/` – snímky obrazovky 1920×1080 pro obchod, česky a anglicky.
+- `dokumenty/` – dva dokumenty pro LG vyplněné do jejich šablon (verze šablon z listopadu 2026):
+  - `ux_scenario_PlayLingo.pptx` – popis obrazovek pro testery. Na titulní straně chybí jméno
+    a e-mail vývojáře a datum podání je potřeba upravit podle skutečnosti.
+  - `self_evaluation_checklist_5.0.xlsx` – kontrolní seznam. Body, které se aplikace netýkají, mají
+    „NA“. Body bez výsledku (24 na prvním listu) se musí vyzkoušet na televizi a teprve pak dostat
+    „Pass“; LG vrací podání, kde výsledek neodpovídá skutečnosti. Na druhém listu zbývá bod 5
+    (jestli v obchodě LG už není aplikace stejného jména).
 
 ## Sestavení a zkouška
 

@@ -19,10 +19,11 @@ def ikona(strana):
     def obdelnik(x0, y0, x1, y1, r, barva):
         d.rounded_rectangle([x0 * k, y0 * k, x1 * k, y1 * k], radius=r * k, fill=barva)
 
-    obdelnik(0, 0, 400, 400, 72, ZLUTA)
+    # LG vrací ikony se zaoblenými rohy nebo průhledným pozadím: dlaždice musí být plný čtverec.
+    obdelnik(0, 0, 400, 400, 0, ZLUTA)
     obdelnik(64, 92, 336, 308, 26, TMAVA)
     obdelnik(104, 236, 296, 268, 10, ZLUTA)
-    return obr.resize((strana, strana), Image.LANCZOS)
+    return obr.resize((strana, strana), Image.LANCZOS).convert("RGB")
 
 
 ikona(80).save(os.path.join(TADY, "app", "icon.png"))

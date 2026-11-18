@@ -30,8 +30,8 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   `app/src/main/cpp` (úloha `patchChiaki` v `app/build.gradle.kts`).
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení, zkouška, vydání.
 - `ci/mistni-kontrola` – překlad a unit testy bez Android SDK (viz níže).
-- `webos` – zkušební aplikace pro televize LG (viz Televize LG). Nesouvisí s aplikací pro
-  Android TV a do APK se nedostane.
+- `webos` – PlayLingo pro televize LG (viz Televize LG): `webos/obchod` je aplikace pro televizi,
+  `webos/zkouska` diagnostika. Do APK se nic z toho nedostane.
 - `pc` – zkušební čtečka pro počítač s Windows (viz `pc/CTI-ME.md`): čte titulky z okna s obrazem
   hry, přeloží je a pošle do televize LG. Překládá se proti téže složce `core` jako aplikace,
   takže změna v `core` se týká i jí – po úpravě `core` ověř i `gradlew -p pc installDist`.
@@ -122,30 +122,34 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
 
 ## Televize LG (webOS)
 
-- Ve složce `webos` je zatím jen **zkušební aplikace**, ne překladač. Na skutečné televizi má
-  zjistit, jestli aplikace umí ukázat vstup HDMI s pruhem přes obraz a jestli si obraz umí sama
-  přečíst. Podle výsledku se teprve rozhodne, jak verzi pro LG postavit.
-- Televize uživatele je LG OLED55B7 (rok 2017, webOS 3.x, prohlížeč Chromium 38). Kód proto
-  musí zůstat ve starém zápisu JavaScriptu: žádné `let`/`const`, šipkové funkce, `Promise`,
-  `fetch` ani šablonové řetězce.
-- Aplikace na LG se nejspíš nepřipojí k PlayStationu po síti jako na Android TV (to dělá
-  nativní knihovna chiaki-ng). Musela by číst obraz přímo z HDMI, nebo by čtení a překlad
-  dělalo jiné zařízení a televize jen ukazovala pruh.
-- Zkouška na OLED55B7 dopadla takto: hru z HDMI s pruhem přes obraz aplikace ukáže, ale obraz
-  si nepřečte (vidí jen černou) a snímek obrazovky jí systém nedovolí. Proto od 0.62 platí druhá
-  cesta: čte a překládá PlayLingo na Androidu (telefon nebo box) a televizi posílá hotové věty.
-  - Android: volba Nastavení → „Posílat titulky do televize LG“ (`Prefs.tvSend`, výchozí vypnuto).
-    `core/TvSender.kt` otevře v domácí síti port 8787 a `SubtitleOverlay` mu předává každou změnu
-    pruhu. S vypnutou volbou se nic neotevírá ani neposílá a aplikace se chová jako dřív.
-    Se zapnutou volbou se čte i tehdy, když je vidět aplikace, a nevyžaduje se povolení pruhu.
-  - Televize: `webos/app/app.js` si zařízení najde sama (projde adresy své sítě) a připojí se.
-    Spojení je WebSocket obsloužený ručně na obou stranách; zprávy jsou popsané v `TvSender.kt`.
-  - `node webos/posilac.js` posílá z počítače zkušební věty (zkouška televize bez Androidu).
-- Nástroj LG (`ares-install`, `ares-launch`, `ares-inspect` z balíčku `@webos-tools/cli`) nahraje
-  aplikaci do televize ve vývojářském režimu; `ares-inspect` dá živý přístup do běžící aplikace.
-- `python3 webos/sestavit.py` vytvoří `webos/PlayLingo-zkouska.ipk` (soubor se necommituje).
-  Postup instalace do televize je ve `webos/CTI-ME.md`. Změny jen ve složce `webos` nemění
-  verzi aplikace pro Android TV a commitují se s `[skip ci]`.
+Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět při úpravách.
+
+- Televize LG si obraz hry nepřečte (ověřeno na OLED55B7: aplikace vidí jen černou a snímek
+  obrazovky jí systém nedovolí; výsledky jsou ve `webos/zkouska/CTI-ME.md`). Na LG proto PlayLingo
+  běží jen jako obrazovka – hra z HDMI a přes ni pruh. Čte a překládá PlayLingo na Androidu
+  (telefon nebo box) a televizi posílá hotové věty po domácí síti.
+- **`webos/obchod` je jediná aplikace PlayLingo pro televizi** (id `cz.playlingo.tv`, česky
+  a anglicky, podává se do obchodu LG; postup podání je ve `webos/obchod/CTI-ME.md`).
+  `webos/zkouska` je jen diagnostika, co která televize dovolí, a po síti nic nepřijímá.
+- Zprávy mezi Androidem a televizí jsou popsané na jednom místě, v `core/TvSender.kt`. V televizi
+  je obsluhuje jen `webos/obchod/app/app.js` (`hledej`, `zkus`, `prevezmi`). Televize si zařízení
+  najde sama: projde adresy své sítě na portu 8787. Spojení je WebSocket obsloužený ručně na obou
+  stranách.
+- Android: volba Nastavení → „Posílat titulky do televize LG“ (`Prefs.tvSend`, výchozí vypnuto).
+  `SubtitleOverlay` předává `TvSender` každou změnu pruhu. S vypnutou volbou se nic neotevírá ani
+  neposílá a aplikace se chová jako dřív. Se zapnutou se čte i tehdy, když je vidět aplikace,
+  a nevyžaduje se povolení pruhu.
+- Telefon: pomocník (`PhoneHelperActivity`) má od 0.63 tlačítko „Použít telefon pro televizi LG“.
+  Zapne `Prefs.forceTv` a `Prefs.tvSend`, předá už ověřený účet do párování a otevře celou
+  aplikaci. Jestli se celá aplikace dá na telefonu pohodlně ovládat, umí ověřit jen uživatel.
+- Televize uživatele má prohlížeč Chromium 38. Kód pro televizi proto musí zůstat ve starém zápisu
+  JavaScriptu: žádné `let`/`const`, šipkové funkce, `Promise`, `fetch` ani šablonové řetězce.
+- Zkoušení bez Androidu: `node webos/posilac.js` posílá z počítače zkušební věty, `pc/` čte
+  a překládá na počítači. Nástroj LG (`ares-package`, `ares-install`, `ares-launch`, `ares-inspect`
+  z `@webos-tools/cli`) nahraje aplikaci do televize ve vývojářském režimu; `ares-inspect` dá živý
+  přístup do běžící aplikace.
+- Změny jen ve složkách `webos` a `pc` nemění verzi aplikace pro Android TV a commitují se
+  s `[skip ci]`. Balíčky `.ipk` se necommitují.
 
 ## Texty aplikace (9 jazyků)
 

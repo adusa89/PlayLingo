@@ -2,7 +2,7 @@
 
 Dělá na počítači s Windows totéž co překlad v aplikaci pro Android TV: čte anglické titulky
 z obrazu hry, přeloží je bez internetu a hotové věty pošle do televize LG, kde je aplikace
-ze složky `webos` ukáže v pruhu přes hru.
+ze složky `webos/obchod` ukáže v pruhu přes hru.
 
 Je to pomůcka na zkoušení, ne hotový výrobek: běžný uživatel má titulky do LG posílat
 z PlayLinga na Androidu (telefon nebo box). Počítač se hodí, když se ladí čtení a překlad –
