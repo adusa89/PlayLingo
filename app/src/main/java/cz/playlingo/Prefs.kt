@@ -47,6 +47,9 @@ object Prefs {
 
     fun debug(c: Context) = bool(c, "debug", false)
     fun setDebug(c: Context, v: Boolean) = setBool(c, "debug", v)
+    /** Brát i zkušební verze (sestavené z rozpracované větve, ještě neschválené pro všechny). */
+    fun testChannel(c: Context) = bool(c, "test_channel", false)
+    fun setTestChannel(c: Context, v: Boolean) = setBool(c, "test_channel", v)
 
     fun onlySubtitles(c: Context) = bool(c, "only_subs", true)
     fun setOnlySubtitles(c: Context, v: Boolean) = setBool(c, "only_subs", v)

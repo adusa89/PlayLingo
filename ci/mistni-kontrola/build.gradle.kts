@@ -1,0 +1,28 @@
+// Místní kontrola bez Android SDK: přeloží zdrojáky aplikace a pustí unit testy.
+//
+//   cd ci/mistni-kontrola && gradle test
+//
+// Android SDK ani knihovny Google se do cloudového sezení stáhnout nedají, proto se překládá proti
+// knihovně Androidu z Maven Central (Robolectric) a proti náhradám ve složce stub/.
+// Odhalí překlepy a chyby v typech dřív než dvacetiminutová zkouška na GitHubu. Nenahrazuje ji:
+// nezná zdroje (res/), manifest, nativní část ani to, od které verze Androidu která funkce existuje.
+plugins { kotlin("jvm") version "2.0.21" }
+repositories { mavenCentral() }
+
+val app = rootDir.resolve("../../app/src")
+dependencies {
+    compileOnly("org.robolectric:android-all:15-robolectric-12650502")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1") { isTransitive = false }
+    compileOnly("com.google.zxing:core:3.5.3")
+    testImplementation("junit:junit:4.13.2")
+}
+kotlin {
+    sourceSets["main"].kotlin.srcDirs(app.resolve("main/java"), "stub")
+    sourceSets["test"].kotlin.srcDirs(app.resolve("test/java"))
+}
+// Knihovna z Robolectricu nese poznámky o null, které skutečné SDK překladači neukazuje.
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions.freeCompilerArgs.addAll("-Xnullability-annotations=@android.annotation:ignore", "-Xnullability-annotations=@androidx.annotation:ignore")
+}
+tasks.test { useJUnit(); testLogging { events("failed") } }

@@ -111,4 +111,35 @@ class SupportTest {
         assertFalse(UpdateCheck.isNewer(UpdateCheck.parse("10 0.10"), 10))
         assertFalse(UpdateCheck.isNewer(null, 10))
     }
+
+    @Test fun updateChannels() {
+        val stable = UpdateCheck.Remote(56, "0.56")
+        val test = UpdateCheck.Remote(57, "0.57")
+        // bez zkušebního kanálu se nabízí jen běžná verze, a jen když je novější
+        assertEquals(UpdateCheck.Offer(stable, UpdateCheck.Channel.STABLE), UpdateCheck.pick(stable, null, 55))
+        assertNull(UpdateCheck.pick(stable, null, 56))
+        assertNull(UpdateCheck.pick(null, null, 55))
+        // zkušební verze má přednost, jen když je novější než běžná
+        assertEquals(UpdateCheck.Offer(test, UpdateCheck.Channel.TEST), UpdateCheck.pick(stable, test, 55))
+        assertEquals(UpdateCheck.Offer(test, UpdateCheck.Channel.TEST), UpdateCheck.pick(stable, test, 56))
+        assertEquals(UpdateCheck.Offer(test, UpdateCheck.Channel.TEST), UpdateCheck.pick(null, test, 56))
+        // běžný kanál zkušební verzi dohnal nebo předběhl → bere se běžný
+        assertEquals(UpdateCheck.Offer(stable, UpdateCheck.Channel.STABLE), UpdateCheck.pick(stable, UpdateCheck.Remote(56, "0.56"), 55))
+        assertEquals(UpdateCheck.Offer(test, UpdateCheck.Channel.STABLE), UpdateCheck.pick(test, stable, 55))
+        assertNull(UpdateCheck.pick(stable, test, 57))
+    }
+
+    @Test fun updateAddressesAndProblems() {
+        assertEquals("https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk",
+            UpdateCheck.url(UpdateCheck.Channel.STABLE, "PlayLingo.apk"))
+        assertEquals("https://github.com/adusa89/PlayLingo/releases/download/zkusebni/version.txt",
+            UpdateCheck.url(UpdateCheck.Channel.TEST, "version.txt"))
+        assertEquals("upd_cancel", UpdateCheck.problemKey(3))
+        assertEquals("upd_sig", UpdateCheck.problemKey(5))
+        assertEquals("upd_space", UpdateCheck.problemKey(6))
+        assertEquals("upd_fail", UpdateCheck.problemKey(1))
+        // každý důvod má text ve všech jazycích (jinak by uživatel viděl jen klíč)
+        for (k in listOf("upd_cancel", "upd_sig", "upd_space", "upd_fail", "upd_net", "upd_how", "upd_down", "upd_inst", "upd_btn", "upd_test"))
+            for (lang in Lang.values()) assertTrue("$lang/$k", I18n.t(lang, k) != k)
+    }
 }

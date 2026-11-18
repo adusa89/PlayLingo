@@ -20,6 +20,11 @@ Když aplikace nejde nainstalovat nebo aktualizovat:
 
 Stejný postup najdeš i v aplikaci na stránce Nápověda.
 
+**Další verze už nahrávat nemusíš.** Když vyjde nová verze, aplikace ji nabídne na stránce Domů.
+Zvol „Aktualizovat“ a instalaci potvrď na ovladači – spárování i nastavení zůstanou.
+Při prvním použití televize požádá o povolení instalace z aplikace PlayLingo (Neznámé zdroje).
+Platí od verze 0.56; starší verzi je potřeba jednou odinstalovat a 0.56 nahrát ručně.
+
 ## 3. První nastavení (průvodce tě provede)
 1. Vyber jazyk překladu.
 2. Zapni aplikaci v nastavení televize: Usnadnění → PlayLingo → Zapnout.
