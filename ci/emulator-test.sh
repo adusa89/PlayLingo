@@ -70,10 +70,12 @@ sleep 3; shot 12m_cislo_z_ps5
 #     na krok s číslem z PS5 (na snímku má být „Účet ověřen“)
 adb shell am start -n $PKG/.MainActivity --ez logintest true
 sleep 8; shot 12n_ucet_z_telefonu
-#  b) PlayLingo v telefonu (pomocník): hlavní obrazovka a přihlašovací stránka Sony uvnitř aplikace
-adb shell am start -n $PKG/.PhoneHelperActivity
+#  b) PlayLingo v telefonu (pomocník). Otevírá se odkazem ze stránky televize, stejně jako
+#     u uživatele (Android 13 jiné spuštění zvenčí nepustí): hlavní obrazovka má hlásit, že
+#     televize čeká na účet; pak přihlašovací stránka Sony uvnitř aplikace.
+adb shell "am start -n $PKG/.PhoneHelperActivity -a android.intent.action.VIEW -d 'playlingo://login?h=10.0.2.15&p=8765&k=abcd2345&l=cs'"
 sleep 4; shot 12o_pomocnik
-adb shell am start -n $PKG/.PhoneHelperActivity --ez helperlogin true
+adb shell "am start -n $PKG/.PhoneHelperActivity -a android.intent.action.VIEW -d 'playlingo://login?h=10.0.2.15&p=8765&k=abcd2345&l=cs' --ez helperlogin true"
 sleep 25; shot 12p_pomocnik_prihlaseni
 key 4; sleep 1; key 4; sleep 1; key 4; sleep 1
 
@@ -152,7 +154,7 @@ UPD_DL=$(grep -c "TP_TEST.*UPD|downloaded" $OUT/log.txt)
 UPD_ASK=$(grep -c "TP_TEST.*UPD|confirm shown" $OUT/log.txt)
 UPD_DONE=$(grep -c "TP_TEST.*UPD|replaced" $OUT/log.txt)
 LOGIN_PAGE=$(grep -c "TP_TEST.*LOGIN|test app OK" $OUT/log.txt)
-HELPER=$(grep -c "TP_TEST.*HELPER|start" $OUT/log.txt)
+HELPER=$(grep -c "TP_TEST.*HELPER|link ok" $OUT/log.txt)
 # kolik z deseti různých ukázkových titulků (velká písmena, jména, krátká slova…) se přeložilo
 KINDS=0
 for k in "We need money" "reckon" "ride at dawn" "keep going like this" "right way" "no idea" "GET OUT OF HERE" "|Wait|" "never supposed to meet" "left door" "voice down" "been here for years" "lantern" "bridge is out" "Run for the gate"; do
