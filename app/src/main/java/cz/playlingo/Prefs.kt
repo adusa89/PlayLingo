@@ -15,6 +15,7 @@ import cz.playlingo.core.UsageStats
 /** Nastavení aplikace. */
 object Prefs {
     val TEXT_SIZES = intArrayOf(18, 22, 26, 32, 40, 48)
+    const val DEFAULT_TEXT_SIZE = 22
     val OPACITIES = intArrayOf(60, 80, 90, 100)
     val BAR_WIDTHS = intArrayOf(50, 60, 70, 84, 100)
 
@@ -35,11 +36,11 @@ object Prefs {
     fun lang(c: Context): Lang = Lang.of(p(c).getString("lang", null))
     fun setLang(c: Context, v: Lang) = p(c).edit().putString("lang", v.code).apply()
 
-    fun textSize(c: Context): Int = p(c).getInt("text_size", 22)
-    /** Písmo překladu stejně velké jako anglický originál (výchozí). Vypnuto = pevná velikost. */
-    fun matchSize(c: Context) = p(c).getBoolean("match_size", true)
-    fun setMatchSize(c: Context, v: Boolean) = p(c).edit().putBoolean("match_size", v).apply()
+    fun textSize(c: Context): Int = p(c).getInt("text_size", DEFAULT_TEXT_SIZE)
     fun setTextSize(c: Context, v: Int) = p(c).edit().putInt("text_size", v).apply()
+    /** Písmo překladu stejně velké jako anglický originál (výchozí). Vypnuto = pevná velikost. */
+    fun matchSize(c: Context) = bool(c, "match_size", true)
+    fun setMatchSize(c: Context, v: Boolean) = setBool(c, "match_size", v)
 
     fun opacity(c: Context): Int = p(c).getInt("opacity", 100)
     fun setOpacity(c: Context, v: Int) = p(c).edit().putInt("opacity", v).apply()
@@ -87,8 +88,8 @@ object Prefs {
     fun setPsnId(c: Context, v: String) = p(c).edit().putString("psn_id", v).apply()
 
     /** S obrazem 1080p spojení na tomto zařízení nedrželo → automatika bere 720p. */
-    fun highResFailed(c: Context) = p(c).getBoolean("high_res_failed", false)
-    fun setHighResFailed(c: Context, v: Boolean) = p(c).edit().putBoolean("high_res_failed", v).apply()
+    fun highResFailed(c: Context) = bool(c, "high_res_failed", false)
+    fun setHighResFailed(c: Context, v: Boolean) = setBool(c, "high_res_failed", v)
 
     /** Přesnost čtení titulků: "auto" (podle zařízení), "std" (720p), "high" (1080p). */
     fun readQuality(c: Context): String = p(c).getString("read_quality", "auto") ?: "auto"

@@ -57,9 +57,6 @@ ve stejné domácí síti. Připrav si telefon – bude potřeba jen teď, k hra
 6. **Opiš číslo z PlayStationu.** Na PS5: Nastavení → Systém → Remote Play → Propojit
    zařízení. Osmimístné číslo opiš do televize a zvol Spárovat.
 
-Přihlášení jde zkusit i přímo v televizi (tlačítko pod čtverečkem), ale ochrana Sony ho tam
-často odmítne hláškou „Can't connect to the server“. Proto je doporučený telefon.
-
 ## 5. Hraní
 1. Na stránce Domů zvol „Spustit překlad“ a počkej na „Překlad běží“ (objeví se i malý náhled
    toho, co aplikace z PlayStationu vidí).

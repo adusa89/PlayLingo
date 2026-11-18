@@ -80,16 +80,6 @@ class Ps5Test {
 }
 
 class YuvTest {
-    @Test fun grayRespectsStride() {
-        val y = byteArrayOf(10, 20, 99, 30, 40, 99)   // 2×2, řádek dlouhý 3
-        val out = IntArray(4)
-        Yuv.grayToArgb(y, 3, 2, 2, out)
-        assertEquals(0xFF0A0A0A.toInt(), out[0])
-        assertEquals(0xFF141414.toInt(), out[1])
-        assertEquals(0xFF1E1E1E.toInt(), out[2])
-        assertEquals(0xFF282828.toInt(), out[3])
-    }
-
     @Test fun whiteAndBlackSurviveRoundTrip() {
         val w = 4; val h = 2
         val argb = IntArray(w * h) { if (it % 2 == 0) 0xFFFFFFFF.toInt() else 0xFF000000.toInt() }
@@ -168,17 +158,6 @@ class DemoGameTest {
         assertEquals("10.0.255.255", big[1])
         assertTrue(big.contains("10.0.5.200")); assertFalse(big.contains("10.0.6.1"))
         assertEquals(listOf("255.255.255.255"), Ps5.sweepTargets("nesmysl", 24))
-    }
-
-    @Test fun oldTvBrowserIsDetected() {
-        // zkouška v emulátoru: verze 66 hlásí u Sony „Something went wrong“, 113 funguje
-        assertTrue(Ps5.webViewTooOld("66.0.3359.158"))
-        assertTrue(Ps5.webViewTooOld("90.0.4430.91"))
-        assertFalse(Ps5.webViewTooOld("113.0.5672.136"))
-        assertFalse(Ps5.webViewTooOld("131.0.6778.39"))
-        assertFalse(Ps5.webViewTooOld(null))
-        assertFalse(Ps5.webViewTooOld("?"))
-        assertEquals(90, Ps5.webViewMajor("90.0.4430.91"))
     }
 
     @Test fun typedCodeFromPhone() {

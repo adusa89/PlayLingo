@@ -55,33 +55,7 @@ adb shell am start -n $PKG/.MainActivity --es ps5test 10.0.2.2
 sleep 45; shot 10_ps5_nedostupna
 key 20; key 23; sleep 3; shot 11_stranka_playstation
 
-# 6) přihlašovací stránka Sony ve vestavěném prohlížeči: načte se na této verzi Androidu?
-adb shell am start -n $PKG/.MainActivity --ez psnlogin true
-sleep 35; shot 12_prihlaseni_sony
-sleep 25; shot 12b_prihlaseni_sony_pozdeji
-# zkouška odeslání: vymyšlený e-mail. Když Sony odpoví věcně (účet nenalezen / krok s heslem),
-# přihlašovací dotaz prochází; „connection timed out“ by znamenalo, že ho prohlížeč blokuje.
-for i in $(seq 1 22); do adb shell input keyevent 22; done
-key 23; sleep 3; shot 12c_pole_email
-adb shell input text "zkouska.testpreklad@example.com"; sleep 2
-key 4; sleep 2
-for i in 1 2 3 4 5; do adb shell input keyevent 20; done
-shot 12d_pred_odeslanim
-key 23; sleep 25; shot 12e_po_odeslani
-sleep 20; shot 12f_po_odeslani_pozdeji
-# krok s heslem: vymyšlené heslo. Věcná odpověď („nesprávné údaje“) = dotaz prošel ochranou Sony;
-# „Can't connect to the server“ = ochrana ho odmítla.
-key 19; key 19; key 23; sleep 3
-adb shell input text "Zkouska-Heslo-12345"; sleep 2
-key 4; sleep 2
-for i in 1 2 3 4 5; do adb shell input keyevent 20; done
-shot 12g_heslo_pred_odeslanim
-key 23; sleep 25; shot 12h_heslo_po_odeslani
-sleep 20; shot 12i_heslo_po_odeslani_pozdeji
-key 4; sleep 2
-key 4; sleep 2; key 4; sleep 2
-
-# 6b) přihlášení přes telefon: QR kód a políčko na kód
+# 6) přihlášení přes telefon: QR kód a políčko na kód
 adb shell am start -n $PKG/.MainActivity --ez phonelogin true --ei pairstep 2
 sleep 4; shot 12j_ucet_1_qr
 adb shell am start -n $PKG/.MainActivity --ez phonelogin true --ei pairstep 3

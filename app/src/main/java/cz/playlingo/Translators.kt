@@ -45,6 +45,19 @@ object OfflineTranslator {
     suspend fun translateRaw(lang: Lang, text: String): String = client(lang).translate(text).await()
 
     /**
+     * Načte jazykový model do paměti předem. Bez toho by ho načítal až první titulek ve hře –
+     * a ten by se objevil později než ostatní.
+     * Vrací, jak dlouho trval první (studený) a druhý (už připravený) překlad v ms; null = nepovedlo se.
+     */
+    suspend fun warmUp(lang: Lang): Pair<Long, Long>? = try {
+        val t0 = android.os.SystemClock.uptimeMillis()
+        translateRaw(lang, "Hello.")
+        val t1 = android.os.SystemClock.uptimeMillis()
+        translateRaw(lang, "Wait here.")
+        (t1 - t0) to (android.os.SystemClock.uptimeMillis() - t1)
+    } catch (e: Exception) { Log.w("TestPreklad", "warm-up", e); null }
+
+    /**
      * Překlad s úpravami pro hry: slang → spisovná angličtina, jména postav a míst se nepřekládají.
      * Když se značky jmen při překladu poškodí, přeloží se text bez nich (nic se neztratí).
      */

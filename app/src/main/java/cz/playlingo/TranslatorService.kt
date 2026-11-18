@@ -69,8 +69,7 @@ class TranslatorService : Service() {
         /** Spustit nad ukázkovým videem místo PlayStationu (zkouška bez konzole). */
         const val ACTION_START_DEMO = "cz.playlingo.START_DEMO"
 
-        /** Šířka a výška videa, které aplikace čte (na titulky bohatě stačí, šetří síť i výkon). */
-        /** Ukázkové video (zkouška bez konzole) má vždy tuto velikost. */
+        /** Velikost obrazu, se kterou se počítá, než přijde první snímek videa. */
         const val VIDEO_W = 1280
         const val VIDEO_H = 720
 
@@ -117,6 +116,12 @@ class TranslatorService : Service() {
         private const val NOTIF_ID = 1
 
         private const val CACHE_PREFIX = "preklady_"
+
+        /** Jak dlouho smí stejný text stát na obrazovce, než se přestane brát jako titulek. */
+        private const val STALE_MS = 15_000L
+
+        /** Události, které se ukládají i do souboru (viz [EventFile]). */
+        private val KEEP = listOf("START|", "LINK|", "VIDEO|", "PERF|", "SOURCE|", "STOP|", "SCALE|", "WARM|")
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -178,21 +183,20 @@ class TranslatorService : Service() {
     /** Slovník: jména podle hry, předpřipravené hlášky a vlastní slovník uživatele. */
     @Volatile private var glossary: Glossary? = null
 
-    /** Záznam pro automatickou zkoušku i pro hlášení chyby. */
     private val textScale = TextScale()
+    /** Jazyk, jehož překladový model už je načtený v paměti. */
+    @Volatile private var warmedLang: Lang? = null
     private var shownW = 0
     private var shownH = 0
+    /** Text, který je právě v oblasti, a od kdy tam beze změny stojí (viz [STALE_MS]). */
     private var steadyText = ""
     private var steadySince = 0L
-    /** Jak dlouho smí stejný text stát na obrazovce, než se přestane brát jako titulek. */
-    private val STALE_MS = 15_000L
 
+    /** Záznam pro automatickou zkoušku i pro hlášení chyby. */
     private fun tp(msg: String) {
         Log.i("TP_TEST", msg); DiagLog.add(msg)
         if (KEEP.any { msg.startsWith(it) }) EventFile.add(msg)
     }
-    /** Události, které se ukládají i do souboru (viz [EventFile]). */
-    private val KEEP = listOf("START|", "LINK|", "VIDEO|", "PERF|", "SOURCE|", "STOP|", "SCALE|")
 
     @Volatile private var lastError: String? = null
 
@@ -260,7 +264,7 @@ class TranslatorService : Service() {
         r.clearFrames()
         if (wantDemo) {
             // ukázka má stejnou velikost obrazu, jakou by toto zařízení bralo z konzole
-            feeder = DemoFeeder(perf.captureWidth, perf.captureHeight, { r.feed(it) }, { y, w, h -> r.feedRaw(y, w, h, null) }, { r.decoded }).also { it.start() }
+            feeder = DemoFeeder(perf.captureWidth, perf.captureHeight, { r.feed(it) }, { y, w, h -> r.feedRaw(y, w, h) }, { r.decoded }).also { it.start() }
             tp("SOURCE|demo")
         } else {
             val host = Prefs.ps5Host(this) ?: return
@@ -315,7 +319,14 @@ class TranslatorService : Service() {
         )
         tracker.reset()
         lastSig = null
-        OfflineTranslator.ensureModel(lang) { }
+        val l = lang
+        OfflineTranslator.ensureModel(l) { ok ->
+            // překladač se připraví hned, ne až s prvním titulkem
+            if (ok && warmedLang != l) {
+                warmedLang = l
+                scope.launch { OfflineTranslator.warmUp(l)?.let { (cold, warm) -> tp("WARM|${l.code}|první=${cold}ms|další=${warm}ms") } }
+            }
+        }
         updateNotification()
     }
 
@@ -500,7 +511,6 @@ class TranslatorService : Service() {
         // záznam pro automatickou zkoušku (jen prvních pár set čtení)
         if (ticksLogged++ < 400) tp("READ|ocr=${lastOcrMs}ms|zone=${(z.height * 100).toInt()}%|" + picked.text.replace('\n', ' ').take(40))
 
-        // slabé zařízení: jedno čtení trvá déle než půl sekundy → nečekej na druhé potvrzení
         ocrMsSum += lastOcrMs
         readMs = if (readMs == 0L) lastOcrMs else (readMs * 4 + lastOcrMs) / 5
         if (capW != shownW || capH != shownH) { shownW = capW; shownH = capH; videoSize = "${capW}×${capH}" }
@@ -514,6 +524,7 @@ class TranslatorService : Service() {
             if (overlay?.isShown == true) { overlay?.hide(); tp("HIDE|stale") }
             return
         }
+        // slabé zařízení (jedno čtení trvá déle než půl sekundy): pruh se schová hned po prvním prázdném čtení
         when (val action = tracker.onOcr(picked.text, slowDevice = lastOcrMs > 500)) {
             is SubtitleTracker.Action.Show -> {
                 // překlad už většinou běží (spuštěný po prvním přečtení) – jen se počká na výsledek
@@ -636,6 +647,7 @@ class TranslatorService : Service() {
     }
 
     override fun onDestroy() {
+        if (running) tp("STOP|čtení=$ocrRuns|průměr=${if (ocrRuns > 0) ocrMsSum / ocrRuns else 0}ms|titulků=$shows")
         running = false
         paused = false
         demo = false

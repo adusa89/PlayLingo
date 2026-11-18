@@ -6,11 +6,11 @@ import kotlin.math.min
 /**
  * Automatické hledání titulků – uživatel nemusí nic nastavovat.
  *
- * 1) HLEDÁNÍ: aplikace čte skoro celou obrazovku a bere jen vycentrovaný text (titulky).
- * 2) Jakmile několikrát po sobě najde titulky ve spodní části obrazovky, ZAPAMATUJE si to
- *    a dál čte jen spodní pás (rychlejší, méně omylů). Text výš oblast nikdy nezúží.
+ * 1) HLEDÁNÍ: aplikace čte spodní třetinu obrazovky ([SCAN]) a bere jen vycentrovaný text (titulky).
+ * 2) Jakmile několikrát po sobě najde titulky, ZAPAMATUJE si jejich výšku a dál čte jen pás
+ *    od ní ke spodnímu okraji (méně omylů). Text výš oblast nikdy nezúží.
  * 3) Když se v zapamatovaném pásu dlouho nic neobjeví (jiná hra, jiné umístění titulků),
- *    začne znovu hledat po celé obrazovce.
+ *    začne znovu hledat v celé spodní třetině.
  */
 class AutoZone(
     private val needSamples: Int = 2,

@@ -9,7 +9,6 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaCodecList
 import android.media.MediaFormat
-import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.SystemClock
@@ -36,7 +35,6 @@ class StreamReader(private val width: Int, private val height: Int) {
     private val codecLock = Any()
     private val info = MediaCodec.BufferInfo()
     private var pts = 0L
-    private var failures = 0
 
     /** První snímek z konzole (hlavička videa) – při obnově dekodéru se pošle znovu. */
     private var header: ByteArray? = null
@@ -101,7 +99,8 @@ class StreamReader(private val width: Int, private val height: Int) {
     private var fedAtOpen = 0L
     private var decodedAtOpen = 0L
 
-    private data class Plan(val codecName: String?, val surface: Boolean, val lowLatency: Boolean)
+    /** Způsob spuštění dekodéru: který dekodér (null = výchozí) a jestli s výstupem do plochy. */
+    private data class Plan(val codecName: String?, val surface: Boolean)
 
     /** Softwarový dekodér Androidu – s výstupem do plochy pro čtení na některých zařízeních padá. */
     private fun isSoftware(name: String) = name.startsWith("OMX.google.", true) || name.startsWith("c2.android.", true)
@@ -122,11 +121,11 @@ class StreamReader(private val width: Int, private val height: Int) {
         workingPlan?.let { plans.add(it) }
         // Nejdřív přímý výstup (obrázek předá dekodér sám – nejspolehlivější napříč zařízeními),
         // výstup do plochy jen jako záloha a jen u hardwarových dekodérů.
-        plans.add(Plan(null, surface = false, lowLatency = false))
+        plans.add(Plan(null, surface = false))
         val names = decoderNames()
-        for (n in names) plans.add(Plan(n, false, false))
-        plans.add(Plan(null, surface = true, lowLatency = false))
-        for (n in names) if (!isSoftware(n)) plans.add(Plan(n, true, false))
+        for (n in names) plans.add(Plan(n, surface = false))
+        plans.add(Plan(null, surface = true))
+        for (n in names) if (!isSoftware(n)) plans.add(Plan(n, surface = true))
         var last: Exception? = null
         val tried = StringBuilder()
         if (plans.distinct().all { it in badPlans }) badPlans.clear()
@@ -138,7 +137,6 @@ class StreamReader(private val width: Int, private val height: Int) {
                 if (pl.surface && isSoftware(try { c.name } catch (_: Exception) { "" })) throw IllegalStateException("softwarový dekodér + plocha")
                 val f = MediaFormat.createVideoFormat(MIME, width, height)
                 f.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, width * height)
-                if (pl.lowLatency) f.setInteger(MediaFormat.KEY_LOW_LATENCY, 1)
                 if (!pl.surface) f.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
                 c.configure(f, if (pl.surface) (reader ?: throw IllegalStateException("reader")).surface else null, null, 0)
                 c.start()
@@ -186,14 +184,12 @@ class StreamReader(private val width: Int, private val height: Int) {
             val c = codec ?: run { openCodec(); val h = header; if (h != null && h !== buf) push(codec!!, h); codec!! }
             val ok = push(c, buf)
             drain(c)
-            if (ok) failures = 0
             ok
         } catch (e: Exception) {
             lastError = e.javaClass.simpleName
             Log.w(TAG, "dekódování", e)
             // dekodér se rozbil → zavři ho, příští snímek ho otevře znovu
             closeCodec()
-            failures++
             false
         }
     }
@@ -291,30 +287,29 @@ class StreamReader(private val width: Int, private val height: Int) {
 
     /** Zkopíruje jas z dekódovaného obrázku a občas uloží barevný náhled. */
     private fun handleImage(img: Image) {
-        run {
-            // skutečný obraz bez výplně na okraji (dekodér vrací např. 1920×1088 místo 1920×1080)
-            val cr = img.cropRect
-            val w = if (cr.width() in 1..img.width) cr.width() else img.width
-            val h = if (cr.height() in 1..img.height) cr.height() else img.height
-            val p = img.planes[0]
-            val stride = p.rowStride
-            val buf = p.buffer.duplicate()
-            val need = min(buf.remaining(), stride * h)
-            synchronized(frameLock) {
-                if (yBuf.size < stride * h) yBuf = ByteArray(stride * h)
-                buf.get(yBuf, 0, need)
-                yStride = stride
-                frameW = w
-                frameH = h
-                frameSerial++
-            }
-            decoded++
-            val now = SystemClock.uptimeMillis()
-            lastFrameAt = now
-            if (UiState.visible && now - lastColorAt > 1500) {
-                lastColorAt = now
-                colorSnapshot = colorHalf(img)
-            }
+        // skutečný obraz bez výplně na okraji (dekodér vrací např. 1920×1088 místo 1920×1080)
+        val cr = img.cropRect
+        val w = if (cr.width() in 1..img.width) cr.width() else img.width
+        val h = if (cr.height() in 1..img.height) cr.height() else img.height
+        val p = img.planes[0]
+        val stride = p.rowStride
+        val buf = p.buffer.duplicate()
+        val need = min(buf.remaining(), stride * h)
+        synchronized(frameLock) {
+            if (yBuf.size < stride * h) yBuf = ByteArray(stride * h)
+            buf.get(yBuf, 0, need)
+            yStride = stride
+            frameW = w
+            frameH = h
+            frameSerial++
+        }
+        decoded++
+        val now = SystemClock.uptimeMillis()
+        lastFrameAt = now
+        // barevný náhled jen pro obrazovku aplikace – při hraní se nedělá
+        if (UiState.visible && now - lastColorAt > 1500) {
+            lastColorAt = now
+            colorSnapshot = colorHalf(img)
         }
     }
 
@@ -322,7 +317,7 @@ class StreamReader(private val width: Int, private val height: Int) {
      * Hotový obrázek bez dekódování (jen ukázka na zařízeních, která neumí video zakódovat).
      * [y] = jas, w×h bajtů.
      */
-    fun feedRaw(y: ByteArray, w: Int, h: Int, color: Bitmap?) {
+    fun feedRaw(y: ByteArray, w: Int, h: Int) {
         synchronized(frameLock) {
             if (yBuf.size < w * h) yBuf = ByteArray(w * h)
             System.arraycopy(y, 0, yBuf, 0, w * h)
@@ -330,7 +325,6 @@ class StreamReader(private val width: Int, private val height: Int) {
         }
         decoded++
         lastFrameAt = SystemClock.uptimeMillis()
-        if (color != null) colorSnapshot = color
     }
 
     /** Barevný náhled v poloviční velikosti. */
@@ -367,9 +361,9 @@ class StreamReader(private val width: Int, private val height: Int) {
      * obrázek – při čtení úzkého pásu s titulky je to několikrát rychlejší.
      * Vrací null, dokud žádný snímek nepřišel, nebo když od minula žádný nový není.
      */
-    fun grab(left: Float, top: Float, right: Float, bottom: Float, onlyNew: Boolean = true): Crop? = synchronized(frameLock) {
+    fun grab(left: Float, top: Float, right: Float, bottom: Float): Crop? = synchronized(frameLock) {
         if (frameW <= 0 || frameH <= 0) return null
-        if (onlyNew && grabbedSerial == frameSerial) return null
+        if (grabbedSerial == frameSerial) return null
         grabbedSerial = frameSerial
         val x0 = (frameW * left).toInt().coerceIn(0, frameW - 1)
         val x1 = (frameW * right).toInt().coerceIn(x0 + 1, frameW)

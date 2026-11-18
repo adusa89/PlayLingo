@@ -89,9 +89,8 @@ class Ps5Link(
             // Na Wi-Fi 2,4 GHz jen menší obraz (stejné pásmo používají ovladače konzole).
             val net = NetInfo.kind(ctx)
             val high = useHigh && Ps5.allowHighRes(net)
-            val preset = ConnectVideoProfile.preset(
+            val profile = ConnectVideoProfile.preset(
                 if (high) VideoResolutionPreset.RES_1080P else VideoResolutionPreset.RES_720P, VideoFPSPreset.FPS_30, Codec.CODEC_H264)
-            val profile = preset
             log("profile ${profile.width}x${profile.height} ${profile.bitrate}kb net=$net")
             val s = Session(ConnectInfo(true, host.ip, host.registKey, host.morning, profile), f.absolutePath, false)
             s.eventCallback = { e -> onEvent(s, e) }

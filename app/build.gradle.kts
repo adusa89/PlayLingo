@@ -11,8 +11,8 @@ android {
         applicationId = "cz.playlingo"
         minSdk = 26          // Android 8 a novější (prakticky všechny Android TV a boxy)
         targetSdk = 34
-        versionCode = 54
-        versionName = "0.54"
+        versionCode = 55
+        versionName = "0.55"
 
         // televize a boxy mají procesory ARM; emulátor při zkoušce x86 (-Pabis=x86)
         val abis = ((project.findProperty("abis") as String?) ?: "armeabi-v7a,arm64-v8a").split(",")
@@ -57,7 +57,7 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
 
-    // nativní knihovny v APK zabalené (jinak by přibalený prohlížeč zvětšil APK na dvojnásobek)
+    // nativní knihovny jsou v APK komprimované (menší soubor ke stažení)
     packaging { jniLibs { useLegacyPackaging = true } }
 
     lint {
@@ -80,11 +80,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
 
-    // Prohlížeč pro přihlášení k účtu PlayStation (jádro Firefoxu, licence MPL 2.0). Televize mívají
-    // vlastní prohlížeč zastaralý a neaktualizovatelný; stránka Sony v něm nefunguje.
-    implementation("org.mozilla.geckoview:geckoview:136.0.20250317200840")
-
-    // QR kód s přihlašovací adresou (přihlášení přes telefon, když ho Sony v televizi odmítne)
+    // QR kód s přihlašovací adresou Sony (přihlášení účtem PlayStation přes telefon)
     implementation("com.google.zxing:core:3.5.3")
 
     testImplementation("junit:junit:4.13.2")

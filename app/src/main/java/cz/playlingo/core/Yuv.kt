@@ -1,19 +1,7 @@
 package cz.playlingo.core
 
-/** Převody obrazu mezi YUV (video) a RGB (čtení textu). Čistý výpočet – dá se testovat. */
+/** Převody barev mezi YUV (video) a RGB. Čistý výpočet – dá se testovat. */
 object Yuv {
-
-    /** Jasová složka (Y) → šedý obrázek ARGB. [stride] = délka řádku ve zdroji. */
-    fun grayToArgb(y: ByteArray, stride: Int, w: Int, h: Int, out: IntArray) {
-        var o = 0
-        for (row in 0 until h) {
-            var i = row * stride
-            for (x in 0 until w) {
-                val v = y[i++].toInt() and 0xFF
-                out[o++] = (0xFF shl 24) or (v shl 16) or (v shl 8) or v
-            }
-        }
-    }
 
     /** Jeden bod YUV (BT.601, omezený rozsah) → ARGB. */
     fun pixel(y: Int, u: Int, v: Int): Int {

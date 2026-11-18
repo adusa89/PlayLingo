@@ -46,12 +46,11 @@ class MainActivity : Activity() {
 
     companion object {
         private const val REQ_NOTIF = 1002
-
-
     }
 
+    /** Stránky aplikace. Historie se otevírá z Nastavení, v menu není. */
     private enum class Section(val key: String) {
-        HOME("m_home"), PS5("m_ps5"), ZONES("m_zones"), LOOK("m_look"), TRANSLATE("m_translate"),
+        HOME("m_home"), PS5("m_ps5"), LOOK("m_look"),
         SETTINGS("m_settings"), HISTORY("m_history"), LICENSE("m_license"), HELP("m_help")
     }
 
@@ -140,7 +139,6 @@ class MainActivity : Activity() {
             Prefs.setPs5Host(this, null)
             section = Section.PS5; pairStep = i?.getIntExtra("pairstep", 2) ?: 2; render(); return
         }
-        if (i?.getBooleanExtra("psnlogin", false) == true) { startActivity(Intent(this, PsnLoginActivity::class.java)); return }
         val ip = i?.getStringExtra("ps5test") ?: return
         if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE == 0) return
         Prefs.setWizardDone(this, true); wizard = -1
@@ -157,15 +155,6 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         UiState.shown()
-        // návrat z přihlášení účtem PlayStation
-        val acc = PsnLoginActivity.result
-        if (acc != null) {
-            PsnLoginActivity.result = null
-            pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = acc; pairStep = 5 }
-        } else if (PsnLoginActivity.failed) {
-            PsnLoginActivity.failed = false
-            pairNote(t("ps5_acc_err"), Theme.BAD)
-        }
         render(keepFocus = true)
         main.removeCallbacks(ticker)
         main.postDelayed(ticker, 1000)
@@ -218,17 +207,12 @@ class MainActivity : Activity() {
     }
 
     /** Pod kterou položkou menu právě zobrazená stránka patří. */
-    private fun menuSection(): Section = when (section) {
-        Section.ZONES -> Section.LOOK
-        Section.TRANSLATE, Section.HISTORY -> Section.SETTINGS
-        else -> section
-    }
+    private fun menuSection(): Section = if (section == Section.HISTORY) Section.SETTINGS else section
 
     private fun renderMenu() {
         menu.removeAllViews()
         for (s in Section.values()) {
-            // V menu je jen šest položek: oblasti jsou součástí Titulků, překlad a historie součástí Nastavení.
-            if (s == Section.HISTORY || s == Section.ZONES || s == Section.TRANSLATE) continue
+            if (s == Section.HISTORY) continue
             val active = s == menuSection()
             val item = ui.hbox().apply {
                 isFocusable = true
@@ -266,9 +250,9 @@ class MainActivity : Activity() {
             Section.HOME -> home()
             Section.PS5 -> ps5()
             // Titulky: nejdřív vzhled, pod ním kde se čtou
-            Section.LOOK, Section.ZONES -> { look(); content.addView(ui.section(t("m_zones"))); zones() }
+            Section.LOOK -> { look(); content.addView(ui.section(t("m_zones"))); zones() }
             // Nastavení: nejdřív povolení a chování, pod ním překlad
-            Section.SETTINGS, Section.TRANSLATE -> { settings(); content.addView(ui.section(t("m_translate"))); translate() }
+            Section.SETTINGS -> { settings(); content.addView(ui.section(t("m_translate"))); translate() }
             Section.HISTORY -> history()
             Section.LICENSE -> license()
             Section.HELP -> help()
@@ -564,7 +548,7 @@ class MainActivity : Activity() {
                 // telefon: velký QR kód s přihlašovací adresou Sony
                 if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
                 val row = ui.hbox().apply { gravity = Gravity.TOP }
-                qrBitmap(PsnLoginActivity.LOGIN_URL)?.let { qr ->
+                qrBitmap(PsnAuth.LOGIN_URL)?.let { qr ->
                     row.addView(ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8)) },
                         // velikost tak, aby se kód i s tlačítky vešel na obrazovku celý, bez posouvání
                         LinearLayout.LayoutParams(ui.dp(200), ui.dp(200)))
@@ -621,11 +605,6 @@ class MainActivity : Activity() {
             draftPsn = ""; draftAuth = ""; Prefs.setPsnId(this, "")
             pairStep = 2; pairMsg = null; render()
         }, "pagain"), 10)
-        // druhá možnost přihlášení: přímo v televizi (ochrana Sony ho tam často odmítne)
-        if (step == 2 && !have) add(tagged(ui.button(t("ps5_acc_btn")) {
-            saveDrafts()
-            try { startActivity(Intent(this, PsnLoginActivity::class.java)) } catch (_: Exception) { pairNote(t("ps5_acc_err"), Theme.BAD) }
-        }, "pacc"), 10)
     }
 
     /** Zpráva u párování; [change] upraví rozepsané údaje (až po uložení toho, co je v políčkách). */
@@ -675,7 +654,7 @@ class MainActivity : Activity() {
         if (code == null) { pairNote(t("ph_bad"), Theme.BAD); return }
         pairNote(t("ps5_acc_wait"), busy = true)
         Thread({
-            val id = PsnLoginActivity.accountIdForCode(code)
+            val id = PsnAuth.accountIdForCode(code)
             if (id != null) {
                 Prefs.setPsnId(this, id)
                 pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = id; draftAuth = ""; pairStep = 5 }
@@ -810,7 +789,7 @@ class MainActivity : Activity() {
         add(tagged(ui.button(t("l_demo")) { showDemo() }, "demo"), 18)
         add(tagged(ui.button(t("l_fine")) { startActivity(Intent(this, CalibrationActivity::class.java)) }, "fine"), 8)
         add(tagged(ui.button(t("l_reset")) {
-            Prefs.setTextSize(this, 26); Prefs.setOpacity(this, 100); Prefs.setTextColorIndex(this, 0)
+            Prefs.setTextSize(this, Prefs.DEFAULT_TEXT_SIZE); Prefs.setOpacity(this, 100); Prefs.setTextColorIndex(this, 0)
             Prefs.setBoldText(this, false); Prefs.setHoldMs(this, 1000)
             Prefs.setLayout(this, Prefs.layout(this).withPosition(cz.playlingo.core.ScreenLayout.Position.OVER).withBarWidth(0.84f))
             applyToService(); render(true); showDemo()
@@ -1116,7 +1095,6 @@ class MainActivity : Activity() {
         }
     }
 
-    /** Sestaví hlášení chyby (zařízení, nastavení, poslední události) a uloží ho do souboru. */
     /** Řádek o připojení televize k síti; u Wi-Fi s radou, protože slabá síť je nejčastější příčina potíží. */
     private fun netLine(): String = when (NetInfo.kind(this)) {
         Ps5.Net.CABLE -> "\n" + t("net_cable")
@@ -1125,6 +1103,7 @@ class MainActivity : Activity() {
         Ps5.Net.UNKNOWN -> ""
     }
 
+    /** Sestaví hlášení chyby (zařízení, nastavení, poslední události) a uloží ho do souboru. */
     private fun makeReport() {
         val sb = StringBuilder()
         sb.append("PlayLingo ").append(BuildInfo.VERSION).append(" (").append(BuildInfo.VERSION_CODE).append(")\n")
@@ -1141,9 +1120,7 @@ class MainActivity : Activity() {
             .append(", spojení: ").append(Ps5Link.state).append(Ps5Link.reason?.let { " ($it)" } ?: "")
             .append(", ukázka: ").append(TranslatorService.demo).append(", snímků: ").append(TranslatorService.framesDecoded)
             .append(", knihovna: ").append(Ps5Link.selfTest()).append("\n")
-        sb.append("Prohlížeč televize: ").append(PsnLoginActivity.webViewVersion())
-            .append(", přibalený prohlížeč: ").append(LoginBrowser.bundledAvailable(this))
-            .append(", procesor: ").append(Build.SUPPORTED_ABIS.joinToString("/")).append("\n")
+        sb.append("Procesor: ").append(Build.SUPPORTED_ABIS.joinToString("/")).append("\n")
         sb.append("Síť televize: ").append(NetInfo.kind(this)).append("\n")
         sb.append("--- záznam (i z minulých spuštění) ---\n").append(EventFile.tail(200)).append("\n")
         sb.append("--- poslední události ---\n").append(DiagLog.dump())
@@ -1210,7 +1187,7 @@ class MainActivity : Activity() {
         scope.launch {
             val off = try { OfflineTranslator.translate(lang, sample) } catch (e: Exception) { null }
             testResult = "${t("t_original")}: $sample\n\n" + (if (off != null) "${t("t_off_ok")}: $off" else t("t_off_fail"))
-            if (section == Section.TRANSLATE) render(true)
+            if (section == Section.SETTINGS) render(true)
         }
     }
 
@@ -1254,8 +1231,8 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.54"
-    const val VERSION_CODE = 54
+    const val VERSION = "verze 0.55"
+    const val VERSION_CODE = 55
     const val DOWNLOAD_URL = "https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk"
     const val VERSION_URL = "https://github.com/adusa89/PlayLingo/releases/download/latest/version.txt"
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -13,12 +14,15 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import android.util.Log
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
+import cz.playlingo.core.MatchSize
 import cz.playlingo.core.ScreenLayout
 import cz.playlingo.core.Segment
+import cz.playlingo.core.SizeKeeper
 import kotlin.math.max
 
 /**
@@ -62,9 +66,9 @@ class SubtitleOverlay(
     @Volatile private var barParams: WindowManager.LayoutParams? = null
     @Volatile private var debugView: TextView? = null
     @Volatile private var layout: ScreenLayout = layout
-    @Volatile private var textSize = textSizeSp
-    private val sizeKeeper = cz.playlingo.core.SizeKeeper()
-    @Volatile private var bgAlpha = (255 * opacityPercent / 100).coerceIn(0, 255)
+    private val textSize = textSizeSp
+    private val sizeKeeper = SizeKeeper()
+    private val bgAlpha = (255 * opacityPercent / 100).coerceIn(0, 255)
 
     /** Je pruh právě zobrazený? */
     @Volatile var isShown = false
@@ -79,6 +83,11 @@ class SubtitleOverlay(
                 setShadowLayer(3f, 0f, 1f, Color.BLACK)
                 setLineSpacing(0f, 1.08f)
                 setPadding(dp(22), dp(7), dp(22), dp(9))
+                // černý podklad s lehce zaoblenými rohy
+                background = GradientDrawable().apply {
+                    setColor(Color.argb(bgAlpha, 0, 0, 0))
+                    cornerRadius = dp(14).toFloat()
+                }
                 visibility = View.GONE
             }
             val lp = params((screenW * this.layout.barWidth).toInt()).apply {
@@ -167,21 +176,15 @@ class SubtitleOverlay(
             val lp = barParams ?: return@post
             val l = layout
             val maxWidth = (screenW * l.barWidth).toInt()
-            val matched = if (matchOriginalSize) sizeKeeper.next(cz.playlingo.core.MatchSize.textPx(lineHeight, screenH)) else 0
-            if (matched > 0) tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, matched.toFloat())
+            val matched = if (matchOriginalSize) sizeKeeper.next(MatchSize.textPx(lineHeight, screenH)) else 0
+            if (matched > 0) tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, matched.toFloat())
             else tv.textSize = textSize.toFloat()
-            // černý podklad s lehce zaoblenými rohy
-            tv.background = android.graphics.drawable.GradientDrawable().apply {
-                setColor(Color.argb(bgAlpha, 0, 0, 0))
-                cornerRadius = dp(14).toFloat()
-            }
             tv.text = format(segments, original)
 
             val hasText = textTop >= 0f && textBottom > textTop
             val tTop = if (hasText) textTop else l.read.top
             val tBottom = if (hasText) textBottom else l.read.bottom
-            // v režimu "přes titulky" musí pruh zakrýt celou angličtinu
-            // pruh zakryje anglický text, ale nikdy není vyšší než čtvrtina obrazovky
+            // v režimu "přes titulky" pruh zakryje anglický text, ale nikdy není vyšší než čtvrtina obrazovky
             tv.minHeight = if (l.cover) (l.coverHeight(tTop, tBottom) * screenH).toInt().coerceAtMost(screenH / 4) else 0
             // Šířka pruhu podle textu: jen tak široký, aby se vešel překlad a zakryla se angličtina
             // (ne pruh přes celou obrazovku).

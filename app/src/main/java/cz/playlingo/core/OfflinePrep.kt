@@ -105,6 +105,7 @@ object OfflinePrep {
     )
 
     private val TOKEN_RX = Regex("\\[\\s*(\\d{1,2})\\s*]")
+    private val SPACES = Regex(" {2,}")
 
     /** Převede slang do spisovné angličtiny. Zachová velké písmeno na začátku slova. */
     fun normalize(text: String): String {
@@ -161,7 +162,7 @@ object OfflinePrep {
         return TOKEN_RX.replace(translated) { m ->
             val i = m.groupValues[1].toInt()
             p.names.getOrNull(i - 1) ?: m.value
-        }.replace(Regex(" {2,}"), " ").trim()
+        }.replace(SPACES, " ").trim()
     }
 
     /** Celý postup s libovolným překladačem (pro testy a jednoduché použití). */

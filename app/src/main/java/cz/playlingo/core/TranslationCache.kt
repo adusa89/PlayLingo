@@ -46,7 +46,9 @@ class TranslationCache(private val maxSize: Int = 3000) {
     }
 
     companion object {
-        fun normalize(s: String): String = s.trim().replace(Regex("\\s+"), " ")
+        private val WS = Regex("\\s+")
+
+        fun normalize(s: String): String = s.trim().replace(WS, " ")
 
         fun esc(s: String): String = buildString {
             for (c in s) when (c) {

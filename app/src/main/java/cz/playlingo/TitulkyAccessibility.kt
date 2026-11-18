@@ -5,13 +5,11 @@ import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 
 /**
- * Služba Usnadnění. Dělá dvě věci:
- *  1) umožní zobrazit titulky přes jiné aplikace i na televizích, které skrývají povolení
- *     „Zobrazení přes jiné aplikace“ (typicky Google TV / Chromecast) – bez počítače a ADB,
- *  2) hlídá, která aplikace je na obrazovce, aby se titulky neukazovaly přes domovskou obrazovku
- *     televize ani přes menu této aplikace.
+ * Služba Usnadnění. Umožní zobrazit titulky přes jiné aplikace i na televizích, které skrývají
+ * povolení „Zobrazení přes jiné aplikace“ (typicky Google TV / Chromecast) – bez počítače a ADB.
  *
- * Nečte obsah obrazovky ani nic neodesílá – reaguje jen na přepnutí aplikace.
+ * Nečte obsah obrazovky ani nic neodesílá. Jen si pamatuje, která aplikace je v popředí
+ * (údaj pro ladicí výpis).
  */
 class TitulkyAccessibility : AccessibilityService() {
 

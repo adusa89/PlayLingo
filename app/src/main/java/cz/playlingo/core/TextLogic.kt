@@ -31,6 +31,11 @@ data class Picked(
 object TextLogic {
 
     private val WS = Regex("\\s+")
+    // osamocené "l" nebo "1" na místě zájmena I ("l think" → "I think")
+    private val LONE_L = Regex("(^|[\\s\"'(])[l1](?=\\s+[a-z'])")
+    // zájmeno "i" a jeho tvary (i'm, i'll, i've, i'd) v textu převedeném na malá písmena
+    private val LOWER_I = Regex("(?<![A-Za-z'])i(?=$|[^A-Za-z]|'(?:m|ll|ve|d)\\b)")
+    private val MARKS = Regex("\\p{M}+")
 
     // "Dutch: We need money." / "Uncle Bob: ..." / "Mary-Beth: ..." (max 3 slova, každé s velkým písmenem)
     // Mezera za dvojtečkou není povinná (OCR ji někdy vynechá), ale pak musí následovat písmeno nebo uvozovka.
@@ -70,8 +75,7 @@ object TextLogic {
             .replace('”', '"')
             .replace(WS, " ")
             .trim()
-        // osamocené "l" nebo "1" na místě zájmena I ("l think" -> "I think")
-        t = t.replace(Regex("(^|[\\s\"'(])[l1](?=\\s+[a-z'])"), "$1I")
+        t = t.replace(LONE_L, "$1I")
         // drobné písmo: OCR vynechá apostrof ("Ill take" → "I'll take", "dont" → "don't")
         t = t.replace(ILL) { "I'll" }
         t = t.replace(NO_APOSTROPHE) { m ->
@@ -270,7 +274,7 @@ object TextLogic {
 
     fun simplify(s: String): String {
         val n = java.text.Normalizer.normalize(s.lowercase(), java.text.Normalizer.Form.NFD)
-            .replace(Regex("\\p{M}+"), "")
+            .replace(MARKS, "")
         return n.replace(NON_ALNUM, " ").trim()
     }
 
@@ -316,8 +320,7 @@ object TextLogic {
                 if (start) { sb[i] = c.uppercaseChar(); start = false }
             } else if (c == '.' || c == '!' || c == '?' || c == '…') start = true
         }
-        // zájmeno "I" a jeho tvary (I'm, I'll, I've, I'd)
-        return sb.toString().replace(Regex("(?<![A-Za-z'])i(?=$|[^A-Za-z]|'(?:m|ll|ve|d)\\b)"), "I")
+        return sb.toString().replace(LOWER_I, "I")
     }
 
     /** Jméno psané velkými písmeny ukáže jako běžné jméno ("MARY-BETH" → "Mary-Beth"). */

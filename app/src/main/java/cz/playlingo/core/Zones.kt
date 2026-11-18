@@ -107,15 +107,6 @@ data class ScreenLayout(
         Position.CUSTOM -> this
     }
 
-    /** Další poloha v cyklu: přes titulky → nad titulky → nahoře → přes titulky. */
-    fun nextPosition(): ScreenLayout = withPosition(
-        when (position) {
-            Position.OVER -> Position.ABOVE
-            Position.ABOVE -> Position.TOP
-            else -> Position.OVER
-        }
-    )
-
     fun withBarWidth(w: Float) = copy(barWidth = w.coerceIn(0.3f, 1f))
     fun withBarCenter(y: Float) = copy(barCenterY = y.coerceIn(0.02f, 0.98f))
 
