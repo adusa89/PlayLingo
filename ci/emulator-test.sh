@@ -5,6 +5,10 @@ set -x
 OUT=test-results
 mkdir -p $OUT
 PKG=cz.playlingo
+# Žádný příkaz pro emulátor nesmí zkoušku zablokovat: emulátor Androidu 14 občas přestane
+# odpovídat (výpis záznamu po aktualizaci, stisk klávesy) a celá zkouška pak visela až do limitu.
+ADB_BIN=$(command -v adb)
+adb() { timeout 180 "$ADB_BIN" "$@"; }
 shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
 key() { adb shell input keyevent "$1"; sleep 1; }
 
