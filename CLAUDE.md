@@ -79,6 +79,9 @@ náhoda, opakované selhání po změně kódu ne.
 - Záloha verze, ke které se má jít vrátit: větev `zaloha-<číslo>`.
 - Aplikace nabízí novou verzi tlačítkem „Aktualizovat“ na stránce Domů (`Updater.kt`). Bere
   vyšší číslo z `latest` a (se zapnutým zkušebním kanálem) ze `zkusebni`.
+  Od 0.65 nabízí aktualizaci i pomocník v telefonu (`PhoneHelperActivity`), kde jde zapnout
+  i zkušební kanál. Odpověď systému na instalaci chodí vždy do `MainActivity`; v telefonu ji jen
+  vyřídí a zmizí.
 
 ## Podpis
 

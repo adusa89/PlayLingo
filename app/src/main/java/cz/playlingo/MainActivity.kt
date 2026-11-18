@@ -114,7 +114,9 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         // v telefonu aplikace nepřekládá – je tam jen pomocník pro přihlášení účtem PlayStation
         if (NetInfo.isPhone(this)) {
-            startActivity(Intent(this, PhoneHelperActivity::class.java))
+            // Odpověď systému na aktualizaci spuštěnou z pomocníka přijde sem: jen ji vyřídit (ukázat
+            // dotaz na instalaci) a zmizet – pomocník zůstává pod tím.
+            if (!Updater.onStatus(this, intent)) startActivity(Intent(this, PhoneHelperActivity::class.java))
             finish()
             return
         }
@@ -1252,13 +1254,7 @@ class MainActivity : Activity() {
     }
 
     /** Číslo nejnovější verze v daném kanálu; null, když se nedá zjistit. Volat mimo hlavní vlákno. */
-    private fun remoteVersion(channel: UpdateCheck.Channel): UpdateCheck.Remote? = try {
-        val c = java.net.URL(UpdateCheck.url(channel, "version.txt")).openConnection() as java.net.HttpURLConnection
-        c.connectTimeout = 5000; c.readTimeout = 5000
-        try {
-            if (c.responseCode == 200) UpdateCheck.parse(c.inputStream.bufferedReader().use { it.readText().take(100) }) else null
-        } finally { c.disconnect() }
-    } catch (_: Exception) { null }
+    private fun remoteVersion(channel: UpdateCheck.Channel): UpdateCheck.Remote? = Updater.remoteVersion(channel)
 
     /** Na pozadí zjistí, jestli není ke stažení novější verze (se zapnutým zkušebním kanálem i v něm). */
     private fun checkForUpdate() {
@@ -1420,6 +1416,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.64"
-    const val VERSION_CODE = 64
+    const val VERSION = "verze 0.65"
+    const val VERSION_CODE = 65
 }

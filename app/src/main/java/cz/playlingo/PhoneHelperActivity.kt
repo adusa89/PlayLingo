@@ -20,6 +20,7 @@ import cz.playlingo.core.Lang
 import cz.playlingo.core.LoginClient
 import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.Ps5
+import cz.playlingo.core.UpdateCheck
 import java.util.Locale
 
 /**
@@ -47,6 +48,8 @@ class PhoneHelperActivity : Activity() {
     private var sent = false
     /** Otevřená přihlašovací stránka Sony (null = je vidět hlavní obrazovka pomocníka). */
     private var web: WebView? = null
+    /** Novější verze aplikace, která je ke stažení (null = žádná, nebo se to ještě nezjistilo). */
+    private var update: UpdateCheck.Offer? = null
 
     private fun t(key: String) = tx(key)
     private fun log(m: String) { Log.i("TP_TEST", "HELPER|$m"); DiagLog.add("HELPER|$m") }
@@ -62,8 +65,33 @@ class PhoneHelperActivity : Activity() {
         root = scroll
         setContentView(root)
         log("start")
+        Updater.cleanUp(this)
         render()
         if (savedInstanceState == null) take(intent)
+        checkForUpdate()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // po návratu z dotazu systému na instalaci ukázat, jak aktualizace dopadla
+        if (web == null) render()
+    }
+
+    /** Na pozadí zjistí, jestli není ke stažení novější verze (se zapnutým zkušebním kanálem i v něm). */
+    private fun checkForUpdate() {
+        val test = Prefs.testChannel(this)
+        Thread({
+            val offer = Updater.offer(test)
+            runOnUiThread { if (!isFinishing && offer != update && !Updater.busy) { update = offer; if (web == null) render() } }
+        }, "tp-helper-update").start()
+    }
+
+    /** Stáhne nabídnutou verzi a předá ji systému k instalaci – stejně jako v televizi. */
+    private fun startUpdate(o: UpdateCheck.Offer) {
+        Updater.start(this, UpdateCheck.url(o.channel, "PlayLingo.apk"), false) {
+            runOnUiThread { if (!isFinishing && web == null) render() }
+        }
+        render()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -121,6 +149,23 @@ class PhoneHelperActivity : Activity() {
         head.addView(names)
         content.addView(head)
 
+        // nová verze: stejná nabídka jako na stránce Domů v televizi
+        update?.let { o ->
+            val st = Updater.state
+            add(ui.card().apply {
+                addView(ui.text(t("upd_new") + " (${o.remote.name}" + (if (o.channel == UpdateCheck.Channel.TEST) " · " + t("upd_test") else "") + ")", 17f, Theme.ACCENT, bold = true))
+                val line = when {
+                    st == Updater.State.DOWNLOADING -> t("upd_down") + (if (Updater.percent >= 0) " ${Updater.percent} %" else "…")
+                    st == Updater.State.INSTALLING -> t("upd_inst")
+                    st == Updater.State.FAILED -> t(Updater.problem ?: "upd_fail")
+                    else -> null
+                }
+                line?.let { addView(ui.text(it, 14f, if (st == Updater.State.FAILED) Theme.BAD else Theme.MUTED), ui.lp(top = 4)) }
+                if (st == Updater.State.FAILED) addView(ui.text(UpdateCheck.url(o.channel, "PlayLingo.apk"), 13f, Theme.MUTED), ui.lp(top = 6))
+                if (!Updater.busy) addView(ui.button(t("upd_btn"), primary = true) { startUpdate(o) }, ui.lp(top = 10))
+            }, 14)
+        }
+
         // Televize LG si titulky sama nepřečte: číst, překládat a posílat je do ní může tento telefon.
         // Pak tu místo pomocníka běží celá aplikace (viz core/TvSender).
         add(ui.card().apply {
@@ -153,6 +198,10 @@ class PhoneHelperActivity : Activity() {
 
         val lang = Prefs.uiLang(this)
         add(ui.settingRow(t("l_ui_lang"), lang.label) { Prefs.setUiLang(this, lang.next()); render() }, 26)
+        // zkušební verze (dřív než ostatní) jdou zapnout i tady, bez celé aplikace
+        add(ui.settingRow(t("s_test"), t(if (Prefs.testChannel(this)) "on" else "off")) {
+            Prefs.setTestChannel(this, !Prefs.testChannel(this)); render(); checkForUpdate()
+        }, 8)
         add(ui.button(t("hp_is_tv")) {
             Prefs.setForceTv(this, true)
             startActivity(Intent(this, MainActivity::class.java))
