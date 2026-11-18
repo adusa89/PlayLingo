@@ -31,6 +31,8 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení, zkouška, vydání.
 - `ci/mistni-kontrola` – překlad a unit testy bez Android SDK (viz níže).
 - `podpis/playlingo.p12` – zašifrovaný podpisový klíč (viz Podpis).
+- `webos` – zkušební aplikace pro televize LG (viz Televize LG). Nesouvisí s aplikací pro
+  Android TV a do APK se nedostane.
 
 ## Sestavení a zkouška
 
@@ -105,6 +107,21 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   průvodce se nezměnily.
 - Zkouška v emulátoru umí ověřit jen stránku a posílání účtu, ne přihlášení u Sony. Jestli Sony
   pustí přihlášení uvnitř pomocníka na skutečném telefonu, umí ověřit jen uživatel.
+
+## Televize LG (webOS)
+
+- Ve složce `webos` je zatím jen **zkušební aplikace**, ne překladač. Na skutečné televizi má
+  zjistit, jestli aplikace umí ukázat vstup HDMI s pruhem přes obraz a jestli si obraz umí sama
+  přečíst. Podle výsledku se teprve rozhodne, jak verzi pro LG postavit.
+- Televize uživatele je LG OLED55B7 (rok 2017, webOS 3.x, prohlížeč Chromium 38). Kód proto
+  musí zůstat ve starém zápisu JavaScriptu: žádné `let`/`const`, šipkové funkce, `Promise`,
+  `fetch` ani šablonové řetězce.
+- Aplikace na LG se nejspíš nepřipojí k PlayStationu po síti jako na Android TV (to dělá
+  nativní knihovna chiaki-ng). Musela by číst obraz přímo z HDMI, nebo by čtení a překlad
+  dělalo jiné zařízení a televize jen ukazovala pruh.
+- `python3 webos/sestavit.py` vytvoří `webos/PlayLingo-zkouska.ipk` (soubor se necommituje).
+  Postup instalace do televize je ve `webos/CTI-ME.md`. Změny jen ve složce `webos` nemění
+  verzi aplikace pro Android TV a commitují se s `[skip ci]`.
 
 ## Texty aplikace (9 jazyků)
 

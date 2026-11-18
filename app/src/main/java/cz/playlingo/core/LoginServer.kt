@@ -33,6 +33,7 @@ class LoginServer(
 
     @Volatile private var server: ServerSocket? = null
     @Volatile private var pool: ExecutorService? = null
+    @Volatile private var acceptor: Thread? = null
     /** Požadavky se špatným klíčem; po mnoha pokusech se stránka zavře (někdo klíč jen zkouší). */
     @Volatile private var wrongKeys = 0
 
@@ -46,12 +47,12 @@ class LoginServer(
         port = s.localPort
         val p = Executors.newFixedThreadPool(4) { r -> Thread(r, "tp-login").apply { isDaemon = true } }
         pool = p
-        Thread({
+        acceptor = Thread({
             while (!s.isClosed) {
                 val c = try { s.accept() } catch (_: Throwable) { break }
                 try { p.execute { handle(c) } } catch (_: Throwable) { close(c) }
             }
-        }, "tp-login-accept").apply { isDaemon = true }.start()
+        }, "tp-login-accept").apply { isDaemon = true; start() }
         log("page on port $port")
         return true
     }
@@ -64,6 +65,10 @@ class LoginServer(
         val s = server ?: return
         server = null
         try { s.close() } catch (_: Throwable) {}
+        // Port se opravdu uvolní, až když skončí vlákno, které na něm čekalo. Bez počkání by televize
+        // ještě okamžik po zavření stránky navazovala spojení (a hned je zase zavírala).
+        try { acceptor?.takeIf { it !== Thread.currentThread() }?.join(1000) } catch (_: InterruptedException) { Thread.currentThread().interrupt() }
+        acceptor = null
         // rozpracované odpovědi se nechají doběhnout (telefon má dostat „hotovo“)
         pool?.shutdown(); pool = null
         log("page closed")

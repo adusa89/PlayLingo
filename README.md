@@ -12,6 +12,7 @@ v černém pruhu přes obraz. Hra jde do televize dál kabelem HDMI. Překlad je
 - `app/src/main/java/com/metallic/chiaki/lib`, `app/src/main/cpp`, `third_party/chiaki-ng` – spojení s PlayStationem (knihovna chiaki-ng, AGPL-3.0; naše úpravy jsou popsané v hlavičkách souborů)
 - `app/src/test` – unit testy včetně simulace hraní
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení APK a automatická zkouška v emulátoru Android TV (Android 9, 11, 13, 14); APK se vydá až po úspěšné zkoušce
+- `webos` – zkušební aplikace pro televize LG (zatím jen zjišťuje, co televize dovolí); postup je ve `webos/CTI-ME.md`
 
 Návod: NAVOD.md
 
