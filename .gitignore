@@ -12,3 +12,4 @@ webos/*.ipk
 *.p12
 *.jks
 *.keystore
+webos/obchod/*.ipk

@@ -32,6 +32,10 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
 - `ci/mistni-kontrola` – překlad a unit testy bez Android SDK (viz níže).
 - `webos` – zkušební aplikace pro televize LG (viz Televize LG). Nesouvisí s aplikací pro
   Android TV a do APK se nedostane.
+- `pc` – zkušební čtečka pro počítač s Windows (viz `pc/CTI-ME.md`): čte titulky z okna s obrazem
+  hry, přeloží je a pošle do televize LG. Překládá se proti téže složce `core` jako aplikace,
+  takže změna v `core` se týká i jí – po úpravě `core` ověř i `gradlew -p pc installDist`.
+  Do APK se nedostane a sestavení na GitHubu o ní neví.
 
 ## Sestavení a zkouška
 

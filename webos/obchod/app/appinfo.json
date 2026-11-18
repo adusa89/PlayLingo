@@ -1,0 +1,15 @@
+{
+  "id": "cz.playlingo.tv",
+  "version": "1.0.0",
+  "vendor": "PlayLingo",
+  "type": "web",
+  "main": "index.html",
+  "title": "PlayLingo",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "bgColor": "#0E1014",
+  "iconColor": "#0E1014",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true,
+  "requiredACG": ["systemconfig.query", "network.query", "settings.query"]
+}
