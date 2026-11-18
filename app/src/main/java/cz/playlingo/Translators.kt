@@ -9,6 +9,8 @@ import com.google.mlkit.nl.translate.TranslatorOptions
 import cz.playlingo.core.Glossary
 import cz.playlingo.core.Lang
 import cz.playlingo.core.OfflinePrep
+import cz.playlingo.core.QuickWords
+import cz.playlingo.core.TextLogic
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.ConcurrentHashMap
 
@@ -68,5 +70,19 @@ object OfflineTranslator {
             OfflinePrep.finish(p, translateRaw(lang, p.protectedText))?.let { return it }
         }
         return translateRaw(lang, p.plain)
+    }
+
+    /**
+     * Celý titulek tak, jak ho překládá služba: po řádcích, jména mluvčích zůstávají, krátká slova
+     * ze slovníčku. Používá ho zkouška překladu (služba dělá totéž, jen s pamětí překladů).
+     */
+    suspend fun translateSubtitle(lang: Lang, text: String, glossary: Glossary? = null): String {
+        val out = ArrayList<String>()
+        for (s in TextLogic.segments(text)) {
+            val body = TextLogic.normalizeCase(s.body)
+            val tr = QuickWords.lookup(lang.code, body) ?: translate(lang, TextLogic.forTranslator(body), glossary)
+            out.add((s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + TextLogic.finishTranslation(body, tr))
+        }
+        return out.joinToString(" ")
     }
 }
