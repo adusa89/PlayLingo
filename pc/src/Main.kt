@@ -6,6 +6,7 @@ import cz.playlingo.core.OcrLine
 import cz.playlingo.core.Picked
 import cz.playlingo.core.QuickWords
 import cz.playlingo.core.Segment
+import cz.playlingo.core.SpeakerColors
 import cz.playlingo.core.SubtitleTracker
 import cz.playlingo.core.TextLogic
 import cz.playlingo.core.TvSender
@@ -142,12 +143,15 @@ fun main(args: Array<String>) {
     var lastError = ""
     var lastTvs = -1
 
+    // každý mluvčí má v televizi svou barvu jména
+    val speakerColors = SpeakerColors()
+
     fun translateSegments(text: String): List<Segment>? {
         val result = ArrayList<Segment>()
         for (s in TextLogic.segments(text)) {
             val body = TextLogic.normalizeCase(s.body)
             val tr = QuickWords.lookup(lang, body) ?: helper.translate(TextLogic.forTranslator(body)) ?: return null
-            result.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr)))
+            result.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice))
         }
         return result
     }
@@ -178,15 +182,17 @@ fun main(args: Array<String>) {
                 )
                 if (picked.text.isEmpty() || !TextLogic.looksForeign(picked.text)) {
                     if (picked.text.isEmpty() || !TextLogic.similar(picked.text, steadyText)) { steadyText = picked.text; steadySince = now }
-                    if (picked.text.isNotEmpty() && now - steadySince > STALE_MS) {
+                    // volby odpovědí smí stát déle – hráč se rozhoduje
+                    val staleMs = if (TextLogic.hasChoices(picked.text)) TextLogic.CHOICES_STALE_MS else STALE_MS
+                    if (picked.text.isNotEmpty() && now - steadySince > staleMs) {
                         if (shown) { hideAt = 0; hide(); log("schováno (text stojí dlouho – není to titulek)") }
                     } else when (val action = tracker.onOcr(picked.text, slowDevice = r.ms > 500)) {
                         is SubtitleTracker.Action.Show -> translateSegments(action.text)?.let { segs ->
                             tracker.confirmShown(action.text)
                             hideAt = 0
                             shown = true
-                            val text = segs.joinToString("\n") { s -> if (s.speaker != null) "${s.speaker}: ${s.body}" else s.body }
-                            sender.show(text)
+                            val text = TextLogic.joinSegments(segs)
+                            sender.show(text, TvSender.partsJson(segs, speakerColors.colorsFor(segs)))
                             log("${r.ms} ms  ${action.text.replace('\n', ' ')}  →  ${text.replace('\n', ' ')}")
                         }
                         SubtitleTracker.Action.Hide -> hideAt = now + HOLD_MS

@@ -331,7 +331,7 @@ class TranslatorService : Service() {
             this, screenW, screenH, layout, Prefs.textSize(this), Prefs.opacity(this),
             debug, Prefs.coloredSpeaker(this),
             Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this),
-            onText = sender?.let { s -> { text: String? -> if (text == null) s.hide() else s.show(text) } }
+            onText = sender?.let { s -> { text: String?, parts: String? -> if (text == null) s.hide() else s.show(text, parts) } }
         )
         tracker.reset()
         lastSig = null
@@ -537,7 +537,9 @@ class TranslatorService : Service() {
         // pruh se schová a znovu se ukáže, až se text změní.
         val nowMs = SystemClock.uptimeMillis()
         if (picked.text.isEmpty() || !TextLogic.similar(picked.text, steadyText)) { steadyText = picked.text; steadySince = nowMs }
-        val stale = (onlySubtitles || autoFind) && picked.text.isNotEmpty() && nowMs - steadySince > STALE_MS
+        // volby odpovědí smí stát déle – hráč se rozhoduje
+        val staleMs = if (TextLogic.hasChoices(picked.text)) TextLogic.CHOICES_STALE_MS else STALE_MS
+        val stale = (onlySubtitles || autoFind) && picked.text.isNotEmpty() && nowMs - steadySince > staleMs
         if (stale) {
             if (overlay?.isShown == true) { overlay?.hide(); tp("HIDE|stale") }
             return
@@ -563,9 +565,7 @@ class TranslatorService : Service() {
                 statsFor(this).line()
                 // automatika: zapamatuj si, kde na obrazovce titulky jsou
                 if (autoFind && autoZone.onSubtitle(top, bottom, SystemClock.uptimeMillis())) zoneChanged()
-                SubtitleHistory.add(action.text, segs.joinToString("\n") { s ->
-                    if (s.speaker != null) "${s.speaker}: ${s.body}" else s.body
-                })
+                SubtitleHistory.add(action.text, TextLogic.joinSegments(segs))
             }
             // anglický titulek zmizel – překlad nech chvíli dočíst
             SubtitleTracker.Action.Hide -> {
@@ -611,7 +611,7 @@ class TranslatorService : Service() {
         for (s in TextLogic.segments(text)) {
             val body = TextLogic.normalizeCase(s.body)
             val tr = QuickWords.lookup(lang.code, body) ?: translate(TextLogic.forTranslator(body)) ?: return null
-            out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr)))
+            out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice))
         }
         return out
     }

@@ -10,8 +10,11 @@ data class OcrLine(val text: String, val left: Int, val top: Int, val right: Int
 /** Blok textu = skupina řádků, které k sobě patří (např. dvouřádkový titulek). */
 data class OcrBlock(val lines: List<OcrLine>)
 
-/** Část titulku: volitelné jméno mluvčího ("Dutch") a samotný text. */
-data class Segment(val speaker: String?, val body: String)
+/**
+ * Část titulku: volitelné jméno mluvčího ("Dutch") a samotný text.
+ * [choice] = jedna z voleb odpovědi, které hra nabízí (ukáže se jako položka seznamu).
+ */
+data class Segment(val speaker: String?, val body: String, val choice: Boolean = false)
 
 /**
  * Výsledek výběru textu z jedné oblasti obrazovky.
@@ -164,6 +167,89 @@ object TextLogic {
         return (line.height / part).toInt()
     }
 
+    /** Značka volby odpovědi na začátku řádku textu pásu ("• I'll take the job."). */
+    const val CHOICE_MARK = "• "
+
+    // číslo nebo odrážka před volbou ve hře: "1.", "2)", "•", ">" (pomlčka ne – tou titulky střídají mluvčí)
+    private val CHOICE_PREFIX = Regex("^(?:\\d[.)]|[•>▶►])\\s*")
+    // volba zní jako řeč: zájmena první a druhé osoby
+    private val SPEECH_WORD = Regex("(?<![A-Za-z'])(?i:I|I'm|I'll|I've|I'd|you|you're|you'll|we|we're|we'll|me|my|your|us|let's)(?![A-Za-z'])")
+    // položky běžných menu – kde je některá z nich, nejde o volby v rozhovoru
+    private val MENU_WORDS = setOf(
+        "continue", "new game", "load game", "load", "save", "save game", "options", "settings", "quit", "quit game",
+        "exit", "back", "resume", "restart", "controls", "graphics", "audio", "credits", "start", "play", "yes", "no",
+        "ok", "accept", "cancel", "confirm", "main menu", "inventory", "map", "journal", "skills", "help", "extras",
+        "easy", "normal", "hard", "store", "online", "multiplayer", "single player", "story", "photo mode",
+    )
+
+    /** Text volby bez čísla nebo odrážky ze hry, nebo null, když řádek jako volba nevypadá. */
+    private fun choiceItem(raw: String): String? {
+        val t = raw.replace(CHOICE_PREFIX, "").trim()
+        if (t.length < 2 || t.length > 70) return null
+        val first = t.first()
+        if (!(first.isUpperCase() || first in "[\"(….")) return null
+        if (wordCount(t) !in 1..10) return null
+        if (splitSpeaker(t).speaker != null) return null
+        if (UI_HINT.containsMatchIn(t) || CONTROL_PROMPT.containsMatchIn(t)) return null
+        if (simplify(t) in MENU_WORDS) return null
+        return t
+    }
+
+    /**
+     * Volby odpovědí v rozhovoru (3–6 krátkých řádků pod sebou, zarovnaných vlevo nebo očíslovaných),
+     * případně pod replikou, na kterou se odpovídá. Vrací text pásu, kde volby začínají [CHOICE_MARK],
+     * nebo null, když si tím není jistá – pak se s textem zachází jako dřív.
+     * Menu hry ("Continue / New Game / Options"), seznam úkolů ani nápovědy k ovládání volbami nejsou:
+     * aspoň jedna volba musí znít jako řeč (zájmeno, otazník, tečka…).
+     */
+    fun choiceText(lines: List<OcrLine>): String? {
+        val ls = lines.sortedBy { it.top }
+        if (ls.size < 3) return null
+        // dva texty vedle sebe (stejný řádek) nejsou seznam pod sebou
+        for (i in 1 until ls.size) if (ls[i].top < ls[i - 1].bottom - ls[i - 1].height / 3) return null
+        val texts = ls.map { clean(it.text) }
+        for (k in 0..minOf(3, ls.size - 3)) {
+            val itemLines = ls.subList(k, ls.size)
+            if (itemLines.size > 6) continue
+            val items = texts.subList(k, texts.size).map { choiceItem(it) }
+            if (items.any { it == null }) continue
+            val marked = texts.subList(k, texts.size).all { CHOICE_PREFIX.containsMatchIn(it) }
+            val h = itemLines.map { it.height }.sorted()[itemLines.size / 2]
+            val leftAligned = itemLines.maxOf { it.left } - itemLines.minOf { it.left } <= maxOf(6, h * 6 / 10)
+            val widths = itemLines.map { it.right - it.left }
+            // stejně dlouhé řádky zarovnané vlevo mohou být i odstavec – volby mají různou délku
+            val varied = widths.max() - widths.min() > h * 3 / 2
+            if (!marked && !(leftAligned && varied)) continue
+            val speech = items.any { t -> t!!.last() in ".!?…" || t.startsWith("[") || SPEECH_WORD.containsMatchIn(t) }
+            if (!speech) continue
+            if (!marked) {
+                // Bez čísel: dialogové okno se zarovnáním vlevo může mít celé věty pod sebou – ty končí
+                // tečkou všechny. A replika nad volbami bývá jinde než ony, ne zarovnaná s nimi.
+                if (items.all { it!!.last() in ".!?…" }) continue
+                if (k > 0 && kotlin.math.abs(ls[0].left - itemLines[0].left) <= maxOf(6, h * 6 / 10)) continue
+            }
+            val lead = if (k == 0) null else texts.subList(0, k).joinToString(" ")
+            if (lead != null && (!looksLikeDialogue(lead) || lead.last() !in ".!?…\"'")) continue
+            return (listOfNotNull(lead) + items.map { CHOICE_MARK + it }).joinToString("\n")
+        }
+        return null
+    }
+
+    /** Jsou v textu volby odpovědí? (Hráč nad nimi přemýšlí déle, než trvá běžný titulek.) */
+    fun hasChoices(text: String): Boolean = text.split('\n').any { it.startsWith(CHOICE_MARK) }
+
+    /** Jak dlouho smí volby stát beze změny, než se pruh schová (běžný text stojící déle je nápis nebo menu). */
+    const val CHOICES_STALE_MS = 60_000L
+
+    /** Text pásu ze segmentů (pro televizi LG, historii a log): "Jméno: text", volby s odrážkou. */
+    fun joinSegments(segments: List<Segment>): String = segments.joinToString("\n") { s ->
+        when {
+            s.choice -> CHOICE_MARK + s.body
+            s.speaker != null -> "${s.speaker}: ${s.body}"
+            else -> s.body
+        }
+    }
+
     /** Od tolika řádků textu v oblasti je to menu nebo jiná plná obrazovka, ne titulek. */
     const val MENU_LINES = 7
 
@@ -230,11 +316,19 @@ object TextLogic {
             used = byTop.subList(start, byTop.size)
         }
         if (used.isEmpty()) return Picked("", 0)
+        val ls = used.map { it.second }
+        fun picked(text: String) = Picked(
+            text, ls.size,
+            ls.minOf { it.top }, ls.maxOf { it.bottom }, ls.minOf { it.left }, ls.maxOf { it.right },
+            lineHeight = ls.map { fontSizeOf(it) }.sorted()[ls.size / 2],
+        )
+        // volby odpovědí: každá zvlášť, ne slité do jednoho odstavce
+        if (subtitlesOnly) choiceText(ls)?.let { return picked(it) }
         // řádky jednoho bloku se spojí mezerou; řádek, který začíná jménem mluvčího, je nová replika
         val parts = ArrayList<String>()
-        for (ls in used.groupBy { it.first }.toSortedMap().values) {
+        for (bl in used.groupBy { it.first }.toSortedMap().values) {
             var cur = ""
-            for (l in ls.map { it.second }.sortedBy { it.top }) {
+            for (l in bl.map { it.second }.sortedBy { it.top }) {
                 val t = clean(l.text)
                 if (cur.isNotEmpty() && !SPEAKER_ONLY.matches(cur) && splitSpeaker(t).speaker != null) { parts.add(cur); cur = t }
                 else cur = if (cur.isEmpty()) t else "$cur $t"
@@ -243,15 +337,10 @@ object TextLogic {
         }
         // samotné jméno bez textu není titulek
         if (parts.all { SPEAKER_ONLY.matches(it) }) return Picked("", 0)
-        val ls = used.map { it.second }
         val text = mergeSpeakerLines(parts).joinToString("\n").trim()
         // "jen titulky": položky menu, nápisy a šum se nepřekládají – jen to, co vypadá jako replika
         if (subtitlesOnly && !looksLikeDialogue(text)) return Picked("", 0)
-        return Picked(
-            text, ls.size,
-            ls.minOf { it.top }, ls.maxOf { it.bottom }, ls.minOf { it.left }, ls.maxOf { it.right },
-            lineHeight = ls.map { fontSizeOf(it) }.sorted()[ls.size / 2],
-        )
+        return picked(text)
     }
 
     /**
@@ -363,7 +452,10 @@ object TextLogic {
 
     /** Rozdělí celý text pásu na segmenty (každý řádek může mít svého mluvčího). */
     fun segments(text: String): List<Segment> =
-        text.split('\n').map { it.trim() }.filter { it.isNotEmpty() }.map { splitSpeaker(it) }
+        text.split('\n').map { it.trim() }.filter { it.isNotEmpty() }.map { l ->
+            if (l.startsWith(CHOICE_MARK.trim())) Segment(null, l.removePrefix(CHOICE_MARK.trim()).trim(), choice = true)
+            else splitSpeaker(l)
+        }
 
     /** Podobnost dvou textů (tolerance chyb OCR mezi snímky). */
     fun similar(a: String, b: String, threshold: Float = 0.88f): Boolean {

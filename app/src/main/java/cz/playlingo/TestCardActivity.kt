@@ -97,9 +97,16 @@ object TestCard {
         }
         p.textSize = h * st.size
         p.setShadowLayer(4f, 0f, 2f, Color.BLACK)
-        subtitle.split('\n').forEachIndexed { i, s ->
-            canvas.drawText(s, w / 2, h * 0.87f + i * h * st.size * 1.4f, p)
+        val rows = subtitle.split('\n')
+        val step = h * st.size * 1.4f
+        // víc než dva řádky (otázka s volbami) začínají výš, ať se vejdou na obrazovku
+        val y0 = if (rows.size > 2) h * 0.95f - (rows.size - 1) * step else h * 0.87f
+        rows.forEachIndexed { i, s ->
+            // volby odpovědí jsou ve hrách pod sebou zarovnané vlevo
+            if (DemoGame.isChoiceLine(s)) { p.textAlign = Paint.Align.LEFT; canvas.drawText(s, w * 0.36f, y0 + i * step, p) }
+            else { p.textAlign = Paint.Align.CENTER; canvas.drawText(s, w / 2, y0 + i * step, p) }
         }
+        p.textAlign = Paint.Align.CENTER
         p.clearShadowLayer()
     }
 }

@@ -75,7 +75,19 @@
     ['We need to get across the river.', 'Musíme se dostat na druhou stranu řeky.'],
     ['Wait here. I\'ll be right back.', 'Počkej tady. Hned jsem zpátky.'],
     ['I don\'t like this at all.', 'Tohle se mi vůbec nelíbí.'],
-    ['Saddle up, we ride at dawn.', 'Nasedni na koně, vyrážíme za svítání.']
+    ['Saddle up, we ride at dawn.', 'Nasedni na koně, vyrážíme za svítání.'],
+    // dva mluvčí – každý má jméno ve své barvě
+    ['Mira: I\'ll take the left door.\nTobin: Then I\'m going right.', '', [
+      { jmeno: 'Mira', barva: '#F2C14E', text: 'Vezmu levé dveře.' },
+      { jmeno: 'Tobin', barva: '#7FC8F8', text: 'Tak já jdu doprava.' }
+    ]],
+    // otázka a volby odpovědi – v pruhu jako seznam
+    ['Kessler: So, what will it be?\n1. I\'ll take the job.\n2. Tell me more about the pay.\n3. Not interested.', '', [
+      { jmeno: 'Kessler', barva: '#8EDB8A', text: 'Tak co bude?' },
+      { volba: true, text: 'Vezmu tu práci.' },
+      { volba: true, text: 'Řekni mi víc o výplatě.' },
+      { volba: true, text: 'Nemám zájem.' }
+    ]]
   ];
 
   var PORT = 8787;
@@ -175,6 +187,55 @@
     el('pruh').style.display = 'flex';
   }
 
+  // Barva jména z Androidu – jen zápis #RRGGBB, nic jiného se do stylu nedostane.
+  function barvaJmena(b) {
+    b = String(b || '');
+    return /^#[0-9A-Fa-f]{6}$/.test(b) ? b : '';
+  }
+
+  // Pruh po řádcích (pole casti, viz TvSender.kt): jména v barvách mluvčích a volby odpovědí
+  // jako seznam s odrážkami. Bez casti (starší PlayLingo na Androidu) jen obyčejný text.
+  function pruhCasti(casti, text) {
+    var t = el('titulek');
+    var i, c, radek, kus, seznam = null;
+    if (!casti || Object.prototype.toString.call(casti) !== '[object Array]' || !casti.length) {
+      pruh(text);
+      return;
+    }
+    t.textContent = '';
+    for (i = 0; i < casti.length; i++) {
+      c = casti[i] || {};
+      radek = document.createElement('div');
+      if (c.volba) {
+        // volby pod sebou zarovnané vlevo, celý seznam uprostřed pruhu
+        if (!seznam) {
+          seznam = document.createElement('div');
+          seznam.className = 'volby';
+          t.appendChild(seznam);
+        }
+        kus = document.createElement('span');
+        kus.className = 'odrazka';
+        kus.textContent = '• ';
+        radek.appendChild(kus);
+        radek.appendChild(document.createTextNode(String(c.text || '')));
+        seznam.appendChild(radek);
+      } else {
+        seznam = null;
+        if (c.jmeno) {
+          kus = document.createElement('span');
+          kus.className = 'jmeno';
+          kus.textContent = String(c.jmeno) + ': ';
+          // bez barvy (uživatel má jména bez barvy) zůstane jméno bílé jako text
+          if (barvaJmena(c.barva)) { kus.style.color = barvaJmena(c.barva); kus.className = 'jmeno barevne'; }
+          radek.appendChild(kus);
+        }
+        radek.appendChild(document.createTextNode(String(c.text || '')));
+        t.appendChild(radek);
+      }
+    }
+    el('pruh').style.display = 'flex';
+  }
+
   function ukazZpet(ano) {
     if (zpetCasovac !== null) { clearTimeout(zpetCasovac); zpetCasovac = null; }
     el('zpet').style.display = ano ? 'block' : 'none';
@@ -211,8 +272,11 @@
   function spustUkazku() {
     var poradi = 0;
     function ukaz() {
-      el('original').textContent = UKAZKA[poradi][0];
-      pruh(UKAZKA[poradi][1]);
+      var u = UKAZKA[poradi];
+      el('original').textContent = u[0];
+      pruhCasti(u[2], u[1]);
+      // anglický titulek nad pruhem, i když je pruh vyšší (víc řádků)
+      el('original').style.bottom = Math.max(190, el('pruh').offsetHeight + 40) + 'px';
       poradi = (poradi + 1) % UKAZKA.length;
     }
     prejdi('ukazka');
@@ -293,7 +357,7 @@
       try { z = JSON.parse(udalost.data); } catch (e) { return; }
       if (z.typ === 'ukaz') {
         hlaseni('');
-        pruh(String(z.text || ''));
+        pruhCasti(z.casti, String(z.text || ''));
       } else if (z.typ === 'skryj') {
         pruh(null);
       } else {
