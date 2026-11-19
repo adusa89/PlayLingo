@@ -1,0 +1,213 @@
+package cz.playlingo
+
+import android.app.Activity
+import android.content.Context
+import android.os.Bundle
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
+import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import cz.playlingo.core.LgAction
+import cz.playlingo.core.LgError
+import cz.playlingo.core.LgException
+import cz.playlingo.core.LgInstall
+import cz.playlingo.core.LgPhase
+
+/**
+ * Průvodce: nahrát PlayLingo do televize LG z tohoto zařízení (telefon nebo box) přes vývojářský
+ * režim LG, a kolik dní režimu zbývá. Otevírá se z Nastavení (u volby „Posílat titulky do
+ * televize LG“) a z pomocníka v telefonu. Ovládá se ovladačem (šipky + OK) i dotykem.
+ * Ruční cesta (počítač s nástrojem LG, obchod LG) zůstává popsaná dole.
+ */
+class LgInstallActivity : Activity() {
+    private lateinit var ui: Ui
+    private lateinit var content: LinearLayout
+    private lateinit var vault: LgVault
+    private var ip = ""
+    /** Passphrase jen v paměti, po úspěchu se smaže. */
+    private var pass = ""
+    private var running = false
+    private var phase: LgPhase? = null
+    private var installer: LgInstaller? = null
+    private var resultText: String? = null
+    private var resultOk = false
+    private var error: LgError? = null
+    private var errorDetail: String? = null
+
+    private fun t(key: String) = tx(key)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        ui = Ui(this)
+        vault = LgVault(this)
+        ip = vault.lastIp
+        val scroll = ScrollView(this).apply { isFillViewport = true; setBackgroundColor(Theme.BG) }
+        content = ui.vbox().apply {
+            val side = if (resources.configuration.screenWidthDp >= 900) ui.dp(80) else ui.dp(20)
+            setPadding(side, ui.dp(28), side, ui.dp(36))
+        }
+        scroll.addView(content)
+        setContentView(scroll)
+        render()
+        LgDevMode.refresh(this, false) { runOnUiThread { if (!isFinishing && !running) render(true) } }
+    }
+
+    override fun onDestroy() {
+        installer?.cancel()
+        pass = ""
+        super.onDestroy()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (running) { installer?.cancel(); return }
+        @Suppress("DEPRECATION") super.onBackPressed()
+    }
+
+    private fun add(v: View, top: Int = 12) = content.addView(v, ui.lp(top = top))
+
+    private fun field(value: String, hintKey: String, tagName: String, secret: Boolean, onChange: (String) -> Unit) = EditText(this).apply {
+        setText(value)
+        hint = t(hintKey)
+        setSingleLine(true)
+        inputType = if (secret) InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+            else InputType.TYPE_CLASS_PHONE
+        imeOptions = EditorInfo.IME_ACTION_DONE
+        // Passphrase se nesmí dostat do zálohy ani do automatického vyplňování
+        if (secret) importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
+        isSaveEnabled = false
+        setTextColor(Theme.TEXT)
+        setHintTextColor(Theme.MUTED)
+        textSize = 17f
+        background = ui.focusBg(Theme.CARD)
+        setPadding(ui.dp(18), ui.dp(12), ui.dp(18), ui.dp(12))
+        tag = tagName
+        isEnabled = !running
+        addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: Editable?) { onChange(s?.toString() ?: "") }
+        })
+    }
+
+    private fun render(keepFocus: Boolean = false) {
+        val focused = if (keepFocus) currentFocus?.tag else null
+        content.removeAllViews()
+        add(ui.text(t("lg_title"), 26f, Theme.TEXT, bold = true), 0)
+        add(ui.text(t("lg_intro"), 16f, Theme.MUTED), 8)
+
+        add(ui.card().apply {
+            addView(ui.text(t("lg_prep_h"), 18f, Theme.ACCENT, bold = true))
+            addView(ui.text(t("lg_prep"), 16f, Theme.TEXT), ui.lp(top = 8))
+        }, 18)
+
+        add(ui.text(t("lg_ip"), 16f, Theme.TEXT, bold = true), 20)
+        add(field(ip, "lg_ip_hint", "lgip", false) { ip = it.trim() }, 6)
+        val paired = runCatching { vault.paired(LgInstall.address(ip)) }.getOrDefault(false)
+        add(ui.text(t("lg_pass"), 16f, Theme.TEXT, bold = true), 16)
+        add(field(pass, "lg_pass_hint", "lgpass", true) { pass = it }, 6)
+        if (paired) add(ui.text(t("lg_pass_paired"), 14f, Theme.OK), 6)
+
+        if (running) {
+            add(ui.text(t("lg_p_" + (phase ?: LgPhase.PACKAGE).name.lowercase()), 17f, Theme.ACCENT, bold = true), 18)
+            add(tagged(ui.button(t("lg_cancel")) { installer?.cancel() }, "lgcancel"), 10)
+        } else {
+            add(tagged(ui.button(t("lg_go"), primary = true) { start(false) }, "lggo"), 18)
+            resultText?.let { add(ui.text(it, 17f, if (resultOk) Theme.OK else Theme.WARN, bold = true), 14) }
+            error?.let { e ->
+                add(ui.text(t("lg_e_" + e.name.lowercase()) + (errorDetail?.let { "\n($it)" } ?: ""), 16f, Theme.BAD, bold = true), 14)
+                if (e == LgError.HOST_CHANGED) add(tagged(ui.button(t("lg_repair")) { start(true) }, "lgrepair"), 10)
+            }
+        }
+
+        // vývojářský režim: kolik zbývá
+        add(ui.card().apply {
+            addView(ui.text(t("lg_dev_h"), 18f, Theme.ACCENT, bold = true))
+            val line = devLine(this@LgInstallActivity)
+            addView(ui.text(line.first, 17f, if (line.second) Theme.WARN else Theme.TEXT, bold = line.second), ui.lp(top = 8))
+            if (line.second) addView(ui.text(t("lg_dev_warn"), 15f, Theme.WARN), ui.lp(top = 6))
+            if (LgDevMode.failed) addView(ui.text(t("lg_dev_fail"), 14f, Theme.MUTED), ui.lp(top = 6))
+            addView(ui.text(t("lg_dev_note"), 14f, Theme.MUTED), ui.lp(top = 8))
+            if (LgDevMode.hasSession(this@LgInstallActivity) && !running)
+                addView(tagged(ui.button(t("lg_dev_check")) {
+                    LgDevMode.refresh(this@LgInstallActivity, true) { runOnUiThread { if (!isFinishing && !running) render(true) } }
+                }, "lgdev"), ui.lp(top = 12))
+        }, 22)
+
+        add(ui.card().apply {
+            addView(ui.text(t("lg_manual_h"), 18f, Theme.ACCENT, bold = true))
+            addView(ui.text(t("lg_manual"), 15f, Theme.MUTED), ui.lp(top = 8))
+        }, 14)
+
+        add(tagged(ui.button(t("wz_back")) { if (running) installer?.cancel(); finish() }, "lgback"), 22)
+
+        val target = focused?.let { content.findViewWithTag<View>(it) }
+            ?: content.findViewWithTag<View>(if (running) "lgcancel" else if (ip.isEmpty()) "lgip" else "lggo")
+        target?.requestFocus()
+    }
+
+    private fun <V : View> tagged(v: V, tag: String): V { v.tag = tag; return v }
+
+    private fun start(repair: Boolean) {
+        if (running) return
+        val inst = LgInstaller(this)
+        installer = inst
+        running = true; phase = LgPhase.PACKAGE; error = null; errorDetail = null; resultText = null
+        render()
+        val ipNow = ip; val passNow = pass
+        Thread({
+            try {
+                val r = inst.run(ipNow, passNow, repair) { p -> runOnUiThread { phase = p; if (!isFinishing) render(true) } }
+                runOnUiThread { done(r, null) }
+            } catch (e: LgException) {
+                runOnUiThread { done(null, e) }
+            } catch (e: Exception) {
+                runOnUiThread { done(null, LgException(LgError.SSH)) }
+            }
+        }, "tp-lg-install").start()
+    }
+
+    private fun done(r: LgInstaller.Result?, e: LgException?) {
+        running = false; installer = null
+        if (isFinishing || isDestroyed) return
+        if (r != null) {
+            pass = ""
+            resultOk = true
+            val key = when (r.action) {
+                LgAction.INSTALL -> "lg_r_install"
+                LgAction.UPDATE -> "lg_r_update"
+                LgAction.LAUNCH -> "lg_r_same"
+                LgAction.LAUNCH_NEWER -> "lg_r_newer"
+            }
+            resultText = t(key).replace("%s", r.version) + "\n" + t(if (r.launched) "lg_r_launched" else "lg_r_nolaunch")
+            LgDevMode.refresh(this, false) { runOnUiThread { if (!isFinishing && !running) render(true) } }
+        } else if (e != null && e.code != LgError.CANCELLED) {
+            error = e.code; errorDetail = e.detail
+        }
+        render()
+    }
+
+    companion object {
+        /** Řádek o vývojářském režimu (text, upozornit?) – i pro Nastavení a pomocníka v telefonu. */
+        fun devLine(c: Context): Pair<String, Boolean> {
+            val time = LgDevMode.known(c) ?: return c.tx("lg_dev_unknown") to false
+            val now = System.currentTimeMillis()
+            val days = time.days(now)
+            val text = if (days >= 1) c.tx("lg_dev_days").replace("%d", days.toString())
+                else c.tx("lg_dev_hours").replace("%d", time.hours(now).toString())
+            return text to time.warn(now)
+        }
+
+        /** Krátký řádek pro Nastavení; null = o televizi zatím nic nevíme. */
+        fun shortLine(c: Context): Pair<String, Boolean>? {
+            val time = LgDevMode.known(c) ?: return null
+            val l = devLine(c)
+            return (c.tx("lg_dev_h") + ": " + l.first) to time.warn(System.currentTimeMillis())
+        }
+    }
+}
+

@@ -103,7 +103,31 @@ a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televiz
 - **Aplikace minule spadla** – po dalším spuštění to napíše na stránce Domů. Kdyby se to opakovalo, pošli hlášení (další bod).
 - **Hlášení chyby**: Nápověda → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení.
 
+## 8. Televize LG
+Televize LG si obraz hry sama nepřečte. PlayLingo v ní jen ukazuje hru s pruhem a číst
+a překládat musí telefon nebo box s Androidem ve stejné domácí síti (v telefonu tlačítko
+„Použít telefon pro televizi LG“, v boxu Nastavení → „Posílat titulky do televize LG“).
+
+**Nahrání PlayLingo do televize LG z telefonu nebo boxu (bez počítače):**
+1. Na webu webostv.developer.lge.com si založ účet LG (zdarma).
+2. V televizi otevři obchod LG Content Store, nainstaluj aplikaci **Developer Mode**, přihlas se
+   v ní tím účtem a zapni **Dev Mode Status**. Televize se restartuje.
+3. Znovu otevři Developer Mode a zapni **Key Server**. Uvidíš adresu televize (IP) a **Passphrase**.
+4. V PlayLingu zvol „Nahrát PlayLingo do televize LG“ (Nastavení, pomocník v telefonu nebo
+   Nápověda), opiš adresu a Passphrase a zvol „Nahrát do televize“. PlayLingo se v televizi
+   nainstaluje a spustí. Příště už Passphrase není potřeba – stejným tlačítkem televizi
+   aktualizuješ. Starší verzi přes novější nikdy nenahraje.
+
+Vývojářský režim po čase vyprší a PlayLingo pak z televize zmizí. Kolik dní zbývá, ukazuje
+PlayLingo u tlačítka (pod 3 dny upozorní). Prodloužit ho jde jen v televizi: Developer Mode →
+**Extend**. PlayLingo nic samo neprodlužuje.
+
+Jiné cesty: z počítače nástrojem LG `ares` (postup ve `webos/CTI-ME.md`), nebo z obchodu LG,
+až tam PlayLingo bude.
+
 ## Licence a zdrojový kód
 Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng
 (https://github.com/streetpea/chiaki-ng, licence AGPL-3.0). Zdrojový kód aplikace včetně
 úprav je v tomto repozitáři. Aplikace není produktem společnosti Sony.
+Nahrání do televize LG používá knihovnu JSch (https://github.com/mwiede/jsch, licence BSD) a postup
+podle projektu PlayCaption (licence AGPL-3.0).

@@ -1138,6 +1138,10 @@ class MainActivity : Activity() {
             Prefs.setTvSend(this, !Prefs.tvSend(this)); applyToService(); render(true)
         }, "tvsend"), 8)
         add(ui.text(t("s_tv_desc"), 14f, Theme.MUTED), 6)
+        // nahrání PlayLingo do televize LG z tohoto zařízení (vývojářský režim LG) a kolik dní mu zbývá
+        add(tagged(ui.button(t("lg_open")) { startActivity(Intent(this, LgInstallActivity::class.java)) }, "lginstall"), 8)
+        LgInstallActivity.shortLine(this)?.let { (s, warn) -> add(ui.text(s, 14f, if (warn) Theme.WARN else Theme.MUTED, bold = warn), 6) }
+        LgDevMode.refresh(this, false) { runOnUiThread { if (!isFinishing && section == Section.SETTINGS && currentFocus !is EditText) render(true) } }
         // jazyk aplikace je nezávislý na jazyku překladu (ten je na stránce Překlad)
         val uiLang = Prefs.uiLang(this)
         add(tagged(ui.settingRow(t("l_ui_lang"), uiLang.label) {
@@ -1224,6 +1228,9 @@ class MainActivity : Activity() {
         add(c2, 0)
         content.addView(ui.section(t("inst_title")))
         add(ui.card().apply { addView(ui.text(t("inst_text"), 15f, Theme.MUTED)) }, 0)
+        content.addView(ui.section(t("lg_title")))
+        add(ui.card().apply { addView(ui.text(t("lg_help"), 15f, Theme.MUTED)) }, 0)
+        add(tagged(ui.button(t("lg_open")) { startActivity(Intent(this, LgInstallActivity::class.java)) }, "lghelp"), 8)
         content.addView(ui.section(t("adb_title")))
         add(ui.card().apply {
             isFocusable = true
@@ -1437,6 +1444,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.72"
-    const val VERSION_CODE = 72
+    const val VERSION = "verze 0.73"
+    const val VERSION_CODE = 73
 }

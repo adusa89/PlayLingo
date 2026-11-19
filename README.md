@@ -17,4 +17,13 @@ v černém pruhu přes obraz. Hra jde do televize dál kabelem HDMI. Překlad je
 
 Návod: NAVOD.md
 
+## Licence a převzatý kód
+
+- Aplikace je pod AGPL-3.0 (kvůli knihovně chiaki-ng), zdrojový kód zůstává veřejný.
+- Nahrání aplikace do televize LG z Androidu (`LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt`,
+  `core/LgInstall.kt`, `core/LgIpk.kt`) vychází z projektu PlayCaption
+  (https://github.com/AdamRuzick4/PlayCaption-app, AGPL-3.0: `LgInstalator.kt`, `LgDevUloziste.kt`,
+  `LgDevMode.kt`, `webos/build.py`); hlavičky souborů to uvádějí.
+- Spojení SSH/SFTP s televizí: knihovna JSch (https://github.com/mwiede/jsch, licence BSD).
+
 Aplikace není produktem společnosti Sony Interactive Entertainment. „PlayStation“ a „PS5“ jsou jejich ochranné známky.

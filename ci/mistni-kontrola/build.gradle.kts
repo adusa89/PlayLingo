@@ -15,6 +15,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1") { isTransitive = false }
     compileOnly("com.google.zxing:core:3.5.3")
+    // instalace do televize LG (LgInstaller.kt)
+    compileOnly("com.github.mwiede:jsch:2.28.8")
     testImplementation("junit:junit:4.13.2")
 }
 kotlin {
