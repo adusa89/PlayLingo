@@ -278,7 +278,9 @@
     } else {
       s.minHeight = '0px';
     }
-    w = p.offsetWidth || maxW;
+    // zaokrouhlit nahoru: o zlomek pixelu užší pruh by zalomil poslední slovo na další řádek
+    w = p.getBoundingClientRect ? Math.ceil(p.getBoundingClientRect().width) : p.offsetWidth;
+    w = w || maxW;
     if (pres && text && text[3] > text[2]) { w = Math.max(w, Math.round((text[3] - text[2]) * W) + 40); }
     w = Math.max(160, Math.min(W, w));
     s.width = w + 'px';

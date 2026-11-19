@@ -45,6 +45,7 @@ class Ps5Link(
         /** Poslední důvod odpojení (text z konzole), nebo null. */
         @Volatile var reason: String? = null
             private set
+        /** PlayStation chtěl přihlašovací kód účtu (drží se i přes další pokusy, dokud se nespojí). */
         @Volatile var needsLoginPin = false
             private set
         /**
@@ -102,7 +103,6 @@ class Ps5Link(
         if (stopped || session != null) return
         state = Ps5.Link.CONNECTING
         connectedSince = 0
-        needsLoginPin = false
         sessionConnectedAt = 0
         try {
             val f = logFile(ctx)
@@ -139,6 +139,7 @@ class Ps5Link(
                 state = Ps5.Link.CONNECTED
                 reason = null
                 endedByConsole = null
+                needsLoginPin = false
                 connectedAt = SystemClock.uptimeMillis()
                 sessionConnectedAt = connectedAt
                 connectedSince = connectedAt
