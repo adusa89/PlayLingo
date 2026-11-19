@@ -213,10 +213,10 @@ object I18n {
      * nahrání do televize LG (core/I18nLg.kt), Xbox (core/I18nXbox.kt) a typ televize s průvodcem
      * pro Samsung (core/I18nSamsung.kt) – mají přednost před obecnými se stejným klíčem.
      */
-    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + XBOX_S + SS_S + DEEPL_S
+    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + XBOX_S + SS_S + DEEPL_S + KAMERA_S
     private val PX: Map<Lang, Map<String, String>> =
         Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) + (DIAG_X[it] ?: emptyMap()) + (LG_X[it] ?: emptyMap()) +
-            (XBOX_X[it] ?: emptyMap()) + (SS_X[it] ?: emptyMap()) + (DEEPL_X[it] ?: emptyMap()) }
+            (XBOX_X[it] ?: emptyMap()) + (SS_X[it] ?: emptyMap()) + (DEEPL_X[it] ?: emptyMap()) + (KAMERA_X[it] ?: emptyMap()) }
 
     fun t(lang: Lang, key: String): String {
         val p = PS[key] ?: S[key] ?: return key

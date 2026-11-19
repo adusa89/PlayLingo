@@ -15,10 +15,17 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Android 12+: další aktualizace bez dotazu, když poslední instalovala aplikace sama -->
     <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
+    <!-- telefon: přečtení adresy a Passphrase z obrazovky televize LG (LgScanActivity); nic se neukládá -->
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- funguje na televizích, boxech, Chromecastu i projektorech -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <!-- Kamera je jen volitelná pomůcka v telefonu. Bez required="false" by povolení CAMERA
+         udělalo z kamery povinnou výbavu a televize a boxy bez kamery by aplikaci nenainstalovaly. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
     <application
         android:name=".App"
@@ -73,6 +80,12 @@
             android:exported="false"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- čtení adresy a Passphrase z obrazovky televize LG kamerou telefonu -->
+        <activity
+            android:name=".LgScanActivity"
+            android:exported="false"
+            android:theme="@style/FullScreen" />
 
         <!-- PlayLingo do televize Samsung: návod, uložení balíčku .wgt a ověření připojení -->
         <activity
