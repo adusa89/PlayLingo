@@ -133,8 +133,7 @@ object DiagReport {
             .append("Automatika: ").append(Prefs.autoZone(c)).append(", oblast: ").append(Prefs.layout(c).serialize()).append('\n')
             .append("Licence: ").append(Prefs.license(c).kind).append(", televize: ").append(Prefs.tvType(c).key)
             .append(cz.playlingo.core.TvSender.lastSeen?.announce?.let { a -> " (ohlásila se: ${a.platform ?: "?"} ${a.version ?: "?"})" } ?: "")
-            .append('
-').append(DeeplTranslator.diagLine(c))
+            .append('\n').append(DeeplTranslator.diagLine(c))
             .toString()
 
         val st = TranslatorService.linkStatus()
