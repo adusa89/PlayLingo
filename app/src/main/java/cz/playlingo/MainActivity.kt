@@ -327,7 +327,9 @@ class MainActivity : Activity() {
         top.addView(HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(menu) }, ui.lp(top = 8))
         root.addView(top, ui.lp())
 
-        val scroll = ScrollView(this).apply { isFillViewport = true; clipChildren = false; clipToPadding = false }
+        // Tady se obsah ořezávat musí: bez toho se při posunu stránky kreslí přes lištu se záložkami
+        // (lišta je nad posuvnou částí, ne vedle ní jako na televizi). Odsazení obsahu stačí na zvětšení vybraného prvku.
+        val scroll = ScrollView(this).apply { isFillViewport = true; clipChildren = true; clipToPadding = true }
         content = ui.vbox().apply { setPadding(ui.dp(16), ui.dp(18), ui.dp(16), ui.dp(32)) }
         scroll.addView(content)
         root.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
@@ -1695,6 +1697,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.77"
-    const val VERSION_CODE = 77
+    const val VERSION = "verze 0.78"
+    const val VERSION_CODE = 78
 }
