@@ -8,13 +8,14 @@ html, body {
   overflow: hidden;
   background: #0E1014;
   color: #E9E6DF;
-  font-family: "LG Smart UI", "Museo Sans", Arial, sans-serif;
+  font-family: "LG Smart UI", "SamsungOne", "Museo Sans", Arial, sans-serif;
   font-size: 32px;
   line-height: 1.4;
 }
 
-/* Při hře musí být pozadí průhledné, obraz ze vstupu je pod stránkou. */
-body.s-hra { background: transparent; }
+/* Při hře musí být pozadí průhledné, obraz ze vstupu je pod stránkou
+   (na Samsungu pod celou stránkou, proto i <html>). */
+html.s-hra, body.s-hra { background: transparent; }
 
 .strana { display: none; position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; box-sizing: border-box; }
 body.s-domu #domu, body.s-hra #hra, body.s-ukazka #ukazka, body.s-napoveda #napoveda { display: block; }

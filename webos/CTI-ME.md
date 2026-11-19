@@ -15,19 +15,23 @@ PlayStation ──HDMI───────────────────�
 
 | Složka / soubor | Co to je | Kdy se použije |
 |---|---|---|
-| `obchod/` | **Aplikace pro televizi** (id `cz.playlingo.tv`), česky a anglicky. Podává se do obchodu LG. | Tohle je PlayLingo pro LG. |
+| `obchod/` | **Aplikace pro televizi** (id `cz.playlingo.tv`), česky a anglicky. Podává se do obchodu LG. `app.js`, `style.css` a `index.html` jsou společné s aplikací pro Samsung (`../tizen/app`, kopie hlídaná sestavením); jen pro LG je `platforma.js`. | Tohle je PlayLingo pro LG. |
 | `zkouska/` | Diagnostická aplikace (id `cz.playlingo.zkouska`): zjistí, co daná televize aplikaci dovolí. | Jen při zkoumání nového modelu televize. |
 | `posilac.js` | Zkušební posílač vět z počítače (`node webos/posilac.js`). Nic nečte ani nepřekládá. | Zkouška aplikace v televizi bez Androidu. |
 | `../pc/` | Zkušební čtečka pro počítač: čte a překládá jako Android. | Ladění čtení a překladu. |
-| `../app/…/core/TvSender.kt` | Strana Androidu: posílání vět do televize a popis zpráv. | Volba „Posílat titulky do televize LG“. |
+| `../app/…/core/TvSender.kt` | Strana Androidu: posílání vět do televize a popis zpráv. | Typ televize LG nebo Samsung (Domů / Nastavení). |
 
 Jak spolu televize a zařízení mluví, je popsané na jediném místě: v `TvSender.kt`. V televizi to
-obsluhuje jediný soubor, `obchod/app/app.js` (funkce `hledej`, `zkus`, `prevezmi`).
+obsluhuje jediný soubor, `obchod/app/app.js` (funkce `hledej`, `zkus`, `prevezmi`), společný
+pro LG i Samsung. Co se na LG dělá jinak (služby `luna://`, obraz `ext://hdmi`, tlačítko Zpět 461),
+je v `obchod/app/platforma.js`. Při změně společného souboru ho zkopíruj i do `../tizen/app`
+a zvyš verzi v `appinfo.json` + `platforma.js` (a u Samsungu v `config.xml` + `platforma.js`).
+Zkouška bez televize: `node tizen/test/prijimac.test.js`.
 
 ## Jak to zprovoznit doma
 
 1. **Telefon:** v PlayLingu (od 0.63) klepnout na „Použít telefon pro televizi LG“. V boxu
-   s Android TV: Nastavení → „Posílat titulky do televize LG“.
+   s Android TV: Domů → Typ televize → LG (dřív Nastavení → „Posílat titulky do televize LG“).
 2. **Televize:** spustit PlayLingo a vybrat vstup HDMI s PlayStationem. Televize si zařízení
    v síti najde sama a zapamatuje si ho.
 3. V telefonu spustit překlad (nebo zkoušku bez PlayStationu).
@@ -35,8 +39,8 @@ obsluhuje jediný soubor, `obchod/app/app.js` (funkce `hledej`, `zkus`, `prevezm
 ## Nahrání do televize z Androidu (bez počítače)
 
 PlayLingo pro Android má aplikaci pro televizi přibalenou (`assets/lg/receiver.ipk`) a umí ji do
-televize nahrát sám: Nastavení → „Nahrát PlayLingo do televize LG“, v telefonu tlačítko pod
-„Použít telefon pro televizi LG“, a také na stránce Nápověda. Televize potřebuje vývojářský
+televize nahrát sám: Domů (u typu televize LG, dokud se aplikace z televize nikdy nepřipojila),
+v telefonu tlačítko pod „Použít telefon pro televizi LG“, a také na stránce Nápověda. Televize potřebuje vývojářský
 režim (příprava níže, bez počítače). Uživatel opíše adresu televize a Passphrase z aplikace
 Developer Mode; Passphrase se neukládá.
 

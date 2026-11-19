@@ -15,3 +15,4 @@ webos/**/*.ipk
 
 # APK sestavené na PC (sestavit-na-pc.ps1)
 *.apk
+tizen/**/*.wgt
