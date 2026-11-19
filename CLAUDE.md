@@ -423,7 +423,7 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   `NetInfo.isHandheld`; samo nic nepřepíná – pomocník v telefonu se dál řídí `Prefs.forceTv`) →
   Konzole → Televize (u LG/Samsungu tlačítko nahrání) → Jazyk překladu → Zobrazení titulků
   (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
-- **Domů**: velký stav + Spustit/Zastavit (+ Zkouška bez PlayStationu), jeden souhrnný řádek
+- **Domů**: velký stav + Spustit/Zastavit (při běžící ukázce Ukázková hra), jeden souhrnný řádek
   „PS5 (jméno) → LG model · připojeno“ (OK = malá nabídka Konzole / Typ televize) a karta upozornění
   jen na to, co chybí (povolení pruhu, model, spárování, aplikace v televizi, vývojářský režim LG,
   zkušební doba ≤ 3 dny). U LG/Samsungu je pod souhrnným řádkem tlačítko nahrání/aktualizace aplikace do
@@ -432,7 +432,9 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 - **Nápověda** ukazuje jen část pro zvolený typ televize (LG, Samsung, nebo povolení přes počítač u Android TV).
 - **Nastavení (⚙)** má záložky (`SettingsTab`) a ukazuje jen obsah vybrané: **Obecné** (konzole, typ
   televize + nahrání, jazyk aplikace, zařízení, zkušební verze; povolení pruhu jen u Android TV),
-  **Čtení a překlad** (kvalita čtení, překlad, hra, slovník, statistika, historie), **Ladění a hlášení**
+  **Čtení a překlad** (kvalita čtení, překlad, hra, slovník, statistika, historie), **Demo režim** (vše
+  na vyzkoušení bez konzole: Zkouška bez PlayStationu, ukázka pruhu, zkouška překladu – na Domů, v Titulcích
+  ani v Překladu tato tlačítka nejsou; zkouška v emulátoru je spouští parametry, ne tlačítky), **Ladění a hlášení**
   (diagnostický režim, hlášení), **Experimentální** (DeepL, záznam v síti). U voleb jsou jen názvy;
   dlouhé popisy jsou v Nápovědě v části „Volby v Nastavení“ (`help_settings`). Nová volba = krátký název
   v Nastavení, popis do Nápovědy.

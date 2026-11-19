@@ -706,7 +706,6 @@ class MainActivity : Activity() {
             buttons.addView(tagged(ui.button(t("lic_open"), primary = true) { section = Section.SETTINGS; render() }, "start"))
         } else if (!running) {
             buttons.addView(tagged(ui.button(t(if (!paired && !onXbox) "ps5_pair" else "b_start"), primary = true) { startFlow() }, "start"))
-            buttons.addView(tagged(ui.button(t("b_demo")) { startDemo() }, "demo"), wrapLp())
         } else {
             if (demoRun) {
                 buttons.addView(tagged(ui.button(t("b_testcard"), primary = true) {
@@ -1192,7 +1191,6 @@ class MainActivity : Activity() {
                 Prefs.setHoldMs(this, Prefs.HOLD_TIMES[i]); applyToService(); render(true)
             }
         }, "hold"), 8)
-        add(tagged(ui.button(t("l_demo")) { showDemo() }, "demo"), 18)
         add(tagged(ui.button(t("l_fine")) { startActivity(Intent(this, CalibrationActivity::class.java)) }, "fine"), 8)
         add(tagged(ui.button(t("l_reset")) {
             Prefs.setTextSize(this, Prefs.DEFAULT_TEXT_SIZE); Prefs.setOpacity(this, 100); Prefs.setTextColorIndex(this, 0)
@@ -1214,11 +1212,7 @@ class MainActivity : Activity() {
             15f, if (ready) Theme.OK else Theme.WARN), ui.lp(top = 8))
         add(mode, 16)
 
-        val row = row()
-        row.addView(tagged(ui.button(t("t_test")) { testTranslation() }, "testtr"))
-        if (!ready) row.addView(tagged(ui.button(t("download")) { downloadModel() }, "dl"), wrapLp())
-        add(row, 12)
-        testResult?.let { add(ui.card().apply { addView(ui.text(it, 15f)) }, 12) }
+        if (!ready) add(tagged(ui.button(t("download")) { downloadModel() }, "dl"), 12)
 
         // --- hra: jména postav a míst, která se nepřekládají ---
         content.addView(ui.section(t("t_game")))
@@ -1287,7 +1281,7 @@ class MainActivity : Activity() {
     // ======================= NASTAVENÍ =======================
 
     /** Záložky Nastavení (⚙) v tomto pořadí; [key] = název záložky. */
-    private enum class SettingsTab(val key: String) { GENERAL("st_general"), READ("st_read"), DIAG("s_diag"), EXPERIMENTAL("dl_section") }
+    private enum class SettingsTab(val key: String) { GENERAL("st_general"), READ("st_read"), DEMO("st_demo"), DIAG("s_diag"), EXPERIMENTAL("dl_section") }
 
     private var settingsTab = SettingsTab.GENERAL
 
@@ -1319,6 +1313,7 @@ class MainActivity : Activity() {
         when (settingsTab) {
             SettingsTab.GENERAL -> settingsGeneral()
             SettingsTab.READ -> { settingsRead(); translate() }
+            SettingsTab.DEMO -> settingsDemo()
             SettingsTab.DIAG -> settingsDiag()
             SettingsTab.EXPERIMENTAL -> experimentalSection()
         }
@@ -1380,6 +1375,23 @@ class MainActivity : Activity() {
                 render(true)
             }
         }, "quality"), 0)
+    }
+
+    /**
+     * Demo režim: všechno na vyzkoušení bez konzole na jednom místě (ukázková hra, ukázka pruhu,
+     * zkouška překladu) – po správném nastavení to hráč nepotřebuje, proto to není na Domů ani v Titulcích.
+     */
+    private fun settingsDemo() {
+        add(ui.text(t("st_demo_d"), 15f, Theme.MUTED), 0)
+        if (TranslatorService.running && TranslatorService.demo) {
+            add(tagged(ui.button(t("b_testcard"), primary = true) { startActivity(Intent(this, TestCardActivity::class.java)) }, "demogame"), 12)
+            add(tagged(ui.button(t("b_stop")) { stopTranslation() }, "demostop"), 8)
+        } else if (!TranslatorService.running) {
+            add(tagged(ui.button(t("b_demo"), primary = true) { startDemo() }, "demo"), 12)
+        }
+        add(tagged(ui.button(t("l_demo")) { showDemo() }, "demobar"), 8)
+        add(tagged(ui.button(t("t_test")) { testTranslation() }, "testtr"), 8)
+        testResult?.let { add(ui.card().apply { addView(ui.text(it, 15f)) }, 12) }
     }
 
     /** Ladění a hlášení: diagnostický režim a hlášení o stavu (k vyfocení). */
@@ -1775,6 +1787,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.80"
-    const val VERSION_CODE = 80
+    const val VERSION = "verze 0.81"
+    const val VERSION_CODE = 81
 }

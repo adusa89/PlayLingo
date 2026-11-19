@@ -102,7 +102,7 @@ na další televizi stačí naskenovat čtvereček a klepnout na „Odeslat do t
    zvlášť. Menu hry a pokyny k ovládání se dál nepřekládají.
 
 ## 6. Zkouška bez PlayStationu
-Na stránce Domů zvol „Zkouška bez PlayStationu“. Ukáže se ukázková hra s anglickými titulky
+V ⚙ Nastavení na záložce **Demo režim** zvol „Zkouška bez PlayStationu“ (tam je i ukázka pruhu a zkouška překladu). Ukáže se ukázková hra s anglickými titulky
 a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televizi fungují.
 
 ## 7. Problémy
