@@ -21,6 +21,7 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <application
+        android:name=".App"
         android:allowBackup="false"
         android:banner="@drawable/banner"
         android:icon="@mipmap/ic_launcher"
@@ -60,6 +61,12 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+
+        <!-- hlášení o stavu aplikace přes celou obrazovku (k vyfocení a poslání) -->
+        <activity
+            android:name=".DiagActivity"
+            android:exported="false"
+            android:theme="@style/FullScreen" />
 
         <activity
             android:name=".CalibrationActivity"

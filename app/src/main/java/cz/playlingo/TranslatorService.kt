@@ -28,6 +28,7 @@ import cz.playlingo.core.FrameSignature
 import cz.playlingo.core.Glossary
 import cz.playlingo.core.I18n
 import cz.playlingo.core.Lang
+import cz.playlingo.core.LinkStatus
 import cz.playlingo.core.OcrBlock
 import cz.playlingo.core.OcrLine
 import cz.playlingo.core.Perf
@@ -107,6 +108,10 @@ class TranslatorService : Service() {
         /** Kolik snímků videa už aplikace dostala a dekódovala (pro obrazovku aplikace). */
         val framesDecoded: Long get() = activeReader?.decoded ?: 0
 
+        /** Stav ve třech úrovních: překlad běží / spojeno s konzolí / obraz opravdu přichází. */
+        fun linkStatus(now: Long = SystemClock.uptimeMillis()): LinkStatus.Status =
+            LinkStatus.evaluate(now, running, paused, demo, Ps5Link.state, Ps5Link.connectedSince, activeReader?.lastFrameAt ?: 0)
+
         /** Statistika sdílená s obrazovkou aplikace. */
         @Volatile private var stats: UsageStats? = null
 
@@ -127,7 +132,7 @@ class TranslatorService : Service() {
         private const val STALE_MS = 15_000L
 
         /** Události, které se ukládají i do souboru (viz [EventFile]). */
-        private val KEEP = listOf("START|", "LINK|", "VIDEO|", "PERF|", "SOURCE|", "STOP|", "SCALE|", "WARM|")
+        private val KEEP = listOf("START|", "LINK|", "VIDEO|", "PERF|", "SOURCE|", "STOP|", "SCALE|", "WARM|", "IMAGE|")
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -428,6 +433,9 @@ class TranslatorService : Service() {
         }
     }
 
+    private var lastImageStage = LinkStatus.Stage.OFF
+    private val IMAGE_STAGES = setOf(LinkStatus.Stage.IMAGE, LinkStatus.Stage.NO_IMAGE, LinkStatus.Stage.STALLED)
+
     /** Hlídá spojení s konzolí: zapisuje změny stavu a obnoví spojení, když video přestane chodit. */
     private fun watchLink(now: Long) {
         val r = reader ?: return
@@ -449,6 +457,12 @@ class TranslatorService : Service() {
             // spojení spadlo → starý překlad nenechávej viset na obrazovce
             if (st != Ps5.Link.CONNECTED) { hideAt = 0; overlay?.hide(); tracker.reset(); lastSig = null; r.clearFrames() }
             updateNotification()
+        }
+        // obraz: přichází / nepřichází (do záznamu jen změny, ať je v hlášení vidět, kdy se zastavil)
+        val img = linkStatus(now)
+        if (img.stage != lastImageStage) {
+            if (img.stage in IMAGE_STAGES || lastImageStage in IMAGE_STAGES) tp("IMAGE|${img.stage}|decoded=${r.decoded}")
+            lastImageStage = img.stage
         }
         val l = link ?: return
         if (st == Ps5.Link.CONNECTED && l.connectedForMs > 12_000 && now - r.lastFrameAt > 12_000) {

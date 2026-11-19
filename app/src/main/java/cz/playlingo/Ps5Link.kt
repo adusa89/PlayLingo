@@ -47,6 +47,9 @@ class Ps5Link(
             private set
         @Volatile var needsLoginPin = false
             private set
+        /** Kdy se navázalo právě běžící spojení (uptime, 0 = nespojeno) – pro stav „obraz přichází“. */
+        @Volatile var connectedSince = 0L
+            private set
 
         fun logFile(ctx: Context) = File(ctx.cacheDir, "ps5-spojeni.txt")
 
@@ -81,6 +84,7 @@ class Ps5Link(
     private fun connect() {
         if (stopped || session != null) return
         state = Ps5.Link.CONNECTING
+        connectedSince = 0
         needsLoginPin = false
         sessionConnectedAt = 0
         try {
@@ -119,6 +123,7 @@ class Ps5Link(
                 reason = null
                 connectedAt = SystemClock.uptimeMillis()
                 sessionConnectedAt = connectedAt
+                connectedSince = connectedAt
                 everConnected = true
                 // počítadlo neúspěchů se nuluje až poté, co spojení chvíli vydrží (viz failed())
             }
@@ -226,6 +231,7 @@ class Ps5Link(
         exec.execute {
             session?.let { drop(it) }
             state = Ps5.Link.OFF
+            connectedSince = 0
         }
         exec.shutdown()
     }
