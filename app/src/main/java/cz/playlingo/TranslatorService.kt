@@ -362,7 +362,7 @@ class TranslatorService : Service() {
             this, screenW, screenH, layout, Prefs.textSize(this), Prefs.opacity(this),
             debug, Prefs.coloredSpeaker(this),
             Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this),
-            onText = sender?.let { s -> { text: String?, parts: String? -> if (text == null) s.hide() else s.show(text, parts) } }
+            onText = sender?.let { s -> { text: String?, parts: String?, look: String? -> if (text == null) s.hide() else s.show(text, parts, look) } }
         )
         resetReading()
         val l = lang

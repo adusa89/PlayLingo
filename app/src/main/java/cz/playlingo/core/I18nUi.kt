@@ -34,11 +34,13 @@ internal val UI_S: Map<String, Pair<String, String>> = mapOf(
     "w_model" to ("Chybí jazykový balíček pro překlad (%s)" to "Chýba jazykový balík pre preklad (%s)"),
     "chk_ps5_missing" to ("PlayStation není spárovaný" to "PlayStation nie je spárovaný"),
     "xb_chk_ps5_missing" to ("Xbox není vybraný" to "Xbox nie je vybraný"),
+    "rp_hide" to ("Aby ti ve hře pořád nesvítila hláška „Aplikace Remote Play je připojena“: na PlayStationu otevři Nastavení → Systém → Remote Play a zapni „Skrýt stav připojení Remote Play“ (anglicky Hide Remote Play Connection Status). Nastav to pod svým herním uživatelem a pro jistotu i pod druhým. Když tam volba není, aktualizuj systém PlayStationu." to "Aby ti v hre stále nesvietilo hlásenie „Aplikácia Remote Play je pripojená“: na PlayStatione otvor Nastavenia → Systém → Remote Play a zapni „Skryť stav pripojenia Remote Play“ (anglicky Hide Remote Play Connection Status). Nastav to pod svojím herným používateľom a pre istotu aj pod druhým. Ak tam voľba nie je, aktualizuj systém PlayStationu."),
     "wz_ps_prep" to ("Než budeš pokračovat, připrav PlayStation: založ na něm druhého uživatele (jiný účet PlayStation, zdarma), přepni se na něj a zapni Nastavení → Systém → Remote Play → Povolit Remote Play. Bez toho se párování na konci průvodce nepovede." to "Skôr než budeš pokračovať, priprav PlayStation: založ na ňom druhého používateľa (iný účet PlayStation, zadarmo), prepni sa naň a zapni Nastavenia → Systém → Remote Play → Povoliť Remote Play. Bez toho sa párovanie na konci sprievodcu nepodarí."),
 )
 
 internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "rp_hide" to "So the game doesn’t keep showing “Remote Play app is connected”: on the PlayStation open Settings → System → Remote Play and turn on “Hide Remote Play Connection Status”. Set it under your gaming user and, to be safe, under the second one too. If the option is missing, update the PlayStation system software.",
         "wz_ps_prep" to "Before you continue, prepare the PlayStation: add a second user (another PlayStation account, free), switch to it and turn on Settings → System → Remote Play → Enable Remote Play. Without this, pairing at the end of the setup won’t work.",
         "w_overlay" to "Showing subtitles over other apps is not allowed",
         "w_model" to "The language pack for translation is missing (%s)",
@@ -70,6 +72,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugging and reports",
     ),
     Lang.PL to mapOf(
+        "rp_hide" to "Żeby w grze nie świecił się stale komunikat o połączeniu Remote Play: na PlayStation otwórz Ustawienia → System → Remote Play i włącz „Ukryj stan połączenia Remote Play” (ang. Hide Remote Play Connection Status). Ustaw to na swoim użytkowniku do gry i dla pewności też na drugim. Jeśli tej opcji nie ma, zaktualizuj oprogramowanie PlayStation.",
         "wz_ps_prep" to "Zanim przejdziesz dalej, przygotuj PlayStation: dodaj drugiego użytkownika (inne konto PlayStation, za darmo), przełącz się na niego i włącz Ustawienia → System → Remote Play → Włącz Remote Play. Bez tego parowanie na końcu kreatora się nie uda.",
         "w_overlay" to "Wyświetlanie napisów nad innymi aplikacjami nie jest dozwolone",
         "w_model" to "Brakuje pakietu językowego do tłumaczenia (%s)",
@@ -101,6 +104,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugowanie i zgłoszenia",
     ),
     Lang.DE to mapOf(
+        "rp_hide" to "Damit im Spiel nicht ständig „Remote Play-App ist verbunden“ erscheint: Öffne auf der PlayStation Einstellungen → System → Remote Play und schalte „Remote Play-Verbindungsstatus ausblenden“ ein (englisch Hide Remote Play Connection Status). Stelle das bei deinem Spielbenutzer und sicherheitshalber auch beim zweiten ein. Fehlt die Option, aktualisiere die Systemsoftware der PlayStation.",
         "wz_ps_prep" to "Bevor du weitermachst, bereite die PlayStation vor: Lege einen zweiten Benutzer an (anderes PlayStation-Konto, kostenlos), wechsle zu ihm und schalte Einstellungen → System → Remote Play → Remote Play aktivieren ein. Ohne das klappt das Koppeln am Ende nicht.",
         "w_overlay" to "Untertitel über anderen Apps anzeigen ist nicht erlaubt",
         "w_model" to "Das Sprachpaket für die Übersetzung fehlt (%s)",
@@ -132,6 +136,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Fehlersuche und Berichte",
     ),
     Lang.HU to mapOf(
+        "rp_hide" to "Hogy játék közben ne látszódjon folyton a Remote Play kapcsolódási üzenet: a PlayStationön nyisd meg a Beállítások → Rendszer → Remote Play menüt, és kapcsold be a „Remote Play kapcsolat állapotának elrejtése” opciót (angolul Hide Remote Play Connection Status). Állítsd be a játékos felhasználódnál és biztos, ami biztos, a másodiknál is. Ha nincs ilyen opció, frissítsd a PlayStation rendszerszoftverét.",
         "wz_ps_prep" to "Mielőtt továbblépsz, készítsd elő a PlayStationt: adj hozzá egy második felhasználót (másik PlayStation-fiók, ingyenes), válts rá, és kapcsold be: Beállítások → Rendszer → Remote Play → Remote Play engedélyezése. Enélkül a párosítás a végén nem sikerül.",
         "w_overlay" to "A feliratok megjelenítése más alkalmazások felett nincs engedélyezve",
         "w_model" to "Hiányzik a fordítás nyelvi csomagja (%s)",
@@ -163,6 +168,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Hibakeresés és jelentések",
     ),
     Lang.UK to mapOf(
+        "rp_hide" to "Щоб у грі постійно не світилося повідомлення про підключення Remote Play: на PlayStation відкрий Налаштування → Система → Remote Play й увімкни «Приховати стан підключення Remote Play» (англ. Hide Remote Play Connection Status). Зроби це під своїм ігровим користувачем і про всяк випадок під другим. Якщо такого пункту немає, онови системне ПЗ PlayStation.",
         "wz_ps_prep" to "Перш ніж продовжити, підготуй PlayStation: додай другого користувача (інший обліковий запис PlayStation, безкоштовно), перейди на нього й увімкни Налаштування → Система → Remote Play → Увімкнути Remote Play. Без цього з’єднання в кінці не вдасться.",
         "w_overlay" to "Показ субтитрів поверх інших застосунків не дозволено",
         "w_model" to "Бракує мовного пакета для перекладу (%s)",
@@ -194,6 +200,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Налагодження і звіти",
     ),
     Lang.ES to mapOf(
+        "rp_hide" to "Para que en el juego no aparezca todo el rato el aviso de conexión de Remote Play: en la PlayStation abre Ajustes → Sistema → Remote Play y activa «Ocultar estado de conexión de Remote Play» (en inglés Hide Remote Play Connection Status). Hazlo con tu usuario de juego y, por si acaso, también con el segundo. Si no aparece la opción, actualiza el software del sistema de la PlayStation.",
         "wz_ps_prep" to "Antes de seguir, prepara la PlayStation: añade un segundo usuario (otra cuenta de PlayStation, gratis), cambia a él y activa Ajustes → Sistema → Juego remoto → Habilitar juego remoto. Sin esto, la vinculación al final no funcionará.",
         "w_overlay" to "Mostrar subtítulos sobre otras apps no está permitido",
         "w_model" to "Falta el paquete de idioma para traducir (%s)",
@@ -225,6 +232,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Depuración e informes",
     ),
     Lang.FR to mapOf(
+        "rp_hide" to "Pour que le message de connexion Remote Play ne reste pas affiché en jeu : sur la PlayStation, ouvre Paramètres → Système → Remote Play et active « Masquer l’état de connexion Remote Play » (en anglais Hide Remote Play Connection Status). Fais-le avec ton utilisateur de jeu et, par sécurité, aussi avec le deuxième. Si l’option manque, mets à jour le logiciel système de la PlayStation.",
         "wz_ps_prep" to "Avant de continuer, prépare la PlayStation : ajoute un deuxième utilisateur (un autre compte PlayStation, gratuit), passe sur lui et active Paramètres → Système → Remote Play → Activer Remote Play. Sans cela, l’association à la fin ne marchera pas.",
         "w_overlay" to "L’affichage des sous-titres par-dessus les autres applis n’est pas autorisé",
         "w_model" to "Le pack de langue pour la traduction manque (%s)",
@@ -256,6 +264,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Débogage et rapports",
     ),
     Lang.IT to mapOf(
+        "rp_hide" to "Perché durante il gioco non resti il messaggio di connessione di Remote Play: sulla PlayStation apri Impostazioni → Sistema → Riproduzione remota e attiva «Nascondi stato connessione Riproduzione remota» (in inglese Hide Remote Play Connection Status). Fallo con il tuo utente di gioco e, per sicurezza, anche con il secondo. Se l’opzione manca, aggiorna il software di sistema della PlayStation.",
         "wz_ps_prep" to "Prima di continuare, prepara la PlayStation: aggiungi un secondo utente (un altro account PlayStation, gratis), passa a lui e attiva Impostazioni → Sistema → Riproduzione remota → Abilita Riproduzione remota. Senza questo l’associazione alla fine non riuscirà.",
         "w_overlay" to "La visualizzazione dei sottotitoli sopra altre app non è consentita",
         "w_model" to "Manca il pacchetto lingua per la traduzione (%s)",

@@ -200,6 +200,12 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   najde sama: projde adresy své sítě na portu 8787. Spojení je WebSocket obsloužený ručně na obou
   stranách. Novinky ve zprávách přidávej jen jako nepovinná pole (tak přibylo `casti` s barvami jmen
   a volbami odpovědí) – starší aplikace v televizi musí dál ukázat aspoň obyčejný `text`.
+- **Vzhled pruhu v televizi** (od 0.86, aplikace v televizi 1.3.0): `ukaz` nese pole `vzhled`
+  (`core/TvLook.kt`, s testy `TvLookTest`) – průhlednost, písmo, barva, tučně, poloha (přes titulky /
+  nad titulky / pevné místo), oblast čtení a kde byl anglický titulek, případně originál. Skládá ho
+  `SubtitleOverlay.show` ze stejných hodnot jako pruh na Android TV; televize (`vzhledPruhu` v `app.js`)
+  pruh položí stejnými pravidly jako `ScreenLayout`. Do té doby televize kreslila pruh pořád stejně
+  (černý, dole) bez ohledu na Nastavení. Písmo: sp × 50/22 = px na obrazovce 1080.
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →
   `TvType`). Kdo ho nezvolil, řídí se starým klíčem `tv_send` (zapnuto = LG), takže dřívější
   uživatelé LG o nic nepřijdou; `setTvType` klíč `tv_send` drží v souladu. `Prefs.tvSend` = typ
@@ -249,6 +255,12 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   zůstat `uses-feature` kamery s `required="false"` – jinak by povolení CAMERA vyloučilo
   televize a boxy bez kamery (ověř `aapt dump badging`: kamera jen `uses-feature-not-required`).
   Texty `km_…` v `core/I18nKamera.kt`. Na skutečné televizi LG čtení ověří jen uživatel.
+  Tlačítko skeneru je v `LgInstallActivity` nad políčky (dokud není adresa, je hlavní).
+  Od 0.86 umí `LgScanActivity` s `EXTRA_MODE = MODE_PS5` přečíst i osmimístné číslo pro spárování
+  z obrazovky PS5 (`core/Ps5CodeScan.kt`, testy `Ps5CodeScanTest`); tlačítko „Načíst číslo…“ je
+  v posledním kroku párování v MainActivity (jen telefon s kamerou).
+- Políčka pro adresu (PS5 i LG) nastavuje `IpField`: klávesnice pro adresy a čárka/mezera → tečka
+  (česká číselná klávesnice má místo tečky čárku).
 - `webos/obchod/app/app.js`, `style.css` a `index.html` jsou **společné s aplikací pro Samsung**
   (kopie v `tizen/app`); co je jen pro LG, je v `platforma.js` (`window.PlayLingoTv`). Při změně
   společného souboru ho zkopíruj do `tizen/app` – jinak spadne sestavení APK (`samsungBalicek`)
@@ -327,6 +339,8 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
 - Vložení klíče z telefonu: stejný server jako přihlášení (`LoginServer.forPage` + `LoginServer.Custom`,
   jednorázový klíč ve čtverečku), stránka `DeeplPage` v `core/Deepl.kt` (postup, odkaz na DeepL na nové
   kartě, políčko pro vložení – schránku stránka číst nesmí). Běží jen, dokud je vidět její čtvereček.
+- Se zapnutým DeepL ukazuje i karta „Režim překladu“ (Nastavení → Čtení a překlad) „Offline + DeepL“
+  (`dl_mode_on`), zapnutý bez klíče `dl_mode_idle` – dřív tam stálo jen „Offline“ a mátlo to.
 - Překlad (`TranslatorService` → `improveWithDeepl`): offline překlad se ukáže hned, souběžně jde
   `POST /v2/translate` (původní anglický text bez `IDIOMS`, jména ze slovníku ve značce `<k>` s
   `ignore_tags`, `formality=prefer_less`). Odpověď do 1,5 s, jiná a k témuž zobrazenému řádku
@@ -482,6 +496,10 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   projde, i když to na skutečné konzoli nefunguje. Ověřit to umí jen uživatel na své televizi.
   Dva pokusy nehlásit se konzoli jako ovladač (0.34 „jen se dívat“, 0.38 „tichý režim“)
   se musely vrátit.
+- **Přihlašovací kód účtu na PS5** (4 číslice, `Prefs.ps5LoginPin`): políčko se od 0.86 ukáže jen,
+  když o něj PlayStation při spojení požádal (`Ps5Link.needsLoginPin`) nebo když už je nějaký uložený.
+- **Hláška „Aplikace Remote Play je připojena“**: průvodce (u přípravy PS5) a Nápověda radí zapnout na
+  PS5 „Skrýt stav připojení Remote Play“ (text `rp_hide` v `core/I18nUi.kt`).
 - **Druhý účet PlayStation je záměr.** Když se aplikace připojí herním účtem, konzole hráči
   vypne ovladač a zhasne obraz. Průvodce proto vede na druhý účet.
 - **Obraz 1080p jen pro televize s 3 GB paměti a víc** (`core/Perf.kt`). S 1080p na slabších

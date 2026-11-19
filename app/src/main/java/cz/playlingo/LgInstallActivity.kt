@@ -80,6 +80,7 @@ class LgInstallActivity : Activity() {
         setSingleLine(true)
         inputType = if (secret) InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
             else InputType.TYPE_CLASS_PHONE
+        if (!secret) IpField.setup(this)
         imeOptions = EditorInfo.IME_ACTION_DONE
         // Passphrase se nesmí dostat do zálohy ani do automatického vyplňování
         if (secret) importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
@@ -109,19 +110,20 @@ class LgInstallActivity : Activity() {
             addView(ui.text(t("lg_prep"), 16f, Theme.TEXT), ui.lp(top = 8))
         }, 18)
 
+        // telefon s kamerou: adresu a Passphrase přečíst z obrazovky televize (LgScanActivity) – napřed,
+        // ať se nic nepíše ručně
+        if (!running && LgScanActivity.available(this)) {
+            add(tagged(ui.button(t("km_scan"), primary = ip.isEmpty()) { scan() }, "lgscan"), 20)
+            add(ui.text(t("km_why"), 14f, Theme.MUTED), 6)
+        }
+        scanNote?.let { add(ui.text(it.first, 15f, if (it.second) Theme.WARN else Theme.OK, bold = true), 10) }
+
         add(ui.text(t("lg_ip"), 16f, Theme.TEXT, bold = true), 20)
         add(field(ip, "lg_ip_hint", "lgip", false) { ip = it.trim() }, 6)
         val paired = runCatching { vault.paired(LgInstall.address(ip)) }.getOrDefault(false)
         add(ui.text(t("lg_pass"), 16f, Theme.TEXT, bold = true), 16)
         add(field(pass, "lg_pass_hint", "lgpass", true) { pass = it }, 6)
         if (paired) add(ui.text(t("lg_pass_paired"), 14f, Theme.OK), 6)
-
-        // telefon s kamerou: adresu a Passphrase přečíst z obrazovky televize (LgScanActivity)
-        if (!running && LgScanActivity.available(this)) {
-            add(tagged(ui.button(t("km_scan")) { scan() }, "lgscan"), 16)
-            add(ui.text(t("km_why"), 14f, Theme.MUTED), 6)
-        }
-        scanNote?.let { add(ui.text(it.first, 15f, if (it.second) Theme.WARN else Theme.OK, bold = true), 10) }
 
         if (running) {
             add(ui.text(t("lg_p_" + (phase ?: LgPhase.PACKAGE).name.lowercase()), 17f, Theme.ACCENT, bold = true), 18)

@@ -27,6 +27,7 @@ import cz.playlingo.core.Segment
 import cz.playlingo.core.SizeKeeper
 import cz.playlingo.core.SpeakerColors
 import cz.playlingo.core.TextLogic
+import cz.playlingo.core.TvLook
 import cz.playlingo.core.TvSender
 import kotlin.math.max
 
@@ -42,7 +43,7 @@ class SubtitleOverlay(
     private val screenH: Int,
     layout: ScreenLayout,
     textSizeSp: Int,
-    opacityPercent: Int,
+    private val opacityPercent: Int,
     private val showDebug: Boolean,
     private val coloredSpeaker: Boolean,
     private val textColor: Int = Color.WHITE,
@@ -51,10 +52,10 @@ class SubtitleOverlay(
     private val matchOriginalSize: Boolean = false,
     /**
      * Dostane každou změnu pruhu: text překladu a jeho řádky zvlášť s barvami jmen a volbami
-     * ([TvSender.partsJson]), nebo null při schování. Tudy jdou titulky i do televize LG
+     * ([TvSender.partsJson]) a vzhled pruhu pro televizi ([TvLook]), nebo null při schování. Tudy jdou titulky i do televize LG
      * (viz [TvSender]); volá se i tehdy, když se pruh na tomto zařízení zobrazit nepodařilo.
      */
-    private val onText: ((String?, String?) -> Unit)? = null,
+    private val onText: ((String?, String?, String?) -> Unit)? = null,
 ) {
     companion object {
         private const val TAG = "TestPreklad"
@@ -81,6 +82,7 @@ class SubtitleOverlay(
     @Volatile private var layout: ScreenLayout = layout
     private val textSize = textSizeSp
     private val sizeKeeper = SizeKeeper()
+    private val tvSizeKeeper = SizeKeeper()
     private val bgAlpha = (255 * opacityPercent / 100).coerceIn(0, 255)
 
     /** Je pruh právě zobrazený? */
@@ -191,7 +193,13 @@ class SubtitleOverlay(
     ) {
         isShown = true
         val colors = if (coloredSpeaker) speakerColors.colorsFor(segments) else emptyMap()
-        onText?.invoke(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors))
+        onText?.let { send ->
+            // televize LG/Samsung: stejný vzhled a poloha jako tady (obrazovka televize 1920×1080)
+            val tvMatched = if (matchOriginalSize) tvSizeKeeper.next(MatchSize.textPx(lineHeight, TvLook.SCREEN_H)) else 0
+            val look = TvLook.json(layout, opacityPercent, TvLook.textPx(textSize, tvMatched), textColor, bold,
+                textTop, textBottom, textLeft, textRight, original)
+            send(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors), look)
+        }
         main.post {
             val tv = bar ?: return@post
             val lp = barParams ?: return@post
@@ -242,7 +250,7 @@ class SubtitleOverlay(
 
     fun hide() {
         isShown = false
-        onText?.invoke(null, null)
+        onText?.invoke(null, null, null)
         main.post { bar?.visibility = View.GONE }
     }
 
@@ -253,7 +261,7 @@ class SubtitleOverlay(
 
     fun destroy() {
         isShown = false
-        onText?.invoke(null, null)
+        onText?.invoke(null, null, null)
         main.post {
             listOfNotNull(bar, debugView).forEach { v -> try { wm.removeView(v) } catch (_: Exception) {} }
             bar = null; barParams = null; debugView = null

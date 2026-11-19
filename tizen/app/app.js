@@ -221,13 +221,94 @@
     return /^#[0-9A-Fa-f]{6}$/.test(b) ? b : '';
   }
 
+  function cislo(x, od, az, vychozi) {
+    x = Number(x);
+    return isFinite(x) ? Math.max(od, Math.min(az, x)) : vychozi;
+  }
+
+  // Kam položit pruh nad oblast čtení / na pevné místo, aby nezakryl anglické titulky, které se
+  // čtou (stejná pravidla jako ScreenLayout.barTop na Androidu). Vše jako zlomky výšky obrazu.
+  function mimoCteni(chci, h, cteni) {
+    var mezera = 0.006, nad, pod;
+    if (chci + h > cteni[0] - mezera && chci < cteni[1] + mezera) {
+      nad = cteni[0] - mezera - h;
+      pod = cteni[1] + mezera;
+      if (nad >= 0 && (chci + h / 2 <= (cteni[0] + cteni[1]) / 2 || pod + h > 1)) { chci = nad; }
+      else if (pod + h <= 1) { chci = pod; }
+      else { chci = Math.max(0, nad); }
+    }
+    return Math.max(0, Math.min(Math.max(0, 1 - h), chci));
+  }
+
+  // Vzhled a poloha pruhu podle Nastavení v PlayLingu na Androidu (pole vzhled, viz core/TvLook.kt):
+  // průhlednost, písmo, barva a poloha přes titulky / nad titulky / na pevném místě.
+  // Bez pole vzhled (starší PlayLingo) zůstane pruh jako dřív – černý, dole přes celou šířku.
+  function vzhledPruhu(v) {
+    var p = el('pruh'), t = el('titulek'), s = p.style;
+    var W = 1920, H = 1080;
+    var cteni, text, pres, maxW, w, h, top, stred, puvodni, x;
+    s.left = ''; s.top = ''; s.bottom = ''; s.width = ''; s.maxWidth = ''; s.minHeight = ''; s.background = '';
+    t.style.fontSize = ''; t.style.color = ''; t.style.fontWeight = ''; t.style.padding = '';
+    if (!v || typeof v !== 'object' || p.style.display === 'none') { return; }
+    if (typeof v.original === 'string' && v.original) {
+      puvodni = document.createElement('div');
+      puvodni.className = 'puvodni';
+      puvodni.textContent = v.original;
+      t.appendChild(puvodni);
+    }
+    s.background = 'rgba(0,0,0,' + (cislo(v.pozadi, 0, 100, 100) / 100) + ')';
+    t.style.fontSize = cislo(v.pismo, 16, 120, 50) + 'px';
+    if (/^#[0-9A-Fa-f]{6}$/.test(String(v.barva || ''))) { t.style.color = v.barva; }
+    if (v.tucne === true) { t.style.fontWeight = 'bold'; }
+    t.style.padding = '8px 44px 10px';
+    cteni = [cislo(v.cteni && v.cteni[0], 0, 1, 0.74), cislo(v.cteni && v.cteni[1], 0, 1, 0.98)];
+    text = null;
+    if (v.text && v.text.length >= 2) {
+      text = [cislo(v.text[0], 0, 1, 0), cislo(v.text[1], 0, 1, 0), cislo(v.text[2], 0, 1, -1), cislo(v.text[3], 0, 1, -1)];
+      if (!(text[1] > text[0])) { text = null; }
+    }
+    pres = v.poloha === 'pres';
+    // šířka podle textu (ne přes celou obrazovku), nejvýš podle nastavení
+    maxW = Math.round(W * cislo(v.sirka, 0.2, 1, 0.84));
+    s.bottom = 'auto'; s.top = '0px'; s.left = '0px'; s.width = 'auto'; s.maxWidth = maxW + 'px';
+    if (pres) {
+      // přes titulky: pruh aspoň tak vysoký, aby zakryl anglický text, nejvýš čtvrtina obrazovky
+      x = text ? text[1] - text[0] : cteni[1] - cteni[0];
+      s.minHeight = Math.min(Math.round(Math.max(0.02, Math.min(1, x + 0.024)) * H), H / 4) + 'px';
+    } else {
+      s.minHeight = '0px';
+    }
+    w = p.offsetWidth || maxW;
+    if (pres && text && text[3] > text[2]) { w = Math.max(w, Math.round((text[3] - text[2]) * W) + 40); }
+    w = Math.max(160, Math.min(W, w));
+    s.width = w + 'px';
+    s.maxWidth = '';
+    h = (p.offsetHeight || 150) / H;
+    if (pres) {
+      top = text ? (text[0] + text[1]) / 2 - h / 2 : (cteni[0] + cteni[1]) / 2 - h / 2;
+      top = Math.max(0, Math.min(Math.max(0, 1 - h), top));
+    } else if (v.poloha === 'stred') {
+      top = mimoCteni(cislo(v.stred, 0, 1, 0.08) - h / 2, h, cteni);
+    } else if (text && cteni[1] - cteni[0] > 0.6) {
+      // automatika ještě hledá (čte se celá obrazovka) → těsně nad nalezený text
+      top = Math.max(0, text[0] - 0.006 - h);
+    } else {
+      top = mimoCteni(cteni[0] - 0.006 - h, h, cteni);
+    }
+    stred = pres && text && text[3] > text[2] ? (text[2] + text[3]) / 2 : 0.5;
+    s.left = Math.round(Math.max(0, Math.min(W - w, stred * W - w / 2))) + 'px';
+    s.top = Math.round(Math.max(0, Math.min(H - h * H, top * H))) + 'px';
+  }
+
   // Pruh po řádcích (pole casti, viz TvSender.kt): jména v barvách mluvčích a volby odpovědí
   // jako seznam s odrážkami. Bez casti (starší PlayLingo na Androidu) jen obyčejný text.
-  function pruhCasti(casti, text) {
+  // vzhled = nastavení z Androidu (viz vzhledPruhu), bez něj výchozí pruh.
+  function pruhCasti(casti, text, vzhled) {
     var t = el('titulek');
     var i, c, radek, kus, seznam = null;
     if (!casti || Object.prototype.toString.call(casti) !== '[object Array]' || !casti.length) {
       pruh(text);
+      vzhledPruhu(vzhled);
       return;
     }
     t.textContent = '';
@@ -262,6 +343,7 @@
       }
     }
     el('pruh').style.display = 'flex';
+    vzhledPruhu(vzhled);
   }
 
   function ukazZpet(ano) {
@@ -383,10 +465,10 @@
       try { z = JSON.parse(udalost.data); } catch (e) { return; }
       if (z.typ === 'ukaz') {
         hlaseni('');
-        pruhCasti(z.casti, String(z.text || ''));
+        pruhCasti(z.casti, String(z.text || ''), z.vzhled);
         // jen délka a počet řádků, ne text titulku
         zapis('ukaž #' + z.id + ': ' + String(z.text || '').length + ' znaků' +
-          (z.casti && z.casti.length ? ', ' + z.casti.length + ' částí' : ''));
+          (z.casti && z.casti.length ? ', ' + z.casti.length + ' částí' : '') + (z.vzhled ? ', vzhled ' + String(z.vzhled.poloha || '?') + ' ' + String(z.vzhled.pozadi) + ' %' : ''));
       } else if (z.typ === 'skryj') {
         pruh(null);
         zapis('skryj #' + z.id);

@@ -33,6 +33,8 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import cz.playlingo.core.LgScan
 import cz.playlingo.core.LgScanResult
 import cz.playlingo.core.LgScanVote
+import cz.playlingo.core.Ps5CodeScan
+import cz.playlingo.core.Ps5CodeVote
 
 /**
  * Načtení adresy televize a Passphrase z obrazovky LG Developer Mode kamerou telefonu.
@@ -42,6 +44,8 @@ import cz.playlingo.core.LgScanVote
  * nic se neukládá ani neposílá a přečtený text se nevypisuje do logu. Co přečíst, rozhoduje
  * core/LgScan.kt; údaj platí, až když ho ML Kit přečte dvakrát stejně (LgScanVote).
  * Výsledek (adresa, Passphrase) vrací průvodci LgInstallActivity k potvrzení.
+ * V režimu [MODE_PS5] čte místo toho osmimístné číslo pro spárování z obrazovky PlayStationu
+ * (core/Ps5CodeScan.kt) a vrací ho stránce párování v MainActivity.
  */
 class LgScanActivity : Activity() {
     private lateinit var ui: Ui
@@ -51,6 +55,9 @@ class LgScanActivity : Activity() {
     private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
     private val vote = LgScanVote()
     private var found = LgScanResult()
+    private val ps5 by lazy { intent?.getStringExtra(EXTRA_MODE) == MODE_PS5 }
+    private val codeVote = Ps5CodeVote()
+    private var code: String? = null
     private var finished = false
 
     private var thread: HandlerThread? = null
@@ -75,7 +82,7 @@ class LgScanActivity : Activity() {
             setBackgroundColor(0xE6000000.toInt())
             setPadding(ui.dp(20), ui.dp(16), ui.dp(20), ui.dp(20))
         }
-        panel.addView(ui.text(t("km_aim"), 15f, Theme.MUTED))
+        panel.addView(ui.text(t(if (ps5) "km_aim_ps5" else "km_aim"), 15f, Theme.MUTED))
         status = ui.text("", 18f, Theme.TEXT, bold = true)
         panel.addView(status, ui.lp(top = 10))
         buttons = ui.vbox()
@@ -188,7 +195,7 @@ class LgScanActivity : Activity() {
                 if (reader !== r) { r.close(); return@addOnSuccessListener }
                 // řádky v pořadí čtení; text se nikam nevypisuje
                 val lines = text.textBlocks.flatMap { b -> b.lines.map { it.text } }
-                onRead(LgScan.parse(lines))
+                if (ps5) onCode(Ps5CodeScan.parse(lines)) else onRead(LgScan.parse(lines))
             }
             .addOnFailureListener { img.close(); busy = false; if (reader !== r) r.close() }
     }
@@ -203,7 +210,26 @@ class LgScanActivity : Activity() {
         runOnUiThread { showFound() }
     }
 
+    private fun onCode(c: String?) {
+        if (paused || finished) return
+        val now = codeVote.add(c)
+        if (now == code) return
+        code = now
+        if (now != null) paused = true
+        runOnUiThread { showFound() }
+    }
+
     private fun showFound() {
+        if (ps5) {
+            status.text = t("km_found_code").replace("%s", code?.let { it.substring(0, 4) + " " + it.substring(4) } ?: t("km_none"))
+            status.setTextColor(Theme.TEXT)
+            buttons.removeAllViews()
+            if (code != null) buttons.addView(ui.button(t("km_use"), primary = true) { deliver() }, ui.lp(top = 8))
+            if (paused) buttons.addView(ui.button(t("km_again")) { codeVote.clear(); code = null; paused = false; showFound() }, ui.lp(top = 8))
+            buttons.addView(ui.button(t("wz_back")) { finish() }, ui.lp(top = 8))
+            (buttons.getChildAt(0))?.requestFocus()
+            return
+        }
         val none = t("km_none")
         val sb = StringBuilder()
         sb.append(t("km_found_ip").replace("%s", found.ip ?: none)).append('\n')
@@ -222,6 +248,7 @@ class LgScanActivity : Activity() {
         if (finished) return
         finished = true
         val data = Intent()
+        code?.let { data.putExtra(EXTRA_CODE, it) }
         found.ip?.let { data.putExtra(EXTRA_IP, it) }
         found.pass?.let { data.putExtra(EXTRA_PASS, it) }
         data.putExtra(EXTRA_UNSURE, found.passUnsure)
@@ -280,6 +307,9 @@ class LgScanActivity : Activity() {
         const val EXTRA_PASS = "pass"
         const val EXTRA_UNSURE = "unsure"
         const val EXTRA_FAILED = "failed"
+        const val EXTRA_CODE = "code"
+        const val EXTRA_MODE = "mode"
+        const val MODE_PS5 = "ps5"
 
         /** Tlačítko jen tam, kde to dává smysl: zařízení s kamerou, které není televize ani box. */
         fun available(c: Context): Boolean = try {

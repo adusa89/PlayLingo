@@ -3,7 +3,8 @@
  *
  * Pustí společný app.js s platforma.js pro Samsung (tizen/app) i pro LG (webos/obchod/app)
  * v napodobeném prohlížeči (bez knihoven) a ověří: televize najde PlayLingo v síti, ohlásí se
- * platformou a verzí (zpráva „pripojeno“), ukáže obyčejný text i řádky `casti` a odpoví „hotovo“,
+ * platformou a verzí (zpráva „pripojeno“), ukáže obyčejný text i řádky `casti`, použije vzhled pruhu
+ * z Androidu (pole `vzhled`) a odpoví „hotovo“,
  * a pošle svůj záznam událostí (zpráva „zaznam“, bez textu titulků).
  * Na Samsungu navíc, že se obraz ze vstupu HDMI pustí přes tizen.tvwindow pod stránku.
  */
@@ -149,9 +150,17 @@ function zkus(platforma, verze, dalsi) {
       }
       // zprávy z Androidu: obyčejný text, pak řádky casti (jméno v barvě, volby)
       var ws = tv.spojeni.filter(function (w) { return w.adresa === 'ws://192.168.1.20:8787'; }).pop();
-      ws.onmessage({ data: '{"typ":"ukaz","id":1,"text":"Počkej tady."}' });
+      // s polem vzhled (od PlayLinga 0.86): průhlednost, písmo a pruh nad anglickými titulky
+      ws.onmessage({ data: JSON.stringify({ typ: 'ukaz', id: 1, text: 'Počkej tady.', vzhled: {
+        pozadi: 40, pismo: 44, barva: '#FFE066', poloha: 'nad', sirka: 0.84, cteni: [0.74, 0.98], text: [0.85, 0.9, 0.3, 0.7] } }) });
       assert.strictEqual(tv.prvky.titulek.textContent, 'Počkej tady.');
       assert.strictEqual(tv.prvky.pruh.style.display, 'flex');
+      assert.strictEqual(tv.prvky.pruh.style.background, 'rgba(0,0,0,0.4)');
+      assert.strictEqual(tv.prvky.titulek.style.fontSize, '44px');
+      assert.strictEqual(tv.prvky.titulek.style.color, '#FFE066');
+      // výška pruhu 150 px nad oblast čtení (0,74 × 1080 = 799) → nahoře 643 px, ne dole
+      assert.strictEqual(tv.prvky.pruh.style.top, Math.round((0.74 - 0.006 - 150 / 1080) * 1080) + 'px');
+      assert.strictEqual(tv.prvky.pruh.style.bottom, 'auto');
       ws.onmessage({ data: JSON.stringify({ typ: 'ukaz', id: 2, text: 'Mira: Ahoj\n• Ano', casti: [
         { jmeno: 'Mira', barva: '#F2C14E', text: 'Ahoj' }, { volba: true, text: 'Ano' }, { jmeno: 'X', barva: 'red;x', text: 'B' }] }) });
       var radky = tv.prvky.titulek.children;
@@ -159,6 +168,9 @@ function zkus(platforma, verze, dalsi) {
       assert.strictEqual(radky[0].children[0].style.color, '#F2C14E');
       assert.strictEqual(radky[1].className, 'volby');
       assert.strictEqual(radky[2].children[0].style.color, undefined, 'cizí barva se do stylu nedostane');
+      // bez pole vzhled (starší PlayLingo) je pruh zase výchozí: černý a dole
+      assert.strictEqual(tv.prvky.pruh.style.background, '');
+      assert.strictEqual(tv.prvky.pruh.style.top, '');
       ws.onmessage({ data: '{"typ":"skryj","id":3}' });
       assert.strictEqual(tv.prvky.pruh.style.display, 'none');
       // záznam událostí: hned po ohlášení odešlo, co se nasbíralo (start, hledání, připojení)

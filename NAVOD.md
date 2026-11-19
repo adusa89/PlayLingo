@@ -33,6 +33,9 @@ se párování v posledním kroku nepovede):
    druhý účet, je vysvětlené v bodě 4.
 2. Přepni se na PS5 na toho druhého uživatele a zapni **Nastavení → Systém → Remote Play →
    Povolit Remote Play**.
+   Hned tam zapni i **Skrýt stav připojení Remote Play** (anglicky Hide Remote Play Connection
+   Status) – jinak ti ve hře pořád svítí hláška „Aplikace Remote Play je připojena“. Totéž nastav
+   i pod svým herním uživatelem. Když tam volba není, aktualizuj systém PS5.
 3. PS5 a zařízení s PlayLingem musí být ve stejné domácí síti.
 
 Pak v aplikaci projdi průvodce:
@@ -120,7 +123,8 @@ a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televiz
 - **PlayLingo v telefonu nepustí přihlášení Sony** – zvol v něm „Nejde to? Přihlásit se v prohlížeči“ a prázdnou stránku „redirect“ pak nasdílej do PlayLinga (Sdílet → PlayLingo).
 - **Nejde spárovat** – číslo z PS5 platí jen pár minut, vyžádej si nové. Zkontroluj adresu a účet.
 - **„PlayStation neodpovídá“** – je konzole zapnutá (ne vypnutá ze zásuvky) a ve stejné síti?
-- **Účet na PS5 má přihlašovací kód** – zadej ho na stránce PlayStation (4 číslice).
+- **Ve hře svítí „Aplikace Remote Play je připojena“** – na PS5 zapni Nastavení → Systém → Remote Play → Skrýt stav připojení Remote Play (pod herním i druhým uživatelem), viz bod 3.
+- **Účet na PS5 má přihlašovací kód** – PlayStation ho při spojení odmítne a na stránce PlayStation se objeví políčko pro kód (4 číslice); zadej ho tam.
 - **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.5, nebo ⚙ Nastavení → Obecné → Povolení) a vyzkoušej bod 6.
 - **Nic se nečte** – zapni ⚙ Nastavení → Ladění a hlášení → Diagnostický režim; uvidíš, co aplikace čte.
 - **Překlad běží, ale titulky nenaskakují** – podívej se na stránku Domů na řádek pod stavem překladu. Ukazuje, jak daleko to došlo: jestli se aplikace s PlayStationem spojila a jestli z něj opravdu přichází obraz. Když hlásí „Spojeno s PlayStationem, ale … nepřišel žádný obraz“, aplikace spojení po chvíli sama obnoví; když to trvá dlouho, překlad zastav, zkontroluj Wi-Fi a spusť ho znovu.

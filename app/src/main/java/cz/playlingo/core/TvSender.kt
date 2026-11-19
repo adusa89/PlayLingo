@@ -25,6 +25,7 @@ import java.util.concurrent.Executors
  * se tu ručně, bez knihoven. Zprávy jsou krátké texty:
  *  - `{"typ":"vitej"}` hned po připojení (podle toho televize pozná PlayLingo),
  *  - `{"typ":"ukaz","id":1,"text":"…"}` a `{"typ":"skryj","id":2}`.
+ *    Od 0.86 může nést i `"vzhled":{…}` – průhlednost, písmo a polohu pruhu podle Nastavení ([TvLook]).
  *    Od verze s barevnými jmény a volbami může `ukaz` nést navíc `"casti":[…]` – řádky pruhu zvlášť:
  *    `{"jmeno":"Mira","barva":"#F2C14E","text":"…"}` (replika s mluvčím a jeho barvou; barva chybí,
  *    když má uživatel jména bez barvy), `{"volba":true,"text":"…"}` (jedna z voleb odpovědi)
@@ -88,8 +89,9 @@ class TvSender(private val log: (String) -> Unit = {}) {
         }
 
         const val HELLO = "{\"typ\":\"vitej\"}"
-        fun showMessage(id: Int, text: String, parts: String? = null) =
-            "{\"typ\":\"ukaz\",\"id\":$id,\"text\":${json(text)}" + (if (parts != null) ",\"casti\":$parts" else "") + "}"
+        fun showMessage(id: Int, text: String, parts: String? = null, look: String? = null) =
+            "{\"typ\":\"ukaz\",\"id\":$id,\"text\":${json(text)}" + (if (parts != null) ",\"casti\":$parts" else "") +
+                (if (look != null) ",\"vzhled\":$look" else "") + "}"
 
         /** Řádky pruhu pro pole `casti` (JSON); [colors] = barvy jmen, bez jména v ní se barva nepošle. */
         fun partsJson(segments: List<Segment>, colors: Map<String, Int> = emptyMap()): String =
@@ -153,6 +155,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
     /** Co je právě na obrazovce (null = pruh schovaný) – nově připojená televize to dostane hned. */
     private var shown: String? = null
     private var shownParts: String? = null
+    private var shownLook: String? = null
 
     val running: Boolean get() = server?.isClosed == false
 
@@ -191,18 +194,21 @@ class TvSender(private val log: (String) -> Unit = {}) {
         acceptor = null
         shown = null
         shownParts = null
+        shownLook = null
         log("tv closed")
     }
 
     /**
      * Ukáže na televizi přeložený titulek. Stejný text podruhé se neposílá.
      * [parts] = řádky zvlášť s barvami jmen a volbami (viz [partsJson]); null = jen obyčejný text.
+     * [look] = vzhled a poloha pruhu podle Nastavení (viz [TvLook]); null = televize kreslí po svém.
      */
-    @Synchronized fun show(text: String, parts: String? = null) {
-        if (text == shown && parts == shownParts) return
+    @Synchronized fun show(text: String, parts: String? = null, look: String? = null) {
+        if (text == shown && parts == shownParts && look == shownLook) return
         shown = text
         shownParts = parts
-        broadcast(showMessage(++nextId, text, parts))
+        shownLook = look
+        broadcast(showMessage(++nextId, text, parts, look))
     }
 
     /** Schová pruh na televizi. */
@@ -210,6 +216,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
         if (shown == null) return
         shown = null
         shownParts = null
+        shownLook = null
         broadcast(hideMessage(++nextId))
     }
 
@@ -262,7 +269,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
             // aby se nová televize o žádnou změnu nepřipravila
             synchronized(this) {
                 clients.add(c)
-                shown?.let { t -> val b = frame(showMessage(++nextId, t, shownParts)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
+                shown?.let { t -> val b = frame(showMessage(++nextId, t, shownParts, shownLook)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
             }
             log("tv connected, now ${clients.size}")
             // Od televize je zajímavé jen ohlášení (platforma a verze); čte se i proto, aby se

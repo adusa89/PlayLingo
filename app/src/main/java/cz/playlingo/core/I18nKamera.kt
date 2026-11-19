@@ -5,6 +5,9 @@ package cz.playlingo.core
  * tlačítko v LgInstallActivity). KAMERA_S = čeština a slovenština, KAMERA_X = ostatní jazyky.
  */
 internal val KAMERA_S: Map<String, Pair<String, String>> = mapOf(
+    "km_scan_ps5" to ("Načíst číslo z obrazovky PlayStationu kamerou" to "Načítať číslo z obrazovky PlayStationu kamerou"),
+    "km_aim_ps5" to ("Namiř telefon na obrazovku PlayStationu s osmimístným číslem (Nastavení → Systém → Remote Play → Propojit zařízení)." to "Nasmeruj telefón na obrazovku PlayStationu s osemmiestnym číslom (Nastavenia → Systém → Remote Play → Prepojiť zariadenie)."),
+    "km_found_code" to ("Číslo z PlayStationu: %s" to "Číslo z PlayStationu: %s"),
     "km_scan" to ("Načíst z obrazovky televize kamerou" to "Načítať z obrazovky televízora kamerou"),
     "km_why" to ("Kamera jen přečte adresu a Passphrase z obrazovky Developer Mode. Nic se nefotí, neukládá ani neposílá." to "Kamera len prečíta adresu a Passphrase z obrazovky Developer Mode. Nič sa nefotí, neukladá ani neposiela."),
     "km_denied" to ("Bez povolení kamery to nejde. Opiš údaje ručně, nebo kameru povol v nastavení telefonu." to "Bez povolenia kamery to nejde. Opíš údaje ručne alebo kameru povoľ v nastaveniach telefónu."),
@@ -21,6 +24,9 @@ internal val KAMERA_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "km_scan_ps5" to "Read the number from the PlayStation screen with the camera",
+        "km_aim_ps5" to "Point the phone at the PlayStation screen showing the 8-digit number (Settings → System → Remote Play → Link Device).",
+        "km_found_code" to "Number from the PlayStation: %s",
         "km_scan" to "Read from the TV screen with the camera",
         "km_why" to "The camera only reads the address and Passphrase from the Developer Mode screen. Nothing is photographed, stored or sent.",
         "km_denied" to "This needs camera permission. Type the details by hand, or allow the camera in the phone settings.",
@@ -35,6 +41,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Read with the camera. Compare the details with the TV screen and press Install on TV.",
     ),
     Lang.PL to mapOf(
+        "km_scan_ps5" to "Odczytaj numer z ekranu PlayStation aparatem",
+        "km_aim_ps5" to "Skieruj telefon na ekran PlayStation z ośmiocyfrowym numerem (Ustawienia → System → Remote Play → Połącz urządzenie).",
+        "km_found_code" to "Numer z PlayStation: %s",
         "km_scan" to "Odczytaj z ekranu telewizora aparatem",
         "km_why" to "Aparat tylko odczyta adres i Passphrase z ekranu Developer Mode. Nic nie jest fotografowane, zapisywane ani wysyłane.",
         "km_denied" to "Bez pozwolenia na aparat to nie zadziała. Przepisz dane ręcznie albo zezwól na aparat w ustawieniach telefonu.",
@@ -49,6 +58,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Odczytano aparatem. Porównaj dane z ekranem telewizora i naciśnij Zainstaluj na telewizorze.",
     ),
     Lang.DE to mapOf(
+        "km_scan_ps5" to "Nummer mit der Kamera vom PlayStation-Bildschirm ablesen",
+        "km_aim_ps5" to "Richte das Telefon auf den PlayStation-Bildschirm mit der achtstelligen Nummer (Einstellungen → System → Remote Play → Gerät verbinden).",
+        "km_found_code" to "Nummer von der PlayStation: %s",
         "km_scan" to "Mit der Kamera vom Fernsehbildschirm ablesen",
         "km_why" to "Die Kamera liest nur die Adresse und die Passphrase vom Developer-Mode-Bildschirm. Es wird nichts fotografiert, gespeichert oder gesendet.",
         "km_denied" to "Ohne Kamerazugriff geht das nicht. Gib die Angaben von Hand ein oder erlaube die Kamera in den Telefoneinstellungen.",
@@ -63,6 +75,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Mit der Kamera gelesen. Vergleiche die Angaben mit dem Fernsehbildschirm und drücke Auf Fernseher installieren.",
     ),
     Lang.HU to mapOf(
+        "km_scan_ps5" to "Szám beolvasása a PlayStation képernyőjéről kamerával",
+        "km_aim_ps5" to "Fordítsd a telefont a PlayStation képernyője felé, ahol a nyolcjegyű szám látszik (Beállítások → Rendszer → Remote Play → Eszköz összekapcsolása).",
+        "km_found_code" to "Szám a PlayStationről: %s",
         "km_scan" to "Beolvasás a tévé képernyőjéről kamerával",
         "km_why" to "A kamera csak a címet és a Passphrase-t olvassa le a Developer Mode képernyőjéről. Nem készül fénykép, és semmi sem kerül mentésre vagy elküldésre.",
         "km_denied" to "Kamera-engedély nélkül nem megy. Írd be kézzel az adatokat, vagy engedélyezd a kamerát a telefon beállításaiban.",
@@ -77,6 +92,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Kamerával beolvasva. Vesd össze az adatokat a tévé képernyőjével, és nyomd meg a Feltöltés a tévére gombot.",
     ),
     Lang.UK to mapOf(
+        "km_scan_ps5" to "Зчитати номер з екрана PlayStation камерою",
+        "km_aim_ps5" to "Наведи телефон на екран PlayStation з восьмизначним номером (Налаштування → Система → Remote Play → Під’єднати пристрій).",
+        "km_found_code" to "Номер із PlayStation: %s",
         "km_scan" to "Зчитати з екрана телевізора камерою",
         "km_why" to "Камера лише зчитає адресу й Passphrase з екрана Developer Mode. Нічого не фотографується, не зберігається й не надсилається.",
         "km_denied" to "Без дозволу на камеру це не працює. Введи дані вручну або дозволь камеру в налаштуваннях телефона.",
@@ -91,6 +109,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Зчитано камерою. Порівняй дані з екраном телевізора й натисни «Встановити на телевізор».",
     ),
     Lang.ES to mapOf(
+        "km_scan_ps5" to "Leer el número de la pantalla de la PlayStation con la cámara",
+        "km_aim_ps5" to "Apunta el teléfono a la pantalla de la PlayStation con el número de 8 cifras (Ajustes → Sistema → Remote Play → Vincular dispositivo).",
+        "km_found_code" to "Número de la PlayStation: %s",
         "km_scan" to "Leer de la pantalla del televisor con la cámara",
         "km_why" to "La cámara solo lee la dirección y la Passphrase de la pantalla de Developer Mode. No se toman fotos ni se guarda o envía nada.",
         "km_denied" to "Sin permiso de cámara no funciona. Escribe los datos a mano o permite la cámara en los ajustes del teléfono.",
@@ -105,6 +126,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Leído con la cámara. Compara los datos con la pantalla del televisor y pulsa Instalar en la tele.",
     ),
     Lang.FR to mapOf(
+        "km_scan_ps5" to "Lire le numéro sur l’écran de la PlayStation avec l’appareil photo",
+        "km_aim_ps5" to "Dirige le téléphone vers l’écran de la PlayStation qui affiche le numéro à 8 chiffres (Paramètres → Système → Remote Play → Associer un appareil).",
+        "km_found_code" to "Numéro de la PlayStation : %s",
         "km_scan" to "Lire l’écran du téléviseur avec l’appareil photo",
         "km_why" to "L’appareil photo lit seulement l’adresse et la Passphrase sur l’écran Developer Mode. Rien n’est photographié, enregistré ni envoyé.",
         "km_denied" to "Impossible sans l’autorisation de l’appareil photo. Saisis les données à la main ou autorise l’appareil photo dans les réglages du téléphone.",
@@ -119,6 +143,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Lu avec l’appareil photo. Compare les données avec l’écran du téléviseur et appuie sur Installer sur la TV.",
     ),
     Lang.IT to mapOf(
+        "km_scan_ps5" to "Leggi il numero dallo schermo della PlayStation con la fotocamera",
+        "km_aim_ps5" to "Punta il telefono verso lo schermo della PlayStation con il numero di 8 cifre (Impostazioni → Sistema → Riproduzione remota → Collega dispositivo).",
+        "km_found_code" to "Numero dalla PlayStation: %s",
         "km_scan" to "Leggi dallo schermo del televisore con la fotocamera",
         "km_why" to "La fotocamera legge solo l’indirizzo e la Passphrase dalla schermata Developer Mode. Non si scattano foto e non si salva né si invia nulla.",
         "km_denied" to "Senza il permesso della fotocamera non funziona. Scrivi i dati a mano o consenti la fotocamera nelle impostazioni del telefono.",

@@ -54,6 +54,8 @@ class MainActivity : Activity() {
 
     companion object {
         private const val REQ_NOTIF = 1002
+        private const val REQ_PS5_SCAN = 1003
+        private const val REQ_PS5_CAMERA = 1004
         // kroky průvodce prvním spuštěním (pořadí = pořadí v menu průvodce; zkouška jím prochází naslepo)
         private const val W_DEVICE = 0
         private const val W_CONSOLE = 1
@@ -536,7 +538,11 @@ class MainActivity : Activity() {
                 option(t("c_ps"), null, cur == Console.PLAYSTATION, "wconps") { setConsole(Console.PLAYSTATION); render(true) }
                 option(t("c_xbox"), null, cur == Console.XBOX, "wconxbox") { setConsole(Console.XBOX); render(true) }
                 // příprava PlayStationu patří na začátek: bez druhého účtu a Remote Play se párování na konci nepovede
-                if (cur == Console.PLAYSTATION) add(ui.card().apply { addView(ui.text(t("wz_ps_prep"), 15f, Theme.ACCENT)) }, 14)
+                if (cur == Console.PLAYSTATION) add(ui.card().apply {
+                    addView(ui.text(t("wz_ps_prep"), 15f, Theme.ACCENT))
+                    // hláška „Remote Play je připojena“ by jinak svítila přes hru
+                    addView(ui.text(t("rp_hide"), 15f, Theme.MUTED), ui.lp(top = 10))
+                }, 14)
             }
             W_TV -> {
                 add(ui.text(t("wz_tv_q"), 20f, Theme.TEXT, bold = true), 18)
@@ -853,6 +859,41 @@ class MainActivity : Activity() {
         tag = tagName
     }
 
+    /**
+     * Políčko pro přihlašovací kód účtu na PS5 (4 číslice): skoro nikdo ho nepotřebuje, takže se ukáže,
+     * jen když o kód PlayStation při spojení požádal, nebo když už nějaký je uložený.
+     */
+    private fun loginPinWanted() = Ps5Link.needsLoginPin || draftLogin.isNotEmpty() || Prefs.ps5LoginPin(this).isNotEmpty()
+
+    private fun scanPs5Code() {
+        saveDrafts()
+        if (checkSelfPermission(android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            @Suppress("DEPRECATION") startActivityForResult(Intent(this, LgScanActivity::class.java).putExtra(LgScanActivity.EXTRA_MODE, LgScanActivity.MODE_PS5), REQ_PS5_SCAN)
+        } else requestPermissions(arrayOf(android.Manifest.permission.CAMERA), REQ_PS5_CAMERA)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        @Suppress("DEPRECATION") super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != REQ_PS5_CAMERA) return
+        if (grantResults.firstOrNull() == android.content.pm.PackageManager.PERMISSION_GRANTED) scanPs5Code()
+        else toast(t("km_denied"))
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION") super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQ_PS5_SCAN) return
+        val code = data?.getStringExtra(LgScanActivity.EXTRA_CODE)
+        if (resultCode == RESULT_OK && code != null) {
+            saveDrafts()
+            draftPin = code
+            // políčko s číslem ještě drží starý text – nepřepsat jím přečtené číslo
+            skipDraftSave = true
+            try { render(true) } finally { skipDraftSave = false }
+        } else if (data?.getBooleanExtra(LgScanActivity.EXTRA_FAILED, false) == true) toast(t("km_cam_fail"))
+    }
+
     /** Uloží rozepsané údaje z políček, než se obrazovka překreslí. */
     private fun saveDrafts() {
         fun read(tagName: String): String? = window.decorView.findViewWithTag<View>(tagName)?.let { (it as? EditText)?.text?.toString() }
@@ -882,7 +923,8 @@ class MainActivity : Activity() {
             add(c, 16)
             pairMsg?.let { add(ui.text(it, 15f, pairMsgColor), 10) }
             if (wizard < 0 && !TranslatorService.running) add(tagged(ui.button(t("b_start"), primary = true) { section = Section.HOME; startFlow() }, "pstart"), 12)
-            add(input("ps5_login", draftLogin, "plogin", number = true), 12)
+            // přihlašovací kód účtu na PS5 jen tehdy, když ho PlayStation chtěl (nebo už je zadaný)
+            if (loginPinWanted()) add(input("ps5_login", draftLogin, "plogin", number = true), 12)
             add(tagged(ui.button(t("ps5_forget")) {
                 if (TranslatorService.running && !TranslatorService.demo) stopService(Intent(this, TranslatorService::class.java))
                 Prefs.setPs5Host(this, null); pairMsg = null; render(true)
@@ -905,7 +947,7 @@ class MainActivity : Activity() {
             0 -> add(ui.card().apply { addView(ui.text(t("pg_1_text"), 17f, Theme.TEXT)) }, 10)
             1 -> {
                 add(ui.card().apply { addView(ui.text(t("pg_2_text"), 17f, Theme.TEXT)) }, 10)
-                add(input("ps5_ip", draftIp, "pip", number = true), 10)
+                add(input("ps5_ip", draftIp, "pip", number = true).also { IpField.setup(it) }, 10)
                 add(tagged(ui.button(t("ps5_find")) { findPs5() }, "pfind"), 8)
             }
             2 -> {
@@ -951,7 +993,9 @@ class MainActivity : Activity() {
                 if (have) add(ui.text(t("ps5_acc_done"), 15f, Theme.OK, bold = true), 8)
                 add(ui.card().apply { addView(ui.text(t("pg_4_text"), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_pin", draftPin, "ppin", number = true), 10)
-                add(input("ps5_login", draftLogin, "plogin", number = true), 8)
+                // telefon s kamerou: osmimístné číslo přečíst z obrazovky PlayStationu
+                if (LgScanActivity.available(this)) add(tagged(ui.button(t("km_scan_ps5")) { scanPs5Code() }, "pscan"), 8)
+                if (loginPinWanted()) add(input("ps5_login", draftLogin, "plogin", number = true), 8)
                 nextOk = false
             }
         }
@@ -1226,7 +1270,11 @@ class MainActivity : Activity() {
         val ready = OfflineTranslator.isReady(lang)
         val mode = ui.card()
         mode.addView(ui.text(t("t_mode"), 14f, Theme.MUTED))
-        mode.addView(ui.text(t("t_offline"), 19f, Theme.OK, bold = true), ui.lp(top = 4))
+        // pokus DeepL zapnutý v Experimentálních: tady to musí být vidět, jinak by „jen offline“ mátlo
+        val deepl = DeeplTranslator.activeKey(this) != null
+        mode.addView(ui.text(t(if (deepl) "dl_mode_on" else "t_offline"), 19f, Theme.OK, bold = true), ui.lp(top = 4))
+        if (deepl) mode.addView(ui.text(t("dl_mode_on_desc"), 15f, Theme.MUTED), ui.lp(top = 4))
+        else if (DeeplKey.enabled(this)) mode.addView(ui.text(t("dl_mode_idle"), 15f, Theme.WARN), ui.lp(top = 4))
         mode.addView(ui.text(t("chk_model") + " (${lang.label}): " + if (ready) t("ok") else t("t_model_missing"),
             15f, if (ready) Theme.OK else Theme.WARN), ui.lp(top = 8))
         add(mode, 16)
@@ -1517,6 +1565,7 @@ class MainActivity : Activity() {
         content.addView(ui.section(t("help_tips")))
         val c2 = ui.card()
         for (i in 1..4) c2.addView(ui.text("•  " + t("help_t$i"), 16f, Theme.MUTED), ui.lp(top = if (i == 1) 0 else 8))
+        if (Prefs.console(this) == Console.PLAYSTATION) c2.addView(ui.text("•  " + t("rp_hide"), 16f, Theme.MUTED), ui.lp(top = 8))
         add(c2, 0)
         // jen část pro zvolený typ televize (ostatní typy jdou zvolit na Domů / v Nastavení)
         when (Prefs.tvType(this)) {
@@ -1811,6 +1860,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.85"
-    const val VERSION_CODE = 85
+    const val VERSION = "verze 0.86"
+    const val VERSION_CODE = 86
 }

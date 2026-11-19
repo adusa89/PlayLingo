@@ -6,6 +6,9 @@ package cz.playlingo.core
  * Důvody, proč DeepL nepomohl: dl_p_<Deepl.Problem> (malými písmeny).
  */
 internal val DEEPL_S: Map<String, Pair<String, String>> = mapOf(
+    "dl_mode_on" to ("Offline + DeepL přes internet" to "Offline + DeepL cez internet"),
+    "dl_mode_on_desc" to ("Překlad se ukáže hned offline a DeepL ho během chvilky vylepší. Bez internetu nebo po vyčerpání limitu zůstane offline. Vypíná se v ⚙ Nastavení → Experimentální." to "Preklad sa ukáže hneď offline a DeepL ho o chvíľu vylepší. Bez internetu alebo po vyčerpaní limitu zostane offline. Vypína sa v ⚙ Nastavenia → Experimentálne."),
+    "dl_mode_idle" to ("DeepL je v ⚙ Nastavení → Experimentální zapnutý, ale nepoužívá se: chybí klíč, nebo DeepL tento jazyk neumí. Překládá se jen offline." to "DeepL je v ⚙ Nastavenia → Experimentálne zapnutý, ale nepoužíva sa: chýba kľúč alebo DeepL tento jazyk nevie. Prekladá sa len offline."),
     "dl_section" to ("Experimentální" to "Experimentálne"),
     "dl_toggle" to ("Lepší překlad přes internet (DeepL)" to "Lepší preklad cez internet (DeepL)"),
     "dl_desc" to ("Pokus, normálně vypnutý. Potřebuje tvůj vlastní klíč DeepL API Free (s měsíčním limitem znaků zdarma, založíš ho na deepl.com/pro-api). Offline překlad se ukáže hned jako vždy; když DeepL do 1,5 s odpoví jinak, text v pruhu se potichu vymění." to "Pokus, normálne vypnutý. Potrebuje tvoj vlastný kľúč DeepL API Free (s mesačným limitom znakov zadarmo, založíš ho na deepl.com/pro-api). Offline preklad sa ukáže hneď ako vždy; keď DeepL do 1,5 s odpovie inak, text v páse sa potichu vymení."),
@@ -45,6 +48,9 @@ internal val DEEPL_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "dl_mode_on" to "Offline + DeepL over the internet",
+        "dl_mode_on_desc" to "The offline translation shows right away and DeepL improves it a moment later. Without internet or once the limit is used up it stays offline. Turn it off in ⚙ Settings → Experimental.",
+        "dl_mode_idle" to "DeepL is on in ⚙ Settings → Experimental but isn’t used: the key is missing or DeepL doesn’t support this language. Translation is offline only.",
         "dl_change" to "Change key",
         "dl_keys_hint" to "Already have a DeepL account? Your key is right on the keys page (sign in; next to the key there is a copy button):",
         "dl_keys_open" to "Open the key page",
@@ -82,6 +88,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "The key is on the TV, you can close this page.",
     ),
     Lang.PL to mapOf(
+        "dl_mode_on" to "Offline + DeepL przez internet",
+        "dl_mode_on_desc" to "Tłumaczenie offline pojawia się od razu, a DeepL po chwili je poprawia. Bez internetu albo po wyczerpaniu limitu zostaje offline. Wyłącza się w ⚙ Ustawienia → Eksperymentalne.",
+        "dl_mode_idle" to "DeepL jest włączony w ⚙ Ustawienia → Eksperymentalne, ale nie jest używany: brak klucza albo DeepL nie obsługuje tego języka. Tłumaczenie tylko offline.",
         "dl_change" to "Zmień klucz",
         "dl_keys_hint" to "Masz już konto DeepL? Klucz znajdziesz od razu na stronie z kluczami (zaloguj się, obok klucza jest przycisk kopiowania):",
         "dl_keys_open" to "Otwórz stronę z kluczem",
@@ -119,6 +128,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "Klucz jest w telewizorze, możesz zamknąć stronę.",
     ),
     Lang.DE to mapOf(
+        "dl_mode_on" to "Offline + DeepL über das Internet",
+        "dl_mode_on_desc" to "Die Offline-Übersetzung erscheint sofort, DeepL verbessert sie kurz darauf. Ohne Internet oder nach Ausschöpfen des Limits bleibt es offline. Ausschalten unter ⚙ Einstellungen → Experimentell.",
+        "dl_mode_idle" to "DeepL ist unter ⚙ Einstellungen → Experimentell eingeschaltet, wird aber nicht genutzt: Der Schlüssel fehlt oder DeepL kann diese Sprache nicht. Übersetzt wird nur offline.",
         "dl_change" to "Schlüssel ändern",
         "dl_keys_hint" to "Schon ein DeepL-Konto? Der Schlüssel steht direkt auf der Schlüsselseite (anmelden, neben dem Schlüssel ist eine Kopier-Schaltfläche):",
         "dl_keys_open" to "Schlüsselseite öffnen",
@@ -156,6 +168,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "Der Schlüssel ist im Fernseher, du kannst die Seite schließen.",
     ),
     Lang.HU to mapOf(
+        "dl_mode_on" to "Offline + DeepL interneten át",
+        "dl_mode_on_desc" to "Az offline fordítás azonnal megjelenik, a DeepL pedig egy pillanat múlva javít rajta. Internet nélkül vagy a keret elfogyása után offline marad. Kikapcsolás: ⚙ Beállítások → Kísérleti.",
+        "dl_mode_idle" to "A DeepL be van kapcsolva a ⚙ Beállítások → Kísérleti részben, de nincs használatban: hiányzik a kulcs, vagy a DeepL nem ismeri ezt a nyelvet. Csak offline fordítás.",
         "dl_change" to "Kulcs módosítása",
         "dl_keys_hint" to "Már van DeepL-fiókod? A kulcsot közvetlenül a kulcsok oldalán találod (jelentkezz be, a kulcs mellett van másolás gomb):",
         "dl_keys_open" to "Kulcs oldalának megnyitása",
@@ -193,6 +208,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "A kulcs a tévében van, bezárhatod az oldalt.",
     ),
     Lang.UK to mapOf(
+        "dl_mode_on" to "Офлайн + DeepL через інтернет",
+        "dl_mode_on_desc" to "Офлайн-переклад з’являється одразу, а DeepL за мить його покращує. Без інтернету або після вичерпання ліміту лишається офлайн. Вимикається в ⚙ Налаштування → Експериментальне.",
+        "dl_mode_idle" to "DeepL увімкнено в ⚙ Налаштування → Експериментальне, але він не використовується: бракує ключа або DeepL не підтримує цю мову. Переклад лише офлайн.",
         "dl_change" to "Змінити ключ",
         "dl_keys_hint" to "Уже маєш обліковий запис DeepL? Ключ знайдеш одразу на сторінці ключів (увійди, біля ключа є кнопка копіювання):",
         "dl_keys_open" to "Відкрити сторінку з ключем",
@@ -230,6 +248,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "Ключ у телевізорі, сторінку можна закрити.",
     ),
     Lang.ES to mapOf(
+        "dl_mode_on" to "Sin conexión + DeepL por internet",
+        "dl_mode_on_desc" to "La traducción sin conexión aparece al momento y DeepL la mejora enseguida. Sin internet o al agotar el límite se queda sin conexión. Se desactiva en ⚙ Ajustes → Experimental.",
+        "dl_mode_idle" to "DeepL está activado en ⚙ Ajustes → Experimental, pero no se usa: falta la clave o DeepL no admite este idioma. Solo se traduce sin conexión.",
         "dl_change" to "Cambiar clave",
         "dl_keys_hint" to "¿Ya tienes cuenta de DeepL? La clave está en la página de claves (inicia sesión; junto a la clave hay un botón para copiarla):",
         "dl_keys_open" to "Abrir la página de la clave",
@@ -267,6 +288,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "La clave está en la tele, ya puedes cerrar la página.",
     ),
     Lang.FR to mapOf(
+        "dl_mode_on" to "Hors ligne + DeepL par internet",
+        "dl_mode_on_desc" to "La traduction hors ligne s’affiche tout de suite et DeepL l’améliore un instant après. Sans internet ou une fois la limite atteinte, elle reste hors ligne. Se désactive dans ⚙ Paramètres → Expérimental.",
+        "dl_mode_idle" to "DeepL est activé dans ⚙ Paramètres → Expérimental mais n’est pas utilisé : la clé manque ou DeepL ne gère pas cette langue. Traduction hors ligne uniquement.",
         "dl_change" to "Changer la clé",
         "dl_keys_hint" to "Tu as déjà un compte DeepL ? La clé est directement sur la page des clés (connecte-toi ; à côté de la clé il y a un bouton pour la copier) :",
         "dl_keys_open" to "Ouvrir la page de la clé",
@@ -304,6 +328,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "La clé est dans la télé, tu peux fermer la page.",
     ),
     Lang.IT to mapOf(
+        "dl_mode_on" to "Offline + DeepL via internet",
+        "dl_mode_on_desc" to "La traduzione offline compare subito e DeepL la migliora poco dopo. Senza internet o finito il limite resta offline. Si disattiva in ⚙ Impostazioni → Sperimentale.",
+        "dl_mode_idle" to "DeepL è attivo in ⚙ Impostazioni → Sperimentale ma non viene usato: manca la chiave o DeepL non supporta questa lingua. Traduzione solo offline.",
         "dl_change" to "Cambia chiave",
         "dl_keys_hint" to "Hai già un account DeepL? La chiave è direttamente nella pagina delle chiavi (accedi; accanto alla chiave c’è il pulsante per copiarla):",
         "dl_keys_open" to "Apri la pagina della chiave",

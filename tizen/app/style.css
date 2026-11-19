@@ -86,6 +86,8 @@ h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; 
 #titulek .barevne { font-weight: bold; }
 #titulek .volby { display: inline-block; text-align: left; }
 #titulek .odrazka { color: #F2C14E; }
+/* anglický originál pod překladem (volba „Ukazovat i originál“ v PlayLingu na Androidu) */
+#titulek .puvodni { font-size: 0.62em; color: #A8B0B8; }
 
 #zpet {
   display: none;
