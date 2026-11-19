@@ -264,6 +264,30 @@ object TextLogic {
         return false
     }
 
+    private val WORD = Regex("[\\p{L}\\p{N}]+(?:['’][\\p{L}]+)?")
+
+    private fun words(s: String) = WORD.findAll(s.lowercase()).map { it.value }.toList()
+
+    /** Stejné slovo i s drobnou chybou čtení (jedno písmeno vedle u slov od čtyř písmen). */
+    private fun sameWord(a: String, b: String) =
+        a == b || (a.length >= 4 && b.length >= 4 && kotlin.math.abs(a.length - b.length) <= 1 && levenshtein(a, b) <= 1)
+
+    /**
+     * Je [read] jen ochuzené čtení textu [shown]? Prázdné čtení, nebo méně slov, která všechna
+     * v tomtéž pořadí jsou v [shown] (např. OCR z třířádkového titulku přečetlo jen poslední řádek).
+     * Slova navíc nebo jiná slova = jiný (nebo opravený) text, ne ochuzené čtení.
+     */
+    fun isSubsetRead(read: String, shown: String): Boolean {
+        val s = words(shown)
+        if (s.isEmpty()) return false
+        val r = words(read)
+        if (r.isEmpty()) return true
+        if (r.size >= s.size) return false
+        var i = 0
+        for (w in s) if (i < r.size && sameWord(r[i], w)) i++
+        return i == r.size
+    }
+
     /** Vypadá text jako celá věta (ne rozpracovaný nebo useknutý titulek)? */
     fun looksComplete(text: String): Boolean {
         val t = text.trim()

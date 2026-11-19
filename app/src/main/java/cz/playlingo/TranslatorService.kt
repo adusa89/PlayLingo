@@ -221,7 +221,7 @@ class TranslatorService : Service() {
             ACTION_PAUSE -> {
                 if (running) {
                     paused = !paused
-                    if (paused) overlay?.hide() else { tracker.reset(); lastSig = null }
+                    if (paused) overlay?.hide() else resetReading()
                     updateNotification()
                 }
                 return START_NOT_STICKY
@@ -268,7 +268,7 @@ class TranslatorService : Service() {
         link?.stop(); link = null
         feeder?.stop(); feeder = null
         demo = wantDemo
-        overlay?.hide(); tracker.reset(); lastSig = null
+        overlay?.hide(); resetReading()
         r.clearFrames()
         if (wantDemo) {
             // ukázka má stejnou velikost obrazu, jakou by toto zařízení bralo z konzole
@@ -333,8 +333,7 @@ class TranslatorService : Service() {
             Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this),
             onText = sender?.let { s -> { text: String? -> if (text == null) s.hide() else s.show(text) } }
         )
-        tracker.reset()
-        lastSig = null
+        resetReading()
         val l = lang
         OfflineTranslator.ensureModel(l) { ok ->
             // překladač se připraví hned, ne až s prvním titulkem
@@ -428,6 +427,18 @@ class TranslatorService : Service() {
         }
     }
 
+    /**
+     * Čtení začíná znovu (pauza, nové nastavení, spojení, jiný zdroj): zapomene se rozpracovaný
+     * titulek i překlady spuštěné dopředu. Čtení nebo překlad, které ještě běží, po návratu poznají
+     * podle [SubtitleTracker.revision], že jsou zastaralé, a nic neukážou.
+     */
+    private fun resetReading() {
+        tracker.reset()
+        lastSig = null
+        // jen zapomenout, nerušit: smyčka může na překlad právě čekat a zrušení by ji ukončilo
+        inflight.clear()
+    }
+
     /** Hlídá spojení s konzolí: zapisuje změny stavu a obnoví spojení, když video přestane chodit. */
     private fun watchLink(now: Long) {
         val r = reader ?: return
@@ -447,7 +458,7 @@ class TranslatorService : Service() {
             lastLinkLogged = st
             tp("LINK|$st|" + (Ps5Link.reason ?: "") + "|dec=${r.decoderName}|${r.frameWidth}x${r.frameHeight}|fed=${r.fed}|decoded=${r.decoded}")
             // spojení spadlo → starý překlad nenechávej viset na obrazovce
-            if (st != Ps5.Link.CONNECTED) { hideAt = 0; overlay?.hide(); tracker.reset(); lastSig = null; r.clearFrames() }
+            if (st != Ps5.Link.CONNECTED) { hideAt = 0; overlay?.hide(); resetReading(); r.clearFrames() }
             updateNotification()
         }
         val l = link ?: return
@@ -466,7 +477,7 @@ class TranslatorService : Service() {
         // že je na tomto zařízení (typicky telefonu) vidět aplikace.
         val allowed = tv != null || (if (demo) UiState.testCard else !UiState.visible)
         if (!allowed && !hiddenForOtherApp) {
-            hideAt = 0; overlay?.hide(); tracker.reset(); lastSig = null
+            hideAt = 0; overlay?.hide(); resetReading()
         }
         hiddenForOtherApp = !allowed
         return allowed
@@ -495,6 +506,8 @@ class TranslatorService : Service() {
             return
         }
         lastSig = sig
+        // výsledek čtení i překladu platí jen pro tento „začátek“ (viz SubtitleTracker.revision)
+        val token = tracker.revision
 
         val ocrStart = SystemClock.uptimeMillis()
         // drobné titulky: výřez se před čtením zvětší (viz TextScale)
@@ -502,6 +515,8 @@ class TranslatorService : Service() {
         val input = if (k > 1f) Bitmap.createScaledBitmap(crop, (crop.width * k).toInt(), (crop.height * k).toInt(), true) else crop
         val result = recognizer.process(InputImage.fromBitmap(input, 0)).await()
         if (input !== crop) input.recycle()
+        // mezitím se čtení začalo znovu (pauza, jiná oblast, nové nastavení) → výsledek je zastaralý
+        if (!tracker.isCurrent(token)) return
         ocrRuns++
         lastOcrMs = SystemClock.uptimeMillis() - ocrStart
         val blocks = toBlocks(result, k)
@@ -543,12 +558,14 @@ class TranslatorService : Service() {
             return
         }
         // slabé zařízení (jedno čtení trvá déle než půl sekundy): pruh se schová hned po prvním prázdném čtení
-        when (val action = tracker.onOcr(picked.text, slowDevice = lastOcrMs > 500)) {
+        // otisk obrazu: na nezměněném obrazu ochuzené čtení (jen poslední řádek…) nenahradí celý titulek
+        when (val action = tracker.onOcr(picked.text, slowDevice = lastOcrMs > 500, sig = sig, cellPixels = frame.cellPixels)) {
             is SubtitleTracker.Action.Show -> {
                 // překlad už většinou běží (spuštěný po prvním přečtení) – jen se počká na výsledek
                 val ready = inflight.remove(action.text)
                 val segs = (if (ready != null) ready.await() else null) ?: translateSegments(action.text) ?: return
-                tracker.confirmShown(action.text)
+                // překlad doběhl až po novém začátku (pauza, změna jazyka, jiná oblast) → neukazuje se
+                if (!tracker.confirmShown(action.text, token)) return
                 val top = if (picked.top >= 0) (y0 + picked.top).toFloat() / capH else -1f
                 val bottom = if (picked.bottom >= 0) (y0 + picked.bottom).toFloat() / capH else -1f
                 hideAt = 0
@@ -586,6 +603,7 @@ class TranslatorService : Service() {
         layout = layout.copy(read = autoZone.current)
         overlay?.setLayout(layout)
         lastSig = null
+        tracker.regionChanged()
     }
 
     /** Řádky z čtečky; souřadnice se přepočítají zpět na nezvětšený výřez ([k] = zvětšení). */
@@ -607,21 +625,23 @@ class TranslatorService : Service() {
 
     /** Přeloží text po částech; jména mluvčích se nepřekládají. */
     private suspend fun translateSegments(text: String): List<Segment>? {
+        val l = lang   // jazyk se může během překladu změnit – celý text se překládá do jednoho
         val out = ArrayList<Segment>()
         for (s in TextLogic.segments(text)) {
             val body = TextLogic.normalizeCase(s.body)
-            val tr = QuickWords.lookup(lang.code, body) ?: translate(TextLogic.forTranslator(body)) ?: return null
+            val tr = QuickWords.lookup(l.code, body) ?: translate(l, TextLogic.forTranslator(body)) ?: return null
             out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr)))
         }
         return out
     }
 
-    private suspend fun translate(text: String): String? {
-        cache.get(text)?.let { statsFor(this).cacheHit(); return it }
-        val out = try { OfflineTranslator.translate(lang, text, glossary) } catch (e: Exception) {
+    private suspend fun translate(l: Lang, text: String): String? {
+        if (l == lang) cache.get(text)?.let { statsFor(this).cacheHit(); return it }
+        val out = try { OfflineTranslator.translate(l, text, glossary) } catch (e: Exception) {
             lastError = e.javaClass.simpleName; Log.w(TAG, "offline", e); null
         }
-        if (out != null) { cache.put(text, out); lastError = null }
+        // jazyk se mezitím změnil → do paměti nového jazyka nepatří překlad do starého
+        if (out != null) { if (l == lang) cache.put(text, out); lastError = null }
         return out
     }
 
