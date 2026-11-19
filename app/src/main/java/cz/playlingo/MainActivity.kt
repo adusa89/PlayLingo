@@ -722,6 +722,12 @@ class MainActivity : Activity() {
             setPadding(ui.dp(18), ui.dp(12), ui.dp(18), ui.dp(12))
             setOnClickListener { chooseSetup() }
         }, "summary"), 18)
+        // LG / Samsung: nahrání (i aktualizace) aplikace do zvolené televize vždy po ruce. Dokud se
+        // televize ještě neohlásila, nabízí ho karta upozornění níž – tady by bylo dvakrát.
+        val type = Prefs.tvType(this)
+        if (type.sends && !TvChoice.needsInstall(this, type)) {
+            add(tagged(ui.button(TvChoice.installLabel(this, type)) { TvChoice.openInstall(this, type) }, "htvinstall"), 10)
+        }
     }
 
     /** Malá nabídka ze souhrnného řádku: změnit konzoli, nebo typ televize. */
@@ -1422,22 +1428,31 @@ class MainActivity : Activity() {
         val c2 = ui.card()
         for (i in 1..4) c2.addView(ui.text("•  " + t("help_t$i"), 16f, Theme.MUTED), ui.lp(top = if (i == 1) 0 else 8))
         add(c2, 0)
+        // jen část pro zvolený typ televize (ostatní typy jdou zvolit na Domů / v Nastavení)
+        when (Prefs.tvType(this)) {
+            TvType.LG -> {
+                content.addView(ui.section(t("lg_title")))
+                add(ui.card().apply { addView(ui.text(t("lg_help"), 15f, Theme.MUTED)) }, 0)
+                add(tagged(ui.button(t("lg_open")) { startActivity(Intent(this, LgInstallActivity::class.java)) }, "lghelp"), 8)
+            }
+            TvType.SAMSUNG -> {
+                content.addView(ui.section(t("ss_title")))
+                add(ui.card().apply { addView(ui.text(t("ss_help"), 15f, Theme.MUTED)) }, 0)
+                add(tagged(ui.button(t("ss_open")) { startActivity(Intent(this, SamsungInstallActivity::class.java)) }, "sshelp"), 8)
+            }
+            TvType.ANDROID -> {
+                content.addView(ui.section(t("adb_title")))
+                add(ui.card().apply {
+                    isFocusable = true
+                    background = ui.focusBg(Theme.CARD)
+                    tag = "adb"
+                    addView(ui.text(t("adb_text"), 15f, Theme.MUTED))
+                    addView(ui.text("adb shell appops set $packageName SYSTEM_ALERT_WINDOW allow", 14f, Theme.ACCENT), ui.lp(top = 8))
+                }, 0)
+            }
+        }
         content.addView(ui.section(t("inst_title")))
         add(ui.card().apply { addView(ui.text(t("inst_text"), 15f, Theme.MUTED)) }, 0)
-        content.addView(ui.section(t("lg_title")))
-        add(ui.card().apply { addView(ui.text(t("lg_help"), 15f, Theme.MUTED)) }, 0)
-        add(tagged(ui.button(t("lg_open")) { startActivity(Intent(this, LgInstallActivity::class.java)) }, "lghelp"), 8)
-        content.addView(ui.section(t("ss_title")))
-        add(ui.card().apply { addView(ui.text(t("ss_help"), 15f, Theme.MUTED)) }, 0)
-        add(tagged(ui.button(t("ss_open")) { startActivity(Intent(this, SamsungInstallActivity::class.java)) }, "sshelp"), 8)
-        content.addView(ui.section(t("adb_title")))
-        add(ui.card().apply {
-            isFocusable = true
-            background = ui.focusBg(Theme.CARD)
-            tag = "adb"
-            addView(ui.text(t("adb_text"), 15f, Theme.MUTED))
-            addView(ui.text("adb shell appops set $packageName SYSTEM_ALERT_WINDOW allow", 14f, Theme.ACCENT), ui.lp(top = 8))
-        }, 0)
         add(tagged(ui.button(t("wz_again")) { wizard = 0; render() }, "wagain"), 16)
         add(tagged(ui.button(t("rep_btn")) { makeReport() }, "report"), 8)
         add(ui.text("PlayLingo · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 24)
@@ -1697,6 +1712,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.78"
-    const val VERSION_CODE = 78
+    const val VERSION = "verze 0.79"
+    const val VERSION_CODE = 79
 }

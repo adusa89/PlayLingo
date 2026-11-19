@@ -109,17 +109,27 @@ class Ui(private val ctx: Context) {
      * Řádek nastavení: vlevo popis, vpravo hodnota (ZAP/VYP, velikost…).
      * Kliknutí OK na ovladači hodnotu změní.
      */
-    fun settingRow(label: String, value: String, valueColor: Int = Theme.ACCENT, onClick: () -> Unit): LinearLayout =
-        hbox().apply {
+    fun settingRow(label: String, value: String, valueColor: Int = Theme.ACCENT, onClick: () -> Unit): LinearLayout {
+        // Dlouhá hodnota (např. „Přes titulky (zakryje angličtinu)“) by na úzkém telefonu vzala skoro celou
+        // šířku a popis by se lámal po slabikách – proto je tam hodnota pod popisem.
+        val narrow = ctx.resources.configuration.screenWidthDp in 1 until 600
+        val stacked = narrow && value.length > 12
+        return (if (stacked) vbox() else hbox()).apply {
             isFocusable = true
             isClickable = true
             background = focusBg(Theme.CARD)
             pop(this)
             setPadding(dp(20), dp(14), dp(20), dp(14))
-            addView(text(label, 17f), LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-            addView(text(value, 16f, valueColor, bold = true).apply { setPadding(dp(16), 0, 0, 0) })
+            if (stacked) {
+                addView(text(label, 17f))
+                addView(text(value, 16f, valueColor, bold = true), lp(top = 6))
+            } else {
+                addView(text(label, 17f), LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+                addView(text(value, 16f, valueColor, bold = true).apply { setPadding(dp(16), 0, 0, 0) })
+            }
             setOnClickListener { onClick() }
         }
+    }
 
     /** Položka kontrolního seznamu: tečka (zelená/oranžová), popis a případně tlačítko. */
     fun checkRow(ok: Boolean, optional: Boolean, label: String, okText: String, action: String?, onAction: (() -> Unit)?): LinearLayout =

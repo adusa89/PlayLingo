@@ -422,7 +422,10 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 - **Domů**: velký stav + Spustit/Zastavit (+ Zkouška bez PlayStationu), jeden souhrnný řádek
   „PS5 (jméno) → LG model · připojeno“ (OK = malá nabídka Konzole / Typ televize) a karta upozornění
   jen na to, co chybí (povolení pruhu, model, spárování, aplikace v televizi, vývojářský režim LG,
-  zkušební doba ≤ 3 dny). Jednorázové volby na Domů nepatří.
+  zkušební doba ≤ 3 dny). U LG/Samsungu je pod souhrnným řádkem tlačítko nahrání/aktualizace aplikace do
+  zvolené televize (`htvinstall`), jakmile se televize jednou ohlásila (do té doby je v upozornění).
+  Jednorázové volby na Domů nepatří.
+- **Nápověda** ukazuje jen část pro zvolený typ televize (LG, Samsung, nebo povolení přes počítač u Android TV).
 - **Nastavení (⚙)**: Konzole a televize (konzole, typ televize + nahrání, zařízení, jazyk aplikace),
   Chování (zkušební verze, kvalita čtení), Povolení, Ladění a hlášení (diagnostický režim, hlášení),
   Licence (po skončení zkušební doby nahoře), Překlad (hra, slovník, statistika, historie) a úplně
