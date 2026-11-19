@@ -22,6 +22,9 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `PhoneHelperActivity.kt` – PlayLingo v telefonu: pomocník pro přihlášení (viz Přihlášení přes telefon)
   - `SubtitleOverlay.kt`, `TitulkyAccessibility.kt` – pruh s překladem přes Usnadnění
   - `MainActivity.kt` – všechny obrazovky a průvodce
+  - `DiagActivity.kt` – hlášení o stavu aplikace přes celou obrazovku (k vyfocení); vše v něm
+    prochází `core/CrashReport.kt` → `Redact` (žádné klíče, čísla účtu ani PIN)
+  - `App.kt`, `CrashLog.kt` – zápis pádů do `pady.txt` (posledních pár) a upozornění po dalším spuštění
   - `Updater.kt` – aktualizace z aplikace (stažení nové verze a předání systému k instalaci)
   - `DemoFeeder.kt`, `TestCardActivity.kt` – ukázková „hra“ pro zkoušku bez PlayStationu
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
@@ -213,7 +216,9 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
 - texty kolem PlayStationu: `core/I18nPs5.kt` (`PS5_S` pro češtinu a slovenštinu, `PS5_X` pro ostatní
   včetně angličtiny);
 - texty přihlášení přes telefon (kroky `pa_…`, stránka z televize `wp_…`, pomocník v telefonu
-  `hp_…`): `core/I18nLogin.kt` (`LOGIN_S`, `LOGIN_X`).
+  `hp_…`): `core/I18nLogin.kt` (`LOGIN_S`, `LOGIN_X`);
+- stav spojení (`ls_…`, `lv_…`, logika v `core/LinkStatus.kt`), hlášení o stavu (`dg_…`) a upozornění
+  na pád (`cr_…`): `core/I18nDiag.kt` (`DIAG_S`, `DIAG_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.

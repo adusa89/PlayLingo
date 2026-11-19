@@ -76,7 +76,8 @@ class MainActivity : Activity() {
     private var draftTr = ""
     /** Nabídka nové verze (null = žádná není). */
     private var update: UpdateCheck.Offer? = null
-    private var reportText: String? = null
+    /** Aplikace minule spadla → na stránce Domů upozornění (jen do zavření aplikace). */
+    private var crashNote = false
     private var draftCode = ""
     private var codeError = false
     // párování s PlayStationem
@@ -94,6 +95,7 @@ class MainActivity : Activity() {
     private var loginServer: LoginServer? = null
     private var lastLink = Ps5.Link.OFF
     private var lastFrames = 0L
+    private var lastStage = cz.playlingo.core.LinkStatus.Stage.OFF
     private var ticks = 0
 
     private val ticker = object : Runnable {
@@ -102,7 +104,8 @@ class MainActivity : Activity() {
             ticks++
             val typing = currentFocus is EditText
             val changed = lastRunning != TranslatorService.running || lastPaused != TranslatorService.paused ||
-                lastLink != Ps5Link.state || (lastFrames == 0L) != (TranslatorService.framesDecoded == 0L)
+                lastLink != Ps5Link.state || (lastFrames == 0L) != (TranslatorService.framesDecoded == 0L) ||
+                lastStage != TranslatorService.linkStatus().stage
             // náhled obrazu z PlayStationu se obnovuje každé 3 s (ne když uživatel zrovna píše)
             val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 &&
                 (section == Section.HOME || section == Section.PS5)
@@ -122,6 +125,7 @@ class MainActivity : Activity() {
             return
         }
         EventFile.init(this)
+        crashNote = CrashLog.takeUnseen(this)
         ui = Ui(this)
         buildShell()
         if (!Prefs.wizardDone(this)) wizard = 0
@@ -371,6 +375,7 @@ class MainActivity : Activity() {
         lastPaused = TranslatorService.paused
         lastLink = Ps5Link.state
         lastFrames = TranslatorService.framesDecoded
+        lastStage = TranslatorService.linkStatus().stage
         if (wizard >= 0) { renderWizard(focusedTag); return }
         renderMenu()
         content.removeAllViews()
@@ -548,7 +553,16 @@ class MainActivity : Activity() {
         head.addView(ui.text(title, 24f, Theme.TEXT, bold = true))
         status.addView(head)
         status.addView(ui.text(busyText ?: sub, 16f, Theme.MUTED), ui.lp(top = 6))
+        // stav spojení v jednom řádku: překlad běží / spojeno / obraz přichází
+        if (running) {
+            val ls = TranslatorService.linkStatus()
+            status.addView(ui.text("● " + cz.playlingo.core.LinkStatus.line(Prefs.uiLang(this), ls), 15f,
+                if (ls.warning) Theme.WARN else if (ls.image) Theme.OK else Theme.MUTED).apply { tag = "linkline" }, ui.lp(top = 8))
+        }
         add(status, 18)
+        if (crashNote) add(ui.card().apply {
+            addView(ui.text(t("cr_note") + " " + t("m_help") + " → " + t("rep_btn"), 15f, Theme.WARN))
+        }, 12)
 
         update?.let { o ->
             val st = Updater.state
@@ -1220,7 +1234,6 @@ class MainActivity : Activity() {
         }, 0)
         add(tagged(ui.button(t("wz_again")) { wizard = 0; render() }, "wagain"), 16)
         add(tagged(ui.button(t("rep_btn")) { makeReport() }, "report"), 8)
-        reportText?.let { add(ui.card().apply { addView(ui.text(it, 13f, Theme.MUTED)) }, 10) }
         add(ui.text("PlayLingo · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 24)
     }
 
@@ -1334,48 +1347,10 @@ class MainActivity : Activity() {
         Ps5.Net.UNKNOWN -> ""
     }
 
-    /** Sestaví hlášení chyby (zařízení, nastavení, poslední události) a uloží ho do souboru. */
+    /** Hlášení o stavu aplikace přes celou obrazovku (uloží ho i do souboru), viz DiagActivity. */
     private fun makeReport() {
-        val sb = StringBuilder()
-        sb.append("PlayLingo ").append(BuildInfo.VERSION).append(" (").append(BuildInfo.VERSION_CODE).append(")\n")
-        sb.append("Zařízení: ").append(Build.MANUFACTURER).append(' ').append(Build.MODEL).append(", Android ").append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")\n")
-        val (w, h) = screenSize()
-        sb.append("Obrazovka: ").append(w).append('×').append(h).append(", televize: ").append(Prefs.isTv(this)).append("\n")
-        sb.append("Jazyk: ").append(Prefs.lang(this).code).append(", hra: ").append(Prefs.gameId(this)).append("\n")
-        sb.append("Usnadnění: ").append(TitulkyAccessibility.instance != null).append(", překryv: ").append(Settings.canDrawOverlays(this))
-            .append(", model: ").append(OfflineTranslator.isReady(Prefs.lang(this))).append("\n")
-        sb.append("Automatika: ").append(Prefs.autoZone(this)).append(", oblast: ").append(Prefs.layout(this).serialize()).append("\n")
-        sb.append("Licence: ").append(Prefs.license(this).kind).append(", překlad běží: ").append(TranslatorService.running).append("\n")
-        val host = Prefs.ps5Host(this)
-        sb.append("PlayStation: ").append(if (host != null) "spárováno (${host.name}, ${host.ip})" else "nespárováno")
-            .append(", spojení: ").append(Ps5Link.state).append(Ps5Link.reason?.let { " ($it)" } ?: "")
-            .append(", ukázka: ").append(TranslatorService.demo).append(", snímků: ").append(TranslatorService.framesDecoded)
-            .append(", knihovna: ").append(Ps5Link.selfTest()).append("\n")
-        sb.append("Procesor: ").append(Build.SUPPORTED_ABIS.joinToString("/")).append("\n")
-        sb.append("Síť televize: ").append(NetInfo.kind(this)).append("\n")
-        sb.append("--- záznam (i z minulých spuštění) ---\n").append(EventFile.tail(200)).append("\n")
-        sb.append("--- poslední události ---\n").append(DiagLog.dump())
-        // konec záznamu spojení s konzolí (pomůže najít, proč se nepřipojila)
-        try {
-            val f = Ps5Link.logFile(this)
-            if (f.exists()) sb.append("\n--- spojení s PlayStationem ---\n").append(f.readText().takeLast(6000))
-        } catch (_: Exception) {}
-        val text = sb.toString()
-        val where = try {
-            val dir = getExternalFilesDir(null) ?: filesDir
-            val f = java.io.File(dir, "PlayLingo-hlaseni.txt")
-            f.writeText(text, Charsets.UTF_8)
-            f.absolutePath
-        } catch (e: Exception) { "?" }
-        // na obrazovce (kvůli fotce) nejdřív hlavička a pak to podstatné: přihlášení, párování a spojení
-        // záznam ze souboru: obsahuje i to, co se dělo před posledním vypnutím aplikace
-        val key = EventFile.tail(40).ifEmpty {
-            DiagLog.dump().split('\n').filter { l ->
-                listOf("PSN|", "PAIR|", "PS5|", "LINK|", "ERROR", "SOURCE|", "START|", "PERF|").any { l.contains(it) }
-            }.takeLast(40).joinToString("\n")
-        }
-        reportText = t("rep_saved") + " " + where + "\n\n" + text.substringBefore("--- poslední události ---").take(900) + "---\n" + key
-        render(true)
+        crashNote = false
+        startActivity(Intent(this, DiagActivity::class.java))
     }
 
     private fun togglePause() {

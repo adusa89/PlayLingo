@@ -96,7 +96,9 @@ a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televiz
 - **Účet na PS5 má přihlašovací kód** – zadej ho na stránce PlayStation (4 číslice).
 - **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.2) a vyzkoušej bod 6.
 - **Nic se nečte** – zapni Nastavení → Diagnostický režim; uvidíš, co aplikace čte.
-- Nápověda → „Vytvořit hlášení chyby“ uloží soubor s podrobnostmi pro vývojáře.
+- **Překlad běží, ale titulky nenaskakují** – podívej se na stránku Domů na řádek pod stavem překladu. Ukazuje, jak daleko to došlo: jestli se aplikace s PlayStationem spojila a jestli z něj opravdu přichází obraz. Když hlásí „Spojeno s PlayStationem, ale … nepřišel žádný obraz“, aplikace spojení po chvíli sama obnoví; když to trvá dlouho, překlad zastav, zkontroluj Wi-Fi a spusť ho znovu.
+- **Aplikace minule spadla** – po dalším spuštění to napíše na stránce Domů. Kdyby se to opakovalo, pošli hlášení (další bod).
+- **Hlášení chyby**: Nápověda → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení.
 
 ## Licence a zdrojový kód
 Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng
