@@ -33,7 +33,9 @@ import java.util.concurrent.Executors
  * Televize po připojení pošle `{"typ":"pripojeno","televize":"…","system":"…","hdmi":1}`, od verze 1.1.0
  * navíc `"aplikace":"PlayLingo","platforma":"webos"|"tizen","verze":"1.1.0"` ([TvAnnounce]). Podle toho
  * průvodce nahráním do televize a stránka Domů poznají, že je aplikace v televizi nainstalovaná
- * a v jaké verzi ([lastSeen]). Ostatní zprávy od televize (`hotovo`) se jen přečtou a zahodí.
+ * a v jaké verzi ([lastSeen]). Od verze 1.2.0 televize posílá i svůj záznam událostí
+ * `{"typ":"zaznam","radky":["…"]}` (po připojení a pak po dávkách) – ukládá ho [TvLog].
+ * Ostatní zprávy od televize (`hotovo`) se jen přečtou a zahodí.
  * Bez Androidu, aby šlo vyzkoušet v unit testech.
  */
 class TvSender(private val log: (String) -> Unit = {}) {
@@ -268,6 +270,8 @@ class TvSender(private val log: (String) -> Unit = {}) {
                     lastSeen = Seen(a, System.currentTimeMillis())
                     log("tv says ${a.platform ?: "?"} ${a.version ?: "?"}")
                 }
+                // záznam událostí z televize (od verze 1.2.0) – do souboru pro hlášení
+                TvLog.parse(msg)?.let { TvLog.add(it) }
             }
         } catch (_: Throwable) {
         } finally { drop(c) }

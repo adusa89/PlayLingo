@@ -12,8 +12,10 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import cz.playlingo.core.DiagLog
 import cz.playlingo.core.LinkStatus
+import cz.playlingo.core.LogShare
 import cz.playlingo.core.Ps5
 import cz.playlingo.core.Redact
+import cz.playlingo.core.TvLog
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -44,6 +46,7 @@ class DiagActivity : Activity() {
         }
         root.addView(ui.text(tx("dg_title"), if (phone) 22f else 28f, Theme.TEXT, bold = true))
         root.addView(ui.text(tx("dg_hint"), if (phone) 14f else 16f, Theme.ACCENT), ui.lp(top = 4))
+        NetLogShare.url(this)?.let { root.addView(ui.text(tx("zz_url").replace("%s", it), if (phone) 14f else 16f, Theme.OK), ui.lp(top = 4)) }
 
         val body = ui.vbox().apply { setPadding(ui.dp(18), ui.dp(4), ui.dp(18), ui.dp(16)) }
         val textSize = if (phone) 13f else 16f
@@ -79,10 +82,14 @@ class DiagActivity : Activity() {
         root.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f).apply { topMargin = ui.dp(14) })
 
         val buttons = ui.hbox()
+        fun gap() = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(12) }
         buttons.addView(ui.button(tx("dg_top")) { scroll.smoothScrollTo(0, 0); scroll.requestFocus() }.apply { tag = "diagtop" })
-        buttons.addView(ui.button(tx("dg_close"), primary = true) { finish() }.apply { tag = "diagclose" },
-            LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(12) })
-        root.addView(buttons, ui.lp(top = 12))
+        // celé hlášení (jako soubor) do schránky nebo přes Sdílet – záloha, když nejde záznam v síti
+        buttons.addView(ui.button(tx("zz_copy")) { NetLogShare.copy(this, report.full) }.apply { tag = "diagcopy" }, gap())
+        buttons.addView(ui.button(tx("zz_share")) { NetLogShare.share(this, report.full) }.apply { tag = "diagshare" }, gap())
+        buttons.addView(ui.button(tx("dg_close"), primary = true) { finish() }.apply { tag = "diagclose" }, gap())
+        // v úzkém telefonu se čtyři tlačítka nevejdou – dají se posunout do strany
+        root.addView(android.widget.HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(buttons) }, ui.lp(top = 12))
         setContentView(root)
         scroll.post { scroll.requestFocus() }
     }
@@ -94,7 +101,8 @@ class DiagActivity : Activity() {
 /** Obsah hlášení o stavu aplikace (obrazovka i soubor). Všechno prochází přes [Redact]. */
 object DiagReport {
     class Section(val title: String, val text: String, val mono: Boolean = false)
-    class Report(val sections: List<Section>, val full: String)
+    /** [full] = celé hlášení jako text, [parts] = totéž po oddílech (název, text) – obojí už přes [Redact]. */
+    class Report(val sections: List<Section>, val full: String, val parts: List<Pair<String, String>>)
 
     /** Hodnoty, které se v hlášení nesmí objevit: čísla účtu, klíče konzole, PIN. */
     fun secrets(c: Context): List<String> {
@@ -161,25 +169,33 @@ object DiagReport {
         }.takeLast(20)
         val events = (EventFile.tail(50).lines() + pairing).filter { it.isNotBlank() }.joinToString("\n")
 
+        // záznam z aplikace v televizi LG / Samsung (přichází po síti, viz core/TvLog.kt)
+        val tvLog = TvLog.read()
+        val tvTail = TvLog.tail(tvLog, 25)
+
         val sections = listOf(
             Section(c.tx("dg_app"), clean(app)),
             Section(c.tx("dg_conn"), clean(conn.toString())),
             Section(c.tx("dg_crash"), crash?.let { clean(it) } ?: c.tx("dg_nocrash"), mono = crash != null),
             Section(c.tx("dg_events"), events.ifBlank { null }?.let { clean(it) } ?: c.tx("dg_noevents"), mono = events.isNotBlank()),
+            Section(c.tx("zz_tv"), tvTail.ifBlank { null }?.let { clean(it) } ?: c.tx("zz_notv"), mono = tvTail.isNotBlank()),
         )
 
         // soubor: navíc všechny uložené pády, události z paměti a konec záznamu spojení s konzolí
-        val full = StringBuilder()
-        full.append("=== aplikace a zařízení ===\n").append(app)
-            .append("\n\n=== spojení ===\n").append(conn)
-            .append("\n\n=== pády ===\n").append(CrashLog.all(c) ?: "žádné")
-            .append("\n\n=== záznam (i z minulých spuštění) ===\n").append(EventFile.tail(200))
-            .append("\n\n=== poslední události ===\n").append(DiagLog.dump())
+        val parts = mutableListOf(
+            "aplikace a zařízení" to app,
+            "spojení" to conn.toString(),
+            "pády" to (CrashLog.all(c) ?: "žádné"),
+            "záznam (i z minulých spuštění)" to EventFile.tail(200),
+            "poslední události" to DiagLog.dump(),
+        )
         try {
             val f = Ps5Link.logFile(c)
-            if (f.exists()) full.append("\n\n=== spojení s PlayStationem ===\n").append(f.readText().takeLast(6000))
+            if (f.exists()) parts += "spojení s PlayStationem" to f.readText().takeLast(6000)
         } catch (_: Exception) {}
-        return Report(sections, clean(full.toString()))
+        parts += "televize (záznam z aplikace v televizi)" to TvLog.tail(tvLog, 400).ifBlank { "nic nepřišlo" }
+        val cleanParts = parts.map { (t, s) -> t to clean(s) }
+        return Report(sections, LogShare.text(cleanParts, secrets), cleanParts)
     }
 
     /** Uloží celé hlášení do souboru; vrací cestu (nebo „?“). */

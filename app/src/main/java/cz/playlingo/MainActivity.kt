@@ -1328,6 +1328,12 @@ class MainActivity : Activity() {
         translate()
     }
 
+    /**
+     * „Zpřístupnit záznam v domácí síti“ pro vývojáře (výchozí vypnuto, samo se vypne), viz NetLogShare.
+     * Vlastní blok v části Experimentální pod DeepL.
+     */
+    private fun logShareRow() = add(NetLogShare.row(this, ui) { render(true) }, 18)
+
     // ======================= EXPERIMENTÁLNÍ (pokus DeepL, výchozí vypnuto) =======================
 
     private var deeplUi: DeeplSection? = null
@@ -1336,6 +1342,7 @@ class MainActivity : Activity() {
     private fun experimentalSection() {
         val d = deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }) { url, text -> qrRow(url, text) }.also { deeplUi = it }
         d.build(content)
+        logShareRow()
     }
 
     // ======================= HISTORIE =======================

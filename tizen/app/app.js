@@ -110,6 +110,58 @@
   var hledani = 0;        // pořadové číslo hledání; starší rozběhnuté pokusy se podle něj zahodí
   var zpetCasovac = null;
 
+  // ---- Záznam událostí (pro vývojáře) ----------------------------------
+  // Posledních ZAZNAM_MAX řádků toho, co se v televizi dělo (start, hledání, spojení, chyby).
+  // Text titulků se nezapisuje, jen délka. Po připojení se pošle do PlayLinga na Androidu
+  // zprávou {"typ":"zaznam","radky":[…]} a pak po dávkách (viz TvSender.kt, TvLog.kt);
+  // starší PlayLingo na Androidu ji jen zahodí.
+  var ZAZNAM_MAX = 300;
+  var ZAZNAM_DAVKA = 25;
+  var zaznam = [];
+  var zaznamCelkem = 0;     // kolik řádků kdy vzniklo
+  var zaznamOdeslano = 0;   // kolik z nich už odešlo
+
+  function dvojmistne(n) { return (n < 10 ? '0' : '') + n; }
+
+  var zaznamPosledni = [];  // poslední různé texty – hledání se opakuje dokola, zapíše se jen počet
+  var zaznamOpakovani = 0;
+
+  function pridejRadek(text) {
+    var d = new Date();
+    zaznam.push(dvojmistne(d.getHours()) + ':' + dvojmistne(d.getMinutes()) + ':' + dvojmistne(d.getSeconds()) + ' ' + text);
+    if (zaznam.length > ZAZNAM_MAX) { zaznam.shift(); }
+    zaznamCelkem++;
+  }
+
+  function zapis(text) {
+    text = String(text).replace(/[\r\n]+/g, ' ').substring(0, 200);
+    if (zaznamPosledni.indexOf(text) >= 0) { zaznamOpakovani++; return; }
+    if (zaznamOpakovani) { pridejRadek('(předchozí řádky se ' + zaznamOpakovani + '× opakovaly)'); zaznamOpakovani = 0; }
+    zaznamPosledni.push(text);
+    if (zaznamPosledni.length > 3) { zaznamPosledni.shift(); }
+    pridejRadek(text);
+  }
+
+  // Pošle řádky, které ještě neodešly (nejvýš celý buffer), po dávkách ZAZNAM_DAVKA.
+  function posliZaznam(ws) {
+    var nove, radky, i;
+    if (!ws) { return; }
+    nove = Math.min(zaznam.length, zaznamCelkem - zaznamOdeslano);
+    if (nove <= 0) { return; }
+    radky = zaznam.slice(zaznam.length - nove);
+    try {
+      for (i = 0; i < radky.length; i += ZAZNAM_DAVKA) {
+        ws.send(JSON.stringify({ typ: 'zaznam', radky: radky.slice(i, i + ZAZNAM_DAVKA) }));
+      }
+      zaznamOdeslano = zaznamCelkem;
+    } catch (e) { /* spojení spadlo, pošle se příště */ }
+  }
+
+  window.onerror = function (zprava, soubor, radek) {
+    zapis('CHYBA: ' + zprava + ' (' + String(soubor || '').split('/').pop() + ':' + radek + ')');
+    return false;
+  };
+
   function el(id) { return document.getElementById(id); }
 
   function pozdeji(fn, ms) {
@@ -145,6 +197,7 @@
     P.zjistiTelevizi(function (model, system) {
       udaje.model = model;
       udaje.system = system;
+      zapis('televize: ' + model + ', ' + system);
     });
   }
 
@@ -241,6 +294,7 @@
     P.skryjVstup();
     el('obraz').innerHTML = '';
     strana = kam;
+    zapis('obrazovka: ' + kam);
     // i na <html>: Samsung kreslí obraz ze vstupu pod celou stránku, takže musí být průhledná celá
     document.documentElement.className = 's-' + kam;
     document.body.className = 's-' + kam;
@@ -266,6 +320,7 @@
 
   function ukazVstup(cislo) {
     P.ukazVstup(cislo, el('obraz'), function () {
+      zapis('vstup HDMI ' + cislo + ' se nepodařilo otevřít');
       if (strana === 'hra' && !spojeni) { hlaseni(T.bez_vstupu.replace('%1', cislo)); }
     });
   }
@@ -276,6 +331,7 @@
     prijem = { hdmi: cislo, pevna: pevna || null };
     pamet('hdmi', String(cislo));
     oznac(cislo - 1);
+    zapis('hra: HDMI ' + cislo + (pevna ? ', pevná adresa ' + pevna : ''));
     hlaseni(T.hledam);
     if (!bezVstupu) { ukazVstup(cislo); }
     hledej();
@@ -316,6 +372,7 @@
   // Nalezené spojení: od teď je na obrazovce jen hra a pruh.
   function prevezmi(ws, adresa) {
     spojeni = ws;
+    zapis('připojeno k ' + adresa);
     if (!prijem.pevna) { pamet('titulky', adresa); }
     pruh(null);
     hlaseni(T.pripojeno);
@@ -327,8 +384,12 @@
       if (z.typ === 'ukaz') {
         hlaseni('');
         pruhCasti(z.casti, String(z.text || ''));
+        // jen délka a počet řádků, ne text titulku
+        zapis('ukaž #' + z.id + ': ' + String(z.text || '').length + ' znaků' +
+          (z.casti && z.casti.length ? ', ' + z.casti.length + ' částí' : ''));
       } else if (z.typ === 'skryj') {
         pruh(null);
+        zapis('skryj #' + z.id);
       } else {
         return;
       }
@@ -338,6 +399,7 @@
     };
     ws.onclose = function () {
       if (spojeni !== ws || !prijem) { return; }
+      zapis('spojení se ztratilo, hledám znovu');
       spojeni = null;
       pruh(null);
       hlaseni(T.hledam);
@@ -347,7 +409,9 @@
     try {
       ws.send(JSON.stringify({ typ: 'pripojeno', televize: udaje.model, system: udaje.system, hdmi: prijem.hdmi,
         aplikace: 'PlayLingo', platforma: P.platforma, verze: P.verze }));
-    } catch (e) { /* onclose se postará */ }
+    } catch (e) { zapis('ohlášení se nepodařilo poslat'); }
+    // záznam: co se nasbíralo do teď (i z hledání), dál po dávkách (setInterval při startu)
+    posliZaznam(ws);
   }
 
   function hledej() {
@@ -367,10 +431,12 @@
         if (!plati()) { return; }
         var m = /^(\d+\.\d+\.\d+\.)(\d+)$/.exec(ip || '');
         if (!m) {
+          zapis('adresa televize neznámá (' + (ip || '-') + (odpovedela ? '' : ', systém neodpověděl') + ')');
           if (odpovedela) { hlaseni(T.bez_site); }
           znovu();
           return;
         }
+        zapis('hledám v síti ' + m[1] + 'x (televize .' + m[2] + ', port ' + PORT + ')');
         var fronta = [];
         var bezi = 0;
         var nalezeno = false;
@@ -390,14 +456,17 @@
         function dalsi() {
           if (nalezeno || !plati()) { return; }
           while (bezi < 24 && fronta.length) { spust(fronta.shift()); }
-          if (bezi === 0 && !fronta.length) { znovu(); }
+          if (bezi === 0 && !fronta.length) { zapis('v síti nic nenalezeno, zkusím za 5 s'); znovu(); }
         }
         dalsi();
       });
     }
-    if (prijem.pevna) { jedna(prijem.pevna, 3000, znovu); return; }
+    if (prijem.pevna) { zapis('zkouším ' + prijem.pevna); jedna(prijem.pevna, 3000, znovu); return; }
     var minula = pamet('titulky');
-    if (minula) { jedna(minula, 2000, celaSit); } else { celaSit(); }
+    if (minula) {
+      zapis('zkouším minulou adresu ' + minula);
+      jedna(minula, 2000, function () { zapis('minulá adresa neodpověděla'); celaSit(); });
+    } else { celaSit(); }
   }
 
   // Parametry spuštění (jen pro zkoušky): {"titulky": "ws://adresa:port", "hdmi": 2}.
@@ -482,7 +551,11 @@
 
   // Pořadí: značka v adrese (snímky), jazyk zvolený tlačítkem, jinak jazyk televize.
   var zvoleny = vynuceny || pamet('jazyk');
+  zapis('start PlayLingo ' + P.platforma + ' ' + P.verze + ' · ' + String(navigator.userAgent || '?').substring(0, 120));
+  // nové řádky záznamu jdou do Androidu po dávkách (mimo `casovace`, ty maže každé přepnutí obrazovky)
+  setInterval(function () { posliZaznam(spojeni); }, 10000);
   nastavJazyk(zvoleny || navigator.language);
+  zapis('jazyk: ' + jazyk + (zvoleny ? ' (zvolený)' : ''));
   prejdi('domu');
   oznac((parseInt(pamet('hdmi'), 10) || 1) - 1);
   zjistiTelevizi();
