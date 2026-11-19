@@ -24,6 +24,11 @@ import java.util.concurrent.Executors
  * se tu ručně, bez knihoven. Zprávy jsou krátké texty:
  *  - `{"typ":"vitej"}` hned po připojení (podle toho televize pozná PlayLingo),
  *  - `{"typ":"ukaz","id":1,"text":"…"}` a `{"typ":"skryj","id":2}`.
+ *    Od verze s barevnými jmény a volbami může `ukaz` nést navíc `"casti":[…]` – řádky pruhu zvlášť:
+ *    `{"jmeno":"Mira","barva":"#F2C14E","text":"…"}` (replika s mluvčím a jeho barvou; barva chybí,
+ *    když má uživatel jména bez barvy), `{"volba":true,"text":"…"}` (jedna z voleb odpovědi)
+ *    a `{"text":"…"}` (replika bez jména). `text` zůstává celý jako dřív („Jméno: …“, volby s „• “),
+ *    takže starší aplikace v televizi, která `casti` nezná, ukáže všechno jako obyčejný text.
  * Co pošle televize, se jen přečte a zahodí. Bez Androidu, aby šlo vyzkoušet v unit testech.
  */
 class TvSender(private val log: (String) -> Unit = {}) {
@@ -35,7 +40,20 @@ class TvSender(private val log: (String) -> Unit = {}) {
         private const val MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
         const val HELLO = "{\"typ\":\"vitej\"}"
-        fun showMessage(id: Int, text: String) = "{\"typ\":\"ukaz\",\"id\":$id,\"text\":${json(text)}}"
+        fun showMessage(id: Int, text: String, parts: String? = null) =
+            "{\"typ\":\"ukaz\",\"id\":$id,\"text\":${json(text)}" + (if (parts != null) ",\"casti\":$parts" else "") + "}"
+
+        /** Řádky pruhu pro pole `casti` (JSON); [colors] = barvy jmen, bez jména v ní se barva nepošle. */
+        fun partsJson(segments: List<Segment>, colors: Map<String, Int> = emptyMap()): String =
+            segments.joinToString(",", "[", "]") { s ->
+                when {
+                    s.choice -> "{\"volba\":true,\"text\":${json(s.body)}}"
+                    s.speaker != null -> "{\"jmeno\":${json(s.speaker)}" +
+                        (colors[s.speaker]?.let { ",\"barva\":\"${SpeakerColors.hex(it)}\"" } ?: "") +
+                        ",\"text\":${json(s.body)}}"
+                    else -> "{\"text\":${json(s.body)}}"
+                }
+            }
         fun hideMessage(id: Int) = "{\"typ\":\"skryj\",\"id\":$id}"
 
         /** Text jako řetězec JSON (uvozovky, zpětná lomítka a řídicí znaky se zapíšou bezpečně). */
@@ -86,6 +104,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
     private var nextId = 0
     /** Co je právě na obrazovce (null = pruh schovaný) – nově připojená televize to dostane hned. */
     private var shown: String? = null
+    private var shownParts: String? = null
 
     val running: Boolean get() = server?.isClosed == false
 
@@ -123,20 +142,26 @@ class TvSender(private val log: (String) -> Unit = {}) {
         sendQueue?.shutdownNow(); sendQueue = null
         acceptor = null
         shown = null
+        shownParts = null
         log("tv closed")
     }
 
-    /** Ukáže na televizi přeložený titulek. Stejný text podruhé se neposílá. */
-    @Synchronized fun show(text: String) {
-        if (text == shown) return
+    /**
+     * Ukáže na televizi přeložený titulek. Stejný text podruhé se neposílá.
+     * [parts] = řádky zvlášť s barvami jmen a volbami (viz [partsJson]); null = jen obyčejný text.
+     */
+    @Synchronized fun show(text: String, parts: String? = null) {
+        if (text == shown && parts == shownParts) return
         shown = text
-        broadcast(showMessage(++nextId, text))
+        shownParts = parts
+        broadcast(showMessage(++nextId, text, parts))
     }
 
     /** Schová pruh na televizi. */
     @Synchronized fun hide() {
         if (shown == null) return
         shown = null
+        shownParts = null
         broadcast(hideMessage(++nextId))
     }
 
@@ -189,7 +214,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
             // aby se nová televize o žádnou změnu nepřipravila
             synchronized(this) {
                 clients.add(c)
-                shown?.let { t -> val b = frame(showMessage(++nextId, t)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
+                shown?.let { t -> val b = frame(showMessage(++nextId, t, shownParts)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
             }
             log("tv connected, now ${clients.size}")
             // Zprávy od televize se nepotřebují, jen se čtou, aby se poznalo zavření spojení.

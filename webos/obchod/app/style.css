@@ -81,6 +81,10 @@ h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; 
 }
 /* pre-line: titulek o dvou mluvčích přijde po síti jako dva řádky */
 #titulek { font-size: 50px; line-height: 1.25; color: #FFFFFF; text-align: center; padding: 0 80px; white-space: pre-line; }
+/* Řádky z pole casti: jméno mluvčího v jeho barvě, volby odpovědí jako seznam zarovnaný vlevo. */
+#titulek .barevne { font-weight: bold; }
+#titulek .volby { display: inline-block; text-align: left; }
+#titulek .odrazka { color: #F2C14E; }
 
 #zpet {
   display: none;
@@ -107,7 +111,7 @@ h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; 
 .uk-text { position: absolute; left: 140px; top: 250px; width: 1300px; font-size: 44px; color: #FFFFFF; }
 #original {
   position: absolute; left: 0; bottom: 190px; width: 1920px; text-align: center;
-  font-size: 34px; color: #FFFFFF; text-shadow: 0 0 6px #000000, 0 2px 4px #000000;
+  font-size: 34px; color: #FFFFFF; text-shadow: 0 0 6px #000000, 0 2px 4px #000000; white-space: pre-line;
 }
 
 /* Nápověda */

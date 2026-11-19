@@ -82,6 +82,9 @@ na další televizi stačí naskenovat čtvereček a klepnout na „Odeslat do t
    toho, co aplikace z PlayStationu vidí).
 2. Přepni televizi na HDMI s PlayStationem a hraj. Ve hře měj zapnuté anglické titulky.
 3. Titulky si aplikace na obrazovce najde sama.
+4. Každá postava má v pruhu jméno ve své barvě. Když hra nabídne volby odpovědi pod sebou
+   (očíslované nebo zarovnané vlevo), ukáže je pruh jako seznam s odrážkami, každou přeloženou
+   zvlášť. Menu hry a pokyny k ovládání se dál nepřekládají.
 
 ## 6. Zkouška bez PlayStationu
 Na stránce Domů zvol „Zkouška bez PlayStationu“. Ukáže se ukázková hra s anglickými titulky

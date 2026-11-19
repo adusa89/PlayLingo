@@ -22,6 +22,23 @@ const VETY = [
   'Mira: Jsi si jistý, že je to správná cesta?',
   'Musíme se odsud dostat!',
   'Počkej.',
+  // řádky zvlášť (pole casti): barevná jména a volby odpovědí; starší televize ukáže jen text
+  {
+    text: 'Mira: Vezmu levé dveře.\nTobin: Tak já jdu doprava.',
+    casti: [
+      { jmeno: 'Mira', barva: '#F2C14E', text: 'Vezmu levé dveře.' },
+      { jmeno: 'Tobin', barva: '#7FC8F8', text: 'Tak já jdu doprava.' },
+    ],
+  },
+  {
+    text: 'Kessler: Tak co bude?\n• Vezmu tu práci.\n• Řekni mi víc o výplatě.\n• Nemám zájem.',
+    casti: [
+      { jmeno: 'Kessler', barva: '#8EDB8A', text: 'Tak co bude?' },
+      { volba: true, text: 'Vezmu tu práci.' },
+      { volba: true, text: 'Řekni mi víc o výplatě.' },
+      { volba: true, text: 'Nemám zájem.' },
+    ],
+  },
 ];
 const UKAZAT_MS = 3000;
 const PAUZA_MS = 1000;
@@ -95,7 +112,8 @@ server.on('upgrade', (pozadavek, spojeni) => {
   }
   function dalsi() {
     if (!zije) { return; }
-    posli({ typ: 'ukaz', text: VETY[poradi++ % VETY.length] });
+    const veta = VETY[poradi++ % VETY.length];
+    posli(typeof veta === 'string' ? { typ: 'ukaz', text: veta } : Object.assign({ typ: 'ukaz' }, veta));
     casovac = setTimeout(() => {
       if (!zije) { return; }
       posli({ typ: 'skryj' });

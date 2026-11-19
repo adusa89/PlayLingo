@@ -38,7 +38,14 @@ object DemoGame {
         "",
         "Davor: Run for the gate!",                           // velké písmo
         "",
+        // otázka a pod ní volby odpovědi – v pruhu jako seznam, každá volba přeložená zvlášť
+        "Kessler: So, what will it be?\n1. I'll take the job.\n2. Tell me more about the pay.\n3. Not interested.",
+        "",
     )
+
+    /** Řádek s volbou odpovědi ("1. …") – kreslí se zarovnaný vlevo jako ve hrách. */
+    fun isChoiceLine(line: String): Boolean = CHOICE_LINE.containsMatchIn(line)
+    private val CHOICE_LINE = Regex("^\\d\\. ")
     /** Jak se titulek kreslí: výška písma jako zlomek výšky obrazu a jestli je pod ním světlé neklidné pozadí. */
     data class Style(val size: Float, val busy: Boolean)
 
@@ -48,6 +55,7 @@ object DemoGame {
         subtitle.startsWith("Davor: Hand") -> Style(0.016f, false)
         subtitle.startsWith("Lena: The bridge") -> Style(0.026f, true)
         subtitle.startsWith("Davor: Run") -> Style(0.060f, false)
+        subtitle.startsWith("Kessler:") -> Style(0.028f, false)
         else -> Style(0.032f, false)
     }
 

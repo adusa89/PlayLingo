@@ -8,8 +8,10 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.text.Layout
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.AlignmentSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
@@ -23,6 +25,9 @@ import cz.playlingo.core.MatchSize
 import cz.playlingo.core.ScreenLayout
 import cz.playlingo.core.Segment
 import cz.playlingo.core.SizeKeeper
+import cz.playlingo.core.SpeakerColors
+import cz.playlingo.core.TextLogic
+import cz.playlingo.core.TvSender
 import kotlin.math.max
 
 /**
@@ -45,11 +50,11 @@ class SubtitleOverlay(
     /** Velikost písma překladu podle anglického originálu (jinak pevná [textSizeSp]). */
     private val matchOriginalSize: Boolean = false,
     /**
-     * Dostane každou změnu pruhu: text překladu, nebo null při schování. Tudy jdou titulky
-     * i do televize LG (viz [cz.playlingo.core.TvSender]); volá se i tehdy, když se pruh na tomto zařízení
-     * zobrazit nepodařilo.
+     * Dostane každou změnu pruhu: text překladu a jeho řádky zvlášť s barvami jmen a volbami
+     * ([TvSender.partsJson]), nebo null při schování. Tudy jdou titulky i do televize LG
+     * (viz [TvSender]); volá se i tehdy, když se pruh na tomto zařízení zobrazit nepodařilo.
      */
-    private val onText: ((String?) -> Unit)? = null,
+    private val onText: ((String?, String?) -> Unit)? = null,
 ) {
     companion object {
         private const val TAG = "TestPreklad"
@@ -65,7 +70,9 @@ class SubtitleOverlay(
     private val wm = host.getSystemService(WindowManager::class.java)
     private val main = Handler(Looper.getMainLooper())
     private val density = host.resources.displayMetrics.density
-    private val speakerColor = Color.rgb(0xF2, 0xC1, 0x4E)
+    /** Každý mluvčí má svou barvu jména (po dobu čtení stálou). */
+    private val speakerColors = SpeakerColors()
+    private val choiceColor = SpeakerColors.PALETTE[0]
     private val originalColor = Color.rgb(0xA8, 0xB0, 0xB8)
 
     @Volatile private var bar: TextView? = null
@@ -143,19 +150,25 @@ class SubtitleOverlay(
 
     fun setLayout(l: ScreenLayout) { layout = l }
 
-    private fun format(segments: List<Segment>, original: String?): CharSequence {
+    private fun format(segments: List<Segment>, original: String?, colors: Map<String, Int>): CharSequence {
         val sb = SpannableStringBuilder()
         segments.forEachIndexed { i, s ->
             if (i > 0) sb.append('\n')
-            if (s.speaker != null) {
-                val start = sb.length
+            val lineStart = sb.length
+            if (s.choice) {
+                // volba odpovědi: odrážka a řádek zarovnaný vlevo, ať je vidět, že jde o seznam
+                sb.append(TextLogic.CHOICE_MARK)
+                sb.setSpan(ForegroundColorSpan(choiceColor), lineStart, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            } else if (s.speaker != null) {
                 sb.append(s.speaker).append(": ")
                 if (coloredSpeaker) {
-                    sb.setSpan(ForegroundColorSpan(speakerColor), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(StyleSpan(Typeface.BOLD), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    val c = colors[s.speaker] ?: choiceColor
+                    sb.setSpan(ForegroundColorSpan(c), lineStart, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sb.setSpan(StyleSpan(Typeface.BOLD), lineStart, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
             }
             sb.append(s.body)
+            if (s.choice) sb.setSpan(AlignmentSpan.Standard(Layout.Alignment.ALIGN_NORMAL), lineStart, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         if (!original.isNullOrBlank()) {
             val start = sb.length
@@ -177,7 +190,8 @@ class SubtitleOverlay(
         lineHeight: Float = 0f,
     ) {
         isShown = true
-        onText?.invoke(segments.joinToString("\n") { s -> if (s.speaker != null) "${s.speaker}: ${s.body}" else s.body })
+        val colors = if (coloredSpeaker) speakerColors.colorsFor(segments) else emptyMap()
+        onText?.invoke(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors))
         main.post {
             val tv = bar ?: return@post
             val lp = barParams ?: return@post
@@ -186,7 +200,7 @@ class SubtitleOverlay(
             val matched = if (matchOriginalSize) sizeKeeper.next(MatchSize.textPx(lineHeight, screenH)) else 0
             if (matched > 0) tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, matched.toFloat())
             else tv.textSize = textSize.toFloat()
-            tv.text = format(segments, original)
+            tv.text = format(segments, original, colors)
 
             val hasText = textTop >= 0f && textBottom > textTop
             val tTop = if (hasText) textTop else l.read.top
@@ -228,7 +242,7 @@ class SubtitleOverlay(
 
     fun hide() {
         isShown = false
-        onText?.invoke(null)
+        onText?.invoke(null, null)
         main.post { bar?.visibility = View.GONE }
     }
 
@@ -239,7 +253,7 @@ class SubtitleOverlay(
 
     fun destroy() {
         isShown = false
-        onText?.invoke(null)
+        onText?.invoke(null, null)
         main.post {
             listOfNotNull(bar, debugView).forEach { v -> try { wm.removeView(v) } catch (_: Exception) {} }
             bar = null; barParams = null; debugView = null

@@ -178,7 +178,8 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
 - Zprávy mezi Androidem a televizí jsou popsané na jednom místě, v `core/TvSender.kt`. V televizi
   je obsluhuje jen `webos/obchod/app/app.js` (`hledej`, `zkus`, `prevezmi`). Televize si zařízení
   najde sama: projde adresy své sítě na portu 8787. Spojení je WebSocket obsloužený ručně na obou
-  stranách.
+  stranách. Novinky ve zprávách přidávej jen jako nepovinná pole (tak přibylo `casti` s barvami jmen
+  a volbami odpovědí) – starší aplikace v televizi musí dál ukázat aspoň obyčejný `text`.
 - Android: volba Nastavení → „Posílat titulky do televize LG“ (`Prefs.tvSend`, výchozí vypnuto).
   `SubtitleOverlay` předává `TvSender` každou změnu pruhu. S vypnutou volbou se nic neotevírá ani
   neposílá a aplikace se chová jako dřív. Se zapnutou se čte i tehdy, když je vidět aplikace,
