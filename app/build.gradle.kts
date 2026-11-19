@@ -3,6 +3,11 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// Sestavení na PC s Windows (sestavit-na-pc.ps1): nativní část se tam přeložit nedá (OpenSSL chce
+// linuxové nástroje), proto se vezme hotová z vydaného APK. -PnativniZ=<složka s <abi>/*.so>.
+// Na GitHubu se nepoužívá, tam se nativní část překládá vždy.
+val nativniZ: String? = (project.findProperty("nativniZ") as String?)?.takeIf { it.isNotBlank() }
+
 android {
     namespace = "cz.playlingo"
     compileSdk = 35
@@ -19,7 +24,7 @@ android {
         ndk { abiFilters += abis }
 
         // spojení s PlayStationem: otevřená knihovna chiaki-ng (third_party/chiaki-ng)
-        externalNativeBuild {
+        if (nativniZ == null) externalNativeBuild {
             cmake {
                 arguments += listOf(
                     "-DCHIAKI_ENABLE_TESTS=OFF", "-DCHIAKI_ENABLE_CLI=OFF", "-DCHIAKI_ENABLE_GUI=OFF",
@@ -36,11 +41,13 @@ android {
     }
 
     ndkVersion = "28.2.13676358"
-    externalNativeBuild {
+    if (nativniZ == null) externalNativeBuild {
         cmake {
             version = "3.22.1"
             path = file("../third_party/chiaki-ng/CMakeLists.txt")
         }
+    } else {
+        sourceSets["main"].jniLibs.srcDir(nativniZ)
     }
 
     // Stálý podpis: všechny verze musí být podepsané stejným klíčem, jinak je televize nenainstaluje

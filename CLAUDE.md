@@ -59,6 +59,15 @@ před každým pushem – odhalí překlepy a chyby v typech dřív než zkoušk
 (`res/`), manifest ani nativní část; nový zdroj `R.…` nebo novou funkci knihoven Google použitou
 v kódu je potřeba doplnit do `ci/mistni-kontrola/stub`.
 
+**Sestavení na PC uživatele (Windows)**: `.\sestavit-na-pc.ps1` (s `-Instalovat` nahraje APK přes
+`adb`). První běh asi 1,5 minuty, další po změně kódu kolem 15 s. Výsledek `PlayLingo-pc.apk`
+je podepsaný stálým klíčem, takže jde instalovat přes verze z GitHubu a naopak. Klíč a heslo leží
+mimo repozitář v `%USERPROFILE%\.playlingo\klic` – nikam je nekopíruj ani nevypisuj. Nativní část
+(chiaki-ng) se na Windows přeložit nedá (OpenSSL chce linuxové nástroje), proto ji skript bere
+hotovou z vydání `latest` (`-PnativniZ=…` v `app/build.gradle.kts`). Když se změní
+`app/src/main/cpp`, `com/metallic` nebo `third_party`, skript varuje: taková změna se ověří jen
+sestavením na GitHubu. Nástroje: Java 17 (Temurin), Android SDK v `%LOCALAPPDATA%\Android\Sdk`.
+
 Od 0.68 běží vedle toho i **zkouška v emulátoru telefonu** (`ci/phone-test.sh`, Android 11 a 14):
 pomocník, celá aplikace v telefonu v šesti velikostech displeje a písma (malý, běžný, velké písmo,
 velký, na šířku, tablet) a překlad ukázkové hry. Výsledky a snímky jsou ve větvích
@@ -110,7 +119,8 @@ náhoda, opakované selhání po změně kódu ne.
 - Klíč v repozitáři není a nesmí být (repozitář je veřejný a co se jednou dostane do historie,
   tam zůstane). Je jen v tajných údajích repozitáře na GitHubu: `PLAYLINGO_KEY_BASE64` (soubor
   p12 v base64) a `PLAYLINGO_KEY_PASSWORD`. Sestavení ho při běhu rozbalí do dočasného souboru
-  a po sobě smaže. Zálohu klíče a hesla má jen uživatel. Klíč ani heslo nikam nezapisuj,
+  a po sobě smaže. Zálohu klíče a hesla má uživatel na svém PC (`%USERPROFILE%\.playlingo\klic`,
+obnovená z tajných údajů 19. 11. 2026). Klíč ani heslo nikam nezapisuj,
   nevypisuj je do logu a neukládej do repozitáře; `*.p12`, `*.jks`, `*.keystore` jsou v `.gitignore`.
 - Krok „Kontrola podpisu“ porovná otisk certifikátu s otiskem stálého klíče zapsaným přímo
   v `build.yml` (otisk je veřejný údaj). Verze s jiným podpisem se **nevydá**: ve zkušebním
