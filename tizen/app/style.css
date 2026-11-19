@@ -1,0 +1,127 @@
+/* Psáno pro starý prohlížeč v televizích z roku 2017 (Chromium 38):
+   bez proměnných, bez mřížky, jen flexbox a pevné rozměry pro 1920×1080. */
+
+html, body {
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: #0E1014;
+  color: #E9E6DF;
+  font-family: "LG Smart UI", "SamsungOne", "Museo Sans", Arial, sans-serif;
+  font-size: 32px;
+  line-height: 1.4;
+}
+
+/* Při hře musí být pozadí průhledné, obraz ze vstupu je pod stránkou
+   (na Samsungu pod celou stránkou, proto i <html>). */
+html.s-hra, body.s-hra { background: transparent; }
+
+.strana { display: none; position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; box-sizing: border-box; }
+body.s-domu #domu, body.s-hra #hra, body.s-ukazka #ukazka, body.s-napoveda #napoveda { display: block; }
+#domu, #napoveda { padding: 80px 140px 0 140px; }
+
+.znacka {
+  color: #F2C14E;
+  font-size: 30px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; }
+.popis { margin: 0 0 50px 0; width: 1400px; color: #B9B5AC; }
+.krok { margin: 0 0 22px 0; font-size: 38px; color: #FFFFFF; }
+.drobne { margin-top: 30px; font-size: 26px; color: #8C887F; }
+
+.rada { display: flex; margin-bottom: 30px; }
+.tl {
+  width: 340px;
+  height: 150px;
+  margin-right: 30px;
+  line-height: 150px;
+  text-align: center;
+  font-size: 46px;
+  font-weight: bold;
+  color: #E9E6DF;
+  background: #1A1D24;
+  border: 4px solid #2A2E37;
+  border-radius: 14px;
+  cursor: pointer;
+}
+/* tři menší tlačítka jsou dohromady stejně široká jako čtyři vstupy nad nimi */
+.tl.mensi { width: 463px; height: 100px; line-height: 100px; font-size: 36px; }
+.tl.vybrane { background: #F2C14E; border-color: #F2C14E; color: #0E1014; }
+
+/* Hra */
+#obraz, #obraz video { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+#hlaseni {
+  display: none;
+  position: absolute;
+  left: 40px;
+  top: 30px;
+  max-width: 1300px;
+  padding: 12px 24px;
+  font-size: 28px;
+  color: #E9E6DF;
+  background: rgba(14, 16, 20, 0.85);
+  border-left: 6px solid #F2C14E;
+  border-radius: 6px;
+}
+
+/* Stejný černý pruh jako v aplikaci pro Android TV. */
+#pruh {
+  display: none;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1920px;
+  min-height: 150px;
+  background: #000000;
+  align-items: center;
+  justify-content: center;
+}
+/* pre-line: titulek o dvou mluvčích přijde po síti jako dva řádky */
+#titulek { font-size: 50px; line-height: 1.25; color: #FFFFFF; text-align: center; padding: 0 80px; white-space: pre-line; }
+/* Řádky z pole casti: jméno mluvčího v jeho barvě, volby odpovědí jako seznam zarovnaný vlevo. */
+#titulek .barevne { font-weight: bold; }
+#titulek .volby { display: inline-block; text-align: left; }
+#titulek .odrazka { color: #F2C14E; }
+
+#zpet {
+  display: none;
+  position: absolute;
+  right: 40px;
+  top: 30px;
+  width: 260px;
+  height: 90px;
+  margin: 0;
+  line-height: 90px;
+  font-size: 34px;
+}
+
+/* Ukázka: nakreslená „hra“ s anglickým titulkem, pod ní pruh s překladem. */
+.scena {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+  background: linear-gradient(#27405C, #16222F 55%, #2C2A22 56%, #14130F);
+}
+.stitek {
+  position: absolute; left: 40px; top: 30px;
+  padding: 10px 22px; font-size: 26px; letter-spacing: 2px; text-transform: uppercase;
+  color: #0E1014; background: #F2C14E; border-radius: 6px; font-weight: bold;
+}
+.uk-text { position: absolute; left: 140px; top: 250px; width: 1300px; font-size: 44px; color: #FFFFFF; }
+#original {
+  position: absolute; left: 0; bottom: 190px; width: 1920px; text-align: center;
+  font-size: 34px; color: #FFFFFF; text-shadow: 0 0 6px #000000, 0 2px 4px #000000; white-space: pre-line;
+}
+
+/* Nápověda */
+.kroky { width: 1560px; margin-top: 30px; }
+.bod { display: flex; margin-bottom: 26px; font-size: 34px; color: #E9E6DF; }
+.bod i {
+  flex: none; width: 60px; height: 60px; margin-right: 30px; border-radius: 30px;
+  line-height: 60px; text-align: center; font-style: normal; font-weight: bold;
+  color: #0E1014; background: #F2C14E;
+}
+.bod span { flex: 1; }
+.bod b { color: #FFFFFF; }

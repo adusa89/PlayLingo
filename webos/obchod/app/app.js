@@ -1,5 +1,5 @@
 /*
- * PlayLingo pro televize LG (webOS) – verze pro obchod LG.
+ * PlayLingo pro televize LG (webOS) a Samsung (Tizen).
  *
  * Televize ukáže hru ze vstupu HDMI a přes ni pruh s překladem titulků. Sama si obraz
  * přečíst neumí, proto čte a překládá PlayLingo na Androidu (telefon nebo box) v téže
@@ -10,11 +10,17 @@
  * Tohle je jediné místo, kde televize zprávy přijímá. Zkoušet jde i bez Androidu:
  * `node webos/posilac.js` posílá z počítače zkušební věty.
  *
+ * Soubor je stejný ve webos/obchod/app i v tizen/app (hlídá to sestavení APK, úloha
+ * samsungBalicek). Co se na LG a Samsungu dělá jinak, je v platforma.js (window.PlayLingoTv).
+ *
  * Schválně psáno postaru (ES5: var, function, žádné šipky ani šablony),
- * protože televize z let 2016–2017 mají prohlížeč Chromium 38.
+ * protože televize z let 2016–2017 mají prohlížeč Chromium 38 (LG) a Samsung z let
+ * 2015–2016 ještě starší WebKit.
  */
 (function () {
   'use strict';
+
+  var P = window.PlayLingoTv;
 
   var TEXTY = {
     cs: {
@@ -29,7 +35,7 @@
       tl_konec: 'Ukončit',
       ovladani: 'Šipkami vyberte, potvrďte tlačítkem OK. Tlačítko Zpět vrátí tuto obrazovku, na ní aplikaci ukončí.',
       hledam: 'Hledám PlayLingo v domácí síti… V aplikaci PlayLingo na Androidu zapněte ' +
-        'Nastavení → Posílat titulky do televize LG.',
+        'Nastavení → Posílat titulky do televize.',
       pripojeno: 'PlayLingo je připojeno. Překlad se ukáže, jakmile ve hře někdo promluví.',
       bez_vstupu: 'Vstup HDMI %1 se nepodařilo otevřít. Tlačítkem Zpět vyberte jiný.',
       bez_site: 'Televize není připojená k domácí síti.',
@@ -38,7 +44,7 @@
       np_nadpis: 'Jak to funguje',
       np_1: 'Do telefonu nebo boxu s Androidem nainstalujte PlayLingo: github.com/adusa89/PlayLingo',
       np_2: 'Podle průvodce v ní spárujte PlayStation 5. Zařízení musí být ve stejné domácí síti jako televize.',
-      np_3: 'V PlayLingu na Androidu zapněte Nastavení → Posílat titulky do televize LG a spusťte překlad.',
+      np_3: 'V PlayLingu na Androidu zapněte Nastavení → Posílat titulky do televize a spusťte překlad.',
       np_4: 'Tady v televizi vyberte vstup HDMI s PlayStationem. Televize si PlayLingo v síti najde sama.',
       np_sony: 'Aplikace není produktem společnosti Sony Interactive Entertainment. „PlayStation“ a „PS5“ jsou jejich ochranné známky.'
     },
@@ -54,7 +60,7 @@
       tl_konec: 'Exit',
       ovladani: 'Select with the arrow keys and press OK. The Back button returns to this screen and exits the app from here.',
       hledam: 'Looking for PlayLingo in your home network… In PlayLingo on Android, turn on ' +
-        'Settings → Send subtitles to LG TV.',
+        'Settings → Send subtitles to TV.',
       pripojeno: 'PlayLingo is connected. The translation appears as soon as someone speaks in the game.',
       bez_vstupu: 'HDMI %1 could not be opened. Press Back and choose another input.',
       bez_site: 'The TV is not connected to your home network.',
@@ -64,7 +70,7 @@
       np_nadpis: 'How it works',
       np_1: 'Install PlayLingo on an Android phone or box: github.com/adusa89/PlayLingo',
       np_2: 'Follow its guide to pair your PlayStation 5. The device must be in the same home network as the TV.',
-      np_3: 'In PlayLingo on Android, turn on Settings → Send subtitles to LG TV and start translating.',
+      np_3: 'In PlayLingo on Android, turn on Settings → Send subtitles to TV and start translating.',
       np_4: 'Here on the TV, choose the HDMI input of your PlayStation. The TV finds PlayLingo in the network by itself.',
       np_sony: 'This app is not a product of Sony Interactive Entertainment. “PlayStation” and “PS5” are their trademarks.'
     }
@@ -133,44 +139,13 @@
     }
   }
 
-  // ---- Dotazy na systém televize -------------------------------------
-
-  // Zavolá službu televize. Odpověď (nebo chybu) vrátí vždy přesně jednou.
-  function sluzba(adresa, parametry, hotovo) {
-    var Most = window.WebOSServiceBridge || window.PalmServiceBridge;
-    var vyrizeno = false;
-    function konec(odpoved) {
-      if (vyrizeno) { return; }
-      vyrizeno = true;
-      hotovo(odpoved);
-    }
-    if (!Most) {
-      konec({ returnValue: false, errorText: 'mimo televizi' });
-      return;
-    }
-    try {
-      var most = new Most();
-      most.onservicecallback = function (zprava) {
-        var o;
-        try { o = JSON.parse(zprava); } catch (e) { o = { returnValue: false, errorText: String(zprava) }; }
-        konec(o);
-      };
-      most.call(adresa, JSON.stringify(parametry));
-    } catch (e) {
-      konec({ returnValue: false, errorText: String(e && e.message || e) });
-    }
-    setTimeout(function () { konec({ returnValue: false, errorText: 'bez odpovědi' }); }, 5000);
-  }
+  // ---- Dotazy na systém televize (platforma.js) ---------------------
 
   function zjistiTelevizi() {
-    sluzba('luna://com.webos.service.tv.systemproperty/getSystemInfo',
-      { keys: ['modelName', 'firmwareVersion', 'sdkVersion'] },
-      function (o) {
-        if (o && o.modelName) {
-          udaje.model = o.modelName;
-          udaje.system = 'webOS ' + (o.sdkVersion || '?') + ' (' + (o.firmwareVersion || '?') + ')';
-        }
-      });
+    P.zjistiTelevizi(function (model, system) {
+      udaje.model = model;
+      udaje.system = system;
+    });
   }
 
   // ---- Obrazovky --------------------------------------------------------
@@ -263,8 +238,11 @@
     spojeni = null;
     hlaseni('');
     pruh(null);
+    P.skryjVstup();
     el('obraz').innerHTML = '';
     strana = kam;
+    // i na <html>: Samsung kreslí obraz ze vstupu pod celou stránku, takže musí být průhledná celá
+    document.documentElement.className = 's-' + kam;
     document.body.className = 's-' + kam;
     ukazZpet(kam === 'ukazka' || kam === 'napoveda');
   }
@@ -287,18 +265,9 @@
   // ---- Obraz ze vstupu HDMI přímo v aplikaci ---------------------------
 
   function ukazVstup(cislo) {
-    var video = document.createElement('video');
-    var zdroj = document.createElement('source');
-    function chyba() {
+    P.ukazVstup(cislo, el('obraz'), function () {
       if (strana === 'hra' && !spojeni) { hlaseni(T.bez_vstupu.replace('%1', cislo)); }
-    }
-    video.setAttribute('autoplay', 'autoplay');
-    zdroj.setAttribute('src', 'ext://hdmi:' + cislo);
-    zdroj.setAttribute('type', 'service/webos-external');
-    video.addEventListener('error', chyba);
-    zdroj.addEventListener('error', chyba);
-    video.appendChild(zdroj);
-    el('obraz').appendChild(video);
+    });
   }
 
   // bezVstupu: jen pro snímek obrazovky v počítači, kde žádný vstup HDMI není.
@@ -374,16 +343,11 @@
       hlaseni(T.hledam);
       pozdeji(hledej, 2000);
     };
+    // platforma a verze: podle nich průvodce na Androidu pozná, že je aplikace v televizi nainstalovaná
     try {
-      ws.send(JSON.stringify({ typ: 'pripojeno', televize: udaje.model, system: udaje.system, hdmi: prijem.hdmi }));
+      ws.send(JSON.stringify({ typ: 'pripojeno', televize: udaje.model, system: udaje.system, hdmi: prijem.hdmi,
+        aplikace: 'PlayLingo', platforma: P.platforma, verze: P.verze }));
     } catch (e) { /* onclose se postará */ }
-  }
-
-  function stavSite(hotovo) {
-    sluzba('luna://com.palm.connectionmanager/getStatus', {}, function (a) {
-      if (a && a.returnValue) { hotovo(a); return; }
-      sluzba('luna://com.palm.connectionmanager/getstatus', {}, hotovo);
-    });
   }
 
   function hledej() {
@@ -399,13 +363,11 @@
       });
     }
     function celaSit() {
-      // LG službu píše getStatus, televize z roku 2017 odpovídá na getstatus – zkusí se obojí.
-      stavSite(function (o) {
+      P.adresaSite(function (ip, odpovedela) {
         if (!plati()) { return; }
-        var ip = o && ((o.wired && o.wired.ipAddress) || (o.wifi && o.wifi.ipAddress));
         var m = /^(\d+\.\d+\.\d+\.)(\d+)$/.exec(ip || '');
         if (!m) {
-          if (o && o.returnValue) { hlaseni(T.bez_site); }
+          if (odpovedela) { hlaseni(T.bez_site); }
           znovu();
           return;
         }
@@ -439,7 +401,7 @@
   }
 
   // Parametry spuštění (jen pro zkoušky): {"titulky": "ws://adresa:port", "hdmi": 2}.
-  // Při startu je má PalmSystem, při spuštění už běžící aplikace je nese událost webOSRelaunch.
+  // Odkud se berou, ví platforma.js.
   function podleParametru(p) {
     if (typeof p === 'string') {
       try { p = JSON.parse(p || '{}'); } catch (e) { p = {}; }
@@ -465,11 +427,10 @@
     else { prejdi('napoveda'); }
   }
 
-  // Úplné ukončení. Samotné platformBack aplikaci jen schová do pozadí, kde by dál hledala
-  // čtečku v síti; window.close() ji zavře.
+  // Úplné ukončení (i hledání v síti). Jak, ví platforma.js.
   function ukonci() {
-    try { window.close(); } catch (e) { /* jinak aspoň do pozadí */ }
-    if (window.PalmSystem && window.PalmSystem.platformBack) { window.PalmSystem.platformBack(); }
+    prejdi('domu');
+    P.ukonci();
   }
 
   // Domů jsou dvě řady: čtyři vstupy (0–3) a pod nimi Ukázka (4), Jak to funguje (5), Jazyk (6)
@@ -484,7 +445,7 @@
 
   document.addEventListener('keydown', function (udalost) {
     var klavesa = udalost.keyCode;
-    var zpet = klavesa === 461 || klavesa === 27 || klavesa === 8;
+    var zpet = P.jeZpet(klavesa);
     if (strana !== 'domu') {
       // V ukázce a nápovědě je označené tlačítko Zpět, takže ho potvrdí i OK.
       if (zpet || (klavesa === 13 && strana !== 'hra')) { prejdi('domu'); udalost.preventDefault(); }
@@ -527,8 +488,7 @@
   zjistiTelevizi();
   if (!zvoleny) {
     // Jazyk nabídky televize je spolehlivější než jazyk prohlížeče.
-    sluzba('luna://com.webos.settingsservice/getSystemSettings', { keys: ['localeInfo'] }, function (o) {
-      var kod = o && o.settings && o.settings.localeInfo && o.settings.localeInfo.locales && o.settings.localeInfo.locales.UI;
+    P.jazykTelevize(function (kod) {
       if (kod && !pamet('jazyk')) { nastavJazyk(kod); }
     });
   }
@@ -537,6 +497,5 @@
   else if (znacka.indexOf('napoveda') >= 0) { prejdi('napoveda'); }
   else if (znacka.indexOf('hra') >= 0) { spustHru(1, null, true); }
 
-  document.addEventListener('webOSRelaunch', function (udalost) { podleParametru(udalost.detail); });
-  podleParametru(window.PalmSystem && window.PalmSystem.launchParams);
+  P.parametry(podleParametru);
 })();

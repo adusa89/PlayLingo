@@ -2,7 +2,8 @@
 
 Aplikace, která se podává do obchodu LG (LG Content Store). Televize ukáže hru ze vstupu HDMI
 a přes ni pruh s překladem. Číst a překládat musí PlayLingo na Androidu (od 0.63 tlačítko „Použít telefon pro televizi LG“, v boxu volba
-Nastavení → „Posílat titulky do televize LG“) ve stejné domácí síti.
+Domů → Typ televize → LG; do 0.73 Nastavení → „Posílat titulky do televize LG“) ve stejné
+domácí síti. `app.js`, `style.css` a `index.html` jsou společné s aplikací pro Samsung (`../../tizen`).
 
 Tohle je jediná aplikace PlayLingo pro televizi; přehled všeho kolem LG je v `../CTI-ME.md`.
 Zprávy mezi Androidem a televizí popisuje `app/src/main/java/cz/playlingo/core/TvSender.kt`
@@ -82,7 +83,7 @@ jejich ochranné známky.
 4. **HDMI 1–4.** The TV shows the chosen HDMI input full screen and a note “Looking for PlayLingo
    in your home network…”. Without the Android app the note stays; the input picture is still
    shown. Moving the pointer shows a Back button for 4 s. Back returns Home.
-5. **With the Android app** (PlayLingo 0.62+, Settings → Send subtitles to LG TV, same network):
+5. **With the Android app** (PlayLingo 0.62+, Home → TV type → LG; older versions: Settings → Send subtitles to LG TV; same network):
    the note changes to “PlayLingo is connected”, then each translated subtitle appears in the bar
    and disappears when the game subtitle ends. Full translation needs a PlayStation 5 paired with
    the Android app; the Demo screen shows the same result without it.

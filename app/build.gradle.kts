@@ -126,6 +126,49 @@ val lgBalicek by tasks.registering {
 android.sourceSets.getByName("main").assets.srcDir(lgAssets)
 tasks.named("preBuild") { dependsOn(lgBalicek) }
 
+// Aplikace pro televize Samsung (tizen/app) jako NEPODEPSANÝ balíček .wgt v APK. Podepsat ho jde
+// jen certifikátem Samsungu pro konkrétní televizi, proto ho průvodce (SamsungInstallActivity)
+// jen uloží a podpis s nahráním nechá nástroji Samsungu. Skládá core/SamsungWgt.kt (přes buildSrc).
+// Hlídá i to, že se společné soubory (app.js, style.css, index.html) ve webos/obchod/app
+// a tizen/app nerozešly a že verze v platforma.js sedí s appinfo.json / config.xml.
+// Výsledek: assets samsung/receiver.wgt a samsung/receiver-manifest.json. Nic se necommituje.
+val samsungAssets = layout.buildDirectory.dir("generated/samsungAssets")
+val samsungBalicek by tasks.registering {
+    val src = rootProject.file("tizen/app")
+    val lg = rootProject.file("webos/obchod/app")
+    inputs.dir(src)
+    inputs.dir(lg)
+    outputs.dir(samsungAssets)
+    doLast {
+        fun read(dir: File) = dir.walkTopDown().filter { it.isFile && !it.name.startsWith(".") }
+            .associate { it.relativeTo(dir).invariantSeparatorsPath to it.readBytes() }
+        val files = read(src)
+        val lgFiles = read(lg)
+        val diff = cz.playlingo.core.SamsungWgt.sharedDiff(lgFiles, files)
+        require(diff.isEmpty()) {
+            "tizen/app se rozešel s webos/obchod/app: $diff – uprav oba stejně (zkopíruj soubor z webos/obchod/app do tizen/app)"
+        }
+        val (id, version) = cz.playlingo.core.SamsungWgt.config(String(files.getValue("config.xml")))
+        require(id == cz.playlingo.core.SamsungWgt.APP_ID) { "tizen/app/config.xml má jiné id: $id" }
+        require(cz.playlingo.core.SamsungWgt.platformVersion(String(files.getValue("platforma.js"))) == version) {
+            "tizen/app: verze v platforma.js nesedí s config.xml ($version)"
+        }
+        val lgVersion = cz.playlingo.core.LgIpk.appInfo(String(lgFiles.getValue("appinfo.json"))).second
+        require(cz.playlingo.core.SamsungWgt.platformVersion(String(lgFiles.getValue("platforma.js"))) == lgVersion) {
+            "webos/obchod/app: verze v platforma.js nesedí s appinfo.json ($lgVersion)"
+        }
+        val wgt = cz.playlingo.core.SamsungWgt.build(files)
+        cz.playlingo.core.SamsungWgt.verify(wgt, files)
+        val out = samsungAssets.get().dir("samsung").asFile
+        out.deleteRecursively(); out.mkdirs()
+        out.resolve("receiver.wgt").writeBytes(wgt)
+        out.resolve("receiver-manifest.json").writeText(cz.playlingo.core.SamsungWgt.manifest(id, version, wgt))
+        logger.lifecycle("Samsung: ${cz.playlingo.core.SamsungWgt.fileName(version)} (${wgt.size} B)")
+    }
+}
+android.sourceSets.getByName("main").assets.srcDir(samsungAssets)
+tasks.named("preBuild") { dependsOn(samsungBalicek) }
+
 dependencies {
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation("com.google.mlkit:translate:17.0.3")

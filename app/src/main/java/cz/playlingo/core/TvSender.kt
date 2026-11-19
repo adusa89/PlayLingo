@@ -13,10 +13,11 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
- * Posílání přeložených titulků do televize LG (webOS) po domácí síti.
+ * Posílání přeložených titulků do televize LG (webOS) nebo Samsung (Tizen) po domácí síti.
  *
- * Televize LG si obraz hry sama přečíst neumí, takže tam PlayLingo běží jen jako obrazovka
- * (složka `webos`): ukazuje hru ze vstupu HDMI a přes ni pruh. Číst a překládat musí jiné
+ * Televize LG a Samsung si obraz hry samy přečíst neumí, takže tam PlayLingo běží jen jako
+ * obrazovka (`webos/obchod/app` a `tizen/app` se společným app.js): ukazuje hru ze vstupu HDMI
+ * a přes ni pruh. Číst a překládat musí jiné
  * zařízení – toto. Aplikace v televizi si ho v síti najde sama (zkouší port [PORT]) a připojí se;
  * odsud jí pak chodí hotové věty.
  *
@@ -29,7 +30,11 @@ import java.util.concurrent.Executors
  *    když má uživatel jména bez barvy), `{"volba":true,"text":"…"}` (jedna z voleb odpovědi)
  *    a `{"text":"…"}` (replika bez jména). `text` zůstává celý jako dřív („Jméno: …“, volby s „• “),
  *    takže starší aplikace v televizi, která `casti` nezná, ukáže všechno jako obyčejný text.
- * Co pošle televize, se jen přečte a zahodí. Bez Androidu, aby šlo vyzkoušet v unit testech.
+ * Televize po připojení pošle `{"typ":"pripojeno","televize":"…","system":"…","hdmi":1}`, od verze 1.1.0
+ * navíc `"aplikace":"PlayLingo","platforma":"webos"|"tizen","verze":"1.1.0"` ([TvAnnounce]). Podle toho
+ * průvodce nahráním do televize a stránka Domů poznají, že je aplikace v televizi nainstalovaná
+ * a v jaké verzi ([lastSeen]). Ostatní zprávy od televize (`hotovo`) se jen přečtou a zahodí.
+ * Bez Androidu, aby šlo vyzkoušet v unit testech.
  */
 class TvSender(private val log: (String) -> Unit = {}) {
 
@@ -38,6 +43,44 @@ class TvSender(private val log: (String) -> Unit = {}) {
         private const val MAX_CLIENTS = 4
         private const val MAX_HEAD = 8 * 1024
         private const val MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+        /** Delší zprávy od televize se nečtou (ohlášení má pár set bajtů). */
+        private const val MAX_IN = 16 * 1024
+
+        /** Poslední ohlášení aplikace z televize (od kteréhokoli TvSender v procesu) a kdy přišlo. */
+        class Seen(val announce: TvAnnounce, val at: Long)
+        @Volatile var lastSeen: Seen? = null
+
+        /**
+         * Přečte jednu zprávu od televize (od prohlížeče jsou vždy maskované). Vrací text textové
+         * zprávy, "" pro jinou (ping, binární…), null = konec spojení nebo nesmyslná délka.
+         */
+        fun readFrame(input: InputStream): String? {
+            val b0 = input.read(); val b1 = input.read()
+            if (b0 < 0 || b1 < 0) return null
+            val opcode = b0 and 0x0F
+            var len = (b1 and 0x7F).toLong()
+            if (len == 126L) {
+                val hi = input.read(); val lo = input.read()
+                if (hi < 0 || lo < 0) return null
+                len = ((hi shl 8) or lo).toLong()
+            } else if (len == 127L) return null   // takhle dlouhou zprávu televize neposílá
+            if (len > MAX_IN) return null
+            val mask = if (b1 and 0x80 != 0) ByteArray(4).also { if (!readFully(input, it)) return null } else null
+            val data = ByteArray(len.toInt())
+            if (!readFully(input, data)) return null
+            if (mask != null) for (i in data.indices) data[i] = (data[i].toInt() xor mask[i % 4].toInt()).toByte()
+            return when (opcode) {
+                0x8 -> null
+                0x1 -> String(data, Charsets.UTF_8)
+                else -> ""
+            }
+        }
+
+        private fun readFully(input: InputStream, buf: ByteArray): Boolean {
+            var got = 0
+            while (got < buf.size) { val n = input.read(buf, got, buf.size - got); if (n < 0) return false; got += n }
+            return true
+        }
 
         const val HELLO = "{\"typ\":\"vitej\"}"
         fun showMessage(id: Int, text: String, parts: String? = null) =
@@ -217,9 +260,15 @@ class TvSender(private val log: (String) -> Unit = {}) {
                 shown?.let { t -> val b = frame(showMessage(++nextId, t, shownParts)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
             }
             log("tv connected, now ${clients.size}")
-            // Zprávy od televize se nepotřebují, jen se čtou, aby se poznalo zavření spojení.
-            val buf = ByteArray(512)
-            while (input.read(buf) >= 0) { /* zahodit */ }
+            // Od televize je zajímavé jen ohlášení (platforma a verze); čte se i proto, aby se
+            // poznalo zavření spojení.
+            while (true) {
+                val msg = readFrame(input) ?: break
+                TvAnnounce.parse(msg)?.let { a ->
+                    lastSeen = Seen(a, System.currentTimeMillis())
+                    log("tv says ${a.platform ?: "?"} ${a.version ?: "?"}")
+                }
+            }
         } catch (_: Throwable) {
         } finally { drop(c) }
     }

@@ -130,7 +130,8 @@ object DiagReport {
             .append(", překryv: ").append(try { Settings.canDrawOverlays(c) } catch (_: Throwable) { "?" })
             .append(", model: ").append(OfflineTranslator.isReady(lang)).append('\n')
             .append("Automatika: ").append(Prefs.autoZone(c)).append(", oblast: ").append(Prefs.layout(c).serialize()).append('\n')
-            .append("Licence: ").append(Prefs.license(c).kind).append(", televize LG: ").append(Prefs.tvSend(c))
+            .append("Licence: ").append(Prefs.license(c).kind).append(", televize: ").append(Prefs.tvType(c).key)
+            .append(cz.playlingo.core.TvSender.lastSeen?.announce?.let { a -> " (ohlásila se: ${a.platform ?: "?"} ${a.version ?: "?"})" } ?: "")
             .toString()
 
         val st = TranslatorService.linkStatus()

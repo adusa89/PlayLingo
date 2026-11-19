@@ -13,6 +13,7 @@ v černém pruhu přes obraz. Hra jde do televize dál kabelem HDMI. Překlad je
 - `app/src/test` – unit testy včetně simulace hraní
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení APK a automatická zkouška v emulátoru Android TV (Android 9, 11, 13, 14); APK se vydá až po úspěšné zkoušce
 - `webos` – PlayLingo pro televize LG: televize ukazuje hru s pruhem, titulky jí posílá PlayLingo na Androidu; přehled je ve `webos/CTI-ME.md`
+- `tizen` – totéž pro televize Samsung (společný kód s LG, nepodepsaný balíček .wgt v APK); přehled je v `tizen/CTI-ME.md`
 - `pc` – zkušební čtečka pro počítač s Windows (ladění čtení a překladu)
 
 Návod: NAVOD.md
@@ -31,6 +32,9 @@ Návod: NAVOD.md
   unknownskl, MIT) a **XStreaming** (https://github.com/Geocld/XStreaming, Geocld, AGPL-3.0).
 - Přenos obrazu z Xboxu: **WebRTC** (https://webrtc.org/), Android sestavení stream-webrtc-android
   (https://github.com/GetStream/webrtc-android, BSD/Apache 2.0).
+- Aplikace pro televize Samsung (`tizen/app/platforma.js`, `core/SamsungWgt.kt`, průvodce
+  `SamsungInstallActivity.kt`) vychází z přijímače PlayCaption pro Samsung (AGPL-3.0: `tizen/app/js/main.js`,
+  `tizen/build.py`, `tizen/INSTALACE-Z-ANDROIDU.md`, `SamsungPruvodce.kt`).
 
 Aplikace není produktem společnosti Sony Interactive Entertainment. „PlayStation“ a „PS5“ jsou jejich ochranné známky.
 Aplikace není ani produktem společnosti Microsoft. „Xbox“ je ochranná známka společnosti Microsoft.
