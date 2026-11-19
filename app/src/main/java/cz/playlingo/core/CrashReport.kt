@@ -46,7 +46,7 @@ object Redact {
 
     /** klíč=hodnota / klíč: hodnota u citlivých názvů → hodnota se skryje */
     private val NAMED = Regex(
-        "(?i)\\b(code|token|access_token|refresh_token|npsso|account_?id|accountid|psn_?id|pin|password|passwd|heslo|secret|regist_?key|rp_?key|morning|authorization|bearer|credential|auth_?key|deepl-auth-key|gs_?token|user_?token|device_?code|user_?code|rps_?ticket)(\"?\\s*[=:]\\s*\"?|\\s+)([^\\s,;&|)\"]+)"
+        "(?i)\\b(code|token|access_token|refresh_token|npsso|account_?id|accountid|psn_?id|pin|passphrase|password|passwd|heslo|secret|regist_?key|rp_?key|morning|authorization|bearer|credential|auth_?key|deepl-auth-key|gs_?token|user_?token|device_?code|user_?code|rps_?ticket)(\"?\\s*[=:]\\s*\"?|\\s+)([^\\s,;&|)\"]+)"
     )
     /**
      * Tokeny Microsoft / Xbox Live i bez názvu: JWT (eyJ…), přístupové tokeny Microsoft (EwA…, EwB…)

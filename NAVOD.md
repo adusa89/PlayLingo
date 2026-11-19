@@ -160,6 +160,13 @@ kdykoli i z ⚙ Nastavení. Kdo měl dřív zapnuté „Posílat titulky do tele
    nainstaluje a spustí. Příště už Passphrase není potřeba – stejným tlačítkem televizi
    aktualizuješ. Starší verzi přes novější nikdy nenahraje.
 
+   **V telefonu nemusíš nic opisovat:** zvol „Načíst z obrazovky televize kamerou“, povol kameru
+   a namiř telefon na obrazovku Developer Mode tak, aby byla vidět adresa i Passphrase. Jakmile je
+   PlayLingo přečte dvakrát stejně, ukáže je; zvol „Použít“, porovnej údaje s televizí a zvol
+   „Nahrát do televize“. Pokud upozorní na podobné znaky (0/O, 1/I), zkontroluj hlavně je –
+   špatná Passphrase nic nepokazí, televize ji jen odmítne. Kamera nic nefotí, neukládá ani
+   neposílá. Na televizi a boxu (bez kamery) se tlačítko neukazuje.
+
 Vývojářský režim po čase vyprší a PlayLingo pak z televize zmizí. Kolik dní zbývá, ukazuje
 PlayLingo u tlačítka (pod 3 dny upozorní i na stránce Domů). Prodloužit ho jde jen v televizi: Developer Mode →
 **Extend**. PlayLingo nic samo neprodlužuje.

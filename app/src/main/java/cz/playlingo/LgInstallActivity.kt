@@ -2,6 +2,8 @@ package cz.playlingo
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
@@ -37,6 +39,8 @@ class LgInstallActivity : Activity() {
     private var resultOk = false
     private var error: LgError? = null
     private var errorDetail: String? = null
+    /** Zpráva po čtení kamerou (text, upozornit?) – jen do dalšího spuštění instalace. */
+    private var scanNote: Pair<String, Boolean>? = null
 
     private fun t(key: String) = tx(key)
 
@@ -112,6 +116,13 @@ class LgInstallActivity : Activity() {
         add(field(pass, "lg_pass_hint", "lgpass", true) { pass = it }, 6)
         if (paired) add(ui.text(t("lg_pass_paired"), 14f, Theme.OK), 6)
 
+        // telefon s kamerou: adresu a Passphrase přečíst z obrazovky televize (LgScanActivity)
+        if (!running && LgScanActivity.available(this)) {
+            add(tagged(ui.button(t("km_scan")) { scan() }, "lgscan"), 16)
+            add(ui.text(t("km_why"), 14f, Theme.MUTED), 6)
+        }
+        scanNote?.let { add(ui.text(it.first, 15f, if (it.second) Theme.WARN else Theme.OK, bold = true), 10) }
+
         if (running) {
             add(ui.text(t("lg_p_" + (phase ?: LgPhase.PACKAGE).name.lowercase()), 17f, Theme.ACCENT, bold = true), 18)
             add(tagged(ui.button(t("lg_cancel")) { installer?.cancel() }, "lgcancel"), 10)
@@ -150,13 +161,48 @@ class LgInstallActivity : Activity() {
         target?.requestFocus()
     }
 
+    private fun scan() {
+        if (running) return
+        if (checkSelfPermission(android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            @Suppress("DEPRECATION") startActivityForResult(Intent(this, LgScanActivity::class.java), REQ_SCAN)
+        } else {
+            requestPermissions(arrayOf(android.Manifest.permission.CAMERA), REQ_CAMERA)
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        @Suppress("DEPRECATION") super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != REQ_CAMERA) return
+        if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) scan()
+        else { scanNote = t("km_denied") to true; render(true) }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION") super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQ_SCAN) return
+        if (resultCode == RESULT_OK && data != null) {
+            data.getStringExtra(LgScanActivity.EXTRA_IP)?.let { ip = it }
+            data.getStringExtra(LgScanActivity.EXTRA_PASS)?.let { pass = it }
+            val unsure = data.getBooleanExtra(LgScanActivity.EXTRA_UNSURE, false)
+            scanNote = (t("km_filled") + if (unsure) "\n" + t("km_unsure") else "") to unsure
+            error = null; errorDetail = null; resultText = null
+            render()
+            content.findViewWithTag<View>("lggo")?.requestFocus()
+        } else if (data?.getBooleanExtra(LgScanActivity.EXTRA_FAILED, false) == true) {
+            scanNote = t("km_cam_fail") to true
+            render(true)
+        }
+    }
+
     private fun <V : View> tagged(v: V, tag: String): V { v.tag = tag; return v }
 
     private fun start(repair: Boolean) {
         if (running) return
         val inst = LgInstaller(this)
         installer = inst
-        running = true; phase = LgPhase.PACKAGE; error = null; errorDetail = null; resultText = null
+        running = true; phase = LgPhase.PACKAGE; error = null; errorDetail = null; resultText = null; scanNote = null
         render()
         val ipNow = ip; val passNow = pass
         Thread({
@@ -192,6 +238,9 @@ class LgInstallActivity : Activity() {
     }
 
     companion object {
+        private const val REQ_CAMERA = 41
+        private const val REQ_SCAN = 42
+
         /** Řádek o vývojářském režimu (text, upozornit?) – i pro Nastavení a pomocníka v telefonu. */
         fun devLine(c: Context): Pair<String, Boolean> {
             val time = LgDevMode.known(c) ?: return c.tx("lg_dev_unknown") to false

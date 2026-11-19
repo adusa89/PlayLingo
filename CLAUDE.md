@@ -27,7 +27,8 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `App.kt`, `CrashLog.kt` – zápis pádů do `pady.txt` (posledních pár) a upozornění po dalším spuštění
   - `Updater.kt` – aktualizace z aplikace (stažení nové verze a předání systému k instalaci)
   - `LgInstallActivity.kt`, `LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt` – nahrání aplikace
-    do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG)
+    do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG);
+    `LgScanActivity.kt` – adresa a Passphrase z obrazovky televize kamerou telefonu
   - `TvChoice.kt` – typ televize (Android TV / LG / Samsung): nabídka, televize v souhrnném řádku na Domů, nahrání do televize
   - `SamsungInstallActivity.kt` – průvodce PlayLingem pro televizi Samsung (viz Televize Samsung)
   - `DemoFeeder.kt`, `TestCardActivity.kt` – ukázková „hra“ pro zkoušku bez PlayStationu
@@ -230,6 +231,19 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   v emulátoru nemá – instalaci ověří jen uživatel. Při změně `webos/obchod/app` zvyš verzi
   v `appinfo.json` i `platforma.js`, jinak Android televizi neaktualizuje (stejná verze = jen spustit).
   Převzato podle PlayCaption (AGPL-3.0) – hlavičky souborů zachovej.
+- **Načtení adresy a Passphrase kamerou** (telefon): tlačítko „Načíst z obrazovky televize kamerou“
+  v `LgInstallActivity` jen tam, kde je kamera a nejde o televizi/box (`LgScanActivity.available`:
+  bez `leanback` a UI televize). Povolení CAMERA se žádá až po stisku tlačítka. `LgScanActivity` =
+  Camera2 ze systému (náhled TextureView + snímky YUV do ML Kitu) – záměrně bez CameraX, ať APK
+  nepřibírá knihovny a nepotřebuje AndroidX. Čtení řádků (`core/LgScan.kt`: IPv4 v domácí síti,
+  Passphrase jen u popisku „Passphrase“, případně pod „Key Server“; víc kandidátů = nic) a hlasování
+  (`LgScanVote`: údaj platí po dvou stejných čteních) mají testy `LgScanTest` s ukázkami textu
+  obrazovky. O/I v Passphrase se opraví na 0/1 jen u šestnáctkového tvaru (ostatní písmena A–F),
+  jinak upozornění `km_unsure`. Výsledek jde zpět průvodci k potvrzení, uživatel stiskne „Nahrát“.
+  Nic se neukládá ani nevypisuje do logu; `Redact` skrývá i `passphrase=…`. V manifestu musí
+  zůstat `uses-feature` kamery s `required="false"` – jinak by povolení CAMERA vyloučilo
+  televize a boxy bez kamery (ověř `aapt dump badging`: kamera jen `uses-feature-not-required`).
+  Texty `km_…` v `core/I18nKamera.kt`. Na skutečné televizi LG čtení ověří jen uživatel.
 - `webos/obchod/app/app.js`, `style.css` a `index.html` jsou **společné s aplikací pro Samsung**
   (kopie v `tizen/app`); co je jen pro LG, je v `platforma.js` (`window.PlayLingoTv`). Při změně
   společného souboru ho zkopíruj do `tizen/app` – jinak spadne sestavení APK (`samsungBalicek`)
@@ -386,6 +400,7 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
   `sum_…`, `w_…`, části Nastavení `s_setup`, `s_diag`): `core/I18nUi.kt` (`UI_S`, `UI_X`).
 - záznam pro vývojáře, oddíl Televize a Kopírovat/Sdílet v hlášení (`zz_…`): `core/I18nZaznam.kt`
   (`ZAZNAM_S`, `ZAZNAM_X`).
+- načtení údajů televize LG kamerou (`km_…`): `core/I18nKamera.kt` (`KAMERA_S`, `KAMERA_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
