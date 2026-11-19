@@ -26,10 +26,25 @@ Při prvním použití televize požádá o povolení instalace z aplikace PlayL
 Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nahrát ručně.
 
 ## 3. První nastavení (průvodce tě provede)
-1. Vyber jazyk překladu.
-2. Zapni aplikaci v nastavení televize: Usnadnění → PlayLingo → Zapnout.
-3. Počkej na stažení jazykového modelu (jednou, asi 30 MB).
-4. Spáruj PlayStation – viz další bod.
+1. **Zařízení:** na čem PlayLingo běží – Android TV nebo box s Androidem, nebo telefon či tablet
+   (ten jen čte a hotové titulky posílá do televize LG nebo Samsung, viz bod 8).
+2. **Konzole:** PlayStation 5, nebo Xbox (viz bod 7b).
+3. **Televize:** Android TV (pruh ukazuje toto zařízení), LG, nebo Samsung. U LG a Samsungu jde
+   aplikaci do televize nahrát rovnou z tohoto kroku, nebo později.
+4. **Jazyk překladu:** vyber ho a počkej na stažení jazykového modelu (jednou, asi 30 MB).
+5. **Zobrazení titulků** (jen Android TV): zapni aplikaci v nastavení televize: Usnadnění →
+   PlayLingo → Zapnout.
+6. **Připojení konzole:** spáruj PlayStation – viz další bod (Xbox: bod 7b).
+
+Každou volbu jde později změnit v **Nastavení** – poslední položka menu s ozubeným kolem (⚙).
+Tam je i zkušební doba a odemykací kód (část Licence), povolení, jazyk aplikace, zkušební verze
+a hlášení chyby. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:
+PlayStation nebo Xbox), Titulky a Nápověda.
+
+Stránka **Domů** ukazuje jen to podstatné: stav překladu, tlačítka Spustit / Zastavit a Zkouška
+bez PlayStationu, jeden souhrnný řádek (např. „PS5 (Obývák) → LG OLED55B7 · připojeno“; OK na něm
+změní konzoli nebo televizi) a upozornění jen tehdy, když něco chybí (povolení, jazykový model,
+spárování, aplikace v televizi, končící vývojářský režim LG nebo zkušební doba).
 
 ## 4. Spárování PlayStationu (jen jednou)
 
@@ -97,11 +112,11 @@ a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televiz
 - **Nejde spárovat** – číslo z PS5 platí jen pár minut, vyžádej si nové. Zkontroluj adresu a účet.
 - **„PlayStation neodpovídá“** – je konzole zapnutá (ne vypnutá ze zásuvky) a ve stejné síti?
 - **Účet na PS5 má přihlašovací kód** – zadej ho na stránce PlayStation (4 číslice).
-- **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.2) a vyzkoušej bod 6.
-- **Nic se nečte** – zapni Nastavení → Diagnostický režim; uvidíš, co aplikace čte.
+- **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.5, nebo ⚙ Nastavení → Povolení) a vyzkoušej bod 6.
+- **Nic se nečte** – zapni ⚙ Nastavení → Ladění a hlášení → Diagnostický režim; uvidíš, co aplikace čte.
 - **Překlad běží, ale titulky nenaskakují** – podívej se na stránku Domů na řádek pod stavem překladu. Ukazuje, jak daleko to došlo: jestli se aplikace s PlayStationem spojila a jestli z něj opravdu přichází obraz. Když hlásí „Spojeno s PlayStationem, ale … nepřišel žádný obraz“, aplikace spojení po chvíli sama obnoví; když to trvá dlouho, překlad zastav, zkontroluj Wi-Fi a spusť ho znovu.
 - **Aplikace minule spadla** – po dalším spuštění to napíše na stránce Domů. Kdyby se to opakovalo, pošli hlášení (další bod).
-- **Hlášení chyby**: Nápověda → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení.
+- **Hlášení chyby**: Nápověda (nebo ⚙ Nastavení → Ladění a hlášení) → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení.
 
 ## 7b. Xbox (Series X|S / One)
 PlayLingo umí číst titulky i z Xboxu. Hra jde do televize dál kabelem HDMI; PlayLingo si z Xboxu
@@ -110,9 +125,9 @@ nepřehrává – hraješ normálně ovladačem.
 
 1. **Na Xboxu (jen poprvé):** Nastavení → Zařízení a připojení → Vzdálené funkce → zapni
    „Povolit vzdálené funkce“. Režim napájení nastav na „Spánek“.
-2. **V PlayLingu:** na stránce Domů klikni na řádek **Konzole** a vyber **Xbox** (totéž je
-   v Nastavení). Stránka konzole v menu se pak jmenuje Xbox.
-3. Na stránce Xbox zvol **Přihlásit účet Microsoft**. Na obrazovce se ukáže kód. Na telefonu
+2. **V PlayLingu:** vyber **Xbox** v průvodci (krok Konzole), v ⚙ Nastavení → Konzole, nebo na
+   stránce Domů OK na souhrnném řádku → Konzole. Položka menu **Konzole** pak ukazuje stránku Xbox.
+3. Na stránce Xbox (menu Konzole) zvol **Přihlásit účet Microsoft**. Na obrazovce se ukáže kód. Na telefonu
    nebo počítači otevři **microsoft.com/link** (nebo načti čtvereček telefonem), zadej kód
    a přihlas se účtem, kterým hraješ na Xboxu. V telefonu stačí tlačítko „Otevřít stránku“.
 4. Objeví se seznam tvých Xboxů – vyber ten, na kterém hraješ (jediný se vybere sám).
@@ -124,12 +139,13 @@ Stav spojení na stránce Domů funguje stejně jako u PlayStationu.
 
 ## 8. Televize LG a Samsung
 Televize LG a Samsung si obraz hry samy nepřečtou. PlayLingo v nich jen ukazuje hru s pruhem
-a číst a překládat musí telefon nebo box s Androidem ve stejné domácí síti. Na stránce Domů
-je řádek **Typ televize** (OK ho změní, stejně jako Nastavení → Typ televize): Android TV
-(pruh ukazuje toto zařízení, jako dřív), LG (webOS) nebo Samsung (Tizen). V telefonu jsou
-tlačítka „Použít telefon pro televizi LG“ a „… Samsung“. Řádek na Domů ukazuje, jestli je
-aplikace z televize připojená; dokud se nikdy nepřipojila, je pod ním tlačítko k nahrání
-PlayLinga do televize. Kdo měl dřív zapnuté „Posílat titulky do televize LG“, má typ LG.
+a číst a překládat musí telefon nebo box s Androidem ve stejné domácí síti. Typ televize se
+volí v průvodci (krok Televize) a mění v ⚙ Nastavení → Typ televize nebo OK na souhrnném řádku
+na stránce Domů: Android TV (pruh ukazuje toto zařízení, jako dřív), LG (webOS) nebo Samsung
+(Tizen). V telefonu jsou tlačítka „Použít telefon pro televizi LG“ a „… Samsung“. Souhrnný řádek
+na Domů ukazuje, jestli je aplikace z televize připojená; dokud se nikdy nepřipojila, je na Domů
+upozornění s tlačítkem „Nahrát do televize“. Nahrát (i aktualizovat) aplikaci v televizi jde
+kdykoli i z ⚙ Nastavení. Kdo měl dřív zapnuté „Posílat titulky do televize LG“, má typ LG.
 
 ### Televize LG
 
@@ -138,13 +154,13 @@ PlayLinga do televize. Kdo měl dřív zapnuté „Posílat titulky do televize 
 2. V televizi otevři obchod LG Content Store, nainstaluj aplikaci **Developer Mode**, přihlas se
    v ní tím účtem a zapni **Dev Mode Status**. Televize se restartuje.
 3. Znovu otevři Developer Mode a zapni **Key Server**. Uvidíš adresu televize (IP) a **Passphrase**.
-4. V PlayLingu zvol „Nahrát PlayLingo do televize LG“ (Domů u typu LG, pomocník v telefonu nebo
-   Nápověda), opiš adresu a Passphrase a zvol „Nahrát do televize“. PlayLingo se v televizi
+4. V PlayLingu zvol „Nahrát PlayLingo do televize LG“ (krok Televize v průvodci, ⚙ Nastavení,
+   upozornění na Domů, pomocník v telefonu nebo Nápověda), opiš adresu a Passphrase a zvol „Nahrát do televize“. PlayLingo se v televizi
    nainstaluje a spustí. Příště už Passphrase není potřeba – stejným tlačítkem televizi
    aktualizuješ. Starší verzi přes novější nikdy nenahraje.
 
 Vývojářský režim po čase vyprší a PlayLingo pak z televize zmizí. Kolik dní zbývá, ukazuje
-PlayLingo u tlačítka (pod 3 dny upozorní). Prodloužit ho jde jen v televizi: Developer Mode →
+PlayLingo u tlačítka (pod 3 dny upozorní i na stránce Domů). Prodloužit ho jde jen v televizi: Developer Mode →
 **Extend**. PlayLingo nic samo neprodlužuje.
 
 Jiné cesty: z počítače nástrojem LG `ares` (postup ve `webos/CTI-ME.md`), nebo z obchodu LG,
@@ -154,7 +170,8 @@ až tam PlayLingo bude.
 Samsung pustí do televize vlastní aplikaci jen ve vývojářském režimu a jen podepsanou
 certifikátem, který Samsung vystaví na tvůj účet Samsung (zdarma) právě pro tvou televizi.
 To PlayLingo za tebe udělat neumí, proto se aplikace nahrává nástrojem Samsungu. Průvodce
-„Nahrát PlayLingo do televize Samsung“ (Domů u typu Samsung, pomocník v telefonu, Nápověda)
+„Nahrát PlayLingo do televize Samsung“ (krok Televize v průvodci, ⚙ Nastavení, upozornění na Domů,
+pomocník v telefonu, Nápověda)
 tě provede:
 1. **Vývojářský režim:** v televizi otevři Aplikace (Apps), na ovladači zadej 1 2 3 4 5, zapni
    **Developer mode** a do **Host PC IP** napiš adresu počítače (nebo telefonu), ze kterého budeš
@@ -171,7 +188,7 @@ tě provede:
 Podrobnosti a důvody jsou v `tizen/CTI-ME.md`.
 
 ## 9. Pokus: lepší překlad přes internet (DeepL)
-Zatím jen pro vyzkoušení a **normálně vypnutý**. Najdeš ho úplně dole v Nastavení, v části
+Zatím jen pro vyzkoušení a **normálně vypnutý**. Najdeš ho úplně dole v Nastavení (⚙), v části
 **Experimentální**. Offline překlad se ukáže hned jako vždy; když DeepL do 1,5 s pošle jiný
 (lepší) překlad, text v pruhu se potichu vymění. Když DeepL nejde (internet, vyčerpaný limit,
 špatný klíč), překládá se dál offline a důvod je vidět v té části Nastavení.
@@ -185,7 +202,7 @@ Jak klíč získat (zdarma, bez platební karty):
 3. Potvrď e-mail odkazem, který ti DeepL pošle.
 4. Po přihlášení jsi na úvodní stránce účtu („Welcome to DeepL!“). V rámečku s ukázkou je
    tlačítko **Copy key** – klikni na něj. Klíč končí na `:fx`.
-5. V PlayLingu: Nastavení → Experimentální → vlož klíč do políčka a dej **Uložit a ověřit klíč**.
+5. V PlayLingu: ⚙ Nastavení → Experimentální → vlož klíč do políčka a dej **Uložit a ověřit klíč**.
    Na televizi je pohodlnější **Vložit klíč z telefonu**: naskenuj čtvereček, na stránce v telefonu
    je stejný postup s tlačítkem Otevřít DeepL, klíč vložíš a pošleš do televize.
 

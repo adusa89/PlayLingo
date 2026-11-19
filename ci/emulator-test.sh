@@ -21,20 +21,23 @@ adb shell cat /proc/meminfo | head -1 >> $OUT/device.txt
 adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null || true
 adb logcat -c
 
-# 1) první spuštění: průvodce krok za krokem
+# 1) první spuštění: průvodce krok za krokem (OK = Pokračovat; pořadí kroků v MainActivity.wizardSteps:
+#    zařízení, konzole, televize, jazyk překladu, povolení pruhu, spárování konzole, hotovo)
 adb shell am start -n $PKG/.MainActivity
-sleep 10; shot 01_pruvodce_vitej
-key 23; sleep 2; shot 02_pruvodce_povoleni
+sleep 10; shot 01_pruvodce_zarizeni
+key 23; sleep 2; shot 01b_pruvodce_konzole
+key 23; sleep 2; shot 01c_pruvodce_televize
 key 23; sleep 2; shot 03_pruvodce_jazyk
 sleep 45; shot 03b_pruvodce_jazyk_po_stazeni
+key 23; sleep 2; shot 02_pruvodce_povoleni
 key 23; sleep 2; shot 04_pruvodce_ps5_krok1
 key 23; sleep 8; shot 04b_pruvodce_ps5_krok2_hledani
 # zpět v průvodci spárováním a pak dokončení průvodce
 adb shell am start -n $PKG/.MainActivity --ez nowizard true
 sleep 3; shot 06_domu
 
-# 2) všechny stránky menu
-for i in 1 2 3 4 5; do key 20; key 23; sleep 2; shot "07_menu_$i"; done
+# 2) všechny stránky menu: Konzole, Titulky, Nápověda, Nastavení (⚙, poslední)
+for i in 1 2 3 4; do key 20; key 23; sleep 2; shot "07_menu_$i"; done
 
 # 3) povolení a spuštění překladu (povolení snímání udělí test místo člověka)
 adb shell appops set $PKG SYSTEM_ALERT_WINDOW allow

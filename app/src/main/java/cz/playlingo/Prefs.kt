@@ -72,7 +72,7 @@ object Prefs {
     fun testChannel(c: Context) = bool(c, "test_channel", false)
     fun setTestChannel(c: Context, v: Boolean) = setBool(c, "test_channel", v)
     /**
-     * Typ televize (volba na stránce Domů): Android TV ukazuje pruh samo, LG a Samsung dostávají
+     * Typ televize (průvodce, Nastavení, souhrnný řádek na Domů): Android TV ukazuje pruh samo, LG a Samsung dostávají
      * hotové věty po síti. Kdo ho nezvolil, řídí se starou volbou „Posílat titulky do televize LG“
      * (`tv_send`) – zapnutá = LG.
      */
@@ -163,6 +163,15 @@ object Prefs {
     /** Uživatel řekl, že tohle zařízení je televize nebo box, i když se tváří jako telefon. */
     fun forceTv(c: Context) = bool(c, "force_tv", false)
     fun setForceTv(c: Context, v: Boolean) = setBool(c, "force_tv", v)
+
+    /**
+     * Na čem PlayLingo běží (průvodce, Nastavení → Zařízení): true = telefon nebo tablet, který jen čte
+     * a posílá titulky do televize LG / Samsung; false = Android TV nebo box. Kdo nevolil, odhadne se
+     * podle zařízení. Sama volba nic nepřepíná – pomocník v telefonu se dál řídí [forceTv].
+     */
+    fun readerDevice(c: Context): Boolean =
+        if (p(c).contains("reader_device")) bool(c, "reader_device", false) else NetInfo.isHandheld(c)
+    fun setReaderDevice(c: Context, v: Boolean) = setBool(c, "reader_device", v)
 
     // ---- hra a slovník ----
     fun gameId(c: Context): String = p(c).getString("game", "all") ?: "all"

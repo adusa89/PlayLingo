@@ -21,14 +21,14 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `Ps5Link.kt`, `Ps5Pairing.kt`, `PsnAuth.kt` – spojení, párování, přihlášení účtem (přes telefon)
   - `PhoneHelperActivity.kt` – PlayLingo v telefonu: pomocník pro přihlášení (viz Přihlášení přes telefon)
   - `SubtitleOverlay.kt`, `TitulkyAccessibility.kt` – pruh s překladem přes Usnadnění
-  - `MainActivity.kt` – všechny obrazovky a průvodce
+  - `MainActivity.kt` – všechny obrazovky a průvodce (rozložení viz Obrazovky a průvodce)
   - `DiagActivity.kt` – hlášení o stavu aplikace přes celou obrazovku (k vyfocení); vše v něm
     prochází `core/CrashReport.kt` → `Redact` (žádné klíče, čísla účtu ani PIN)
   - `App.kt`, `CrashLog.kt` – zápis pádů do `pady.txt` (posledních pár) a upozornění po dalším spuštění
   - `Updater.kt` – aktualizace z aplikace (stažení nové verze a předání systému k instalaci)
   - `LgInstallActivity.kt`, `LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt` – nahrání aplikace
     do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG)
-  - `TvChoice.kt` – typ televize (Android TV / LG / Samsung): nabídka, řádek na Domů, nahrání do televize
+  - `TvChoice.kt` – typ televize (Android TV / LG / Samsung): nabídka, televize v souhrnném řádku na Domů, nahrání do televize
   - `SamsungInstallActivity.kt` – průvodce PlayLingem pro televizi Samsung (viz Televize Samsung)
   - `DemoFeeder.kt`, `TestCardActivity.kt` – ukázková „hra“ pro zkoušku bez PlayStationu
   - `ConsoleLink.kt` – společné rozhraní zdroje obrazu (PlayStation `Ps5Link`, Xbox `XboxLink`)
@@ -196,12 +196,13 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →
   `TvType`). Kdo ho nezvolil, řídí se starým klíčem `tv_send` (zapnuto = LG), takže dřívější
   uživatelé LG o nic nepřijdou; `setTvType` klíč `tv_send` drží v souladu. `Prefs.tvSend` = typ
-  LG nebo Samsung. Volí se jedním řádkem na Domů (OK otevře nabídku) a řádkem v Nastavení – obojí
-  přes `TvChoice.show(activity) { … }`. Bývalý přepínač „Posílat titulky do televize LG“ a tlačítko
-  „Nahrát PlayLingo do televize LG“ v Nastavení nejsou. Na Domů je pro LG/Samsung stav spojení
-  (`TvChoice.line`) a tlačítko k nahrání aplikace do televize jen do chvíle, než se z ní aplikace
-  poprvé ohlásí (`TvChoice.needsInstall`, `Prefs.tvSeen`); pro Android TV se ukazuje kontrola
-  povolení pruhu. `SubtitleOverlay` předává `TvSender` každou změnu pruhu. U Android TV se nic
+  LG nebo Samsung. Volí se v průvodci (krok Televize, `TvChoice.set`), v Nastavení a ze souhrnného
+  řádku na Domů – nabídka přes `TvChoice.show(activity) { … }`. Bývalý přepínač „Posílat titulky do
+  televize LG“ není. Souhrnný řádek na Domů ukazuje pro LG/Samsung stav spojení (`TvChoice.short`);
+  upozornění s tlačítkem k nahrání aplikace do televize je na Domů jen do chvíle, než se z ní aplikace
+  poprvé ohlásí (`TvChoice.needsInstall`, `Prefs.tvSeen`). Krok Televize v průvodci a Nastavení
+  nabízejí nahrání (i aktualizaci) vždy. Pro Android TV se na Domů upozorňuje na chybějící povolení
+  pruhu. `SubtitleOverlay` předává `TvSender` každou změnu pruhu. U Android TV se nic
   neotevírá ani neposílá a aplikace se chová jako dřív. U LG/Samsungu se čte i tehdy, když je
   vidět aplikace, a nevyžaduje se povolení pruhu.
 - Televize po připojení pošle `pripojeno` a od verze 1.1.0 v něm i `platforma` („webos“/„tizen“)
@@ -212,7 +213,8 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   a vedle něj „… Samsung“. Zapne `Prefs.forceTv` a nastaví typ televize, předá už ověřený účet do párování a otevře celou
   aplikaci. Jestli se celá aplikace dá na telefonu pohodlně ovládat, umí ověřit jen uživatel.
 - **Nahrání do televize z Androidu** (přehled ve `webos/CTI-ME.md`): tlačítko „Nahrát PlayLingo do
-  televize LG“ na Domů (typ LG, dokud se televize neohlásila), v pomocníkovi v telefonu a v Nápovědě otevře
+  televize LG“ v průvodci (krok Televize), v Nastavení, upozornění na Domů (typ LG, dokud se televize
+  neohlásila), v pomocníkovi v telefonu a v Nápovědě otevře
   `LgInstallActivity`. APK nese `assets/lg/receiver.ipk` + `receiver-manifest.json`; skládá je při
   sestavení úloha `lgBalicek` (`app/build.gradle.kts`) kódem `core/LgIpk.kt`, který `buildSrc`
   sdílí se sestavením – žádný Node ani Python. Rozložení odpovídá `ares-package` (ověřeno), datum
@@ -266,9 +268,9 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
 ## Xbox
 
 - Druhá konzole vedle PlayStationu (`Prefs.console`, výchozí PlayStation – dosavadní uživatelé si
-  nic nevšimnou). Volba: řádek „Konzole“ na stránce Domů a v Nastavení (`consoleRow`, výběr
-  `chooseConsole` v MainActivity – jde volat i z průvodce). Položka menu PlayStation se pak jmenuje
-  Xbox a ukazuje `XboxForm` místo párování PS5. Kroky průvodce se nezměnily.
+  nic nevšimnou). Volba: krok Konzole v průvodci, řádek „Konzole“ v Nastavení (`consoleRow`, výběr
+  `chooseConsole` → `setConsole` v MainActivity) a souhrnný řádek na Domů. Položka menu se jmenuje
+  Konzole; nadpis stránky je PlayStation nebo Xbox a u Xboxu ukazuje `XboxForm` místo párování PS5.
 - Přihlášení: kód na microsoft.com/link (device code; čtvereček na stránku, v telefonu tlačítko
   „Otevřít stránku“) → token Microsoft → Xbox Live → XSTS → streamovací token xhome. Ukládá se jen
   obnovovací token, zašifrovaný klíčem z Android Keystore (`playlingo-xbox-v1`, stejně jako
@@ -292,7 +294,7 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
 
 ## Pokus: DeepL (experimentální, výchozí vypnuto)
 
-- Nastavení → úplně dole část **Experimentální** (`DeeplSection.kt`, volá ji jediná funkce
+- Nastavení (⚙) → úplně dole část **Experimentální** (`DeeplSection.kt`, volá ji jediná funkce
   `experimentalSection()` v `MainActivity`): volba „Lepší překlad přes internet (DeepL)“, klíč,
   postup „Jak získat klíč“, ověření a měření tohoto běhu. Vypnuté = služba se chová přesně jako dřív
   (žádný dotaz do internetu), zkouška v emulátoru se tím nemění.
@@ -320,7 +322,7 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
 
 Aplikace má dvě na sobě nezávislá nastavení jazyka (`core/Lang.kt`):
 
-- **jazyk překladu** (`Prefs.lang`, stránka Překlad a průvodce) – do čeho se titulky překládají;
+- **jazyk překladu** (`Prefs.lang`, stránka Titulky a průvodce) – do čeho se titulky překládají;
   jen `Lang.targets`, tedy bez angličtiny,
 - **jazyk aplikace** (`Prefs.uiLang`, Nastavení a pomocník v telefonu) – nabídky a nápověda;
   všech deset jazyků včetně angličtiny. Texty na obrazovce ber vždy přes `tx()` / `Prefs.uiLang`,
@@ -348,6 +350,8 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
 - typ televize (`tv_…`, společné `s_tv_desc`, `st_tv_…`, `hp_lg_title`/`hp_lg_text`) a průvodce
   Samsung (`ss_…`): `core/I18nSamsung.kt` (`SS_S`, `SS_X`).
 - texty pokusu DeepL (`dl_…`; důvody `dl_p_<Deepl.Problem>`): `core/I18nDeepl.kt` (`DEEPL_S`, `DEEPL_X`).
+- texty rozložení od přestavby (průvodce `wz_dev…`, `dev_…`, souhrnný řádek a upozornění na Domů
+  `sum_…`, `w_…`, části Nastavení `s_setup`, `s_diag`): `core/I18nUi.kt` (`UI_S`, `UI_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
@@ -356,6 +360,25 @@ Aplikace pro televizi LG (`webos/obchod`) a Samsung (`tizen/app`, týž `app.js`
 česky a anglicky přímo v `app.js` a tlačítko Jazyk na úvodní obrazovce; do obchodu LG se podává
 s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nemá zmiňovat Samsung).
 
+## Obrazovky a průvodce
+
+- **Menu** (`Section` v MainActivity, v tomto pořadí): Domů, Konzole (nadpis stránky PlayStation /
+  Xbox), Titulky (vzhled, jazyk překladu, oblasti), Nápověda a jako poslední **⚙ Nastavení**. Samostatná
+  stránka Licence není – je součástí Nastavení. Historie se otevírá z Nastavení.
+- **Průvodce prvním spuštěním** (`wizardSteps`, indexy `W_…`): Zařízení (Android TV/box, nebo
+  telefon/tablet jako čtečka pro LG/Samsung, `Prefs.readerDevice`; výchozí podle
+  `NetInfo.isHandheld`; samo nic nepřepíná – pomocník v telefonu se dál řídí `Prefs.forceTv`) →
+  Konzole → Televize (u LG/Samsungu tlačítko nahrání) → Jazyk překladu → Zobrazení titulků
+  (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
+- **Domů**: velký stav + Spustit/Zastavit (+ Zkouška bez PlayStationu), jeden souhrnný řádek
+  „PS5 (jméno) → LG model · připojeno“ (OK = malá nabídka Konzole / Typ televize) a karta upozornění
+  jen na to, co chybí (povolení pruhu, model, spárování, aplikace v televizi, vývojářský režim LG,
+  zkušební doba ≤ 3 dny). Jednorázové volby na Domů nepatří.
+- **Nastavení (⚙)**: Konzole a televize (konzole, typ televize + nahrání, zařízení, jazyk aplikace),
+  Chování (zkušební verze, kvalita čtení), Povolení, Ladění a hlášení (diagnostický režim, hlášení),
+  Licence (po skončení zkušební doby nahoře), Překlad (hra, slovník, statistika, historie) a úplně
+  dole Experimentální (DeepL).
+
 ## Na co zkouška spoléhá (neměnit jen tak)
 
 - Řádky v logu se značkou `TP_TEST` (`SHOW|`, `VIDEO|`, `LINK|`, `PAIR|`, `START|`…) –
@@ -363,8 +386,9 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 - Věty ukázkové hry v `core/DemoGame.kt` – skript hledá 15 z nich podle textu. Měníš-li věty,
   uprav i skript.
 - Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`, `updtest`,
-  `updself`, `logintest`, `helperlogin`, `fullapp`, `page`, `trtest`, `console` (ps / xbox, snímek
-  `11b_stranka_xbox`) a `TestCardActivity`, `PhoneHelperActivity`.
+  `updself`, `logintest`, `helperlogin`, `fullapp`, `page` (jména `Section`: HOME, PS5, LOOK, HELP,
+  SETTINGS; staré LICENSE = SETTINGS), `wizard` (číslo kroku průvodce, snímky `p2_<velikost>_pruvodce_<krok>`),
+  `trtest`, `console` (ps / xbox, snímek `11b_stranka_xbox`) a `TestCardActivity`, `PhoneHelperActivity`.
 - Zkouška přihlášení přes telefon (řádky `LOGIN|`, `HELPER|`, snímky `12n`–`12p`) se do výsledku
   nepočítá. V `result.txt` má být `ucet_z_telefonu` aspoň 1 (stránka z televize přijala účet)
   a `pomocnik` aspoň 1 (pomocník přijal odkaz ze stránky televize); na snímku `12n` má být
@@ -375,7 +399,11 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   stáhne vydanou verzi (závisí na internetu; emulátor ji nenainstaluje). `updself` nainstaluje
   aplikaci samu přes sebe – na snímku `15c_dotaz` má být dotaz systému na instalaci a v
   `result.txt` má být `aktualizace_nahrazeno` aspoň 1.
-- Pořadí položek menu a kroků průvodce – skript se jimi prokliká naslepo šipkami.
+- Pořadí položek menu a kroků průvodce – skript se jimi prokliká naslepo šipkami (viz Obrazovky
+  a průvodce). Na každém kroku průvodce je po vykreslení vybrané tlačítko Pokračovat (`wnext`, u párování
+  `pnext`), takže OK posune dál. Snímky průvodce: `01_pruvodce_zarizeni`, `01b_…konzole`,
+  `01c_…televize`, `03_…jazyk`, `03b_…po_stazeni`, `02_…povoleni`, `04_…ps5_krok1`, `04b_…hledani`;
+  stránky menu `07_menu_1`–`4` (Konzole, Titulky, Nápověda, Nastavení).
 - Zbytky starého názvu „TestPreklad“ (značka logu, `rootProject.name`, názvy souborů
   v sestavování, `TestPreklad.apk` ve vydání, sůl odemykacího kódu v `License.kt`).
   Nepřejmenovávej je: visí na nich zkouška, odkaz ve starších verzích a platnost kódů.

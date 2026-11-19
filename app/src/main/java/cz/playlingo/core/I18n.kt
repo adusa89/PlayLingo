@@ -12,12 +12,10 @@ object I18n {
         "m_settings" to ("Nastavení" to "Nastavenia"),
         "m_history" to ("Historie" to "História"),
         "wz_title" to ("Průvodce nastavením" to "Sprievodca nastavením"),
-        "wz_s0" to ("Vítej" to "Vitaj"),
         "wz_s1" to ("Zobrazení titulků" to "Zobrazenie titulkov"),
         "wz_s2" to ("Jazyk překladu" to "Jazyk prekladu"),
         "wz_s3" to ("Připojení PlayStationu" to "Pripojenie PlayStationu"),
         "wz_s4" to ("Hotovo" to "Hotovo"),
-        "wz_welcome" to ("PlayLingo překládá anglické titulky ve hrách do tvého jazyka. Nastavení zabere asi minutu. Nejdřív si vyber jazyk, do kterého chceš překládat." to "PlayLingo prekladá anglické titulky v hrách do tvojho jazyka. Nastavenie zaberie asi minútu. Najprv si vyber jazyk, do ktorého chceš prekladať."),
         "wz_perm" to ("Aby aplikace mohla ukázat titulky přes hru, zapni ji v nastavení televize: Usnadnění → PlayLingo → Zapnout. Pak se tlačítkem Zpět vrať sem." to "Aby aplikácia mohla ukázať titulky cez hru, zapni ju v nastaveniach televízora: Zjednodušenie ovládania → PlayLingo → Zapnúť. Potom sa tlačidlom Späť vráť sem."),
         "wz_perm_open" to ("Otevřít nastavení televize" to "Otvoriť nastavenia televízora"),
         "wz_model" to ("Překlad běží přímo v televizi, zdarma a bez internetu. Jen teď jednou stáhnu jazykový model (asi 30 MB)." to "Preklad beží priamo v televízore, zadarmo a bez internetu. Len teraz raz stiahnem jazykový model (asi 30 MB)."),
@@ -85,7 +83,6 @@ object I18n {
         "b_pause" to ("Pozastavit" to "Pozastaviť"),
         "b_resume" to ("Pokračovat" to "Pokračovať"),
         "b_stop" to ("Zastavit" to "Zastaviť"),
-        "check_title" to ("Kontrolní seznam" to "Kontrolný zoznam"),
         "chk_overlay" to ("Zobrazení titulků přes jiné aplikace" to "Zobrazenie titulkov cez iné aplikácie"),
         "chk_model" to ("Jazykový model pro offline překlad" to "Jazykový model pre offline preklad"),
         "fix" to ("Opravit" to "Opraviť"),
@@ -213,10 +210,10 @@ object I18n {
      * nahrání do televize LG (core/I18nLg.kt), Xbox (core/I18nXbox.kt) a typ televize s průvodcem
      * pro Samsung (core/I18nSamsung.kt) – mají přednost před obecnými se stejným klíčem.
      */
-    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + XBOX_S + SS_S + DEEPL_S
+    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + XBOX_S + SS_S + DEEPL_S + UI_S
     private val PX: Map<Lang, Map<String, String>> =
         Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) + (DIAG_X[it] ?: emptyMap()) + (LG_X[it] ?: emptyMap()) +
-            (XBOX_X[it] ?: emptyMap()) + (SS_X[it] ?: emptyMap()) + (DEEPL_X[it] ?: emptyMap()) }
+            (XBOX_X[it] ?: emptyMap()) + (SS_X[it] ?: emptyMap()) + (DEEPL_X[it] ?: emptyMap()) + (UI_X[it] ?: emptyMap()) }
 
     fun t(lang: Lang, key: String): String {
         val p = PS[key] ?: S[key] ?: return key

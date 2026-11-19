@@ -72,7 +72,13 @@ for m in "${MODES[@]}"; do
   set -- $m
   adb shell am force-stop $PKG
   mode $1 $2 $3
-  for page in HOME PS5 LOOK SETTINGS HELP; do
+  # průvodce: zařízení (0), konzole (1) a televize (2) – volby s popisem musí být celé vidět
+  for step in 0 1 2; do
+    adb shell am start -n $PKG/.MainActivity --ei wizard $step
+    sleep 3; shot "p2_${4}_pruvodce_$step"
+  done
+  # stránky v pořadí menu (Nastavení s ozubeným kolem je poslední a obsahuje i licenci)
+  for page in HOME PS5 LOOK HELP SETTINGS; do
     adb shell am start -n $PKG/.MainActivity --es page $page
     sleep 3; shot "p2_${4}_$page"
   done

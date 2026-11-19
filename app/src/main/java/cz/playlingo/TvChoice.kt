@@ -12,26 +12,30 @@ import cz.playlingo.core.TvType
  * spuštěním): Android TV (pruh ukazuje toto zařízení, výchozí), LG (webOS) nebo Samsung (Tizen) –
  * tam toto zařízení jen čte a překládá a věty posílá aplikaci PlayLingo v televizi (core/TvSender.kt).
  *
- *  - [show] – nabídka typů; vybraný typ uloží ([Prefs.setTvType]), pošle běžícímu překladu
- *    a zavolá `onPicked`,
- *  - [line] – krátký řádek pro Domů („Typ televize: LG (webOS) – připojeno“),
+ *  - [show] – nabídka typů; vybraný typ uloží ([set]) a zavolá `onPicked`,
+ *  - [set] – uloží typ a pošle ho běžícímu překladu (i z voleb v průvodci),
+ *  - [short] – televize do souhrnného řádku na Domů („LG OLED55B7 · připojeno“),
  *  - [needsInstall] – má se nabízet nahrání aplikace do televize (aplikace se z ní ještě nikdy neohlásila)?
  *  - [openInstall] – průvodce nahráním pro LG / Samsung.
  */
 object TvChoice {
     fun label(c: Context, type: TvType): String = c.tx("tv_type_" + type.key)
 
+    /** Uloží typ televize a hned ho pošle běžícímu překladu. */
+    fun set(activity: Activity, t: TvType) {
+        Prefs.setTvType(activity, t)
+        if (TranslatorService.running) {
+            activity.startService(Intent(activity, TranslatorService::class.java).setAction(TranslatorService.ACTION_RELOAD))
+        }
+    }
+
     /** Nabídka typů televize. Vybraný typ se hned uloží a projeví v běžícím překladu. */
     fun show(activity: Activity, onPicked: (TvType) -> Unit = {}) {
         val types = TvType.values().toList()
         val current = types.indexOf(Prefs.tvType(activity))
         fun pick(i: Int) {
-            val t = types[i]
-            Prefs.setTvType(activity, t)
-            if (TranslatorService.running) {
-                activity.startService(Intent(activity, TranslatorService::class.java).setAction(TranslatorService.ACTION_RELOAD))
-            }
-            onPicked(t)
+            set(activity, types[i])
+            onPicked(types[i])
         }
         try {
             AlertDialog.Builder(activity, android.R.style.Theme_DeviceDefault_Dialog_Alert)
@@ -64,11 +68,14 @@ object TvChoice {
 
     fun needsInstall(c: Context, type: TvType = Prefs.tvType(c)): Boolean = type.sends && !seen(c, type)
 
-    /** Řádek pro Domů: typ, u LG/Samsungu model a stav spojení. Druhá hodnota = připojeno. */
-    fun line(c: Context): Pair<String, Boolean> {
+    /**
+     * Televize do souhrnného řádku na Domů: „Android TV“, nebo u LG/Samsungu značka, model (když se
+     * televize už ohlásila) a stav spojení („LG OLED55B7 · připojeno“). Druhá hodnota = připojeno.
+     */
+    fun short(c: Context): Pair<String, Boolean> {
         val type = Prefs.tvType(c)
-        val head = c.tx("tv_type") + ": " + label(c, type)
-        if (!type.sends) return head to false
+        val name = when (type) { TvType.ANDROID -> "Android TV"; TvType.LG -> "LG"; TvType.SAMSUNG -> "Samsung" }
+        if (!type.sends) return name to false
         val model = TvSender.lastSeen?.announce?.takeIf { it.platform == type.platform }?.model
         val connected = TranslatorService.tvConnected > 0
         val state = when {
@@ -76,7 +83,7 @@ object TvChoice {
             seen(c, type) -> c.tx("tv_st_off")
             else -> c.tx("tv_st_never")
         }
-        return (head + (model?.let { " $it" } ?: "") + " – " + state) to connected
+        return (name + (model?.let { " $it" } ?: "") + " · " + state) to connected
     }
 
     fun openInstall(activity: Activity, type: TvType = Prefs.tvType(activity)) {
