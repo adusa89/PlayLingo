@@ -34,6 +34,7 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `ConsoleLink.kt` – společné rozhraní zdroje obrazu (PlayStation `Ps5Link`, Xbox `XboxLink`)
   - `XboxAccount.kt`, `XboxLink.kt`, `XboxForm.kt` – Xbox: přihlášení účtem Microsoft, spojení
     přes vzdálené hraní (WebRTC) a stránka konzole pro Xbox (viz Xbox)
+  - `DeeplTranslator.kt`, `DeeplSection.kt` – pokus DeepL (viz Pokus: DeepL)
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
   knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
 - `third_party/chiaki-ng` – submodul. Needituj ho; před sestavením se do něj kopíruje
@@ -289,6 +290,32 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   spojení a čtení z obrazu ze skutečného Xboxu **umí ověřit jen uživatel**. Převzato podle PlayCaption
   (AGPL-3.0; ten podle xbox-xcloud-player, MIT, a XStreaming, AGPL-3.0) – hlavičky souborů zachovej.
 
+## Pokus: DeepL (experimentální, výchozí vypnuto)
+
+- Nastavení → úplně dole část **Experimentální** (`DeeplSection.kt`, volá ji jediná funkce
+  `experimentalSection()` v `MainActivity`): volba „Lepší překlad přes internet (DeepL)“, klíč,
+  postup „Jak získat klíč“, ověření a měření tohoto běhu. Vypnuté = služba se chová přesně jako dřív
+  (žádný dotaz do internetu), zkouška v emulátoru se tím nemění.
+- **Klíč patří jen hráči.** V repozitáři, testech, APK ani CI žádný klíč není a nesmí být (ani náš
+  „sdílený“). Ukládá se zašifrovaný přes Android Keystore (`DeeplKey`, stejný postup jako `LgVault`),
+  nikam se nevypisuje; `Redact` maže tvar klíče DeepL (UUID s `:fx`) a `DiagReport.secrets` i uložený
+  klíč. Majitel má pro ruční zkoušku klíč mimo repozitář v `%USERPROFILE%\.playlingo\deepl.txt` –
+  nikam ho nekopíruj ani nevypisuj; jen pár ručních dotazů, žádné opakované zkoušení.
+- Vložení klíče z telefonu: stejný server jako přihlášení (`LoginServer.forPage` + `LoginServer.Custom`,
+  jednorázový klíč ve čtverečku), stránka `DeeplPage` v `core/Deepl.kt` (postup, odkaz na DeepL na nové
+  kartě, políčko pro vložení – schránku stránka číst nesmí). Běží jen, dokud je vidět její čtvereček.
+- Překlad (`TranslatorService` → `improveWithDeepl`): offline překlad se ukáže hned, souběžně jde
+  `POST /v2/translate` (původní anglický text bez `IDIOMS`, jména ze slovníku ve značce `<k>` s
+  `ignore_tags`, `formality=prefer_less`). Odpověď do 1,5 s, jiná a k témuž zobrazenému řádku
+  (`SubtitleTracker.revision` + pořadí zobrazení `showSeq`) pruh potichu vymění, i v televizi LG.
+  Čeština dál prochází `Natural.czech` (DeepL v češtině tykání nastavit neumí a občas vyká).
+  Vlastní paměť výsledků DeepL (jen v paměti procesu), offline paměť se nemíchá. Chyby (403, 456,
+  429, síť) → offline a přestávka (`DeeplBackoff`). Rozhodování, čtení odpovědí a přestávky jsou
+  v `core/Deepl.kt` s testy (`DeeplTest`). Měření v logu: `TP_TEST` řádky `DEEPL|ms=…|swap=yes/no/late/stale/cache|chars=…`
+  (bez textu a klíče); souhrn v Nastavení a v hlášení o stavu.
+- Limit znaků se nebere napevno: ukazuje se to, co vrátí `/v2/usage` (účet majitele má 1 000 000).
+- Texty `dl_…` jsou v `core/I18nDeepl.kt` (`DEEPL_S`, `DEEPL_X`).
+
 ## Texty aplikace a jazyky
 
 Aplikace má dvě na sobě nezávislá nastavení jazyka (`core/Lang.kt`):
@@ -320,6 +347,7 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
   (např. `xb_st_failed`, `xb_ls_image`) a bere se přes `Console.key()` / `ct()` v MainActivity.
 - typ televize (`tv_…`, společné `s_tv_desc`, `st_tv_…`, `hp_lg_title`/`hp_lg_text`) a průvodce
   Samsung (`ss_…`): `core/I18nSamsung.kt` (`SS_S`, `SS_X`).
+- texty pokusu DeepL (`dl_…`; důvody `dl_p_<Deepl.Problem>`): `core/I18nDeepl.kt` (`DEEPL_S`, `DEEPL_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.

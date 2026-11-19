@@ -170,6 +170,29 @@ tě provede:
 
 Podrobnosti a důvody jsou v `tizen/CTI-ME.md`.
 
+## 9. Pokus: lepší překlad přes internet (DeepL)
+Zatím jen pro vyzkoušení a **normálně vypnutý**. Najdeš ho úplně dole v Nastavení, v části
+**Experimentální**. Offline překlad se ukáže hned jako vždy; když DeepL do 1,5 s pošle jiný
+(lepší) překlad, text v pruhu se potichu vymění. Když DeepL nejde (internet, vyčerpaný limit,
+špatný klíč), překládá se dál offline a důvod je vidět v té části Nastavení.
+
+Když je to zapnuté, **rozpoznaný text titulků se posílá přes internet do DeepL**. Potřebuješ
+vlastní klíč DeepL – je jen tvůj a zůstává zašifrovaný jen v zařízení s PlayLingem.
+
+Jak klíč získat (zdarma, bez platební karty):
+1. Na deepl.com otevři v horním menu **Developers** → **Free API Key**.
+2. Zaregistruj se e-mailem a heslem. Platební kartu DeepL nechce.
+3. Potvrď e-mail odkazem, který ti DeepL pošle.
+4. Po přihlášení jsi na úvodní stránce účtu („Welcome to DeepL!“). V rámečku s ukázkou je
+   tlačítko **Copy key** – klikni na něj. Klíč končí na `:fx`.
+5. V PlayLingu: Nastavení → Experimentální → vlož klíč do políčka a dej **Uložit a ověřit klíč**.
+   Na televizi je pohodlnější **Vložit klíč z telefonu**: naskenuj čtvereček, na stránce v telefonu
+   je stejný postup s tlačítkem Otevřít DeepL, klíč vložíš a pošleš do televize.
+
+Po ověření aplikace ukáže, kolik znaků ti tento měsíc zbývá (u bezplatného klíče DeepL dává
+zdarma měsíční limit, např. 1 000 000 znaků). Potom zapni **Lepší překlad přes internet (DeepL)**.
+Klíč jde kdykoli odebrat tlačítkem **Odebrat klíč**.
+
 ## Licence a zdrojový kód
 Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng
 (https://github.com/streetpea/chiaki-ng, licence AGPL-3.0). Zdrojový kód aplikace včetně

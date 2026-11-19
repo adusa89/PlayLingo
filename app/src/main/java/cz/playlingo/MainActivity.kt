@@ -271,6 +271,7 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         if (::xbox.isInitialized) xbox.cancel()
         loginServer?.stop(); loginServer = null
+        deeplUi?.stopPage()
         demo?.destroy(); demo = null
         scope.cancel()
         super.onDestroy()
@@ -387,6 +388,7 @@ class MainActivity : Activity() {
         val focusedTag = if (keepFocus) currentFocus?.tag else null
         if (!skipDraftSave) saveDrafts()
         syncLoginPage()
+        if (wizard >= 0 || section != Section.SETTINGS) deeplUi?.stopPage()
         lastRunning = TranslatorService.running
         lastPaused = TranslatorService.paused
         lastLink = TranslatorService.linkState
@@ -404,7 +406,7 @@ class MainActivity : Activity() {
             // Titulky: nejdřív vzhled, pod ním kde se čtou
             Section.LOOK -> { look(); content.addView(ui.section(t("m_zones"))); zones() }
             // Nastavení: nejdřív povolení a chování, pod ním překlad
-            Section.SETTINGS -> { settings(); content.addView(ui.section(t("m_translate"))); translate() }
+            Section.SETTINGS -> { settings(); content.addView(ui.section(t("m_translate"))); translate(); experimentalSection() }
             Section.HISTORY -> history()
             Section.LICENSE -> license()
             Section.HELP -> help()
@@ -1202,6 +1204,16 @@ class MainActivity : Activity() {
             }
         }, "uilang"), 8)
         consoleRow("sconsole", 8)
+    }
+
+    // ======================= EXPERIMENTÁLNÍ (pokus DeepL, výchozí vypnuto) =======================
+
+    private var deeplUi: DeeplSection? = null
+
+    /** Až na konci Nastavení, ať se nezmění nic nad tím (zkouška se tam prokliká naslepo). */
+    private fun experimentalSection() {
+        val d = deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }) { url, text -> qrRow(url, text) }.also { deeplUi = it }
+        d.build(content)
     }
 
     // ======================= HISTORIE =======================

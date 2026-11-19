@@ -340,6 +340,7 @@ class TranslatorService : Service() {
             cache.clear(); try { cacheFile().delete() } catch (_: Exception) {}
             Prefs.setSavedGlossarySignature(this, sig)
         }
+        deeplKey = DeeplTranslator.activeKey(this)
         holdMs = Prefs.holdMs(this).toLong()
         showOriginal = Prefs.showOriginal(this)
         hideAt = 0
@@ -598,9 +599,16 @@ class TranslatorService : Service() {
             is SubtitleTracker.Action.Show -> {
                 // překlad už většinou běží (spuštěný po prvním přečtení) – jen se počká na výsledek
                 val ready = inflight.remove(action.text)
-                val segs = (if (ready != null) ready.await() else null) ?: translateSegments(action.text) ?: return
+                val offline = (if (ready != null) ready.await() else null) ?: translateSegments(action.text) ?: return
                 // překlad doběhl až po novém začátku (pauza, změna jazyka, jiná oblast) → neukazuje se
                 if (!tracker.confirmShown(action.text, token)) return
+                // pokus DeepL (výchozí vypnuto): řádek, který už DeepL překládal, se vezme rovnou z jeho paměti
+                val deeplJob = deeplKey?.let { DeeplTranslator.plan(it, lang, action.text, glossary) }
+                val fromDeepl = deeplJob?.let { DeeplTranslator.cached(it) }
+                val segs = if (deeplJob != null && fromDeepl != null) {
+                    DeeplTranslator.stats.fromCache(); tp(cz.playlingo.core.Deepl.logLine(0, "cache", 0))
+                    DeeplTranslator.merge(offline, deeplJob, fromDeepl)
+                } else offline
                 val top = if (picked.top >= 0) (y0 + picked.top).toFloat() / capH else -1f
                 val bottom = if (picked.bottom >= 0) (y0 + picked.bottom).toFloat() / capH else -1f
                 hideAt = 0
@@ -610,8 +618,15 @@ class TranslatorService : Service() {
                 if (demo) tp("LAT|${DemoGame.shownFor(SystemClock.uptimeMillis() - DemoFeeder.epoch)}ms|ocr=${lastOcrMs}ms")
                 val left = if (picked.left >= 0) (x0 + picked.left).toFloat() / capW else -1f
                 val right = if (picked.right >= 0) (x0 + picked.right).toFloat() / capW else -1f
-                ov.show(segs, if (showOriginal) action.text else null, top, bottom, left, right,
-                    lineHeight = picked.lineHeight.toFloat() / capH)
+                val original = if (showOriginal) action.text else null
+                val lineH = picked.lineHeight.toFloat() / capH
+                val seq = synchronized(showLock) {
+                    ov.show(segs, original, top, bottom, left, right, lineHeight = lineH)
+                    ++showSeq
+                }
+                if (deeplJob != null && fromDeepl == null) improveWithDeepl(deeplJob, segs, token, seq, ov) { better ->
+                    ov.show(better, original, top, bottom, left, right, lineHeight = lineH)
+                }
                 statsFor(this).line()
                 // automatika: zapamatuj si, kde na obrazovce titulky jsou
                 if (autoFind && autoZone.onSubtitle(top, bottom, SystemClock.uptimeMillis())) zoneChanged()
@@ -676,6 +691,43 @@ class TranslatorService : Service() {
         // jazyk se mezitím změnil → do paměti nového jazyka nepatří překlad do starého
         if (out != null) { if (l == lang) cache.put(text, out); lastError = null }
         return out
+    }
+
+    // ---------------- pokus: DeepL ----------------
+
+    /** Klíč DeepL, když je pokus zapnutý (jinak null a vše běží jako dřív). Nikam se nevypisuje. */
+    @Volatile private var deeplKey: String? = null
+    /** Pořadí zobrazení v pruhu: odpověď DeepL smí vyměnit jen ten řádek, ke kterému patří. */
+    private val showLock = Any()
+    private var showSeq = 0L
+
+    /**
+     * Souběžně s offline překladem se zeptá DeepL. Text v pruhu se vymění jen tehdy, když odpověď
+     * přišla včas, liší se a v pruhu je pořád týž titulek (stejný začátek čtení i pořadí zobrazení).
+     */
+    private fun improveWithDeepl(job: DeeplTranslator.Job, offline: List<Segment>, token: Long, seq: Long, ov: SubtitleOverlay,
+                                 redraw: (List<Segment>) -> Unit) {
+        if (!DeeplTranslator.tryStart()) return
+        scope.launch {
+            val r = DeeplTranslator.fetch(job)
+            val texts = r.texts
+            if (texts == null) { tp(cz.playlingo.core.Deepl.logLine(r.ms, "error-" + r.problem?.name?.lowercase(), 0)); return@launch }
+            val better = DeeplTranslator.merge(offline, job, texts)
+            val swap = synchronized(showLock) {
+                val current = tracker.isCurrent(token) && seq == showSeq && ov.isShown && overlay === ov
+                cz.playlingo.core.Deepl.decide(TextLogic.joinSegments(offline), TextLogic.joinSegments(better), current, r.ms).also {
+                    if (it == cz.playlingo.core.Deepl.Swap.YES) redraw(better)
+                }
+            }
+            DeeplTranslator.stats.answer(r.ms, swap, r.chars)
+            val label = when (swap) {
+                cz.playlingo.core.Deepl.Swap.YES -> "yes"
+                cz.playlingo.core.Deepl.Swap.SAME -> "no"
+                cz.playlingo.core.Deepl.Swap.LATE -> "late"
+                cz.playlingo.core.Deepl.Swap.STALE -> "stale"
+            }
+            tp(cz.playlingo.core.Deepl.logLine(r.ms, label, r.chars))
+        }
     }
 
     // ---------------- paměť překladů ----------------
