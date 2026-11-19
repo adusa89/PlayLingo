@@ -54,6 +54,9 @@ ve stejné domácí síti. Připrav si telefon – bude potřeba jen teď, k hra
 3. **Naskenuj čtvereček telefonem.** Otevři v telefonu fotoaparát, namiř ho na čtvereček
    v televizi a klepni na odkaz. Otevře se stránka PlayLingo z tvé televize – telefon proto
    musí být na stejné Wi-Fi jako televize.
+   **Bez telefonu:** pod čtverečkem je adresa stránky (např. `http://192.168.1.20:8765/p/k7mq2xra`).
+   Opiš ji do prohlížeče v počítači ve stejné síti a další krok udělej tam – adresu stránky
+   „redirect“ zkopíruješ z řádku s adresou v prohlížeči (Ctrl+C) a vložíš na kartu PlayLingo.
 4. **V telefonu se přihlas.** Na stránce klepni na „Přihlásit se u PlayStation“ a zadej e-mail
    a heslo druhého účtu. Když se stránka zeptá na „passkey“, zvol „Remind Me Later“. Nakonec
    zůstane skoro prázdná stránka s jediným slovem „redirect“. Zkopíruj její adresu (klepni

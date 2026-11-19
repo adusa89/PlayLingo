@@ -698,8 +698,16 @@ class MainActivity : Activity() {
                 if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
                 val pageUrl = loginPageUrl()
                 add(qrRow(pageUrl ?: PsnAuth.LOGIN_URL, t("pa_1_text")), 10)
-                // adresa i slovy – pro telefon, kterému se čtvereček nedaří přečíst
-                if (pageUrl != null) add(ui.text(pageUrl, 13f, Theme.MUTED), 6)
+                // adresa i slovy – pro přihlášení z počítače (stránka funguje v každém prohlížeči
+                // ve stejné síti) a pro telefon, kterému se čtvereček nedaří přečíst
+                if (pageUrl != null) {
+                    val s = android.text.SpannableStringBuilder(t("pa_pc"))
+                    val from = s.length
+                    s.append(pageUrl)
+                    s.setSpan(android.text.style.ForegroundColorSpan(Theme.TEXT), from, s.length, 0)
+                    s.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), from, s.length, 0)
+                    add(tagged(ui.text(s, 15f, Theme.MUTED), "pcurl"), 6)
+                }
                 else add(ui.text(t("pa_nolan"), 15f, Theme.WARN), 6)
             }
             3 -> {
@@ -1453,6 +1461,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.70"
-    const val VERSION_CODE = 70
+    const val VERSION = "verze 0.71"
+    const val VERSION_CODE = 71
 }
