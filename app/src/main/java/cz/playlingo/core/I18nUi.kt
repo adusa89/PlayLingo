@@ -34,10 +34,12 @@ internal val UI_S: Map<String, Pair<String, String>> = mapOf(
     "w_model" to ("Chybí jazykový balíček pro překlad (%s)" to "Chýba jazykový balík pre preklad (%s)"),
     "chk_ps5_missing" to ("PlayStation není spárovaný" to "PlayStation nie je spárovaný"),
     "xb_chk_ps5_missing" to ("Xbox není vybraný" to "Xbox nie je vybraný"),
+    "wz_ps_prep" to ("Než budeš pokračovat, připrav PlayStation: založ na něm druhého uživatele (jiný účet PlayStation, zdarma), přepni se na něj a zapni Nastavení → Systém → Remote Play → Povolit Remote Play. Bez toho se párování na konci průvodce nepovede." to "Skôr než budeš pokračovať, priprav PlayStation: založ na ňom druhého používateľa (iný účet PlayStation, zadarmo), prepni sa naň a zapni Nastavenia → Systém → Remote Play → Povoliť Remote Play. Bez toho sa párovanie na konci sprievodcu nepodarí."),
 )
 
 internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "wz_ps_prep" to "Before you continue, prepare the PlayStation: add a second user (another PlayStation account, free), switch to it and turn on Settings → System → Remote Play → Enable Remote Play. Without this, pairing at the end of the setup won’t work.",
         "w_overlay" to "Showing subtitles over other apps is not allowed",
         "w_model" to "The language pack for translation is missing (%s)",
         "chk_ps5_missing" to "PlayStation is not paired",
@@ -68,6 +70,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugging and reports",
     ),
     Lang.PL to mapOf(
+        "wz_ps_prep" to "Zanim przejdziesz dalej, przygotuj PlayStation: dodaj drugiego użytkownika (inne konto PlayStation, za darmo), przełącz się na niego i włącz Ustawienia → System → Remote Play → Włącz Remote Play. Bez tego parowanie na końcu kreatora się nie uda.",
         "w_overlay" to "Wyświetlanie napisów nad innymi aplikacjami nie jest dozwolone",
         "w_model" to "Brakuje pakietu językowego do tłumaczenia (%s)",
         "chk_ps5_missing" to "PlayStation nie jest sparowane",
@@ -98,6 +101,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugowanie i zgłoszenia",
     ),
     Lang.DE to mapOf(
+        "wz_ps_prep" to "Bevor du weitermachst, bereite die PlayStation vor: Lege einen zweiten Benutzer an (anderes PlayStation-Konto, kostenlos), wechsle zu ihm und schalte Einstellungen → System → Remote Play → Remote Play aktivieren ein. Ohne das klappt das Koppeln am Ende nicht.",
         "w_overlay" to "Untertitel über anderen Apps anzeigen ist nicht erlaubt",
         "w_model" to "Das Sprachpaket für die Übersetzung fehlt (%s)",
         "chk_ps5_missing" to "PlayStation ist nicht gekoppelt",
@@ -128,6 +132,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Fehlersuche und Berichte",
     ),
     Lang.HU to mapOf(
+        "wz_ps_prep" to "Mielőtt továbblépsz, készítsd elő a PlayStationt: adj hozzá egy második felhasználót (másik PlayStation-fiók, ingyenes), válts rá, és kapcsold be: Beállítások → Rendszer → Remote Play → Remote Play engedélyezése. Enélkül a párosítás a végén nem sikerül.",
         "w_overlay" to "A feliratok megjelenítése más alkalmazások felett nincs engedélyezve",
         "w_model" to "Hiányzik a fordítás nyelvi csomagja (%s)",
         "chk_ps5_missing" to "A PlayStation nincs párosítva",
@@ -158,6 +163,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Hibakeresés és jelentések",
     ),
     Lang.UK to mapOf(
+        "wz_ps_prep" to "Перш ніж продовжити, підготуй PlayStation: додай другого користувача (інший обліковий запис PlayStation, безкоштовно), перейди на нього й увімкни Налаштування → Система → Remote Play → Увімкнути Remote Play. Без цього з’єднання в кінці не вдасться.",
         "w_overlay" to "Показ субтитрів поверх інших застосунків не дозволено",
         "w_model" to "Бракує мовного пакета для перекладу (%s)",
         "chk_ps5_missing" to "PlayStation не в парі",
@@ -188,6 +194,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Налагодження і звіти",
     ),
     Lang.ES to mapOf(
+        "wz_ps_prep" to "Antes de seguir, prepara la PlayStation: añade un segundo usuario (otra cuenta de PlayStation, gratis), cambia a él y activa Ajustes → Sistema → Juego remoto → Habilitar juego remoto. Sin esto, la vinculación al final no funcionará.",
         "w_overlay" to "Mostrar subtítulos sobre otras apps no está permitido",
         "w_model" to "Falta el paquete de idioma para traducir (%s)",
         "chk_ps5_missing" to "La PlayStation no está vinculada",
@@ -218,6 +225,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Depuración e informes",
     ),
     Lang.FR to mapOf(
+        "wz_ps_prep" to "Avant de continuer, prépare la PlayStation : ajoute un deuxième utilisateur (un autre compte PlayStation, gratuit), passe sur lui et active Paramètres → Système → Remote Play → Activer Remote Play. Sans cela, l’association à la fin ne marchera pas.",
         "w_overlay" to "L’affichage des sous-titres par-dessus les autres applis n’est pas autorisé",
         "w_model" to "Le pack de langue pour la traduction manque (%s)",
         "chk_ps5_missing" to "La PlayStation n’est pas associée",
@@ -248,6 +256,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Débogage et rapports",
     ),
     Lang.IT to mapOf(
+        "wz_ps_prep" to "Prima di continuare, prepara la PlayStation: aggiungi un secondo utente (un altro account PlayStation, gratis), passa a lui e attiva Impostazioni → Sistema → Riproduzione remota → Abilita Riproduzione remota. Senza questo l’associazione alla fine non riuscirà.",
         "w_overlay" to "La visualizzazione dei sottotitoli sopra altre app non è consentita",
         "w_model" to "Manca il pacchetto lingua per la traduzione (%s)",
         "chk_ps5_missing" to "La PlayStation non è associata",

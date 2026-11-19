@@ -26,6 +26,16 @@ Při prvním použití televize požádá o povolení instalace z aplikace PlayL
 Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nahrát ručně.
 
 ## 3. První nastavení (průvodce tě provede)
+
+**Nejdřív připrav PlayStation** (jen jednou, ještě než v aplikaci spustíš průvodce – bez toho
+se párování v posledním kroku nepovede):
+1. Na PS5 zvol Přidat uživatele a založ **druhý účet** PlayStation s jiným e-mailem (zdarma). Proč
+   druhý účet, je vysvětlené v bodě 4.
+2. Přepni se na PS5 na toho druhého uživatele a zapni **Nastavení → Systém → Remote Play →
+   Povolit Remote Play**.
+3. PS5 a zařízení s PlayLingem musí být ve stejné domácí síti.
+
+Pak v aplikaci projdi průvodce:
 1. **Zařízení:** na čem PlayLingo běží – Android TV nebo box s Androidem, nebo telefon či tablet
    (ten jen čte a hotové titulky posílá do televize LG nebo Samsung, viz bod 8).
 2. **Konzole:** PlayStation 5, nebo Xbox (viz bod 7b).
@@ -39,15 +49,13 @@ Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nah
 Máš-li víc televizí LG nebo Samsung, pamatuje si PlayLingo vzhled titulků a oblasti pro každou zvlášť
 a přepne je samo podle televize, ke které se připojí (v Titulkách je nahoře vidět, pro kterou).
 
-Každou volbu jde později změnit v **Nastavení** – ozubené kolo (⚙), které je vidět pořád (v telefonu vpravo nahoře, na televizi dole v levém sloupci). Nastavení má záložky Obecné, Čtení a překlad, Ladění a hlášení a Experimentální; co která volba dělá, je v Nápovědě v části „Volby v Nastavení“.
-Tam je i zkušební doba a odemykací kód (část Licence), povolení, jazyk aplikace, zkušební verze
-a hlášení chyby. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:
+Každou volbu jde později změnit v **Nastavení** – ozubené kolo (⚙), které je vidět pořád (v telefonu vpravo nahoře, na televizi dole v levém sloupci). Nastavení má záložky Obecné, Čtení a překlad, Demo režim, Ladění a hlášení a Experimentální; co která volba dělá, je v Nápovědě v části „Volby v Nastavení“.
+Tam je i povolení, jazyk aplikace, zkušební verze, hlášení chyby a Demo režim. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:
 PlayStation nebo Xbox), Titulky a Nápověda.
 
-Stránka **Domů** ukazuje jen to podstatné: stav překladu, tlačítka Spustit / Zastavit a Zkouška
-bez PlayStationu, jeden souhrnný řádek (např. „PS5 (Obývák) → LG OLED55B7 · připojeno“; OK na něm
+Stránka **Domů** ukazuje jen to podstatné: stav překladu, tlačítka Spustit / Zastavit, jeden souhrnný řádek (např. „PS5 (Obývák) → LG OLED55B7 · připojeno“; OK na něm
 změní konzoli nebo televizi) a upozornění jen tehdy, když něco chybí (povolení, jazykový model,
-spárování, aplikace v televizi, končící vývojářský režim LG nebo zkušební doba).
+spárování, aplikace v televizi, končící vývojářský režim LG).
 
 ## 4. Spárování PlayStationu (jen jednou)
 
@@ -55,18 +63,16 @@ spárování, aplikace v televizi, končící vývojářský režim LG nebo zku�
 Kdyby se připojila tvým herním účtem, konzole by ti při hraní vypínala ovladač a zhasínala obraz
 (bere to tak, že ses přesunul hrát jinam).
 
-1. Na PlayStationu zvol Přidat uživatele a založ nový účet PlayStation s jiným e-mailem (je zdarma).
-2. Pod tím druhým uživatelem zapni Nastavení → Systém → Remote Play → Povolit Remote Play.
-3. V aplikaci se v průvodci přihlas tím druhým účtem (QR kód v telefonu).
-4. Číslo pro propojení zobraz na konzoli také pod druhým uživatelem.
-5. Hned po spárování se na ovladači přihlas na účet, na kterém hraješ, a hraj jako vždy, se svými hrami.
-   Druhý účet se jen „dívá“ – nic na něm nekupuješ ani nehraješ.
+Druhý účet a zapnuté Remote Play pod ním máš připravené z bodu 3. V aplikaci se pak přihlásíš
+tím druhým účtem a číslo pro propojení zobrazíš na konzoli také pod ním. Hned po spárování se na
+ovladači přepni na účet, na kterém hraješ, a hraj jako vždy, se svými hrami. Druhý účet se jen
+„dívá“ – nic na něm nekupuješ ani nehraješ.
 
 Aplikace tě provede šesti kroky, na každé obrazovce je jedna věc. Televize a PS5 musí být
 ve stejné domácí síti. Připrav si telefon – bude potřeba jen teď, k hraní už ne.
 
-1. **Zapni na PlayStationu Remote Play.** Na PS5: Nastavení → Systém → Remote Play →
-   zapni „Povolit Remote Play“.
+1. **Zkontroluj na PlayStationu Remote Play** (pod druhým uživatelem): Nastavení → Systém →
+   Remote Play → „Povolit Remote Play“ musí být zapnuté.
 2. **Najdi PlayStation.** Aplikace ho v síti najde sama. Když ne, zadej adresu ručně
    (PS5 → Nastavení → Síť → Stav připojení → Adresa IPv4).
 3. **Naskenuj čtvereček telefonem.** Otevři v telefonu fotoaparát, namiř ho na čtvereček

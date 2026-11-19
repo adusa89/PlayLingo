@@ -535,6 +535,8 @@ class MainActivity : Activity() {
                 val cur = Prefs.console(this)
                 option(t("c_ps"), null, cur == Console.PLAYSTATION, "wconps") { setConsole(Console.PLAYSTATION); render(true) }
                 option(t("c_xbox"), null, cur == Console.XBOX, "wconxbox") { setConsole(Console.XBOX); render(true) }
+                // příprava PlayStationu patří na začátek: bez druhého účtu a Remote Play se párování na konci nepovede
+                if (cur == Console.PLAYSTATION) add(ui.card().apply { addView(ui.text(t("wz_ps_prep"), 15f, Theme.ACCENT)) }, 14)
             }
             W_TV -> {
                 add(ui.text(t("wz_tv_q"), 20f, Theme.TEXT, bold = true), 18)
@@ -1809,6 +1811,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.84"
-    const val VERSION_CODE = 84
+    const val VERSION = "verze 0.85"
+    const val VERSION_CODE = 85
 }
