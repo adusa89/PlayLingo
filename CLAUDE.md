@@ -29,6 +29,11 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `LgInstallActivity.kt`, `LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt` – nahrání aplikace
     do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG);
     `LgScanActivity.kt` – adresa a Passphrase z obrazovky televize kamerou telefonu
+  - `TvProfile.kt` (+ `core/TvProfiles.kt`) – vzhled pruhu a oblasti zvlášť pro každou televizi LG/Samsung:
+    aktivní je ta, která se naposledy ohlásila (platforma + model z `TvAnnounce`), hodnoty aktivní jsou
+    v běžném Prefs (klíče `TvProfiles.KEYS`), ostatní v SharedPreferences `tv_profily`. Přepíná
+    `TvSender.onAnnounce` v `TranslatorService`; v Titulkách šedý řádek „Vzhled a oblasti pro televizi …“.
+    Nová televize začne s kopií posledního nastavení. Nový klíč vzhledu/oblastí přidej do `KEYS`.
   - `TvChoice.kt` – typ televize (Android TV / LG / Samsung): nabídka, televize v souhrnném řádku na Domů, nahrání do televize
   - `SamsungInstallActivity.kt` – průvodce PlayLingem pro televizi Samsung (viz Televize Samsung)
   - `DemoFeeder.kt`, `TestCardActivity.kt` – ukázková „hra“ pro zkoušku bez PlayStationu

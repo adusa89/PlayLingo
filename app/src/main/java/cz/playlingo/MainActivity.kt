@@ -1142,6 +1142,8 @@ class MainActivity : Activity() {
 
     private fun look() {
         val sizeIdx = Prefs.TEXT_SIZES.indexOf(Prefs.textSize(this)).let { if (it < 0) 2 else it }
+        // LG / Samsung: vzhled a oblasti jsou zvlášť pro každou televizi (TvProfile) – pro kterou teď
+        TvProfile.activeName(this)?.let { add(ui.text(t("tv_profile_for").replace("%s", it), 14f, Theme.MUTED), 10) }
         langRow("lang", 16)
         add(tagged(ui.settingRow(t("l_size_auto"), onOff(Prefs.matchSize(this))) {
             Prefs.setMatchSize(this, !Prefs.matchSize(this)); applyToService(); render(true)
@@ -1787,6 +1789,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.81"
-    const val VERSION_CODE = 81
+    const val VERSION = "verze 0.82"
+    const val VERSION_CODE = 82
 }

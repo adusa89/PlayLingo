@@ -40,6 +40,9 @@ import java.util.concurrent.Executors
  */
 class TvSender(private val log: (String) -> Unit = {}) {
 
+    /** Volá se po každém ohlášení televize (z vlákna spojení) – např. přepnutí nastavení pro tu televizi. */
+    @Volatile var onAnnounce: ((TvAnnounce) -> Unit)? = null
+
     companion object {
         const val PORT = 8787
         private const val MAX_CLIENTS = 4
@@ -269,6 +272,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
                 TvAnnounce.parse(msg)?.let { a ->
                     lastSeen = Seen(a, System.currentTimeMillis())
                     log("tv says ${a.platform ?: "?"} ${a.version ?: "?"}")
+                    try { onAnnounce?.invoke(a) } catch (_: Throwable) {}
                 }
                 // záznam událostí z televize (od verze 1.2.0) – do souboru pro hlášení
                 TvLog.parse(msg)?.let { TvLog.add(it) }

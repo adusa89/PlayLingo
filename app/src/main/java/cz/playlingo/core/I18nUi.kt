@@ -29,10 +29,12 @@ internal val UI_S: Map<String, Pair<String, String>> = mapOf(
     "help_settings" to ("Volby v Nastavení" to "Voľby v Nastaveniach"),
     "st_demo" to ("Demo režim" to "Demo režim"),
     "st_demo_d" to ("Vyzkoušení bez konzole: ukázková hra s titulky, ukázka pruhu a zkouška překladu." to "Vyskúšanie bez konzoly: ukážková hra s titulkami, ukážka pruhu a skúška prekladu."),
+    "tv_profile_for" to ("Vzhled a oblasti pro televizi %s (každá televize má vlastní)" to "Vzhľad a oblasti pre televízor %s (každý televízor má vlastné)"),
 )
 
 internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "tv_profile_for" to "Look and areas for the TV %s (each TV has its own)",
         "st_demo" to "Demo mode",
         "st_demo_d" to "Try it without a console: a sample game with subtitles, a preview of the bar and a translation test.",
         "st_general" to "General",
@@ -58,6 +60,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugging and reports",
     ),
     Lang.PL to mapOf(
+        "tv_profile_for" to "Wygląd i obszary dla telewizora %s (każdy telewizor ma własne)",
         "st_demo" to "Tryb demo",
         "st_demo_d" to "Wypróbuj bez konsoli: przykładowa gra z napisami, podgląd paska i test tłumaczenia.",
         "st_general" to "Ogólne",
@@ -83,6 +86,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugowanie i zgłoszenia",
     ),
     Lang.DE to mapOf(
+        "tv_profile_for" to "Aussehen und Bereiche für den Fernseher %s (jeder Fernseher hat eigene)",
         "st_demo" to "Demomodus",
         "st_demo_d" to "Ohne Konsole ausprobieren: Beispielspiel mit Untertiteln, Vorschau des Balkens und Übersetzungstest.",
         "st_general" to "Allgemein",
@@ -108,6 +112,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Fehlersuche und Berichte",
     ),
     Lang.HU to mapOf(
+        "tv_profile_for" to "Megjelenés és területek a(z) %s tévéhez (minden tévének saját van)",
         "st_demo" to "Demó mód",
         "st_demo_d" to "Kipróbálás konzol nélkül: mintajáték feliratokkal, a sáv előnézete és fordítási próba.",
         "st_general" to "Általános",
@@ -133,6 +138,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Hibakeresés és jelentések",
     ),
     Lang.UK to mapOf(
+        "tv_profile_for" to "Вигляд і області для телевізора %s (кожен телевізор має свої)",
         "st_demo" to "Демо-режим",
         "st_demo_d" to "Спробуй без консолі: демо-гра із субтитрами, перегляд смуги та перевірка перекладу.",
         "st_general" to "Загальні",
@@ -158,6 +164,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Налагодження і звіти",
     ),
     Lang.ES to mapOf(
+        "tv_profile_for" to "Aspecto y zonas para el televisor %s (cada televisor tiene los suyos)",
         "st_demo" to "Modo demo",
         "st_demo_d" to "Pruébalo sin consola: un juego de ejemplo con subtítulos, una vista previa de la barra y una prueba de traducción.",
         "st_general" to "General",
@@ -183,6 +190,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Depuración e informes",
     ),
     Lang.FR to mapOf(
+        "tv_profile_for" to "Apparence et zones pour le téléviseur %s (chaque téléviseur a les siennes)",
         "st_demo" to "Mode démo",
         "st_demo_d" to "Essayer sans console : un jeu d’exemple avec sous-titres, un aperçu du bandeau et un test de traduction.",
         "st_general" to "Général",
@@ -208,6 +216,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Débogage et rapports",
     ),
     Lang.IT to mapOf(
+        "tv_profile_for" to "Aspetto e aree per il televisore %s (ogni televisore ha i propri)",
         "st_demo" to "Modalità demo",
         "st_demo_d" to "Prova senza console: un gioco di esempio con sottotitoli, un’anteprima della barra e una prova di traduzione.",
         "st_general" to "Generali",

@@ -36,6 +36,9 @@ Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nah
    PlayLingo → Zapnout.
 6. **Připojení konzole:** spáruj PlayStation – viz další bod (Xbox: bod 7b).
 
+Máš-li víc televizí LG nebo Samsung, pamatuje si PlayLingo vzhled titulků a oblasti pro každou zvlášť
+a přepne je samo podle televize, ke které se připojí (v Titulkách je nahoře vidět, pro kterou).
+
 Každou volbu jde později změnit v **Nastavení** – ozubené kolo (⚙), které je vidět pořád (v telefonu vpravo nahoře, na televizi dole v levém sloupci). Nastavení má záložky Obecné, Čtení a překlad, Ladění a hlášení a Experimentální; co která volba dělá, je v Nápovědě v části „Volby v Nastavení“.
 Tam je i zkušební doba a odemykací kód (část Licence), povolení, jazyk aplikace, zkušební verze
 a hlášení chyby. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:

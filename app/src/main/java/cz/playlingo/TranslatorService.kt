@@ -347,7 +347,13 @@ class TranslatorService : Service() {
         overlay?.destroy()
         // Titulky do televize LG: jen když si to uživatel zapnul. Jinak se nic neotevírá ani neposílá.
         if (Prefs.tvSend(this)) {
-            if (tv == null) TvSender { tp("TV|$it") }.also { it.start(); tv = it; activeTv = it }
+            if (tv == null) TvSender { tp("TV|$it") }.also {
+                // jiná televize než minule → její vzhled pruhu a oblasti (TvProfile)
+                it.onAnnounce = { a ->
+                    if (TvProfile.onAnnounce(this, a)) android.os.Handler(android.os.Looper.getMainLooper()).post { if (running) reloadSettings() }
+                }
+                it.start(); tv = it; activeTv = it
+            }
         } else {
             tv?.stop(); tv = null; activeTv = null
         }

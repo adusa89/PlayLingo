@@ -110,6 +110,20 @@ class SamsungInstallActivity : Activity() {
 
     private fun <V : View> tagged(v: V, tag: String): V { v.tag = tag; return v }
 
+    /** Návod Samsungu k instalaci Tizen Studia (TV SDK). */
+    private val TIZEN_URL = "https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/installing-tv-sdk.html"
+
+    private fun qr(text: String): android.graphics.Bitmap? = try {
+        val m = com.google.zxing.qrcode.QRCodeWriter().encode(text, com.google.zxing.BarcodeFormat.QR_CODE, 0, 0,
+            mapOf(com.google.zxing.EncodeHintType.MARGIN to 1))
+        val n = m.width
+        val scale = maxOf(1, 480 / n)
+        val px = IntArray(n * scale * n * scale)
+        for (y in 0 until n * scale) for (x in 0 until n * scale)
+            px[y * n * scale + x] = if (m.get(x / scale, y / scale)) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+        android.graphics.Bitmap.createBitmap(px, n * scale, n * scale, android.graphics.Bitmap.Config.ARGB_8888)
+    } catch (e: Throwable) { null }
+
     private fun step(title: String, text: String) = ui.card().apply {
         addView(ui.text(title, 18f, Theme.ACCENT, bold = true))
         addView(ui.text(text, 16f, Theme.TEXT), ui.lp(top = 8))
@@ -158,7 +172,19 @@ class SamsungInstallActivity : Activity() {
             }
         }, 14)
 
-        add(step(t("ss_s3_h"), t("ss_s3")), 14)
+        add(step(t("ss_s3_h"), t("ss_s3")).apply {
+            // odkaz na návod a stažení Tizen Studia od Samsungu; na televizi čtvereček pro telefon
+            addView(ui.text(t("ss_link"), 15f, Theme.MUTED), ui.lp(top = 12))
+            addView(ui.text(TIZEN_URL, 14f, Theme.ACCENT), ui.lp(top = 4))
+            if (Prefs.isTv(this@SamsungInstallActivity)) qr(TIZEN_URL)?.let { bmp ->
+                addView(android.widget.ImageView(this@SamsungInstallActivity).apply {
+                    setImageBitmap(bmp); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8))
+                }, android.widget.LinearLayout.LayoutParams(ui.dp(180), ui.dp(180)).apply { topMargin = ui.dp(10) })
+            }
+            addView(tagged(ui.button(t("xb_login_open")) {
+                try { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(TIZEN_URL))) } catch (_: Exception) {}
+            }, "sstizen"), ui.lp(w = android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, top = 10))
+        }, 14)
 
         add(tagged(ui.button(t("wz_back")) { finish() }, "ssback"), 22)
 
