@@ -10,7 +10,17 @@ plugins { kotlin("jvm") version "2.0.21" }
 repositories { mavenCentral() }
 
 val app = rootDir.resolve("../../app/src")
+
+// Xbox (XboxLink.kt): WebRTC je knihovna pro Android (.aar) – k překladu stačí její classes.jar.
+val webrtcAar by configurations.creating { isTransitive = false }
+val webrtcJar = layout.buildDirectory.file("webrtc/classes.jar")
+val unpackWebrtc by tasks.registering(Copy::class) {
+    from(zipTree(webrtcAar.singleFile)) { include("classes.jar") }
+    into(layout.buildDirectory.dir("webrtc"))
+}
 dependencies {
+    webrtcAar("io.getstream:stream-webrtc-android:1.3.7@aar")
+    compileOnly(files(webrtcJar).builtBy(unpackWebrtc))
     compileOnly("org.robolectric:android-all:15-robolectric-12650502")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1") { isTransitive = false }

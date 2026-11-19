@@ -1,7 +1,7 @@
 package cz.playlingo.core
 
 /**
- * Stav spojení s PlayStationem ve třech úrovních, jak je vidí hráč:
+ * Stav spojení s konzolí (PlayStation nebo Xbox) ve třech úrovních, jak je vidí hráč:
  *  1. překlad (služba) běží,
  *  2. aplikace je spojená s konzolí,
  *  3. z konzole opravdu přichází obraz.
@@ -70,13 +70,13 @@ object LinkStatus {
     private fun secs(ms: Long): String = (ms / 1000).toString()
 
     /** Krátký jednořádkový stav pro stránku Domů. */
-    fun line(lang: Lang, s: Status): String {
-        val text = I18n.t(lang, "ls_" + s.stage.name.lowercase())
+    fun line(lang: Lang, s: Status, console: Console = Console.PLAYSTATION): String {
+        val text = I18n.t(lang, console.key("ls_" + s.stage.name.lowercase()))
         return text.replace("%d", secs(s.noImageMs))
     }
 
     /** Podrobnosti po úrovních (✔ / ✘) pro diagnostiku. */
-    fun details(lang: Lang, s: Status): List<String> {
+    fun details(lang: Lang, s: Status, console: Console = Console.PLAYSTATION): List<String> {
         fun mark(ok: Boolean) = if (ok) "✔ " else "✘ "
         val img = when {
             s.image -> I18n.t(lang, "lv_img_on").replace("%d", secs(s.frameAgeMs ?: 0))
@@ -85,7 +85,7 @@ object LinkStatus {
         }
         return listOf(
             mark(s.service) + I18n.t(lang, if (s.service) "lv_svc_on" else "ls_off"),
-            mark(s.console) + I18n.t(lang, if (s.console) "lv_con_on" else "lv_con_off"),
+            mark(s.console) + I18n.t(lang, console.key(if (s.console) "lv_con_on" else "lv_con_off")),
             mark(s.image) + img,
         )
     }

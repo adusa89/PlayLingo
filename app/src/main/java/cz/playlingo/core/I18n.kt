@@ -214,11 +214,12 @@ object I18n {
 
     /**
      * Texty kolem PlayStationu, přihlášení přes telefon, hlášení o stavu (core/I18nDiag.kt)
-     * a nahrání do televize LG (core/I18nLg.kt) – mají přednost před obecnými se stejným klíčem.
+     * a nahrání do televize LG (core/I18nLg.kt) a Xbox (core/I18nXbox.kt) – mají přednost před obecnými se stejným klíčem.
      */
-    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S
+    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + XBOX_S
     private val PX: Map<Lang, Map<String, String>> =
-        Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) + (DIAG_X[it] ?: emptyMap()) + (LG_X[it] ?: emptyMap()) }
+        Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) + (DIAG_X[it] ?: emptyMap()) + (LG_X[it] ?: emptyMap()) +
+            (XBOX_X[it] ?: emptyMap()) }
 
     fun t(lang: Lang, key: String): String {
         val p = PS[key] ?: S[key] ?: return key
@@ -233,6 +234,8 @@ object I18n {
     fun hasOwn(lang: Lang, key: String): Boolean =
         if (PS.containsKey(key)) PX[lang]?.containsKey(key) == true else EXTRA[lang]?.containsKey(key) == true
     fun ownKeys(lang: Lang): Set<String> = (EXTRA[lang]?.keys ?: emptySet()) + (PX[lang]?.keys ?: emptySet())
+
+    fun has(key: String): Boolean = PS.containsKey(key) || S.containsKey(key)
 
     /** Pro testy: všechny klíče. */
     val keys: Set<String> get() = S.keys + PS.keys

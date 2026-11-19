@@ -29,6 +29,7 @@ import cz.playlingo.core.GameProfiles
 import cz.playlingo.core.LoginClient
 import cz.playlingo.core.LoginServer
 import cz.playlingo.core.PhoneLogin
+import cz.playlingo.core.Console
 import cz.playlingo.core.Ps5
 import cz.playlingo.core.Ps5Host
 import cz.playlingo.core.UpdateCheck
@@ -104,7 +105,7 @@ class MainActivity : Activity() {
             ticks++
             val typing = currentFocus is EditText
             val changed = lastRunning != TranslatorService.running || lastPaused != TranslatorService.paused ||
-                lastLink != Ps5Link.state || (lastFrames == 0L) != (TranslatorService.framesDecoded == 0L) ||
+                lastLink != TranslatorService.linkState || (lastFrames == 0L) != (TranslatorService.framesDecoded == 0L) ||
                 lastStage != TranslatorService.linkStatus().stage
             // náhled obrazu z PlayStationu se obnovuje každé 3 s (ne když uživatel zrovna píše)
             val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 &&
@@ -127,6 +128,7 @@ class MainActivity : Activity() {
         EventFile.init(this)
         crashNote = CrashLog.takeUnseen(this)
         ui = Ui(this)
+        initXbox()
         buildShell()
         if (!Prefs.wizardDone(this)) wizard = 0
         Updater.cleanUp(this)
@@ -170,6 +172,13 @@ class MainActivity : Activity() {
             section = Section.PS5; pairStep = i?.getIntExtra("pairstep", 2) ?: 2; render(); return
         }
         val debuggable = applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0
+        // Zkouška: volba konzole (ps / xbox) a stránka konzole – bez sítě, jen vzhled.
+        i?.getStringExtra("console")?.let { c ->
+            if (debuggable) {
+                Prefs.setConsole(this, Console.of(c))
+                Prefs.setWizardDone(this, true); wizard = -1; section = Section.PS5; render(); return
+            }
+        }
         // Zkouška rozložení (snímky v různých velikostech displeje): rovnou na danou stránku.
         i?.getStringExtra("page")?.let { p ->
             if (debuggable) Section.values().firstOrNull { it.name == p }?.let {
@@ -254,6 +263,7 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        if (::xbox.isInitialized) xbox.cancel()
         loginServer?.stop(); loginServer = null
         demo?.destroy(); demo = null
         scope.cancel()
@@ -358,7 +368,7 @@ class MainActivity : Activity() {
                         cornerRadius = ui.dp(2).toFloat()
                     }
                 }, LinearLayout.LayoutParams(ui.dp(4), ui.dp(22)).apply { rightMargin = ui.dp(12) })
-                addView(ui.text(t(s.key), 17f, if (active) Theme.ACCENT else Theme.TEXT, bold = active))
+                addView(ui.text(ct(s.key), 17f, if (active) Theme.ACCENT else Theme.TEXT, bold = active))
                 setOnClickListener { section = s; render(keepFocus = true) }
                 tag = "menu_${s.name}"
             }
@@ -373,13 +383,13 @@ class MainActivity : Activity() {
         syncLoginPage()
         lastRunning = TranslatorService.running
         lastPaused = TranslatorService.paused
-        lastLink = Ps5Link.state
+        lastLink = TranslatorService.linkState
         lastFrames = TranslatorService.framesDecoded
         lastStage = TranslatorService.linkStatus().stage
         if (wizard >= 0) { renderWizard(focusedTag); return }
         renderMenu()
         content.removeAllViews()
-        content.addView(ui.text(t(if (section == Section.HISTORY) section.key else menuSection().key), 30f, Theme.TEXT, bold = true))
+        content.addView(ui.text(ct(if (section == Section.HISTORY) section.key else menuSection().key), 30f, Theme.TEXT, bold = true))
         when (section) {
             Section.HOME -> home()
             Section.PS5 -> ps5()
@@ -408,12 +418,12 @@ class MainActivity : Activity() {
                 setPadding(ui.dp(14), ui.dp(12), ui.dp(14), ui.dp(12))
                 addView(ui.text("${i + 1}", 15f, if (i <= wizard) Theme.ACCENT else Theme.MUTED, bold = true),
                     LinearLayout.LayoutParams(ui.dp(24), LinearLayout.LayoutParams.WRAP_CONTENT))
-                addView(ui.text(t(key), 16f, if (active) Theme.ACCENT else if (i < wizard) Theme.TEXT else Theme.MUTED, bold = active))
+                addView(ui.text(ct(key), 16f, if (active) Theme.ACCENT else if (i < wizard) Theme.TEXT else Theme.MUTED, bold = active))
             }, menuLp())
         }
         content.removeAllViews()
         content.addView(ui.text(t("wz_title"), 15f, Theme.ACCENT, bold = true))
-        content.addView(ui.text(t(wizardSteps[wizard]), 30f, Theme.TEXT, bold = true), ui.lp(top = 4))
+        content.addView(ui.text(ct(wizardSteps[wizard]), 30f, Theme.TEXT, bold = true), ui.lp(top = 4))
 
         val lang = Prefs.lang(this)
         var nextLabel = t("wz_next")
@@ -452,9 +462,9 @@ class MainActivity : Activity() {
                 }
             }
             3 -> {
-                add(ui.text(t("wz_ps5"), 17f, Theme.MUTED), 12)
+                add(ui.text(ct("wz_ps5"), 17f, Theme.MUTED), 12)
                 ps5Form()
-                if (Prefs.ps5Host(this) == null) nextLabel = t("wz_skip_step")
+                if (!Prefs.consoleReady(this)) nextLabel = t("wz_skip_step")
             }
             else -> {
                 add(ui.text(t("wz_done"), 17f, Theme.MUTED), 12)
@@ -462,16 +472,16 @@ class MainActivity : Activity() {
                     for (i in intArrayOf(4, 5, 3)) addView(ui.text(t("help_$i").substringAfter(". "), 16f), ui.lp(top = if (i == 4) 0 else 8))
                 }, 12)
                 add(ui.text(t("wz_done_auto"), 15f, Theme.MUTED), 12)
-                if (Prefs.ps5Host(this) != null) nextLabel = t("b_start")
+                if (Prefs.consoleReady(this)) nextLabel = t("b_start")
             }
         }
 
         val row = row()
-        val pairing = wizard == 3 && Prefs.ps5Host(this) == null
+        val pairing = wizard == 3 && !Prefs.consoleReady(this)
         row.addView(tagged(ui.button(nextLabel, primary = !pairing) {
             if (wizard < wizardSteps.size - 1) { wizard++; render() }
             else {
-                val paired = Prefs.ps5Host(this) != null
+                val paired = Prefs.consoleReady(this)
                 finishWizard()
                 if (paired) startFlow()
             }
@@ -513,10 +523,11 @@ class MainActivity : Activity() {
         val overlayOk = SubtitleOverlay.canShow(this) || Prefs.tvSend(this)
         val lang = Prefs.lang(this)
         val modelOk = OfflineTranslator.isReady(lang)
-        val host = Prefs.ps5Host(this)
-        val ready = overlayOk && modelOk && host != null
+        val onXbox = Prefs.console(this) == Console.XBOX
+        val paired = Prefs.consoleReady(this)
+        val ready = overlayOk && modelOk && paired
         val lic = Prefs.license(this)
-        val link = Ps5Link.state
+        val link = TranslatorService.linkState
 
         val title: String
         var sub: String
@@ -528,22 +539,24 @@ class MainActivity : Activity() {
             running && link == Ps5.Link.CONNECTED -> {
                 title = t("st_running"); color = Theme.OK
                 // rychlost čtení titulků na tomto zařízení (číslo je srozumitelné ve všech jazycích)
-                sub = t("st_running_sub") + netLine() + (TranslatorService.readMs.takeIf { it > 0 }?.let {
+                sub = ct("st_running_sub") + netLine() + (TranslatorService.readMs.takeIf { it > 0 }?.let {
                     "\n⏱ $it ms · ${TranslatorService.videoSize}" + (TranslatorService.lastRead.takeIf { r -> r.isNotEmpty() }?.let { r -> "\n„$r“" } ?: "")
                 } ?: "")
             }
             running && link == Ps5.Link.FAILED -> {
-                title = t("m_ps5")
-                sub = t(if (Ps5Link.needsLoginPin) "ps5_login_fail" else if (Ps5Link.reason == "unstable") "st_unstable" else "st_failed")
+                title = ct("m_ps5")
+                sub = if (onXbox) t(TranslatorService.linkReason ?: "xb_st_failed")
+                    else t(if (Ps5Link.needsLoginPin) "ps5_login_fail" else if (Ps5Link.reason == "unstable") "st_unstable" else "st_failed")
                 color = Theme.BAD
             }
-            running && link == Ps5.Link.WAITING -> { title = t("m_ps5"); sub = t("st_waiting"); color = Theme.WARN }
-            running -> { title = t("m_ps5"); sub = t("st_connecting"); color = Theme.WARN }
-            ready -> { title = t("st_ready"); sub = t("st_ready_sub"); color = Theme.ACCENT }
-            host == null && overlayOk && modelOk -> { title = t("st_setup"); sub = t("st_nops5"); color = Theme.WARN }
+            running && link == Ps5.Link.WAITING -> { title = ct("m_ps5"); sub = ct("st_waiting"); color = Theme.WARN }
+            running -> { title = ct("m_ps5"); sub = ct("st_connecting"); color = Theme.WARN }
+            ready -> { title = t("st_ready"); sub = ct("st_ready_sub"); color = Theme.ACCENT }
+            !paired && overlayOk && modelOk -> { title = t("st_setup"); sub = ct("st_nops5"); color = Theme.WARN }
             else -> { title = t("st_setup"); sub = t("st_setup_sub"); color = Theme.WARN }
         }
-        if (running && !demoRun && link != Ps5.Link.CONNECTED) Ps5Link.reason?.let { sub += "\n($it)" }
+        if (running && !demoRun && link != Ps5.Link.CONNECTED && !(onXbox && link == Ps5.Link.FAILED))
+            TranslatorService.linkReason?.let { sub += "\n(" + (if (onXbox) t(it) else it) + ")" }
         // posílání titulků do televize LG: je televize připojená?
         if (running && Prefs.tvSend(this)) sub += "\n" + t(if (TranslatorService.tvConnected > 0) "st_tv_on" else "st_tv_wait")
         val status = ui.card()
@@ -556,7 +569,7 @@ class MainActivity : Activity() {
         // stav spojení v jednom řádku: překlad běží / spojeno / obraz přichází
         if (running) {
             val ls = TranslatorService.linkStatus()
-            status.addView(ui.text("● " + cz.playlingo.core.LinkStatus.line(Prefs.uiLang(this), ls), 15f,
+            status.addView(ui.text("● " + cz.playlingo.core.LinkStatus.line(Prefs.uiLang(this), ls, Prefs.console(this)), 15f,
                 if (ls.warning) Theme.WARN else if (ls.image) Theme.OK else Theme.MUTED).apply { tag = "linkline" }, ui.lp(top = 8))
         }
         add(status, 18)
@@ -586,7 +599,7 @@ class MainActivity : Activity() {
         if (!lic.canRun) {
             buttons.addView(tagged(ui.button(t("lic_open"), primary = true) { section = Section.LICENSE; render() }, "start"))
         } else if (!running) {
-            buttons.addView(tagged(ui.button(t(if (host == null) "ps5_pair" else "b_start"), primary = true) { startFlow() }, "start"))
+            buttons.addView(tagged(ui.button(t(if (!paired && !onXbox) "ps5_pair" else "b_start"), primary = true) { startFlow() }, "start"))
             buttons.addView(tagged(ui.button(t("b_demo")) { startDemo() }, "demo"), wrapLp())
         } else {
             if (demoRun) {
@@ -608,14 +621,16 @@ class MainActivity : Activity() {
 
         // jazyk překladu hned na první stránce
         langRow("homelang", 18)
+        // konzole v jednom řádku; výběr se otevře kliknutím (chooseConsole)
+        consoleRow("homeconsole", 8)
 
         content.addView(ui.section(t("check_title")))
         val check = ui.card()
         check.addView(ui.checkRow(overlayOk, false, t("chk_overlay"), t("ok"), t("fix")) { section = Section.SETTINGS; render() })
         check.addView(ui.checkRow(modelOk, false, t("chk_model") + " (${lang.label})", t("ok"), t("download")) { downloadModel() })
-        check.addView(ui.checkRow(host != null, false, t("chk_ps5") + (host?.let { " (${it.name})" } ?: ""), t("ok"), t("set_up")) { section = Section.PS5; render() })
+        check.addView(ui.checkRow(paired, false, ct("chk_ps5") + consoleName()?.let { " ($it)" }.orEmpty(), t("ok"), t("set_up")) { section = Section.PS5; render() })
         add(check, 0)
-        add(ui.text(t("tip_ps5"), 14f, Theme.MUTED), 16)
+        add(ui.text(ct("tip_ps5"), 14f, Theme.MUTED), 16)
         // telefon, na kterém běží celá aplikace: cesta zpět k pomocníkovi pro přihlášení
         if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 20)
     }
@@ -623,7 +638,7 @@ class MainActivity : Activity() {
     /** Náhled: co aplikace z PlayStationu právě vidí (důkaz, že spojení funguje). */
     private fun preview() {
         val snap = TranslatorService.snapshot ?: return
-        content.addView(ui.section(t("ps5_preview")))
+        content.addView(ui.section(ct("ps5_preview")))
         val w = ui.dp(420)
         val h = w * snap.height / maxOf(1, snap.width)
         content.addView(ImageView(this).apply {
@@ -671,6 +686,9 @@ class MainActivity : Activity() {
 
     /** Spárování s PlayStationem (stránka PlayStation i krok průvodce). */
     private fun ps5Form() {
+        if (Prefs.console(this) == Console.XBOX) {
+            xbox.render(if (wizard < 0) ({ section = Section.HOME; startFlow() }) else null); return
+        }
         val host = Prefs.ps5Host(this)
         if (draftLogin.isEmpty()) draftLogin = Prefs.ps5LoginPin(this)
         if (host != null) {
@@ -810,7 +828,7 @@ class MainActivity : Activity() {
 
     /** Stránka pro telefon běží jen po dobu, kdy průvodce ukazuje kroky přihlášení účtem (2 až 4). */
     private fun syncLoginPage() {
-        val pairing = Prefs.ps5Host(this) == null && (wizard == 3 || (wizard < 0 && section == Section.PS5))
+        val pairing = Prefs.console(this) == Console.PLAYSTATION && Prefs.ps5Host(this) == null && (wizard == 3 || (wizard < 0 && section == Section.PS5))
         val want = pairing && pairStep.coerceIn(0, 5) in 2..4
         if (want && loginServer == null) {
             loginServer = LoginServer(
@@ -826,7 +844,7 @@ class MainActivity : Activity() {
         }
         // přihlašování v telefonu trvá pár minut – televize mezitím nesmí zhasnout
         if (want) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else if (!(::xbox.isInitialized && xbox.waiting)) window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     /** Adresa stránky pro telefon (do čtverečku); null, když stránka neběží nebo televize nezná svou adresu. */
@@ -1150,6 +1168,7 @@ class MainActivity : Activity() {
                 Prefs.setUiLang(this, all[i]); applyToService(); buildShell(); render()
             }
         }, "uilang"), 8)
+        consoleRow("sconsole", 8)
     }
 
     // ======================= HISTORIE =======================
@@ -1221,6 +1240,7 @@ class MainActivity : Activity() {
     private fun help() {
         val c = ui.card()
         for (i in 1..6) c.addView(ui.text(t("help_$i"), 17f), ui.lp(top = if (i == 1) 0 else 10))
+        c.addView(ui.text(t("xb_help"), 16f, Theme.MUTED), ui.lp(top = 14))
         add(c, 16)
         content.addView(ui.section(t("help_tips")))
         val c2 = ui.card()
@@ -1242,6 +1262,54 @@ class MainActivity : Activity() {
         add(tagged(ui.button(t("wz_again")) { wizard = 0; render() }, "wagain"), 16)
         add(tagged(ui.button(t("rep_btn")) { makeReport() }, "report"), 8)
         add(ui.text("PlayLingo · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 24)
+    }
+
+    // ======================= KONZOLE (PlayStation / Xbox) =======================
+
+    /** Stránka konzole pro Xbox (přihlášení, výběr Xboxu); stav drží mezi překresleními. */
+    private lateinit var xbox: XboxForm
+
+    private fun initXbox() {
+        if (!::xbox.isInitialized) xbox = XboxForm(this, ui, { v, top -> add(v, top) }, { row() }, { wrapLp() },
+            { url, text -> qrRow(url, text) }, { render(keepFocus = true) })
+    }
+
+    /** Text podle vybrané konzole: u Xboxu „xb_<klíč>“, pokud existuje (core/I18nXbox.kt). */
+    private fun ct(key: String) = t(Prefs.console(this).key(key))
+
+    /** Jméno spárovaného PlayStationu / vybraného Xboxu, nebo null. */
+    private fun consoleName(): String? = when (Prefs.console(this)) {
+        Console.PLAYSTATION -> Prefs.ps5Host(this)?.name
+        Console.XBOX -> if (XboxAccount.ready(this)) XboxAccount.consoleName(this) else null
+    }
+
+    /**
+     * Řádek „Konzole: Xbox Series X|S / One · Obývák“ (zeleně, když je připravená); kliknutím se
+     * otevře výběr ([chooseConsole]). Na Domů a v Nastavení; jde vložit kamkoli (i do průvodce).
+     */
+    private fun consoleRow(tag: String, top: Int) {
+        val c = Prefs.console(this)
+        val value = t(if (c == Console.XBOX) "c_xbox" else "c_ps") + consoleName()?.let { " · $it" }.orEmpty()
+        add(tagged(ui.settingRow(t("c_console"), value, if (Prefs.consoleReady(this)) Theme.OK else Theme.WARN) { chooseConsole() }, tag), top)
+    }
+
+    /**
+     * Výběr konzole (PlayStation 5 / Xbox) v nabídce se seznamem. Po změně se zastaví překlad,
+     * který běží s druhou konzolí, a (mimo průvodce) otevře se stránka konzole, když ještě není
+     * nastavená. [after] = co udělat po výběru místo překreslení (např. krok průvodce).
+     */
+    private fun chooseConsole(after: (() -> Unit)? = null) {
+        val all = listOf(Console.PLAYSTATION, Console.XBOX)
+        val cur = Prefs.console(this)
+        choose(t("c_console"), all.map { t(if (it == Console.XBOX) "c_xbox" else "c_ps") }, all.indexOf(cur)) { i ->
+            val pick = all[i]
+            if (pick != cur) {
+                Prefs.setConsole(this, pick)
+                if (TranslatorService.running && !TranslatorService.demo) stopService(Intent(this, TranslatorService::class.java))
+                if (wizard < 0 && !Prefs.consoleReady(this)) section = Section.PS5
+            }
+            if (after != null) after() else render(true)
+        }
     }
 
     // ======================= akce =======================
@@ -1272,7 +1340,7 @@ class MainActivity : Activity() {
         if (!Prefs.license(this).canRun) { section = Section.LICENSE; render(); return }
         if (TranslatorService.running && !TranslatorService.demo) { moveTaskToBack(true); return }
         if (!SubtitleOverlay.canShow(this) && !Prefs.tvSend(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
-        if (Prefs.ps5Host(this) == null) { section = Section.PS5; render(); return }
+        if (!Prefs.consoleReady(this)) { section = Section.PS5; render(); return }
         busyText = t("prep_model"); render(true)
         OfflineTranslator.ensureModel(Prefs.lang(this)) { ok ->
             runOnUiThread {

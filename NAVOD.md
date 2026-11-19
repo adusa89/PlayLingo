@@ -103,6 +103,25 @@ a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televiz
 - **Aplikace minule spadla** – po dalším spuštění to napíše na stránce Domů. Kdyby se to opakovalo, pošli hlášení (další bod).
 - **Hlášení chyby**: Nápověda → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení.
 
+## 7b. Xbox (Series X|S / One)
+PlayLingo umí číst titulky i z Xboxu. Hra jde do televize dál kabelem HDMI; PlayLingo si z Xboxu
+přes vzdálené hraní (Remote Play) bere jen kopii obrazu v nižší kvalitě. Nic neovládá a zvuk
+nepřehrává – hraješ normálně ovladačem.
+
+1. **Na Xboxu (jen poprvé):** Nastavení → Zařízení a připojení → Vzdálené funkce → zapni
+   „Povolit vzdálené funkce“. Režim napájení nastav na „Spánek“.
+2. **V PlayLingu:** na stránce Domů klikni na řádek **Konzole** a vyber **Xbox** (totéž je
+   v Nastavení). Stránka konzole v menu se pak jmenuje Xbox.
+3. Na stránce Xbox zvol **Přihlásit účet Microsoft**. Na obrazovce se ukáže kód. Na telefonu
+   nebo počítači otevři **microsoft.com/link** (nebo načti čtvereček telefonem), zadej kód
+   a přihlas se účtem, kterým hraješ na Xboxu. V telefonu stačí tlačítko „Otevřít stránku“.
+4. Objeví se seznam tvých Xboxů – vyber ten, na kterém hraješ (jediný se vybere sám).
+5. Spusť překlad jako obvykle a přepni televizi na HDMI s Xboxem.
+
+Když Xbox spí nebo je vypnutý, PlayLingo ho nebudí – počká, až ho zapneš, a pak se připojí samo.
+Přihlášení si PlayLingo pamatuje (zašifrované v zařízení); odhlásit se jde na stránce Xbox.
+Stav spojení na stránce Domů funguje stejně jako u PlayStationu.
+
 ## 8. Televize LG
 Televize LG si obraz hry sama nepřečte. PlayLingo v ní jen ukazuje hru s pruhem a číst
 a překládat musí telefon nebo box s Androidem ve stejné domácí síti (v telefonu tlačítko
@@ -131,3 +150,6 @@ Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng
 úprav je v tomto repozitáři. Aplikace není produktem společnosti Sony.
 Nahrání do televize LG používá knihovnu JSch (https://github.com/mwiede/jsch, licence BSD) a postup
 podle projektu PlayCaption (licence AGPL-3.0).
+Spojení s Xboxem používá knihovnu WebRTC (sestavení stream-webrtc-android, licence BSD/Apache 2.0)
+a postup podle projektů PlayCaption (AGPL-3.0), xbox-xcloud-player (MIT) a XStreaming (AGPL-3.0).
+Aplikace není produktem společnosti Microsoft.

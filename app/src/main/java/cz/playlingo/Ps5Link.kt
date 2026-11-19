@@ -35,7 +35,7 @@ class Ps5Link(
     /** Brát obraz 1080p (drobné titulky se čtou spolehlivěji), jinak 720p. */
     highRes: Boolean,
     private val onVideo: (ByteArray) -> Boolean,
-) {
+) : ConsoleLink {
     companion object {
         private const val TAG = "TestPreklad"
 
@@ -76,7 +76,7 @@ class Ps5Link(
 
     private fun log(msg: String) { Log.i("TP_TEST", "PS5|$msg"); DiagLog.add("PS5|$msg"); EventFile.add("PS5|$msg") }
 
-    fun start() {
+    override fun start() {
         stopped = false
         exec.execute { connect() }
     }
@@ -213,7 +213,7 @@ class Ps5Link(
     }
 
     /** Spojení „visí“ (připojeno, ale video nechodí) → začni znovu. */
-    fun restart(why: String) {
+    override fun restart(why: String) {
         exec.execute {
             if (stopped) return@execute
             log("restart: $why")
@@ -223,9 +223,9 @@ class Ps5Link(
         }
     }
 
-    val connectedForMs: Long get() = if (state == Ps5.Link.CONNECTED) SystemClock.uptimeMillis() - connectedAt else 0
+    override val connectedForMs: Long get() = if (state == Ps5.Link.CONNECTED) SystemClock.uptimeMillis() - connectedAt else 0
 
-    fun stop() {
+    override fun stop() {
         stopped = true
         retry?.cancel(false)
         exec.execute {

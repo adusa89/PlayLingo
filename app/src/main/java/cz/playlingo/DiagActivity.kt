@@ -106,6 +106,9 @@ object DiagReport {
             out += String(h.registKey, 0, end, Charsets.UTF_8)
             Ps5.wakeCredential(h.registKey)?.let { out += it.toString() }
         }
+        // Xbox: obnovovací token a tokeny v paměti (v hlášení se nesmí objevit nikdy)
+        runCatching { XboxAccount.refreshToken(c) }.getOrNull()?.let { out += it }
+        out += XboxAccount.memorySecrets()
         return out.filter { it.isNotBlank() }
     }
 
@@ -133,8 +136,13 @@ object DiagReport {
         val st = TranslatorService.linkStatus()
         val host = Prefs.ps5Host(c)
         val conn = StringBuilder()
-        LinkStatus.details(Prefs.uiLang(c), st).forEach { conn.append(it).append('\n') }
+        val console = Prefs.console(c)
+        LinkStatus.details(Prefs.uiLang(c), st, console).forEach { conn.append(it).append('\n') }
         conn.append('\n')
+            .append("Konzole: ").append(console.code).append(if (TranslatorService.xbox) " (čte se z Xboxu)" else "").append('\n')
+            .append("Xbox: ").append(if (XboxAccount.signedIn(c)) "přihlášeno" else "nepřihlášeno")
+            .append(XboxAccount.consoleId(c)?.let { ", vybraný " + XboxAccount.consoleName(c) } ?: "")
+            .append(", spojení: ").append(XboxLink.state).append(XboxLink.reason?.let { " ($it)" } ?: "").append('\n')
             .append("PlayStation: ").append(if (host != null) "spárováno (${host.name}, ${host.ip})" else "nespárováno").append('\n')
             .append("Spojení: ").append(Ps5Link.state).append(Ps5Link.reason?.let { " ($it)" } ?: "")
             .append(", stav: ").append(st.stage).append(", ukázka: ").append(TranslatorService.demo).append('\n')
@@ -146,7 +154,7 @@ object DiagReport {
         val crash = CrashLog.last(c)
         // ze souboru (i z minulých spuštění) + párování a přihlášení, které jsou jen v paměti
         val pairing = DiagLog.dump().split('\n').filter { l ->
-            listOf("PSN|", "PAIR|", "LOGIN|", "ERROR").any { l.contains(it) }
+            listOf("PSN|", "PAIR|", "LOGIN|", "XBOX|", "ERROR").any { l.contains(it) }
         }.takeLast(20)
         val events = (EventFile.tail(50).lines() + pairing).filter { it.isNotBlank() }.joinToString("\n")
 

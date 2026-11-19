@@ -20,6 +20,7 @@ import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import cz.playlingo.core.AutoZone
+import cz.playlingo.core.Console
 import cz.playlingo.core.DemoGame
 import cz.playlingo.core.QuickWords
 import cz.playlingo.core.TextScale
@@ -108,9 +109,19 @@ class TranslatorService : Service() {
         /** Kolik snímků videa už aplikace dostala a dekódovala (pro obrazovku aplikace). */
         val framesDecoded: Long get() = activeReader?.decoded ?: 0
 
+        /** Obraz právě bere z Xboxu (jinak z PlayStationu nebo ukázky). */
+        @Volatile var xbox = false
+            private set
+
+        /** Stav spojení s konzolí, ze které se právě čte (PlayStation nebo Xbox). */
+        val linkState: Ps5.Link get() = if (xbox) XboxLink.state else Ps5Link.state
+        /** Důvod odpojení pro člověka (u Xboxu klíč textu xb_e_…), nebo null. */
+        val linkReason: String? get() = if (xbox) XboxLink.reason else Ps5Link.reason
+
         /** Stav ve třech úrovních: překlad běží / spojeno s konzolí / obraz opravdu přichází. */
         fun linkStatus(now: Long = SystemClock.uptimeMillis()): LinkStatus.Status =
-            LinkStatus.evaluate(now, running, paused, demo, Ps5Link.state, Ps5Link.connectedSince, activeReader?.lastFrameAt ?: 0)
+            LinkStatus.evaluate(now, running, paused, demo, linkState,
+                if (xbox) XboxLink.connectedSince else Ps5Link.connectedSince, activeReader?.lastFrameAt ?: 0)
 
         /** Statistika sdílená s obrazovkou aplikace. */
         @Volatile private var stats: UsageStats? = null
@@ -137,7 +148,7 @@ class TranslatorService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var reader: StreamReader? = null
-    private var link: Ps5Link? = null
+    private var link: ConsoleLink? = null
     private var feeder: DemoFeeder? = null
     /** Drží Wi-Fi v plném výkonu, ať video z konzole nevypadává kvůli úspornému režimu. */
     private var wifiLock: android.net.wifi.WifiManager.WifiLock? = null
@@ -246,11 +257,13 @@ class TranslatorService : Service() {
         }
         startError = null
         if (!Prefs.license(this).canRun) { startError = "licence"; stopSelf(); return START_NOT_STICKY }
-        if (!wantDemo && Prefs.ps5Host(this) == null) { startError = "ps5"; stopSelf(); return START_NOT_STICKY }
+        val console = Prefs.console(this)
+        if (!wantDemo && !Prefs.consoleReady(this)) { startError = if (console == Console.XBOX) "xbox" else "ps5"; stopSelf(); return START_NOT_STICKY }
 
         setupScreenSize()
         val r = StreamReader(perf.captureWidth, perf.captureHeight)
-        if (!r.start()) {
+        // Xbox posílá hotové snímky (WebRTC) – dekodér H.264 se otevře, až by byl potřeba (ukázka)
+        if (!r.start(openDecoder = wantDemo || console != Console.XBOX)) {
             startError = "video: " + (r.lastError ?: "?")
             tp("ERROR|decoder|" + r.lastError)
             r.stop(); stopSelf(); return START_NOT_STICKY
@@ -273,12 +286,18 @@ class TranslatorService : Service() {
         link?.stop(); link = null
         feeder?.stop(); feeder = null
         demo = wantDemo
+        xbox = false
         overlay?.hide(); resetReading()
         r.clearFrames()
         if (wantDemo) {
             // ukázka má stejnou velikost obrazu, jakou by toto zařízení bralo z konzole
             feeder = DemoFeeder(perf.captureWidth, perf.captureHeight, { r.feed(it) }, { y, w, h -> r.feedRaw(y, w, h) }, { r.decoded }).also { it.start() }
             tp("SOURCE|demo")
+        } else if (Prefs.console(this) == Console.XBOX) {
+            val id = XboxAccount.consoleId(this) ?: return
+            // telefon: obraz do paměti (některé telefony z grafického čipu vracely jen černou)
+            link = XboxLink(applicationContext, id, r, gpu = !NetInfo.isHandheld(this)).also { xbox = true; it.start() }
+            tp("SOURCE|xbox")
         } else {
             val host = Prefs.ps5Host(this) ?: return
             link = Ps5Link(applicationContext, host, perf.captureWidth >= 1920) { r.feed(it) }.also { it.start() }
@@ -461,10 +480,10 @@ class TranslatorService : Service() {
             tp("PERF|čtení=${ocrRuns}|průměr=${ocrMsSum / ocrRuns}ms|poslední=${lastOcrMs}ms|titulků=${shows}|video=${r.frameWidth}x${r.frameHeight}|oblast=${(layout.read.height * 100).toInt()}%")
         }
         if (demo) return
-        val st = Ps5Link.state
+        val st = linkState
         if (st != lastLinkLogged) {
             lastLinkLogged = st
-            tp("LINK|$st|" + (Ps5Link.reason ?: "") + "|dec=${r.decoderName}|${r.frameWidth}x${r.frameHeight}|fed=${r.fed}|decoded=${r.decoded}")
+            tp("LINK|$st|" + (linkReason ?: "") + "|dec=${r.decoderName}|${r.frameWidth}x${r.frameHeight}|fed=${r.fed}|decoded=${r.decoded}")
             // spojení spadlo → starý překlad nenechávej viset na obrazovce
             if (st != Ps5.Link.CONNECTED) { hideAt = 0; overlay?.hide(); resetReading(); r.clearFrames() }
             updateNotification()
@@ -686,7 +705,7 @@ class TranslatorService : Service() {
         val secs = max(1L, (SystemClock.uptimeMillis() - statsStart) / 1000)
         val mode = if (OfflineTranslator.isReady(lang)) "offline ${lang.code}" else "offline ${lang.code} – model se stahuje"
         val r = reader
-        val src = if (demo) "ukázka" else "PS5 " + Ps5Link.state + (Ps5Link.reason?.let { " ($it)" } ?: "")
+        val src = if (demo) "ukázka" else (if (xbox) "Xbox " else "PS5 ") + linkState + (linkReason?.let { " ($it)" } ?: "")
         val ecoInfo = if (perf.eco) " · úsporný režim" else ""
         val zoneInfo = if (!autoFind) "ručně" else if (autoZone.learned != null) "auto – titulky nalezeny" else "auto – hledám"
         val err = lastError?.let { "\nchyba překladu: ${it.take(60)}" } ?: ""
@@ -703,6 +722,7 @@ class TranslatorService : Service() {
         running = false
         paused = false
         demo = false
+        xbox = false
         scope.cancel()
         saveCache()
         overlay?.destroy(); overlay = null

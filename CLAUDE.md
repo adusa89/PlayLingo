@@ -29,6 +29,9 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `LgInstallActivity.kt`, `LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt` – nahrání aplikace
     do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG)
   - `DemoFeeder.kt`, `TestCardActivity.kt` – ukázková „hra“ pro zkoušku bez PlayStationu
+  - `ConsoleLink.kt` – společné rozhraní zdroje obrazu (PlayStation `Ps5Link`, Xbox `XboxLink`)
+  - `XboxAccount.kt`, `XboxLink.kt`, `XboxForm.kt` – Xbox: přihlášení účtem Microsoft, spojení
+    přes vzdálené hraní (WebRTC) a stránka konzole pro Xbox (viz Xbox)
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
   knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
 - `third_party/chiaki-ng` – submodul. Needituj ho; před sestavením se do něj kopíruje
@@ -216,6 +219,33 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
 - Změny jen ve složkách `webos` a `pc` nemění verzi aplikace pro Android TV a commitují se
   s `[skip ci]`. Balíčky `.ipk` se necommitují.
 
+## Xbox
+
+- Druhá konzole vedle PlayStationu (`Prefs.console`, výchozí PlayStation – dosavadní uživatelé si
+  nic nevšimnou). Volba: řádek „Konzole“ na stránce Domů a v Nastavení (`consoleRow`, výběr
+  `chooseConsole` v MainActivity – jde volat i z průvodce). Položka menu PlayStation se pak jmenuje
+  Xbox a ukazuje `XboxForm` místo párování PS5. Kroky průvodce se nezměnily.
+- Přihlášení: kód na microsoft.com/link (device code; čtvereček na stránku, v telefonu tlačítko
+  „Otevřít stránku“) → token Microsoft → Xbox Live → XSTS → streamovací token xhome. Ukládá se jen
+  obnovovací token, zašifrovaný klíčem z Android Keystore (`playlingo-xbox-v1`, stejně jako
+  `LgVault`), jméno hráče a vybraný Xbox. Tokeny se nevypisují; `Redact` skrývá i tokeny Microsoft
+  a hlášení dostává obnovovací token mezi tajné hodnoty. Odhlásit při chybě sítě se nesmí – jen
+  když Microsoft řekne invalid_grant (`XboxAuth.refreshOutcome`).
+- Spojení (`XboxLink`): seznam konzolí → spící Xbox se **nebudí** (jen se každých 20 s zeptá) →
+  relace `/v5/sessions/home/play` → WebRTC jen příjem obrazu, H.264 napřed a `b=AS:3000`
+  (`XboxSession.preferH264`), kandidáti Teredo rozbalení na IPv4. Zvuk se nepřehrává, ovládání se
+  neposílá (jen „ovladač přidán a hned odebrán“ jako webový přehrávač, jinak Xbox po minutě spojení
+  ukončí). Snímky I420 jdou do `StreamReader.feedI420` jen tehdy, když o ně čtečka stojí – dál
+  stejná cesta jako u PS5 (`grab` → `Crop`, `FrameSignature`, OCR, překlad). Televize dekóduje na
+  GPU, telefon do paměti. Opakování řídí `XboxRetry` (core, s testy); stav je `Ps5.Link`, takže
+  `LinkStatus`, stránka Domů i hlášení fungují stejně (texty `xb_ls_…`).
+- Logika bez Androidu je v `core/Xbox.kt` s testy (`XboxTest.kt`). Knihovna WebRTC
+  (`io.getstream:stream-webrtc-android`) přidává do APK asi 10 MB (jen ARM); místní kontrola ji
+  překládá proti `classes.jar` z .aar (`ci/mistni-kontrola/build.gradle.kts`).
+- Emulátor Xbox nemá: zkouška ukáže jen stránku Xboxu (snímek `11b_stranka_xbox`). Přihlášení,
+  spojení a čtení z obrazu ze skutečného Xboxu **umí ověřit jen uživatel**. Převzato podle PlayCaption
+  (AGPL-3.0; ten podle xbox-xcloud-player, MIT, a XStreaming, AGPL-3.0) – hlavičky souborů zachovej.
+
 ## Texty aplikace a jazyky
 
 Aplikace má dvě na sobě nezávislá nastavení jazyka (`core/Lang.kt`):
@@ -242,6 +272,9 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
   na pád (`cr_…`): `core/I18nDiag.kt` (`DIAG_S`, `DIAG_X`).
 - texty nahrání do televize LG (`lg_…`; chyby `lg_e_<LgError>`, kroky `lg_p_<LgPhase>`):
   `core/I18nLg.kt` (`LG_S`, `LG_X`).
+- texty Xboxu a volby konzole (`c_…`, `xb_…`; chyby `xb_e_<XboxFail>`): `core/I18nXbox.kt`
+  (`XBOX_S`, `XBOX_X`). Text, který se u Xboxu liší jen jménem konzole, má klíč `xb_<klíč PS>`
+  (např. `xb_st_failed`, `xb_ls_image`) a bere se přes `Console.key()` / `ct()` v MainActivity.
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
@@ -256,8 +289,8 @@ a tlačítko Jazyk na úvodní obrazovce; do obchodu LG se podává s anglickým
 - Věty ukázkové hry v `core/DemoGame.kt` – skript hledá 15 z nich podle textu. Měníš-li věty,
   uprav i skript.
 - Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`, `updtest`,
-  `updself`, `logintest`, `helperlogin`, `fullapp`, `page`, `trtest` a `TestCardActivity`,
-  `PhoneHelperActivity`.
+  `updself`, `logintest`, `helperlogin`, `fullapp`, `page`, `trtest`, `console` (ps / xbox, snímek
+  `11b_stranka_xbox`) a `TestCardActivity`, `PhoneHelperActivity`.
 - Zkouška přihlášení přes telefon (řádky `LOGIN|`, `HELPER|`, snímky `12n`–`12p`) se do výsledku
   nepočítá. V `result.txt` má být `ucet_z_telefonu` aspoň 1 (stránka z televize přijala účet)
   a `pomocnik` aspoň 1 (pomocník přijal odkaz ze stránky televize); na snímku `12n` má být

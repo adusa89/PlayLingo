@@ -58,6 +58,12 @@ key 4; sleep 2
 adb shell am start -n $PKG/.MainActivity --es ps5test 10.0.2.2
 sleep 45; shot 10_ps5_nedostupna
 key 20; key 23; sleep 3; shot 11_stranka_playstation
+# 5b) vybraná konzole Xbox: stránka konzole s přihlášením účtem Microsoft (jen vzhled, bez sítě;
+#     Xbox emulátor nemá, do výsledku se nepočítá) a pak zpět na PlayStation pro další části zkoušky
+adb shell am start -n $PKG/.MainActivity --es console xbox
+sleep 4; shot 11b_stranka_xbox
+adb shell am start -n $PKG/.MainActivity --es console ps
+sleep 2
 
 # 6) přihlášení přes telefon: QR kód a políčko na kód
 adb shell am start -n $PKG/.MainActivity --ez phonelogin true --ei pairstep 2

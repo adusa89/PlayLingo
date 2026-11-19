@@ -46,8 +46,13 @@ object Redact {
 
     /** klíč=hodnota / klíč: hodnota u citlivých názvů → hodnota se skryje */
     private val NAMED = Regex(
-        "(?i)\\b(code|token|access_token|refresh_token|npsso|account_?id|accountid|psn_?id|pin|password|passwd|heslo|secret|regist_?key|rp_?key|morning|authorization|bearer|credential)(\\s*[=:]\\s*|\\s+)([^\\s,;&|)]+)"
+        "(?i)\\b(code|token|access_token|refresh_token|npsso|account_?id|accountid|psn_?id|pin|password|passwd|heslo|secret|regist_?key|rp_?key|morning|authorization|bearer|credential|gs_?token|user_?token|device_?code|user_?code|rps_?ticket)(\"?\\s*[=:]\\s*\"?|\\s+)([^\\s,;&|)\"]+)"
     )
+    /**
+     * Tokeny Microsoft / Xbox Live i bez názvu: JWT (eyJ…), přístupové tokeny Microsoft (EwA…, EwB…)
+     * a obnovovací tokeny (M.C…), které obsahují i tečky, vykřičníky a hvězdičky.
+     */
+    private val MS_TOKEN = Regex("(?<![A-Za-z0-9])(eyJ[A-Za-z0-9_\\-]{10,}(\\.[A-Za-z0-9_\\-]+)*|Ew[A-Z][A-Za-z0-9+/=_\\-]{20,}|M\\.[A-Za-z0-9_.!*$\\-]{20,})")
     /** dlouhé šestnáctkové řetězce (klíče, otisky) */
     private val HEX = Regex("\\b[0-9a-fA-F]{16,}\\b")
     /** dlouhá čísla (číslo účtu PlayStation má kolem 19 číslic) */
@@ -72,6 +77,7 @@ object Redact {
             if (value.all { it.isLetter() } && value.length < 12 && m.groupValues[2].isBlank()) m.value
             else m.groupValues[1] + m.groupValues[2] + MASK
         }
+        s = MS_TOKEN.replace(s, MASK)
         s = HEX.replace(s, MASK)
         s = LONG_NUM.replace(s, MASK)
         s = B64.replace(s, MASK)

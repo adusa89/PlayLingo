@@ -3,6 +3,7 @@ package cz.playlingo
 import android.content.Context
 import android.content.SharedPreferences
 import cz.playlingo.core.BuiltinPhrases
+import cz.playlingo.core.Console
 import cz.playlingo.core.GameProfiles
 import cz.playlingo.core.Glossary
 import cz.playlingo.core.I18n
@@ -103,6 +104,17 @@ object Prefs {
     /** Průvodce prvním spuštěním už proběhl. */
     fun wizardDone(c: Context) = bool(c, "wizard_done", false)
     fun setWizardDone(c: Context, v: Boolean) = setBool(c, "wizard_done", v)
+
+    // ---- konzole ----
+    /** Na které konzoli se hraje (výchozí PlayStation; dosavadní uživatelé to nemají uložené). */
+    fun console(c: Context): Console = Console.of(p(c).getString("console", null))
+    fun setConsole(c: Context, v: Console) = p(c).edit().putString("console", v.code).apply()
+
+    /** Je vybraná konzole připravená ke spojení (PS5 spárovaný / Xbox přihlášený a vybraný)? */
+    fun consoleReady(c: Context): Boolean = when (console(c)) {
+        Console.PLAYSTATION -> ps5Host(c) != null
+        Console.XBOX -> XboxAccount.ready(c)
+    }
 
     // ---- PlayStation ----
     /** Spárovaná konzole (null = ještě nespárováno). */

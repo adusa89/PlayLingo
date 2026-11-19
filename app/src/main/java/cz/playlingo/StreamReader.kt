@@ -75,12 +75,16 @@ class StreamReader(private val width: Int, private val height: Int) {
     val frameWidth: Int get() = synchronized(frameLock) { frameW }
     val frameHeight: Int get() = synchronized(frameLock) { frameH }
 
-    fun start(): Boolean = synchronized(codecLock) {
+    /**
+     * @param openDecoder false = dekodér H.264 se neotevře hned (Xbox posílá hotové snímky přes
+     *   [feedI420]); otevře se sám, až by přišlo video do [feed] (ukázka).
+     */
+    fun start(openDecoder: Boolean = true): Boolean = synchronized(codecLock) {
         try {
             val r = ImageReader.newInstance(width, height, ImageFormat.YUV_420_888, 3)
             r.setOnImageAvailableListener({ onImage(it) }, handler)
             reader = r
-            openCodec()
+            if (openDecoder) openCodec() else decoderName = "WebRTC"
             true
         } catch (e: Exception) {
             lastError = e.javaClass.simpleName + ": " + (e.message ?: "")
@@ -325,6 +329,56 @@ class StreamReader(private val width: Int, private val height: Int) {
         }
         decoded++
         lastFrameAt = SystemClock.uptimeMillis()
+    }
+
+    /**
+     * Stojí o nový snímek? (Xbox: převod snímku WebRTC do paměti něco stojí, proto se dělá jen
+     * tehdy, když čtečka předchozí už vzala, nebo je čas na barevný náhled.)
+     */
+    fun wantsFrame(): Boolean {
+        if (UiState.visible && SystemClock.uptimeMillis() - lastColorAt > 1500) return true
+        return synchronized(frameLock) { frameW == 0 || grabbedSerial == frameSerial }
+    }
+
+    /** Snímek přišel, ale nebyl potřeba (počítá se kvůli stavu „obraz přichází“). */
+    fun frameSkipped() {
+        decoded++
+        lastFrameAt = SystemClock.uptimeMillis()
+    }
+
+    /**
+     * Hotový snímek I420 (Xbox, WebRTC): zkopíruje jas, občas udělá barevný náhled. Dál se čte
+     * úplně stejně jako video z PlayStationu ([grab] → [Crop] s otiskem [FrameSignature]).
+     */
+    fun feedI420(y: java.nio.ByteBuffer, stride: Int, u: java.nio.ByteBuffer, uStride: Int,
+                 v: java.nio.ByteBuffer, vStride: Int, w: Int, h: Int) {
+        if (w <= 0 || h <= 0 || stride < w) return
+        val yb = y.duplicate().apply { position(0) }
+        val need = min(yb.remaining(), stride * h)
+        if (need < stride * (h - 1) + w) return
+        synchronized(frameLock) {
+            if (yBuf.size < stride * h) yBuf = ByteArray(stride * h)
+            yb.get(yBuf, 0, need)
+            yStride = stride; frameW = w; frameH = h; frameSerial++
+        }
+        decoded++
+        val now = SystemClock.uptimeMillis()
+        lastFrameAt = now
+        if (UiState.visible && now - lastColorAt > 1500) {
+            lastColorAt = now
+            colorSnapshot = try {
+                val hw = w / 2; val hh = h / 2
+                val out = IntArray(hw * hh)
+                var o = 0
+                for (row in 0 until hh) for (x in 0 until hw) {
+                    val yy = yBuf[row * 2 * stride + x * 2].toInt() and 0xFF
+                    val uu = u.get(row * uStride + x).toInt() and 0xFF
+                    val vv = v.get(row * vStride + x).toInt() and 0xFF
+                    out[o++] = Yuv.pixel(yy, uu, vv)
+                }
+                Bitmap.createBitmap(hw, hh, Bitmap.Config.ARGB_8888).also { it.setPixels(out, 0, hw, 0, 0, hw, hh) }
+            } catch (_: Exception) { null }
+        }
     }
 
     /** Barevný náhled v poloviční velikosti. */
