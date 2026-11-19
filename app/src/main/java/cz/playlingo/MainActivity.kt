@@ -1091,7 +1091,7 @@ class MainActivity : Activity() {
         add(c, 16)
         content.addView(ui.section(t("help_tips")))
         val c2 = ui.card()
-        for (i in 1..4) c2.addView(ui.text("•  " + t("help_t$i"), 16f, Theme.MUTED), ui.lp(top = if (i == 1) 0 else 8))
+        for (i in 1..5) c2.addView(ui.text("•  " + t("help_t$i"), 16f, Theme.MUTED), ui.lp(top = if (i == 1) 0 else 8))
         add(c2, 0)
         content.addView(ui.section(t("inst_title")))
         add(ui.card().apply { addView(ui.text(t("inst_text"), 15f, Theme.MUTED)) }, 0)
@@ -1353,6 +1353,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.58"
-    const val VERSION_CODE = 58
+    const val VERSION = "verze 0.60"
+    const val VERSION_CODE = 60
 }

@@ -39,6 +39,9 @@ Kdyby se připojila tvým herním účtem, konzole by ti při hraní vypínala o
 
 1. Na PlayStationu zvol Přidat uživatele a založ nový účet PlayStation s jiným e-mailem (je zdarma).
 2. Pod tím druhým uživatelem zapni Nastavení → Systém → Remote Play → Povolit Remote Play.
+   Zapni tam i „Skrýt stav připojení Remote Play“ (Hide Remote Play Connection Status) a totéž
+   udělej i na svém herním účtu – jinak ti PlayStation při hraní pořád ukazuje hlášku
+   „Remote Play connected“. Chybí-li ta volba, aktualizuj PlayStation.
 3. V aplikaci se v průvodci přihlas tím druhým účtem (QR kód v telefonu).
 4. Číslo pro propojení zobraz na konzoli také pod druhým uživatelem.
 5. Hned po spárování se na ovladači přihlas na účet, na kterém hraješ, a hraj jako vždy, se svými hrami.
@@ -48,7 +51,8 @@ Aplikace tě provede šesti kroky, na každé obrazovce je jedna věc. Televize 
 ve stejné domácí síti. Připrav si telefon – bude potřeba jen teď, k hraní už ne.
 
 1. **Zapni na PlayStationu Remote Play.** Na PS5: Nastavení → Systém → Remote Play →
-   zapni „Povolit Remote Play“.
+   zapni „Povolit Remote Play“ a také „Skrýt stav připojení Remote Play“ (aby ti ve hře
+   nesvítila hláška o připojení; stejně to nastav i na svém herním účtu).
 2. **Najdi PlayStation.** Aplikace ho v síti najde sama. Když ne, zadej adresu ručně
    (PS5 → Nastavení → Síť → Stav připojení → Adresa IPv4).
 3. **Naskenuj čtvereček telefonem.** Otevři v telefonu fotoaparát, namiř ho na čtvereček
