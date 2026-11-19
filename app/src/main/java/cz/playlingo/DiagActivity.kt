@@ -100,6 +100,7 @@ object DiagReport {
     fun secrets(c: Context): List<String> {
         val out = mutableListOf(Prefs.psnId(c), Prefs.ps5LoginPin(c))
         Prefs.phoneAccounts(c).forEach { out += it.id }
+        DeeplKey.get(c)?.let { out += it }
         Prefs.ps5Host(c)?.let { h ->
             out += Ps5.hex(h.registKey); out += Ps5.hex(h.morning)
             val end = h.registKey.indexOfFirst { it == 0.toByte() }.let { if (it >= 0) it else h.registKey.size }
@@ -128,6 +129,7 @@ object DiagReport {
             .append(", model: ").append(OfflineTranslator.isReady(lang)).append('\n')
             .append("Automatika: ").append(Prefs.autoZone(c)).append(", oblast: ").append(Prefs.layout(c).serialize()).append('\n')
             .append("Licence: ").append(Prefs.license(c).kind).append(", televize LG: ").append(Prefs.tvSend(c))
+            .append('\n').append(DeeplTranslator.diagLine(c))
             .toString()
 
         val st = TranslatorService.linkStatus()

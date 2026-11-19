@@ -46,8 +46,10 @@ object Redact {
 
     /** klíč=hodnota / klíč: hodnota u citlivých názvů → hodnota se skryje */
     private val NAMED = Regex(
-        "(?i)\\b(code|token|access_token|refresh_token|npsso|account_?id|accountid|psn_?id|pin|password|passwd|heslo|secret|regist_?key|rp_?key|morning|authorization|bearer|credential)(\\s*[=:]\\s*|\\s+)([^\\s,;&|)]+)"
+        "(?i)\\b(code|token|access_token|refresh_token|npsso|account_?id|accountid|psn_?id|pin|password|passwd|heslo|secret|regist_?key|rp_?key|morning|authorization|bearer|credential|auth_?key|deepl-auth-key)(\\s*[=:]\\s*|\\s+)([^\\s,;&|)]+)"
     )
+    /** klíč DeepL (UUID, u verze Free s „:fx“) a cokoli dlouhého s koncovkou „:fx“ */
+    private val DEEPL = Regex("(?i)\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(:fx)?\\b|[A-Za-z0-9-]{16,}:fx\\b")
     /** dlouhé šestnáctkové řetězce (klíče, otisky) */
     private val HEX = Regex("\\b[0-9a-fA-F]{16,}\\b")
     /** dlouhá čísla (číslo účtu PlayStation má kolem 19 číslic) */
@@ -66,6 +68,7 @@ object Redact {
         for (v in secrets.map { it.trim() }.filter { it.length >= 4 }.sortedByDescending { it.length }) {
             s = s.replace(v, MASK, ignoreCase = true)
         }
+        s = DEEPL.replace(s, MASK)
         s = NAMED.replace(s) { m ->
             val value = m.groupValues[3]
             // „pin requested“, „code=true“ – slova a ano/ne nejsou tajná

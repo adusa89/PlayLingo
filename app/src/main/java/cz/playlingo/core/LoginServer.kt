@@ -16,6 +16,9 @@ import java.util.concurrent.Executors
  *  - POST s adresou z telefonu (url=…) → z adresy se vezme kód a [resolveCode] z něj zjistí účet,
  *  - POST s číslem účtu (account=…, posílá PlayLingo v telefonu) → účet se rovnou přijme.
  * Bez Androidu, aby šla vyzkoušet v unit testech.
+ *
+ * Tentýž server slouží i jiné stránce pro telefon ([custom], např. vložení klíče DeepL,
+ * viz [forPage]): jednorázový klíč i ochrana zůstávají, text a zpracování formuláře dodá [custom].
  */
 class LoginServer(
     private val lang: () -> Lang,
@@ -25,7 +28,16 @@ class LoginServer(
     private val resolveCode: (String) -> PhoneLogin.Account?,
     private val onAccount: (PhoneLogin.Account) -> Unit,
     private val log: (String) -> Unit = {},
+    private val custom: Custom? = null,
 ) {
+    /** Jiná stránka než přihlášení: [path] = adresa stránky s klíčem (kam se odešle formulář). */
+    interface Custom {
+        fun get(path: String): String
+        /** Odeslaný formulář → stránka s výsledkem (smí trvat pár sekund, běží mimo hlavní vlákno). */
+        fun post(path: String, form: Map<String, String>): String
+        fun gone(): String
+    }
+
     val key: String = PhoneLogin.newKey()
 
     @Volatile var port = 0
@@ -90,7 +102,15 @@ class LoginServer(
             if (path != PhoneLogin.path(key)) {
                 // prohlížeč si sám říká i o ikonu stránky – počítají se jen pokusy o jiný klíč
                 if (path.startsWith("/p/") && ++wrongKeys > 40) { log("page too many wrong keys"); stop() }
-                send(c, 404, page(PhoneLogin.Page.GONE, null))
+                send(c, 404, custom?.gone() ?: page(PhoneLogin.Page.GONE, null))
+                return
+            }
+            custom?.let { cu ->
+                when (method) {
+                    "GET" -> send(c, 200, cu.get(path))
+                    "POST" -> send(c, 200, try { cu.post(path, form) } catch (_: Throwable) { cu.get(path) })
+                    else -> send(c, 405, "?", false)
+                }
                 return
             }
             val target = c.localAddress?.hostAddress?.takeIf { PhoneLogin.isHomeAddress(it) }?.let { PhoneLogin.Target(it, port, key) }
@@ -147,10 +167,14 @@ class LoginServer(
         return buf.copyOf(got)
     }
 
-    private companion object {
-        const val END = "\r\n\r\n"
-        const val MAX_HEAD = 16 * 1024
-        const val MAX_BODY = 8 * 1024
+    companion object {
+        /** Server pro jinou stránku než přihlášení účtem (viz [Custom]). */
+        fun forPage(lang: () -> Lang, custom: Custom, log: (String) -> Unit = {}) =
+            LoginServer(lang, "", { "" }, { null }, {}, log, custom)
+
+        private const val END = "\r\n\r\n"
+        private const val MAX_HEAD = 16 * 1024
+        private const val MAX_BODY = 8 * 1024
     }
 }
 
