@@ -447,7 +447,10 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 ## Na co zkouška spoléhá (neměnit jen tak)
 
 - Řádky v logu se značkou `TP_TEST` (`SHOW|`, `VIDEO|`, `LINK|`, `PAIR|`, `START|`…) –
-  podle nich `ci/emulator-test.sh` počítá výsledek.
+  podle nich `ci/emulator-test.sh` počítá výsledek. Před ukázkovou hrou obě zkoušky čekají (nejvýš 3 min)
+  na `MODEL|<jazyk>|ok` – jazykový balíček se stahuje od Googlu a občas nestihne (0.80: Android 11
+  přeložil jen 2/15, v logu „Translation model files not found“). Aplikace po neúspěchu stahuje znovu
+  (`prepareModel`, 20 s, nejvýš 6×; při chybě překladu nejvýš jednou za 30 s). Výsledek čekání je v `model.txt`.
 - Věty ukázkové hry v `core/DemoGame.kt` – skript hledá 15 z nich podle textu. Měníš-li věty,
   uprav i skript.
 - Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`, `updtest`,

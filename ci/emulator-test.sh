@@ -49,6 +49,10 @@ adb shell settings put secure accessibility_enabled 1
 sleep 4
 adb shell am start -n $PKG/.MainActivity --ez autostart true
 sleep 12; shot 08_po_spusteni
+# jazykový balíček pro překlad se stahuje od Googlu – počkat, až je (nejvýš 3 minuty; aplikace po
+# neúspěchu zkouší stáhnout znovu sama). Bez něj by se ukázková hra jen četla a nepřekládala.
+for i in $(seq 1 60); do adb logcat -d | grep -q "TP_TEST.*MODEL|[a-z]*|ok" && break; sleep 3; done
+adb logcat -d | grep "TP_TEST.*MODEL|" | tail -3 > $OUT/model.txt
 
 # 4) ukázková hra s titulky – jde do aplikace jako video (stejná cesta jako z PlayStationu);
 #    aplikace ji má dekódovat, přečíst, přeložit a zakrýt pruhem

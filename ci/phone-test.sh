@@ -98,6 +98,10 @@ adb shell settings put secure accessibility_enabled 1
 sleep 4
 adb shell am start -n $PKG/.MainActivity --ez autostart true
 sleep 15; shot p30_preklad_spusten
+# jazykový balíček pro překlad se stahuje od Googlu – počkat, až je (nejvýš 3 minuty; aplikace po
+# neúspěchu zkouší stáhnout znovu sama). Bez něj by se ukázková hra jen četla a nepřekládala.
+for i in $(seq 1 60); do adb logcat -d | grep -q "TP_TEST.*MODEL|[a-z]*|ok" && break; sleep 3; done
+adb logcat -d | grep "TP_TEST.*MODEL|" | tail -3 > $OUT/model.txt
 adb shell am start -n $PKG/.TestCardActivity
 for i in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40; do
   sleep 3; case $i in 05|15|25|35) shot "p31_hra_$i";; esac

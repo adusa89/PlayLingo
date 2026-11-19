@@ -30,10 +30,18 @@ internal val UI_S: Map<String, Pair<String, String>> = mapOf(
     "st_demo" to ("Demo režim" to "Demo režim"),
     "st_demo_d" to ("Vyzkoušení bez konzole: ukázková hra s titulky, ukázka pruhu a zkouška překladu." to "Vyskúšanie bez konzoly: ukážková hra s titulkami, ukážka pruhu a skúška prekladu."),
     "tv_profile_for" to ("Vzhled a oblasti pro televizi %s (každá televize má vlastní)" to "Vzhľad a oblasti pre televízor %s (každý televízor má vlastné)"),
+    "w_overlay" to ("Zobrazení titulků přes jiné aplikace není povolené" to "Zobrazenie titulkov cez iné aplikácie nie je povolené"),
+    "w_model" to ("Chybí jazykový balíček pro překlad (%s)" to "Chýba jazykový balík pre preklad (%s)"),
+    "chk_ps5_missing" to ("PlayStation není spárovaný" to "PlayStation nie je spárovaný"),
+    "xb_chk_ps5_missing" to ("Xbox není vybraný" to "Xbox nie je vybraný"),
 )
 
 internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "w_overlay" to "Showing subtitles over other apps is not allowed",
+        "w_model" to "The language pack for translation is missing (%s)",
+        "chk_ps5_missing" to "PlayStation is not paired",
+        "xb_chk_ps5_missing" to "No Xbox is selected",
         "tv_profile_for" to "Look and areas for the TV %s (each TV has its own)",
         "st_demo" to "Demo mode",
         "st_demo_d" to "Try it without a console: a sample game with subtitles, a preview of the bar and a translation test.",
@@ -60,6 +68,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugging and reports",
     ),
     Lang.PL to mapOf(
+        "w_overlay" to "Wyświetlanie napisów nad innymi aplikacjami nie jest dozwolone",
+        "w_model" to "Brakuje pakietu językowego do tłumaczenia (%s)",
+        "chk_ps5_missing" to "PlayStation nie jest sparowane",
+        "xb_chk_ps5_missing" to "Nie wybrano Xboxa",
         "tv_profile_for" to "Wygląd i obszary dla telewizora %s (każdy telewizor ma własne)",
         "st_demo" to "Tryb demo",
         "st_demo_d" to "Wypróbuj bez konsoli: przykładowa gra z napisami, podgląd paska i test tłumaczenia.",
@@ -86,6 +98,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugowanie i zgłoszenia",
     ),
     Lang.DE to mapOf(
+        "w_overlay" to "Untertitel über anderen Apps anzeigen ist nicht erlaubt",
+        "w_model" to "Das Sprachpaket für die Übersetzung fehlt (%s)",
+        "chk_ps5_missing" to "PlayStation ist nicht gekoppelt",
+        "xb_chk_ps5_missing" to "Keine Xbox ausgewählt",
         "tv_profile_for" to "Aussehen und Bereiche für den Fernseher %s (jeder Fernseher hat eigene)",
         "st_demo" to "Demomodus",
         "st_demo_d" to "Ohne Konsole ausprobieren: Beispielspiel mit Untertiteln, Vorschau des Balkens und Übersetzungstest.",
@@ -112,6 +128,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Fehlersuche und Berichte",
     ),
     Lang.HU to mapOf(
+        "w_overlay" to "A feliratok megjelenítése más alkalmazások felett nincs engedélyezve",
+        "w_model" to "Hiányzik a fordítás nyelvi csomagja (%s)",
+        "chk_ps5_missing" to "A PlayStation nincs párosítva",
+        "xb_chk_ps5_missing" to "Nincs kiválasztva Xbox",
         "tv_profile_for" to "Megjelenés és területek a(z) %s tévéhez (minden tévének saját van)",
         "st_demo" to "Demó mód",
         "st_demo_d" to "Kipróbálás konzol nélkül: mintajáték feliratokkal, a sáv előnézete és fordítási próba.",
@@ -138,6 +158,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Hibakeresés és jelentések",
     ),
     Lang.UK to mapOf(
+        "w_overlay" to "Показ субтитрів поверх інших застосунків не дозволено",
+        "w_model" to "Бракує мовного пакета для перекладу (%s)",
+        "chk_ps5_missing" to "PlayStation не в парі",
+        "xb_chk_ps5_missing" to "Xbox не вибрано",
         "tv_profile_for" to "Вигляд і області для телевізора %s (кожен телевізор має свої)",
         "st_demo" to "Демо-режим",
         "st_demo_d" to "Спробуй без консолі: демо-гра із субтитрами, перегляд смуги та перевірка перекладу.",
@@ -164,6 +188,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Налагодження і звіти",
     ),
     Lang.ES to mapOf(
+        "w_overlay" to "Mostrar subtítulos sobre otras apps no está permitido",
+        "w_model" to "Falta el paquete de idioma para traducir (%s)",
+        "chk_ps5_missing" to "La PlayStation no está vinculada",
+        "xb_chk_ps5_missing" to "No hay ninguna Xbox elegida",
         "tv_profile_for" to "Aspecto y zonas para el televisor %s (cada televisor tiene los suyos)",
         "st_demo" to "Modo demo",
         "st_demo_d" to "Pruébalo sin consola: un juego de ejemplo con subtítulos, una vista previa de la barra y una prueba de traducción.",
@@ -190,6 +218,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Depuración e informes",
     ),
     Lang.FR to mapOf(
+        "w_overlay" to "L’affichage des sous-titres par-dessus les autres applis n’est pas autorisé",
+        "w_model" to "Le pack de langue pour la traduction manque (%s)",
+        "chk_ps5_missing" to "La PlayStation n’est pas associée",
+        "xb_chk_ps5_missing" to "Aucune Xbox n’est choisie",
         "tv_profile_for" to "Apparence et zones pour le téléviseur %s (chaque téléviseur a les siennes)",
         "st_demo" to "Mode démo",
         "st_demo_d" to "Essayer sans console : un jeu d’exemple avec sous-titres, un aperçu du bandeau et un test de traduction.",
@@ -216,6 +248,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Débogage et rapports",
     ),
     Lang.IT to mapOf(
+        "w_overlay" to "La visualizzazione dei sottotitoli sopra altre app non è consentita",
+        "w_model" to "Manca il pacchetto lingua per la traduzione (%s)",
+        "chk_ps5_missing" to "La PlayStation non è associata",
+        "xb_chk_ps5_missing" to "Nessuna Xbox selezionata",
         "tv_profile_for" to "Aspetto e aree per il televisore %s (ogni televisore ha i propri)",
         "st_demo" to "Modalità demo",
         "st_demo_d" to "Prova senza console: un gioco di esempio con sottotitoli, un’anteprima della barra e una prova di traduzione.",

@@ -778,9 +778,10 @@ class MainActivity : Activity() {
         fun warn(v: View) = card.addView(v, ui.lp(top = if (card.childCount == 0) 0 else 4))
         fun note(s: String) = warn(ui.text(s, 15f, Theme.WARN, bold = true).apply { setPadding(0, ui.dp(8), 0, ui.dp(8)) })
         val type = Prefs.tvType(this)
-        if (!overlayOk) warn(ui.checkRow(false, false, t("chk_overlay"), t("ok"), t("fix")) { section = Section.SETTINGS; render() })
-        if (!modelOk) warn(ui.checkRow(false, false, t("chk_model") + " (${Prefs.lang(this).label})", t("ok"), t("download")) { downloadModel() })
-        if (!paired) warn(ui.checkRow(false, false, ct("chk_ps5"), t("ok"), t("set_up")) { section = Section.PS5; render() })
+        if (!overlayOk) warn(ui.checkRow(false, false, t("w_overlay"), t("ok"), t("fix")) { section = Section.SETTINGS; render() })
+        if (!modelOk) warn(ui.checkRow(false, false, t("w_model").replace("%s", Prefs.lang(this).label), t("ok"), t("download")) { downloadModel() })
+        // nespárovaný PlayStation říká už velký stav a tlačítko Spárovat nahoře – tady jen u Xboxu
+        if (!paired && Prefs.console(this) == Console.XBOX) warn(ui.checkRow(false, false, ct("chk_ps5_missing"), t("ok"), t("set_up")) { section = Section.PS5; render() })
         if (TvChoice.needsInstall(this, type)) {
             warn(ui.checkRow(false, false, TvChoice.label(this, type) + ": " + t("tv_st_never"), t("ok"), t("w_install")) { TvChoice.openInstall(this, type) })
         } else if (running && type.sends && TranslatorService.tvConnected == 0) note(t("st_tv_wait"))
@@ -1789,6 +1790,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.82"
-    const val VERSION_CODE = 82
+    const val VERSION = "verze 0.83"
+    const val VERSION_CODE = 83
 }

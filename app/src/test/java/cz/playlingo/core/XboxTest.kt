@@ -223,7 +223,7 @@ class XboxRedactTest {
         assertEquals("xb_m_ps5", Console.XBOX.key("m_ps5"))
         // text bez varianty pro Xbox zůstává společný
         assertEquals("b_start", Console.XBOX.key("b_start"))
-        assertTrue(I18n.t(Lang.CS, Console.XBOX.key("chk_ps5")).contains("Xbox"))
+        assertTrue(I18n.t(Lang.CS, Console.XBOX.key("chk_ps5_missing")).contains("Xbox"))
     }
 }
 

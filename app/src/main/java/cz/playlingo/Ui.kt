@@ -132,8 +132,21 @@ class Ui(private val ctx: Context) {
     }
 
     /** Položka kontrolního seznamu: tečka (zelená/oranžová), popis a případně tlačítko. */
-    fun checkRow(ok: Boolean, optional: Boolean, label: String, okText: String, action: String?, onAction: (() -> Unit)?): LinearLayout =
-        hbox().apply {
+    fun checkRow(ok: Boolean, optional: Boolean, label: String, okText: String, action: String?, onAction: (() -> Unit)?): LinearLayout {
+        // úzký telefon: tlačítko pod popisem, jinak by popis zbyl úzký sloupec a lámal se po slovech
+        if (!ok && action != null && onAction != null && ctx.resources.configuration.screenWidthDp in 1 until 600) {
+            return vbox().apply {
+                setPadding(0, dp(8), 0, dp(8))
+                addView(hbox().apply {
+                    addView(View(ctx).apply { background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(if (optional) Theme.MUTED else Theme.WARN) } },
+                        LinearLayout.LayoutParams(dp(12), dp(12)).apply { rightMargin = dp(14) })
+                    addView(text(label, 17f), LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+                })
+                addView(button(action) { onAction() }.apply { textSize = 15f; setPadding(dp(18), dp(8), dp(18), dp(8)) },
+                    LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = dp(26); topMargin = dp(8) })
+            }
+        }
+        return hbox().apply {
             setPadding(0, dp(8), 0, dp(8))
             val dotColor = if (ok) Theme.OK else if (optional) Theme.MUTED else Theme.WARN
             addView(View(ctx).apply { background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(dotColor) } },
@@ -145,6 +158,7 @@ class Ui(private val ctx: Context) {
                 addView(button(action) { onAction() }.apply { textSize = 15f; setPadding(dp(18), dp(8), dp(18), dp(8)) })
             }
         }
+    }
 
     fun section(title: String): TextView = text(title, 15f, Theme.ACCENT, bold = true).apply {
         setPadding(0, dp(26), 0, dp(10))

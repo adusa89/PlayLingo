@@ -366,14 +366,32 @@ class TranslatorService : Service() {
         )
         resetReading()
         val l = lang
+        modelTries = 0
+        prepareModel(l)
+        updateNotification()
+    }
+
+    /** Kolikrát se za tohoto běhu zkoušelo stáhnout jazykový balíček (po neúspěchu se zkouší znovu). */
+    @Volatile private var modelTries = 0
+    @Volatile private var lastModelRetry = 0L
+
+    /**
+     * Jazykový balíček pro překlad: stáhnout, když chybí, a připravit. Když stažení selže (výpadek sítě,
+     * serveru Googlu), zkusí se za 20 s znovu, nejvýš 6× za běh – jinak by se do restartu nepřekládalo nic.
+     */
+    private fun prepareModel(l: Lang) {
+        modelTries++
         OfflineTranslator.ensureModel(l) { ok ->
+            tp("MODEL|${l.code}|${if (ok) "ok" else "fail"}|pokus=$modelTries")
+            if (!ok && running && l == lang && modelTries < 6) {
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ if (running && l == lang) prepareModel(l) }, 20_000)
+            }
             // překladač se připraví hned, ne až s prvním titulkem
             if (ok && warmedLang != l) {
                 warmedLang = l
                 scope.launch { OfflineTranslator.warmUp(l)?.let { (cold, warm) -> tp("WARM|${l.code}|první=${cold}ms|další=${warm}ms") } }
             }
         }
-        updateNotification()
     }
 
     // ---------------- notifikace ----------------
@@ -692,7 +710,14 @@ class TranslatorService : Service() {
     private suspend fun translate(l: Lang, text: String): String? {
         if (l == lang) cache.get(text)?.let { statsFor(this).cacheHit(); return it }
         val out = try { OfflineTranslator.translate(l, text, glossary) } catch (e: Exception) {
-            lastError = e.javaClass.simpleName; Log.w(TAG, "offline", e); null
+            lastError = e.javaClass.simpleName; Log.w(TAG, "offline", e)
+            // balíček chybí (stažení se nepovedlo nebo ho systém smazal) → stáhnout znovu, nejvýš jednou za 30 s
+            val now = SystemClock.uptimeMillis()
+            if (e.message?.contains("model", ignoreCase = true) == true && now - lastModelRetry > 30_000) {
+                lastModelRetry = now
+                android.os.Handler(android.os.Looper.getMainLooper()).post { if (running) prepareModel(l) }
+            }
+            null
         }
         // jazyk se mezitím změnil → do paměti nového jazyka nepatří překlad do starého
         if (out != null) { if (l == lang) cache.put(text, out); lastError = null }
