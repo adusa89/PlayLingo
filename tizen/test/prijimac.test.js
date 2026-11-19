@@ -3,7 +3,8 @@
  *
  * Pustí společný app.js s platforma.js pro Samsung (tizen/app) i pro LG (webos/obchod/app)
  * v napodobeném prohlížeči (bez knihoven) a ověří: televize najde PlayLingo v síti, ohlásí se
- * platformou a verzí (zpráva „pripojeno“), ukáže obyčejný text i řádky `casti` a odpoví „hotovo“.
+ * platformou a verzí (zpráva „pripojeno“), ukáže obyčejný text i řádky `casti` a odpoví „hotovo“,
+ * a pošle svůj záznam událostí (zpráva „zaznam“, bez textu titulků).
  * Na Samsungu navíc, že se obraz ze vstupu HDMI pustí přes tizen.tvwindow pod stránku.
  */
 'use strict';
@@ -160,12 +161,28 @@ function zkus(platforma, verze, dalsi) {
       assert.strictEqual(radky[2].children[0].style.color, undefined, 'cizí barva se do stylu nedostane');
       ws.onmessage({ data: '{"typ":"skryj","id":3}' });
       assert.strictEqual(tv.prvky.pruh.style.display, 'none');
+      // záznam událostí: hned po ohlášení odešlo, co se nasbíralo (start, hledání, připojení)
+      var zaznam1 = tv.odeslano.filter(function (z) { return z.typ === 'zaznam'; });
+      assert.ok(zaznam1.length >= 1, 'po připojení odešel záznam');
+      var radky1 = [].concat.apply([], zaznam1.map(function (z) { return z.radky; }));
+      assert.ok(radky1.some(function (r) { return r.indexOf('start PlayLingo ' + platforma + ' ' + verze) >= 0; }), 'záznam má start s verzí');
+      assert.ok(radky1.some(function (r) { return r.indexOf('připojeno k ws://192.168.1.20:8787') >= 0; }), 'záznam má připojení');
       pockej(function () { return tv.odeslano.filter(function (z) { return z.typ === 'hotovo'; }).length === 3; }, function () {
-        // Zpět vrátí úvodní obrazovku a na Samsungu schová obraz ze vstupu
-        tv.stiskni(platforma === 'tizen' ? 10009 : 461);
-        assert.strictEqual(tv.document.body.className, 's-domu');
-        if (platforma === 'tizen') { assert.strictEqual(tv.tvwindow[tv.tvwindow.length - 1], 'hide'); }
-        dalsi(tv);
+        // spojení spadne → televize se připojí znovu a pošle jen nové řádky, bez textu titulků
+        var pred = tv.odeslano.length;
+        ws.onclose();
+        pockej(function () { return tv.odeslano.slice(pred).some(function (z) { return z.typ === 'zaznam'; }); }, function () {
+          var radky2 = [].concat.apply([], tv.odeslano.slice(pred).filter(function (z) { return z.typ === 'zaznam'; }).map(function (z) { return z.radky; }));
+          assert.ok(radky2.some(function (r) { return /ukaž #1: 12 znaků/.test(r); }), 'záznam má délku titulku');
+          assert.ok(radky2.some(function (r) { return /spojení se ztratilo/.test(r); }), 'záznam má ztrátu spojení');
+          assert.ok(!radky2.some(function (r) { return /start PlayLingo/.test(r); }), 'staré řádky se neposílají znovu');
+          assert.ok(!radky1.concat(radky2).some(function (r) { return /Počkej|Ahoj/.test(r); }), 'text titulků do záznamu nejde');
+          // Zpět vrátí úvodní obrazovku a na Samsungu schová obraz ze vstupu
+          tv.stiskni(platforma === 'tizen' ? 10009 : 461);
+          assert.strictEqual(tv.document.body.className, 's-domu');
+          if (platforma === 'tizen') { assert.strictEqual(tv.tvwindow[tv.tvwindow.length - 1], 'hide'); }
+          dalsi(tv);
+        }, platforma + ': záznam po novém připojení');
       }, platforma + ': hotovo');    }, platforma + ': ohlášení');
   }, 30);
 }

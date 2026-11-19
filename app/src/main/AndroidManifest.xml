@@ -29,6 +29,14 @@
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
 
+        <!-- Sdílení hlášení o stavu jako souboru (DiagActivity → Sdílet). Jen jeden soubor, jen ke čtení,
+             jen s jednorázovým povolením ze Sdílet. -->
+        <provider
+            android:name=".ReportProvider"
+            android:authorities="${applicationId}.hlaseni"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

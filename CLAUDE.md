@@ -35,6 +35,7 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `XboxAccount.kt`, `XboxLink.kt`, `XboxForm.kt` – Xbox: přihlášení účtem Microsoft, spojení
     přes vzdálené hraní (WebRTC) a stránka konzole pro Xbox (viz Xbox)
   - `DeeplTranslator.kt`, `DeeplSection.kt` – pokus DeepL (viz Pokus: DeepL)
+  - `NetLogShare.kt` – záznam pro vývojáře v domácí síti, Kopírovat/Sdílet hlášení (viz Záznam ze zařízení)
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
   knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
 - `third_party/chiaki-ng` – submodul. Needituj ho; před sestavením se do něj kopíruje
@@ -295,7 +296,8 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
 - Nastavení → úplně dole část **Experimentální** (`DeeplSection.kt`, volá ji jediná funkce
   `experimentalSection()` v `MainActivity`): volba „Lepší překlad přes internet (DeepL)“, klíč,
   postup „Jak získat klíč“, ověření a měření tohoto běhu. Vypnuté = služba se chová přesně jako dřív
-  (žádný dotaz do internetu), zkouška v emulátoru se tím nemění.
+  (žádný dotaz do internetu), zkouška v emulátoru se tím nemění. Pod DeepL je v téže části ještě
+  blok „Zpřístupnit záznam v domácí síti“ (viz Záznam ze zařízení).
 - **Klíč patří jen hráči.** V repozitáři, testech, APK ani CI žádný klíč není a nesmí být (ani náš
   „sdílený“). Ukládá se zašifrovaný přes Android Keystore (`DeeplKey`, stejný postup jako `LgVault`),
   nikam se nevypisuje; `Redact` maže tvar klíče DeepL (UUID s `:fx`) a `DiagReport.secrets` i uložený
@@ -315,6 +317,36 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   (bez textu a klíče); souhrn v Nastavení a v hlášení o stavu.
 - Limit znaků se nebere napevno: ukazuje se to, co vrátí `/v2/usage` (účet majitele má 1 000 000).
 - Texty `dl_…` jsou v `core/I18nDeepl.kt` (`DEEPL_S`, `DEEPL_X`).
+
+## Záznam ze zařízení (pro Claude na PC majitele)
+
+Když je potřeba vidět, co se na zařízení majitele děje (Android i aplikace v televizi LG/Samsung):
+
+1. Majitel na zařízení s Androidem zapne Nastavení → úplně dole Experimentální → **„Zpřístupnit záznam v domácí síti“**
+   (vlastní blok pod DeepL, `logShareRow()` volané z `experimentalSection()`; výchozí vypnuto, samo se vypne po 2 hodinách) a řekne adresu,
+   která se ukáže pod řádkem (i nahoře na obrazovce hlášení), např. `http://192.168.1.23:8789/zaznam?k=ab3k7m`.
+2. Claude ji stáhne: `.\ci\stahni-zaznam.ps1 http://192.168.1.23:8789/zaznam?k=ab3k7m`
+   (nebo `… 192.168.1.23 ab3k7m`, s `-Json` po oddílech). Uloží se do `zaznamy\zaznam-<čas>.txt`
+   a `zaznamy\posledni.txt` – složka je v `.gitignore`, záznamy do repozitáře nepatří.
+   403 = špatný kód (po 30 špatných se server zavře), 404 / nedostupné = vypnuto nebo vypršelo.
+
+Obsah = celé hlášení o stavu (`DiagReport.build` → `parts`): aplikace a zařízení, spojení, pády
+(`pady.txt`), záznam událostí `udalosti.txt`, události z paměti, spojení s PlayStationem a záznam
+z televize. Vše prochází `Redact` s `DiagReport.secrets` (i v JSON). Server (`core/LogShare.kt`:
+`LogShare` rozhodování s testy `LogShareTest`, `LogServer` sockety podle `LoginServer`) umí jen
+`GET /zaznam?k=…` a `/zaznam.json?k=…`, odpovídá jen loopbacku a privátním adresám, nic nepřijímá.
+Konec platnosti a kód jsou uložené (`NetLogShare`, vlastní SharedPreferences `zaznam_sit`), takže po
+pádu a novém spuštění běží dál se stejným kódem, ale jen do konce 2 hodin.
+
+Záznam z televize: `app.js` drží posledních 300 řádků (`zapis`: start s platformou a verzí, televize,
+obrazovky, hledání v síti, připojení/ztráta, u titulků jen id a délka – **nikdy text**, `window.onerror`;
+opakované hledání se sloučí do počtu). Po připojení pošle neodeslané řádky zprávou
+`{"typ":"zaznam","radky":[…]}` (po 25) a dál každých 10 s. `TvSender` je předá `core/TvLog.kt` →
+`filesDir/tv-zaznam.txt` (nejvýš 60 000 znaků). V hlášení je oddíl Televize (posledních 25 řádků).
+Záznam z televize umí aplikace v televizi od verze 1.2.0.
+
+Bez sítě: obrazovka hlášení má tlačítka **Kopírovat** (schránka) a **Sdílet** (soubor přes
+`ReportProvider`, jediný soubor v `cacheDir/sdileni`, jen ke čtení).
 
 ## Texty aplikace a jazyky
 
@@ -348,6 +380,8 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
 - typ televize (`tv_…`, společné `s_tv_desc`, `st_tv_…`, `hp_lg_title`/`hp_lg_text`) a průvodce
   Samsung (`ss_…`): `core/I18nSamsung.kt` (`SS_S`, `SS_X`).
 - texty pokusu DeepL (`dl_…`; důvody `dl_p_<Deepl.Problem>`): `core/I18nDeepl.kt` (`DEEPL_S`, `DEEPL_X`).
+- záznam pro vývojáře, oddíl Televize a Kopírovat/Sdílet v hlášení (`zz_…`): `core/I18nZaznam.kt`
+  (`ZAZNAM_S`, `ZAZNAM_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.

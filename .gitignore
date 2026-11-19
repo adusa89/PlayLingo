@@ -16,3 +16,6 @@ webos/**/*.ipk
 # APK sestavené na PC (sestavit-na-pc.ps1)
 *.apk
 tizen/**/*.wgt
+
+# záznamy stažené ze zařízení (ci/stahni-zaznam.ps1)
+zaznamy/
