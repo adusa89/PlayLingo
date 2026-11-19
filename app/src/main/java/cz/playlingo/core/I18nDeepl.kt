@@ -38,10 +38,16 @@ internal val DEEPL_S: Map<String, Pair<String, String>> = mapOf(
     "dl_qr_nolan" to ("Stránku pro telefon se teď nepodařilo vystavit – je zařízení v domácí síti? Klíč můžeš napsat i sem do políčka." to "Stránku pre telefón sa teraz nepodarilo vystaviť – je zariadenie v domácej sieti? Kľúč môžeš napísať aj sem do políčka."),
     "dl_w_send" to ("Odeslat do televize" to "Odoslať do televízora"),
     "dl_w_ok" to ("Klíč je v televizi, můžeš stránku zavřít." to "Kľúč je v televízore, stránku môžeš zavrieť."),
+    "dl_change" to ("Změnit klíč" to "Zmeniť kľúč"),
+    "dl_keys_hint" to ("Už máš účet DeepL? Klíč najdeš přímo na stránce s klíči (přihlas se, u klíče je tlačítko pro zkopírování):" to "Už máš účet DeepL? Kľúč nájdeš priamo na stránke s kľúčmi (prihlás sa, pri kľúči je tlačidlo na skopírovanie):"),
+    "dl_keys_open" to ("Otevřít stránku s klíčem" to "Otvoriť stránku s kľúčom"),
 )
 
 internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "dl_change" to "Change key",
+        "dl_keys_hint" to "Already have a DeepL account? Your key is right on the keys page (sign in; next to the key there is a copy button):",
+        "dl_keys_open" to "Open the key page",
         "dl_section" to "Experimental",
         "dl_toggle" to "Better translation over the internet (DeepL)",
         "dl_desc" to "An experiment, off by default. It needs your own DeepL API Free key (with a free monthly character limit, create it at deepl.com/pro-api). The offline translation appears right away as always; if DeepL answers differently within 1.5 s, the text in the bar is quietly replaced.",
@@ -76,6 +82,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "The key is on the TV, you can close this page.",
     ),
     Lang.PL to mapOf(
+        "dl_change" to "Zmień klucz",
+        "dl_keys_hint" to "Masz już konto DeepL? Klucz znajdziesz od razu na stronie z kluczami (zaloguj się, obok klucza jest przycisk kopiowania):",
+        "dl_keys_open" to "Otwórz stronę z kluczem",
         "dl_section" to "Eksperymentalne",
         "dl_toggle" to "Lepsze tłumaczenie przez internet (DeepL)",
         "dl_desc" to "Eksperyment, domyślnie wyłączony. Wymaga twojego własnego klucza DeepL API Free (z darmowym miesięcznym limitem znaków, załóż go na deepl.com/pro-api). Tłumaczenie offline pojawia się od razu jak zawsze; jeśli DeepL w ciągu 1,5 s odpowie inaczej, tekst na pasku zostanie po cichu podmieniony.",
@@ -110,6 +119,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "Klucz jest w telewizorze, możesz zamknąć stronę.",
     ),
     Lang.DE to mapOf(
+        "dl_change" to "Schlüssel ändern",
+        "dl_keys_hint" to "Schon ein DeepL-Konto? Der Schlüssel steht direkt auf der Schlüsselseite (anmelden, neben dem Schlüssel ist eine Kopier-Schaltfläche):",
+        "dl_keys_open" to "Schlüsselseite öffnen",
         "dl_section" to "Experimentell",
         "dl_toggle" to "Bessere Übersetzung über das Internet (DeepL)",
         "dl_desc" to "Ein Versuch, standardmäßig aus. Braucht deinen eigenen DeepL-API-Free-Schlüssel (mit kostenlosem Monatskontingent an Zeichen, anlegen auf deepl.com/pro-api). Die Offline-Übersetzung erscheint wie immer sofort; antwortet DeepL innerhalb von 1,5 s anders, wird der Text im Balken still ersetzt.",
@@ -144,6 +156,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "Der Schlüssel ist im Fernseher, du kannst die Seite schließen.",
     ),
     Lang.HU to mapOf(
+        "dl_change" to "Kulcs módosítása",
+        "dl_keys_hint" to "Már van DeepL-fiókod? A kulcsot közvetlenül a kulcsok oldalán találod (jelentkezz be, a kulcs mellett van másolás gomb):",
+        "dl_keys_open" to "Kulcs oldalának megnyitása",
         "dl_section" to "Kísérleti",
         "dl_toggle" to "Jobb fordítás az interneten át (DeepL)",
         "dl_desc" to "Kísérlet, alapból kikapcsolva. A saját DeepL API Free kulcsodra van szükség (ingyenes havi karakterkerettel, a deepl.com/pro-api oldalon hozhatod létre). Az offline fordítás azonnal megjelenik, mint mindig; ha a DeepL 1,5 mp-en belül mást válaszol, a sávban lévő szöveg csendben lecserélődik.",
@@ -178,6 +193,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "A kulcs a tévében van, bezárhatod az oldalt.",
     ),
     Lang.UK to mapOf(
+        "dl_change" to "Змінити ключ",
+        "dl_keys_hint" to "Уже маєш обліковий запис DeepL? Ключ знайдеш одразу на сторінці ключів (увійди, біля ключа є кнопка копіювання):",
+        "dl_keys_open" to "Відкрити сторінку з ключем",
         "dl_section" to "Експериментальне",
         "dl_toggle" to "Кращий переклад через інтернет (DeepL)",
         "dl_desc" to "Експеримент, типово вимкнений. Потрібен твій власний ключ DeepL API Free (з безкоштовним місячним лімітом символів, створи його на deepl.com/pro-api). Офлайн-переклад з'являється одразу, як завжди; якщо DeepL протягом 1,5 с відповість інакше, текст у смузі тихо заміниться.",
@@ -212,6 +230,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "Ключ у телевізорі, сторінку можна закрити.",
     ),
     Lang.ES to mapOf(
+        "dl_change" to "Cambiar clave",
+        "dl_keys_hint" to "¿Ya tienes cuenta de DeepL? La clave está en la página de claves (inicia sesión; junto a la clave hay un botón para copiarla):",
+        "dl_keys_open" to "Abrir la página de la clave",
         "dl_section" to "Experimental",
         "dl_toggle" to "Mejor traducción por internet (DeepL)",
         "dl_desc" to "Un experimento, desactivado por defecto. Necesita tu propia clave de DeepL API Free (con un límite mensual gratuito de caracteres, créala en deepl.com/pro-api). La traducción sin conexión aparece al instante como siempre; si DeepL responde de otra forma en 1,5 s, el texto de la barra se cambia sin avisar.",
@@ -246,6 +267,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "La clave está en la tele, ya puedes cerrar la página.",
     ),
     Lang.FR to mapOf(
+        "dl_change" to "Changer la clé",
+        "dl_keys_hint" to "Tu as déjà un compte DeepL ? La clé est directement sur la page des clés (connecte-toi ; à côté de la clé il y a un bouton pour la copier) :",
+        "dl_keys_open" to "Ouvrir la page de la clé",
         "dl_section" to "Expérimental",
         "dl_toggle" to "Meilleure traduction par internet (DeepL)",
         "dl_desc" to "Un essai, désactivé par défaut. Il faut ta propre clé DeepL API Free (avec un quota mensuel gratuit de caractères, à créer sur deepl.com/pro-api). La traduction hors ligne s'affiche tout de suite comme d'habitude ; si DeepL répond autrement en moins de 1,5 s, le texte du bandeau est remplacé discrètement.",
@@ -280,6 +304,9 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "La clé est dans la télé, tu peux fermer la page.",
     ),
     Lang.IT to mapOf(
+        "dl_change" to "Cambia chiave",
+        "dl_keys_hint" to "Hai già un account DeepL? La chiave è direttamente nella pagina delle chiavi (accedi; accanto alla chiave c’è il pulsante per copiarla):",
+        "dl_keys_open" to "Apri la pagina della chiave",
         "dl_section" to "Sperimentale",
         "dl_toggle" to "Traduzione migliore via internet (DeepL)",
         "dl_desc" to "Un esperimento, disattivato di default. Serve la tua chiave DeepL API Free (con un limite mensile gratuito di caratteri, creala su deepl.com/pro-api). La traduzione offline appare subito come sempre; se DeepL risponde diversamente entro 1,5 s, il testo nella barra viene sostituito in silenzio.",

@@ -15,6 +15,8 @@ object Deepl {
     const val PRO_HOST = "api.deepl.com"
     /** Stránka DeepL pro vývojáře (horní menu „Developers“), kde se zakládá „Free API Key“. */
     const val SIGNUP_URL = "https://www.deepl.com/pro-api"
+    /** Stránka s klíči v účtu DeepL – přímo, bez hledání v menu (na mobilu se tam jinak špatně trefuje). */
+    const val KEYS_URL = "https://www.deepl.com/your-account/keys"
     /** Odpověď, která přijde později, se už do pruhu nedává (hráč mezitím čte), jen se zapamatuje. */
     const val LATE_MS = 1500L
     /** Značka, ve které jsou jména a výrazy ze slovníku – DeepL je nepřekládá. */
@@ -298,7 +300,10 @@ object DeeplPage {
                 // klíč ručně (schránku stránka z domácí sítě bez zabezpečení přečíst nesmí)
                 sb.append("<div class=\"card\"><p>").append(t("dl_howto").replace("\n", "<br>")).append("</p>")
                     .append("<a class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(Deepl.SIGNUP_URL).append("\">")
-                    .append(t("dl_open")).append("</a></div>")
+                    .append(t("dl_open")).append("</a>")
+                    .append("<p>").append(t("dl_keys_hint")).append("</p>")
+                    .append("<a class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(Deepl.KEYS_URL).append("\">")
+                    .append(t("dl_keys_open")).append("</a></div>")
                     .append("<form method=\"post\" action=\"").append(PhoneLogin.esc(path)).append("\">")
                     .append("<input name=\"key\" autocomplete=\"off\" autocapitalize=\"off\" autocorrect=\"off\" spellcheck=\"false\" placeholder=\"xxxxxxxx-xxxx-…:fx\">")
                     .append("<button type=\"submit\">").append(t("dl_w_send")).append("</button></form>")

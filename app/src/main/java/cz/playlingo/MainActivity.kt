@@ -57,6 +57,8 @@ class MainActivity : Activity() {
         // kroky průvodce prvním spuštěním (pořadí = pořadí v menu průvodce; zkouška jím prochází naslepo)
         private const val W_DEVICE = 0
         private const val W_CONSOLE = 1
+        /** Licence a platby v aplikaci: zatím skryté, odkryjí se při vydání (true). */
+        private const val SHOW_LICENSE = false
         private const val W_TV = 2
         private const val W_LANG = 3
         private const val W_PERM = 4
@@ -77,6 +79,8 @@ class MainActivity : Activity() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var ui: Ui
     private lateinit var menu: LinearLayout
+    /** Místo pro ozubené kolo (Nastavení): v telefonu vpravo nahoře, na televizi dole v levém sloupci. */
+    private lateinit var gear: LinearLayout
     private lateinit var content: LinearLayout
     private var section = Section.HOME
     private var demo: SubtitleOverlay? = null
@@ -313,7 +317,8 @@ class MainActivity : Activity() {
         else ui.lp(top = 4)
 
     private fun buildNarrowShell() {
-        val root = ui.vbox().apply { setBackgroundColor(Theme.BG) }
+        // clipChildren: posuvná část se nesmí kreslit přes lištu (ui.vbox() má ořez vypnutý kvůli zvětšení vybraného prvku)
+        val root = ui.vbox().apply { setBackgroundColor(Theme.BG); clipChildren = true }
         val top = ui.vbox().apply {
             setBackgroundColor(Theme.SIDEBAR)
             setPadding(ui.dp(14), ui.dp(12), ui.dp(14), ui.dp(8))
@@ -322,14 +327,15 @@ class MainActivity : Activity() {
         logoRow.addView(ImageView(this).apply { setImageResource(R.drawable.ic_logo) }, LinearLayout.LayoutParams(ui.dp(36), ui.dp(36)))
         logoRow.addView(ui.text("PlayLingo", 19f, Theme.TEXT, bold = true).apply { setPadding(ui.dp(10), 0, ui.dp(10), 0) })
         logoRow.addView(ui.text(Prefs.lang(this).label, 13f, Theme.ACCENT, bold = true))
+        logoRow.addView(View(this), LinearLayout.LayoutParams(0, 1, 1f))
+        gear = ui.hbox()
+        logoRow.addView(gear)
         top.addView(logoRow)
         menu = ui.hbox()
         top.addView(HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(menu) }, ui.lp(top = 8))
         root.addView(top, ui.lp())
 
-        // Tady se obsah ořezávat musí: bez toho se při posunu stránky kreslí přes lištu se záložkami
-        // (lišta je nad posuvnou částí, ne vedle ní jako na televizi). Odsazení obsahu stačí na zvětšení vybraného prvku.
-        val scroll = ScrollView(this).apply { isFillViewport = true; clipChildren = true; clipToPadding = true }
+        val scroll = ScrollView(this).apply { isFillViewport = true }
         content = ui.vbox().apply { setPadding(ui.dp(16), ui.dp(18), ui.dp(16), ui.dp(32)) }
         scroll.addView(content)
         root.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
@@ -365,6 +371,9 @@ class MainActivity : Activity() {
 
         menu = ui.vbox()
         side.addView(menu, ui.lp(top = 18))
+        side.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
+        gear = ui.vbox()
+        side.addView(gear, ui.lp())
         root.addView(side, LinearLayout.LayoutParams(ui.dp(280), LinearLayout.LayoutParams.MATCH_PARENT))
 
         val scroll = ScrollView(this).apply { isFillViewport = true; clipChildren = false; clipToPadding = false }
@@ -379,9 +388,24 @@ class MainActivity : Activity() {
 
     private fun renderMenu() {
         menu.removeAllViews()
+        gear.removeAllViews()
         for (s in Section.values()) {
             if (s == Section.HISTORY) continue
             val active = s == menuSection()
+            if (s == Section.SETTINGS && narrow) {
+                // telefon: jen ozubené kolo v rohu lišty, vidět pořád
+                gear.addView(ui.text("⚙", 26f, if (active) Theme.ACCENT else Theme.TEXT, bold = true).apply {
+                    isFocusable = true
+                    isClickable = true
+                    gravity = Gravity.CENTER
+                    background = ui.focusBg(if (active) Theme.CARD else Theme.SIDEBAR, radius = 10)
+                    contentDescription = t(s.menuKey)
+                    setPadding(ui.dp(12), ui.dp(2), ui.dp(12), ui.dp(4))
+                    setOnClickListener { section = s; render(keepFocus = true) }
+                    tag = "menu_${s.name}"
+                })
+                continue
+            }
             val item = ui.hbox().apply {
                 isFocusable = true
                 isClickable = true
@@ -399,7 +423,7 @@ class MainActivity : Activity() {
                 setOnClickListener { section = s; render(keepFocus = true) }
                 tag = "menu_${s.name}"
             }
-            menu.addView(item, menuLp())
+            if (s == Section.SETTINGS) gear.addView(item, ui.lp()) else menu.addView(item, menuLp())
         }
     }
 
@@ -425,13 +449,13 @@ class MainActivity : Activity() {
             Section.PS5 -> ps5()
             // Titulky: nejdřív vzhled, pod ním kde se čtou
             Section.LOOK -> { look(); content.addView(ui.section(t("m_zones"))); zones() }
-            // Nastavení (⚙): jednorázové volby, licence, překlad a úplně dole pokus DeepL
-            Section.SETTINGS -> { settings(); experimentalSection() }
+            // Nastavení (⚙): záložky Obecné / Čtení a překlad / Ladění a hlášení / Experimentální
+            Section.SETTINGS -> settings()
             Section.HISTORY -> history()
             Section.HELP -> help()
         }
         val target = focusedTag?.let { window.decorView.findViewWithTag<View>(it) }
-            ?: menu.findViewWithTag<View>("menu_${menuSection().name}")
+            ?: window.decorView.findViewWithTag<View>("menu_${menuSection().name}")
         target?.requestFocus()
     }
 
@@ -768,8 +792,9 @@ class MainActivity : Activity() {
                 runOnUiThread { if (!isFinishing && wizard < 0 && section == Section.HOME && currentFocus !is EditText) render(true) }
             }
         }
+        // licence a platby jsou zatím skryté (odkryjí se při vydání) – upozornění na konec zkušební doby taky
         val lic = Prefs.license(this)
-        if (lic.kind == cz.playlingo.core.License.Kind.TRIAL && lic.daysLeft <= 3) {
+        if (SHOW_LICENSE && lic.kind == cz.playlingo.core.License.Kind.TRIAL && lic.daysLeft <= 3) {
             warn(ui.checkRow(false, false, t("lic_trial").replace("%d", lic.daysLeft.toString()), t("ok"), t("lic_open")) {
                 section = Section.SETTINGS; render()
             })
@@ -1185,7 +1210,6 @@ class MainActivity : Activity() {
         val mode = ui.card()
         mode.addView(ui.text(t("t_mode"), 14f, Theme.MUTED))
         mode.addView(ui.text(t("t_offline"), 19f, Theme.OK, bold = true), ui.lp(top = 4))
-        mode.addView(ui.text(t("t_offline_desc"), 15f, Theme.MUTED), ui.lp(top = 8))
         mode.addView(ui.text(t("chk_model") + " (${lang.label}): " + if (ready) t("ok") else t("t_model_missing"),
             15f, if (ready) Theme.OK else Theme.WARN), ui.lp(top = 8))
         add(mode, 16)
@@ -1205,11 +1229,9 @@ class MainActivity : Activity() {
                 Prefs.setGameId(this, games[i].id); applyToService(); render(true)
             }
         }, "game"), 0)
-        add(ui.text(t("t_game_desc"), 14f, Theme.MUTED), 6)
 
         // --- vlastní slovník ---
         content.addView(ui.section(t("t_dict")))
-        add(ui.text(t("t_dict_desc"), 14f, Theme.MUTED), 0)
         val dict = Prefs.userDict(this, lang)
         fun field(hintKey: String, value: String, tagName: String) = EditText(this).apply {
             setText(value)
@@ -1226,7 +1248,7 @@ class MainActivity : Activity() {
         }
         val en = field("t_dict_en", draftEn, "dicten")
         val tr = field("t_dict_tr", draftTr, "dicttr")
-        add(en, 10); add(tr, 8)
+        add(en, 0); add(tr, 8)
         add(tagged(ui.button(t("t_dict_add")) {
             val k = en.text.toString().trim(); val v = tr.text.toString().trim()
             if (k.length >= 2 && v.isNotEmpty()) {
@@ -1264,15 +1286,47 @@ class MainActivity : Activity() {
 
     // ======================= NASTAVENÍ =======================
 
+    /** Záložky Nastavení (⚙) v tomto pořadí; [key] = název záložky. */
+    private enum class SettingsTab(val key: String) { GENERAL("st_general"), READ("st_read"), DIAG("s_diag"), EXPERIMENTAL("dl_section") }
+
+    private var settingsTab = SettingsTab.GENERAL
+
     /**
-     * Nastavení (⚙ v menu): jednorázové volby z průvodce (konzole, televize, zařízení, jazyk aplikace),
-     * zkušební verze a kvalita čtení, povolení, ladění a hlášení, licence a překlad. Pokus DeepL
-     * (experimentalSection) přidává [render] až za tohle. Když skončila zkušební doba, je licence nahoře.
+     * Nastavení (⚙, vidět pořád v rohu): nahoře záložky, pod nimi jen obsah vybrané záložky – ať se
+     * nemusí dlouho posouvat. Dlouhé popisy voleb jsou v Nápovědě (část help_settings), tady jen názvy.
+     * Licence a platby jsou zatím skryté; ukážou se jen tehdy, když zkušební doba skončila (jinak by
+     * hráč nevěděl, proč aplikace nejde spustit).
      */
     private fun settings() {
         val lic = Prefs.license(this)
         if (!lic.canRun) { content.addView(ui.section(t("m_license"))); license() }
 
+        val tabs = ui.hbox()
+        for (tab in SettingsTab.values()) {
+            val active = tab == settingsTab
+            tabs.addView(ui.text(t(tab.key), 16f, if (active) Theme.BG else Theme.TEXT, bold = true).apply {
+                isFocusable = true
+                isClickable = true
+                background = ui.focusBg(if (active) Theme.ACCENT else Theme.CARD, radius = 20)
+                ui.pop(this)
+                setPadding(ui.dp(18), ui.dp(9), ui.dp(18), ui.dp(9))
+                setOnClickListener { settingsTab = tab; render(keepFocus = true) }
+                tag = "stab_${tab.name}"
+            }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { rightMargin = ui.dp(8) })
+        }
+        add(HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; clipChildren = false; clipToPadding = false; addView(tabs) }, 14)
+
+        when (settingsTab) {
+            SettingsTab.GENERAL -> settingsGeneral()
+            SettingsTab.READ -> { settingsRead(); translate() }
+            SettingsTab.DIAG -> settingsDiag()
+            SettingsTab.EXPERIMENTAL -> experimentalSection()
+        }
+        add(ui.text(t("st_more"), 14f, Theme.MUTED), 24)
+    }
+
+    /** Obecné: konzole, televize (+ nahrání), jazyk aplikace, zařízení, zkušební verze, povolení (jen Android TV). */
+    private fun settingsGeneral() {
         content.addView(ui.section(t("s_setup")))
         consoleRow("sconsole", 0)
         // Typ televize (Android TV / LG / Samsung) – stejná nabídka jako ze souhrnného řádku na Domů.
@@ -1280,14 +1334,7 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("tv_type"), TvChoice.label(this, type)) {
             TvChoice.show(this) { render(true) }
         }, "tvtype"), 8)
-        // nahrání (i aktualizace) aplikace v televizi – Domů ho nabízí jen do prvního připojení
         if (type.sends) add(tagged(ui.button(TvChoice.installLabel(this, type)) { TvChoice.openInstall(this, type) }, "stvinstall"), 8)
-        val reader = Prefs.readerDevice(this)
-        add(tagged(ui.settingRow(t("wz_dev"), t(if (reader) "dev_phone" else "dev_tv")) {
-            choose(t("wz_dev_q"), listOf(t("dev_tv"), t("dev_phone")), if (reader) 1 else 0) { i -> setReader(i == 1); render(true) }
-        }, "device"), 8)
-        // telefon, na kterém běží celá aplikace: cesta zpět k pomocníkovi pro přihlášení
-        if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 8)
         // jazyk aplikace je nezávislý na jazyku překladu (ten je na stránce Titulky)
         val uiLang = Prefs.uiLang(this)
         add(tagged(ui.settingRow(t("l_ui_lang"), uiLang.label) {
@@ -1296,12 +1343,33 @@ class MainActivity : Activity() {
                 Prefs.setUiLang(this, all[i]); applyToService(); buildShell(); render()
             }
         }, "uilang"), 8)
-
-        content.addView(ui.section(t("s_behavior")))
+        val reader = Prefs.readerDevice(this)
+        add(tagged(ui.settingRow(t("wz_dev"), t(if (reader) "dev_phone" else "dev_tv")) {
+            choose(t("wz_dev_q"), listOf(t("dev_tv"), t("dev_phone")), if (reader) 1 else 0) { i -> setReader(i == 1); render(true) }
+        }, "device"), 8)
         add(tagged(ui.settingRow(t("s_test"), onOff(Prefs.testChannel(this))) {
             Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
-        }, "testch"), 0)
-        add(ui.text(t("s_test_desc"), 14f, Theme.MUTED), 6)
+        }, "testch"), 8)
+        // telefon, na kterém běží celá aplikace: cesta zpět k pomocníkovi pro přihlášení
+        if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 8)
+
+        // povolení pruhu potřebuje jen Android TV (u LG/Samsungu ukazuje titulky televize)
+        if (type == TvType.ANDROID) {
+            content.addView(ui.section(t("s_perm")))
+            val a11yOn = TitulkyAccessibility.instance != null
+            add(tagged(ui.settingRow(t("s_a11y"), onOff(a11yOn), if (a11yOn) Theme.OK else Theme.WARN) {
+                openAccessibility()
+            }, "a11y"), 0)
+            val ovOn = Settings.canDrawOverlays(this)
+            add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
+                openOverlaySettings()
+            }, "overlay"), 8)
+        }
+        if (SHOW_LICENSE && Prefs.license(this).canRun) { content.addView(ui.section(t("m_license"))); license() }
+    }
+
+    /** Čtení a překlad: kvalita čtení (nad tím, co dělá [translate]). */
+    private fun settingsRead() {
         val q = Prefs.readQuality(this)
         val qKeys = listOf("auto", "std", "high")
         add(tagged(ui.settingRow(t("s_quality"), t("q_$q")) {
@@ -1311,29 +1379,15 @@ class MainActivity : Activity() {
                 if (TranslatorService.running) { stopService(Intent(this, TranslatorService::class.java)); toast(t("q_restart")) }
                 render(true)
             }
-        }, "quality"), 8)
-        add(ui.text(t("q_desc"), 14f, Theme.MUTED), 6)
+        }, "quality"), 0)
+    }
 
-        content.addView(ui.section(t("s_perm")))
-        val a11yOn = TitulkyAccessibility.instance != null
-        add(tagged(ui.settingRow(t("s_a11y"), onOff(a11yOn), if (a11yOn) Theme.OK else Theme.WARN) {
-            openAccessibility()
-        }, "a11y"), 0)
-        val ovOn = Settings.canDrawOverlays(this)
-        add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
-            openOverlaySettings()
-        }, "overlay"), 8)
-
-        content.addView(ui.section(t("s_diag")))
+    /** Ladění a hlášení: diagnostický režim a hlášení o stavu (k vyfocení). */
+    private fun settingsDiag() {
         add(tagged(ui.settingRow(t("s_debug"), onOff(Prefs.debug(this))) {
             Prefs.setDebug(this, !Prefs.debug(this)); applyToService(); render(true)
         }, "debug"), 0)
         add(tagged(ui.button(t("rep_btn")) { makeReport() }, "sreport"), 8)
-
-        if (lic.canRun) { content.addView(ui.section(t("m_license"))); license() }
-
-        content.addView(ui.section(t("m_translate")))
-        translate()
     }
 
     /**
@@ -1453,6 +1507,15 @@ class MainActivity : Activity() {
         }
         content.addView(ui.section(t("inst_title")))
         add(ui.card().apply { addView(ui.text(t("inst_text"), 15f, Theme.MUTED)) }, 0)
+        // podrobný popis voleb z Nastavení (tam jsou jen názvy)
+        content.addView(ui.section(t("help_settings")))
+        val c3 = ui.card()
+        listOf("s_test" to "s_test_desc", "s_quality" to "q_desc", "t_game" to "t_game_desc",
+            "t_dict" to "t_dict_desc", "t_mode" to "t_offline_desc", "dl_toggle" to "dl_desc").forEachIndexed { i, (k, d) ->
+            c3.addView(ui.text(t(k), 16f, Theme.TEXT, bold = true), ui.lp(top = if (i == 0) 0 else 14))
+            c3.addView(ui.text(t(d), 15f, Theme.MUTED), ui.lp(top = 4))
+        }
+        add(c3, 0)
         add(tagged(ui.button(t("wz_again")) { wizard = 0; render() }, "wagain"), 16)
         add(tagged(ui.button(t("rep_btn")) { makeReport() }, "report"), 8)
         add(ui.text("PlayLingo · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 24)
@@ -1712,6 +1775,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.79"
-    const val VERSION_CODE = 79
+    const val VERSION = "verze 0.80"
+    const val VERSION_CODE = 80
 }

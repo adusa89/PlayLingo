@@ -36,7 +36,7 @@ Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nah
    PlayLingo → Zapnout.
 6. **Připojení konzole:** spáruj PlayStation – viz další bod (Xbox: bod 7b).
 
-Každou volbu jde později změnit v **Nastavení** – poslední položka menu s ozubeným kolem (⚙).
+Každou volbu jde později změnit v **Nastavení** – ozubené kolo (⚙), které je vidět pořád (v telefonu vpravo nahoře, na televizi dole v levém sloupci). Nastavení má záložky Obecné, Čtení a překlad, Ladění a hlášení a Experimentální; co která volba dělá, je v Nápovědě v části „Volby v Nastavení“.
 Tam je i zkušební doba a odemykací kód (část Licence), povolení, jazyk aplikace, zkušební verze
 a hlášení chyby. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:
 PlayStation nebo Xbox), Titulky a Nápověda.
@@ -112,12 +112,12 @@ a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televiz
 - **Nejde spárovat** – číslo z PS5 platí jen pár minut, vyžádej si nové. Zkontroluj adresu a účet.
 - **„PlayStation neodpovídá“** – je konzole zapnutá (ne vypnutá ze zásuvky) a ve stejné síti?
 - **Účet na PS5 má přihlašovací kód** – zadej ho na stránce PlayStation (4 číslice).
-- **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.5, nebo ⚙ Nastavení → Povolení) a vyzkoušej bod 6.
+- **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.5, nebo ⚙ Nastavení → Obecné → Povolení) a vyzkoušej bod 6.
 - **Nic se nečte** – zapni ⚙ Nastavení → Ladění a hlášení → Diagnostický režim; uvidíš, co aplikace čte.
 - **Překlad běží, ale titulky nenaskakují** – podívej se na stránku Domů na řádek pod stavem překladu. Ukazuje, jak daleko to došlo: jestli se aplikace s PlayStationem spojila a jestli z něj opravdu přichází obraz. Když hlásí „Spojeno s PlayStationem, ale … nepřišel žádný obraz“, aplikace spojení po chvíli sama obnoví; když to trvá dlouho, překlad zastav, zkontroluj Wi-Fi a spusť ho znovu.
 - **Aplikace minule spadla** – po dalším spuštění to napíše na stránce Domů. Kdyby se to opakovalo, pošli hlášení (další bod).
 - **Hlášení chyby**: Nápověda (nebo ⚙ Nastavení → Ladění a hlášení) → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení. Tlačítkem **Kopírovat** ho dáš do schránky, **Sdílet** ho pošle jako soubor (e-mailem, do chatu…). Máš-li televizi LG nebo Samsung, je v hlášení i oddíl Televize – co se dělo v aplikaci v televizi.
-- **Záznam pro vývojáře v domácí síti**: ⚙ Nastavení → úplně dole Experimentální → „Zpřístupnit záznam v domácí síti“ → ZAP. Pod řádkem se ukáže adresa (např. `http://192.168.1.23:8789/zaznam?k=ab3k7m`), přes kterou si vývojář na počítači ve stejné síti stáhne celé hlášení (bez hesel, klíčů a čísla účtu). Po 2 hodinách se to samo vypne; jde to vypnout i hned.
+- **Záznam pro vývojáře v domácí síti**: ⚙ Nastavení → záložka Experimentální → „Zpřístupnit záznam v domácí síti“ → ZAP. Pod řádkem se ukáže adresa (např. `http://192.168.1.23:8789/zaznam?k=ab3k7m`), přes kterou si vývojář na počítači ve stejné síti stáhne celé hlášení (bez hesel, klíčů a čísla účtu). Po 2 hodinách se to samo vypne; jde to vypnout i hned.
 
 ## 7b. Xbox (Series X|S / One)
 PlayLingo umí číst titulky i z Xboxu. Hra jde do televize dál kabelem HDMI; PlayLingo si z Xboxu
@@ -196,7 +196,7 @@ tě provede:
 Podrobnosti a důvody jsou v `tizen/CTI-ME.md`.
 
 ## 9. Pokus: lepší překlad přes internet (DeepL)
-Zatím jen pro vyzkoušení a **normálně vypnutý**. Najdeš ho úplně dole v Nastavení (⚙), v části
+Zatím jen pro vyzkoušení a **normálně vypnutý**. Najdeš ho v Nastavení (⚙) na záložce
 **Experimentální**. Offline překlad se ukáže hned jako vždy; když DeepL do 1,5 s pošle jiný
 (lepší) překlad, text v pruhu se potichu vymění. Když DeepL nejde (internet, vyčerpaný limit,
 špatný klíč), překládá se dál offline a důvod je vidět v té části Nastavení.
@@ -210,6 +210,8 @@ Jak klíč získat (zdarma, bez platební karty):
 3. Potvrď e-mail odkazem, který ti DeepL pošle.
 4. Po přihlášení jsi na úvodní stránce účtu („Welcome to DeepL!“). V rámečku s ukázkou je
    tlačítko **Copy key** – klikni na něj. Klíč končí na `:fx`.
+   Na mobilu se stránka účtu snadno „rozutíká“ – otevři rovnou **https://www.deepl.com/your-account/keys**
+   (v aplikaci tlačítko **Otevřít stránku s klíčem**), tam je u klíče tlačítko pro zkopírování.
 5. V PlayLingu: ⚙ Nastavení → Experimentální → vlož klíč do políčka a dej **Uložit a ověřit klíč**.
    Na televizi je pohodlnější **Vložit klíč z telefonu**: naskenuj čtvereček, na stránce v telefonu
    je stejný postup s tlačítkem Otevřít DeepL, klíč vložíš a pošleš do televize.

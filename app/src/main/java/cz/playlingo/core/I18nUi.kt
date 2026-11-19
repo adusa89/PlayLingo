@@ -23,10 +23,18 @@ internal val UI_S: Map<String, Pair<String, String>> = mapOf(
     "w_install" to ("Nahrát do televize" to "Nahrať do televízora"),
     "s_setup" to ("Konzole a televize" to "Konzola a televízor"),
     "s_diag" to ("Ladění a hlášení" to "Ladenie a hlásenia"),
+    "st_general" to ("Obecné" to "Všeobecné"),
+    "st_read" to ("Čtení a překlad" to "Čítanie a preklad"),
+    "st_more" to ("Co která volba dělá, najdeš v Nápovědě." to "Čo ktorá voľba robí, nájdeš v Pomocníkovi."),
+    "help_settings" to ("Volby v Nastavení" to "Voľby v Nastaveniach"),
 )
 
 internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "st_general" to "General",
+        "st_read" to "Reading & translation",
+        "st_more" to "What each option does is explained in Help.",
+        "help_settings" to "Options in Settings",
         "wz_dev" to "Device",
         "wz_tv" to "TV",
         "wz_intro" to "PlayLingo translates English subtitles in games into your language. Setup takes a few minutes and you can change every choice later in Settings (⚙).",
@@ -46,6 +54,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugging and reports",
     ),
     Lang.PL to mapOf(
+        "st_general" to "Ogólne",
+        "st_read" to "Odczyt i tłumaczenie",
+        "st_more" to "Co robi każda opcja, znajdziesz w Pomocy.",
+        "help_settings" to "Opcje w Ustawieniach",
         "wz_dev" to "Urządzenie",
         "wz_tv" to "Telewizor",
         "wz_intro" to "PlayLingo tłumaczy angielskie napisy w grach na twój język. Konfiguracja zajmie kilka minut, a każdy wybór możesz później zmienić w Ustawieniach (⚙).",
@@ -65,6 +77,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugowanie i zgłoszenia",
     ),
     Lang.DE to mapOf(
+        "st_general" to "Allgemein",
+        "st_read" to "Lesen & Übersetzen",
+        "st_more" to "Was die einzelnen Optionen tun, steht in der Hilfe.",
+        "help_settings" to "Optionen in den Einstellungen",
         "wz_dev" to "Gerät",
         "wz_tv" to "Fernseher",
         "wz_intro" to "PlayLingo übersetzt englische Untertitel in Spielen in deine Sprache. Die Einrichtung dauert ein paar Minuten, und jede Auswahl kannst du später in den Einstellungen (⚙) ändern.",
@@ -84,6 +100,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Fehlersuche und Berichte",
     ),
     Lang.HU to mapOf(
+        "st_general" to "Általános",
+        "st_read" to "Olvasás és fordítás",
+        "st_more" to "Hogy melyik beállítás mit csinál, a Súgóban olvashatod.",
+        "help_settings" to "A Beállítások lehetőségei",
         "wz_dev" to "Eszköz",
         "wz_tv" to "Tévé",
         "wz_intro" to "A PlayLingo a játékok angol feliratait a te nyelvedre fordítja. A beállítás néhány percig tart, és minden választást később módosíthatsz a Beállításokban (⚙).",
@@ -103,6 +123,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Hibakeresés és jelentések",
     ),
     Lang.UK to mapOf(
+        "st_general" to "Загальні",
+        "st_read" to "Читання й переклад",
+        "st_more" to "Що робить кожен параметр, знайдеш у Довідці.",
+        "help_settings" to "Параметри в Налаштуваннях",
         "wz_dev" to "Пристрій",
         "wz_tv" to "Телевізор",
         "wz_intro" to "PlayLingo перекладає англійські субтитри в іграх твоєю мовою. Налаштування займе кілька хвилин, а кожен вибір можна згодом змінити в Налаштуваннях (⚙).",
@@ -122,6 +146,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Налагодження і звіти",
     ),
     Lang.ES to mapOf(
+        "st_general" to "General",
+        "st_read" to "Lectura y traducción",
+        "st_more" to "Qué hace cada opción lo encontrarás en Ayuda.",
+        "help_settings" to "Opciones de Ajustes",
         "wz_dev" to "Dispositivo",
         "wz_tv" to "Televisor",
         "wz_intro" to "PlayLingo traduce los subtítulos en inglés de los juegos a tu idioma. La configuración lleva unos minutos y cada opción se puede cambiar después en Ajustes (⚙).",
@@ -141,6 +169,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Depuración e informes",
     ),
     Lang.FR to mapOf(
+        "st_general" to "Général",
+        "st_read" to "Lecture et traduction",
+        "st_more" to "Ce que fait chaque option est expliqué dans l’Aide.",
+        "help_settings" to "Options des Réglages",
         "wz_dev" to "Appareil",
         "wz_tv" to "Téléviseur",
         "wz_intro" to "PlayLingo traduit les sous-titres anglais des jeux dans ta langue. La configuration prend quelques minutes et chaque choix peut être modifié plus tard dans les Réglages (⚙).",
@@ -160,6 +192,10 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Débogage et rapports",
     ),
     Lang.IT to mapOf(
+        "st_general" to "Generali",
+        "st_read" to "Lettura e traduzione",
+        "st_more" to "Cosa fa ogni opzione lo trovi nella Guida.",
+        "help_settings" to "Opzioni delle Impostazioni",
         "wz_dev" to "Dispositivo",
         "wz_tv" to "Televisore",
         "wz_intro" to "PlayLingo traduce i sottotitoli inglesi dei giochi nella tua lingua. La configurazione richiede pochi minuti e ogni scelta si può cambiare più tardi in Impostazioni (⚙).",

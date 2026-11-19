@@ -36,6 +36,8 @@ class DeeplSection(
     private var msg: String? = null
     private var msgColor = Theme.MUTED
     private var page: LoginServer? = null
+    /** Uložený a funkční klíč je schovaný; „Změnit klíč“ ukáže zadávání znovu. */
+    private var changing = false
     private val main = Handler(Looper.getMainLooper())
 
     private fun t(k: String) = a.tx(k)
@@ -51,15 +53,16 @@ class DeeplSection(
             else { DeeplKey.setEnabled(a, !on); applyToService() }
             rerender()
         }.apply { tag = "deepl" }, 0)
-        add(ui.text(t("dl_desc"), 14f, Theme.MUTED), 6)
         add(ui.text(t("dl_privacy"), 14f, Theme.WARN), 6)
 
         // klíč: uložený (jen začátek a konec) a výsledek posledního ověření
         val key = if (has) DeeplKey.get(a) else null
         add(ui.text(if (key != null) t("dl_key_saved").replace("%s", Deepl.masked(key)) else t("dl_key_none"), 15f, Theme.TEXT), 10)
+        var shown: String? = null
         if (has) {
             val p = DeeplKey.lastProblem(a)
             val u = DeeplKey.lastUsage(a)
+            shown = if (p != null) problem(p) else u?.let { usage(it) }
             if (p != null) add(ui.text(problem(p), 14f, if (p == Deepl.Problem.BAD_KEY) Theme.BAD else Theme.WARN), 4)
             else if (u != null) add(ui.text(usage(u), 14f, Theme.OK), 4)
         }
@@ -78,7 +81,8 @@ class DeeplSection(
             .replace("%1\$s", s.requests.toString()).replace("%2\$s", s.avgMs.toString())
             .replace("%3\$s", s.improved.toString()).replace("%4\$s", s.late.toString())
             .replace("%5\$s", s.same.toString()).replace("%6\$s", s.chars.toString()), 14f, Theme.MUTED), 6)
-        msg?.let { add(ui.text(it, 15f, msgColor), 8) }
+        // výsledek ověření, jen když neříká totéž co řádek nad ním
+        msg?.takeIf { it != shown }?.let { add(ui.text(it, 15f, msgColor), 8) }
 
         val url = pageUrl()
         if (url != null) {
@@ -86,6 +90,17 @@ class DeeplSection(
             add(qrRow(url, t("dl_qr_text")), 10)
             add(ui.text(url, 14f, Theme.MUTED), 6)
             add(ui.button(t("dl_qr_close")) { stopPage(); rerender() }.apply { tag = "dlqrclose" }, 10)
+            return
+        }
+        // funkční uložený klíč: zadávání schované, jen Změnit / Ověřit / Odebrat
+        if (key != null && DeeplKey.lastProblem(a) == null && !changing) {
+            val row0 = row()
+            row0.addView(ui.button(t("dl_change")) { changing = true; rerender() }.apply { tag = "dlchange" })
+            row0.addView(ui.button(t("dl_key_check")) { if (!busy) verify(key, fromField = false) }.apply { tag = "dlcheck" }, gap())
+            row0.addView(ui.button(t("dl_key_remove")) {
+                DeeplKey.remove(a); msg = null; applyToService(); rerender()
+            }.apply { tag = "dlremove" }, gap())
+            add(row0, 10)
             return
         }
         // postup, jak klíč získat, se čtverečkem na stránku DeepL (telefonem se otevře snáz)
@@ -99,6 +114,13 @@ class DeeplSection(
                 try { a.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(Deepl.SIGNUP_URL))) }
                 catch (_: Exception) { note(t("dl_qr_nolan"), Theme.WARN); rerender() }
             }.apply { tag = "dlopen" }, 8)
+            // kdo už účet má: rovnou stránka s klíči
+            add(ui.text(t("dl_keys_hint"), 15f, Theme.TEXT), 14)
+            add(ui.text(Deepl.KEYS_URL, 14f, Theme.MUTED), 4)
+            add(ui.button(t("dl_keys_open")) {
+                try { a.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(Deepl.KEYS_URL))) }
+                catch (_: Exception) { note(t("dl_qr_nolan"), Theme.WARN); rerender() }
+            }.apply { tag = "dlkeys" }, 8)
         }
         add(EditText(a).apply {
             setText(draft)
@@ -160,7 +182,7 @@ class DeeplSection(
             val text = store(key, r)
             a.runOnUiThread {
                 busy = false
-                if (r.problem != Deepl.Problem.BAD_KEY && fromField) draft = ""
+                if (r.problem != Deepl.Problem.BAD_KEY && fromField) { draft = ""; changing = false }
                 note(text, if (r.problem == null) Theme.OK else if (r.problem == Deepl.Problem.BAD_KEY) Theme.BAD else Theme.WARN)
                 applyToService()
                 if (!a.isFinishing) rerender()

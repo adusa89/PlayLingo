@@ -412,8 +412,12 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 ## Obrazovky a průvodce
 
 - **Menu** (`Section` v MainActivity, v tomto pořadí): Domů, Konzole (nadpis stránky PlayStation /
-  Xbox), Titulky (vzhled, jazyk překladu, oblasti), Nápověda a jako poslední **⚙ Nastavení**. Samostatná
-  stránka Licence není – je součástí Nastavení. Historie se otevírá z Nastavení.
+  Xbox), Titulky (vzhled, jazyk překladu, oblasti), Nápověda a jako poslední **⚙ Nastavení** – to není
+  v řadě menu, ale ozubené kolo vidět pořád (`gear`): v telefonu vpravo nahoře v liště, na televizi dole
+  v levém sloupci (pořád poslední položka při procházení šipkou dolů – zkouška `07_menu_4`). Historie se
+  otevírá z Nastavení (záložka Čtení a překlad).
+- **Licence a platby jsou zatím skryté** (`SHOW_LICENSE = false` v MainActivity, odkryjí se při vydání):
+  ukáže se jen, když zkušební doba skončila (`!canRun`), jinak by hráč nevěděl, proč aplikace nejde.
 - **Průvodce prvním spuštěním** (`wizardSteps`, indexy `W_…`): Zařízení (Android TV/box, nebo
   telefon/tablet jako čtečka pro LG/Samsung, `Prefs.readerDevice`; výchozí podle
   `NetInfo.isHandheld`; samo nic nepřepíná – pomocník v telefonu se dál řídí `Prefs.forceTv`) →
@@ -426,10 +430,12 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   zvolené televize (`htvinstall`), jakmile se televize jednou ohlásila (do té doby je v upozornění).
   Jednorázové volby na Domů nepatří.
 - **Nápověda** ukazuje jen část pro zvolený typ televize (LG, Samsung, nebo povolení přes počítač u Android TV).
-- **Nastavení (⚙)**: Konzole a televize (konzole, typ televize + nahrání, zařízení, jazyk aplikace),
-  Chování (zkušební verze, kvalita čtení), Povolení, Ladění a hlášení (diagnostický režim, hlášení),
-  Licence (po skončení zkušební doby nahoře), Překlad (hra, slovník, statistika, historie) a úplně
-  dole Experimentální (DeepL).
+- **Nastavení (⚙)** má záložky (`SettingsTab`) a ukazuje jen obsah vybrané: **Obecné** (konzole, typ
+  televize + nahrání, jazyk aplikace, zařízení, zkušební verze; povolení pruhu jen u Android TV),
+  **Čtení a překlad** (kvalita čtení, překlad, hra, slovník, statistika, historie), **Ladění a hlášení**
+  (diagnostický režim, hlášení), **Experimentální** (DeepL, záznam v síti). U voleb jsou jen názvy;
+  dlouhé popisy jsou v Nápovědě v části „Volby v Nastavení“ (`help_settings`). Nová volba = krátký název
+  v Nastavení, popis do Nápovědy.
 
 ## Na co zkouška spoléhá (neměnit jen tak)
 
