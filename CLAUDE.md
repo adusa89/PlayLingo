@@ -62,6 +62,10 @@ pomocník, celá aplikace v telefonu v šesti velikostech displeje a písma (mal
 velký, na šířku, tablet) a překlad ukázkové hry. Výsledky a snímky jsou ve větvích
 `test-results-phone30` a `-phone34` (snímky `p1_…` pomocník, `p2_<velikost>_<stránka>` celá
 aplikace). Zatím vydání nezdržuje. Po každé změně rozložení si ty snímky prohlédni.
+Přihlašovací stránka Sony uvnitř pomocníka se zkouší jen na Androidu 11: emulátor Androidu 14
+při jejím vykreslení spadl celý (dvakrát ze dvou běhů). Když emulátor během zkoušky přestane
+odpovídat, je v `result.txt` řádek `EMULATOR SPADL` s částí, před kterou se to stalo – to je
+chyba emulátoru, ne aplikace, a stačí běh pustit znovu.
 
 Přirozenost překladu (od 0.69): `core/Natural.kt` sjednocuje v češtině oslovení na tykání
 (překladač střídá tykání a vykání) a `IDIOMS` v `core/OfflinePrep.kt` nahrazuje obraty, které

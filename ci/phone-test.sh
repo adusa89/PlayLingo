@@ -17,12 +17,24 @@ key() { adb shell input keyevent "$1"; sleep 1; }
 # velikost displeje, hustota a velikost písma: "šířka x výška  hustota  písmo  název"
 MODES=("720x1280 320 1.0 maly" "1080x2400 420 1.0 bezny" "1080x2400 420 1.3 velke_pismo" "1440x3120 560 1.0 velky" "2400x1080 420 1.0 nasirku" "1600x2560 320 1.0 tablet")
 mode() { adb shell wm size "$1"; adb shell wm density "$2"; adb shell settings put system font_scale "$3"; sleep 3; }
+# Emulátor může během zkoušky spadnout celý (ne aplikace). Bez téhle kontroly by zbytek zkoušky
+# posílal příkazy do prázdna a výsledkem by byly samé nuly, ze kterých se nedá poznat, co se stalo.
+# Volá se na začátku každé části: když emulátor neodpovídá, zkouška hned skončí s jasnou zprávou.
+zije() {
+  [ "$(adb get-state 2>/dev/null)" = "device" ] && return 0
+  { echo "prelozenych_titulku=0 ruznych_titulku=0/15 pady=0 dekodovano_snimku=0 pomocnik=0 odkaz_z_televize=0 cela_aplikace=0"
+    echo "VYSLEDEK=CHYBA"
+    echo "EMULATOR SPADL: přestal odpovídat před částí „$1“ (chyba emulátoru, ne aplikace)"; } > $OUT/result.txt
+  cat $OUT/result.txt
+  exit 0
+}
 
 adb install -r "$APK" || { echo "INSTALL FAILED" > $OUT/result.txt; exit 1; }
 { adb shell getprop ro.build.version.release; adb shell getprop ro.product.model; adb shell wm size; adb shell wm density
   echo "mobilni_sit=$(adb shell pm list features | grep -c telephony)"; } > $OUT/device.txt
 adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null || true
 adb logcat -c
+SDK=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 
 # 1) první spuštění: v telefonu se má otevřít pomocník, ne aplikace pro televizi
 adb shell am start -n $PKG/.MainActivity
@@ -31,11 +43,17 @@ sleep 10; shot p01_prvni_spusteni
 adb shell "am start -n $PKG/.PhoneHelperActivity -a android.intent.action.VIEW -d '$LINK'"
 sleep 4; shot p02_odkaz_z_televize
 # 3) přihlašovací stránka Sony uvnitř pomocníka
-adb shell "am start -n $PKG/.PhoneHelperActivity -a android.intent.action.VIEW -d '$LINK' --ez helperlogin true"
-sleep 25; shot p03_prihlaseni_sony
-key 4; key 4; key 4
+# Jen do Androidu 13: emulátor Androidu 14 (na GitHubu bez grafické karty) při vykreslení té stránky
+# spadne celý – dvakrát ze dvou běhů, vždy na snímku p03. Přihlášení u Sony emulátor stejně
+# neověří (to umí jen skutečný telefon); na Androidu 11 se krok zkouší dál.
+if [ "${SDK:-0}" -lt 34 ]; then
+  adb shell "am start -n $PKG/.PhoneHelperActivity -a android.intent.action.VIEW -d '$LINK' --ez helperlogin true"
+  sleep 25; shot p03_prihlaseni_sony
+  key 4; key 4; key 4
+fi
 
 # 4) pomocník v různých velikostech displeje a písma
+zije "pomocník v různých velikostech"
 for m in "${MODES[@]}"; do
   set -- $m
   adb shell am force-stop $PKG
@@ -46,6 +64,7 @@ done
 mode 1080x2400 420 1.0
 
 # 5) celá aplikace v telefonu (režim pro televizi LG): průvodce a všechny stránky v týchž velikostech
+zije "celá aplikace v telefonu"
 adb shell am force-stop $PKG
 adb shell am start -n $PKG/.PhoneHelperActivity --ez fullapp true
 sleep 8; shot p20_cela_aplikace_pruvodce
@@ -66,6 +85,7 @@ adb shell am force-stop $PKG
 adb shell wm size reset; adb shell wm density reset; adb shell settings put system font_scale 1.0; sleep 3
 
 # 6) překlad v telefonu: ukázková hra jde do aplikace jako video, má se přečíst a přeložit
+zije "překlad ukázkové hry"
 adb shell appops set $PKG SYSTEM_ALERT_WINDOW allow
 adb shell settings put secure enabled_accessibility_services $PKG/$PKG.TitulkyAccessibility
 adb shell settings put secure accessibility_enabled 1
@@ -79,6 +99,7 @@ done
 key 4; sleep 2
 adb shell am force-stop $PKG
 
+zije "vyhodnocení"
 adb logcat -d -v time > $OUT/logcat_full.txt
 grep -E "TP_TEST|TestPreklad|AndroidRuntime|FATAL|libchiaki|DEBUG   :" $OUT/logcat_full.txt > $OUT/log.txt
 grep -n -B8 -A70 -E "Fatal signal|Process: cz.playlingo" $OUT/logcat_full.txt | head -400 > $OUT/crash.txt || true
