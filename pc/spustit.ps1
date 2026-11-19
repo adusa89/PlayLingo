@@ -14,7 +14,9 @@ $java = Get-ChildItem "$slozka\jdk-17*", 'C:\Program Files\Eclipse Adoptium\jdk-
     Where-Object { Test-Path "$($_.FullName)\bin\java.exe" } | Select-Object -First 1
 if (-not $java) { throw "Chybí Java 17 – spusť pc\priprava.ps1" }
 $env:JAVA_HOME = $java.FullName
-$env:JAVA_OPTS ="-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8"
+# Java 17 se řídí sun.stdout.encoding (stdout.encoding zná až Java 19); bez toho by
+# v okně s českou znakovou sadou byla rozbitá diakritika.
+$env:JAVA_OPTS = "-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
 $parametry = @("--python", "$slozka\venv\Scripts\python.exe", "--pomocnik", "$PSScriptRoot\cteni.py",
     "--model", $model.FullName, "--jazyk", $Jazyk)

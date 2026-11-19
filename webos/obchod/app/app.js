@@ -26,7 +26,8 @@
       tl_napoveda: 'Jak to funguje',
       tl_jazyk: 'Jazyk: čeština',
       tl_zpet: 'Zpět',
-      ovladani: 'Šipkami vyberte, potvrďte tlačítkem OK. Tlačítko Zpět vrátí tuto obrazovku.',
+      tl_konec: 'Ukončit',
+      ovladani: 'Šipkami vyberte, potvrďte tlačítkem OK. Tlačítko Zpět vrátí tuto obrazovku, na ní aplikaci ukončí.',
       hledam: 'Hledám PlayLingo v domácí síti… V aplikaci PlayLingo na Androidu zapněte ' +
         'Nastavení → Posílat titulky do televize LG.',
       pripojeno: 'PlayLingo je připojeno. Překlad se ukáže, jakmile ve hře někdo promluví.',
@@ -50,7 +51,8 @@
       tl_napoveda: 'How it works',
       tl_jazyk: 'Language: English',
       tl_zpet: 'Back',
-      ovladani: 'Select with the arrow keys and press OK. The Back button returns to this screen.',
+      tl_konec: 'Exit',
+      ovladani: 'Select with the arrow keys and press OK. The Back button returns to this screen and exits the app from here.',
       hledam: 'Looking for PlayLingo in your home network… In PlayLingo on Android, turn on ' +
         'Settings → Send subtitles to LG TV.',
       pripojeno: 'PlayLingo is connected. The translation appears as soon as someone speaks in the game.',
@@ -395,16 +397,25 @@
       pamet('jazyk', jazyk);
     }
     else if (akce === 'ukazka') { spustUkazku(); }
+    else if (akce === 'konec') { ukonci(); }
     else { prejdi('napoveda'); }
   }
 
-  // Domů jsou dvě řady: čtyři vstupy (0–3) a pod nimi Ukázka (4), Jak to funguje (5) a Jazyk (6).
+  // Úplné ukončení. Samotné platformBack aplikaci jen schová do pozadí, kde by dál hledala
+  // čtečku v síti; window.close() ji zavře.
+  function ukonci() {
+    try { window.close(); } catch (e) { /* jinak aspoň do pozadí */ }
+    if (window.PalmSystem && window.PalmSystem.platformBack) { window.PalmSystem.platformBack(); }
+  }
+
+  // Domů jsou dvě řady: čtyři vstupy (0–3) a pod nimi Ukázka (4), Jak to funguje (5), Jazyk (6)
+  // a Ukončit (7).
   function sipka(klavesa) {
     var v = vybrane;
     if (klavesa === 37) { if (v !== 0 && v !== 4) { oznac(v - 1); } }
-    else if (klavesa === 39) { if (v !== 3 && v !== 6) { oznac(v + 1); } }
-    else if (klavesa === 40) { if (v < 4) { oznac([4, 5, 5, 6][v]); } }
-    else if (klavesa === 38) { if (v >= 4) { oznac([0, 1, 3][v - 4]); } }
+    else if (klavesa === 39) { if (v !== 3 && v !== 7) { oznac(v + 1); } }
+    else if (klavesa === 40) { if (v < 4) { oznac(v + 4); } }
+    else if (klavesa === 38) { if (v >= 4) { oznac(v - 4); } }
   }
 
   document.addEventListener('keydown', function (udalost) {
@@ -417,10 +428,7 @@
     }
     if (klavesa >= 37 && klavesa <= 40) { sipka(klavesa); udalost.preventDefault(); }
     else if (klavesa === 13) { potvrd(vybrane); }
-    else if (zpet) {
-      if (window.PalmSystem && window.PalmSystem.platformBack) { window.PalmSystem.platformBack(); }
-      else { window.close(); }
-    }
+    else if (zpet) { ukonci(); udalost.preventDefault(); }
   });
 
   // Ukazovátko ovladače Magic Remote.
