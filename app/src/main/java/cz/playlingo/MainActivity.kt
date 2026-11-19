@@ -701,7 +701,8 @@ class MainActivity : Activity() {
                 // adresa i slovy – pro přihlášení z počítače (stránka funguje v každém prohlížeči
                 // ve stejné síti) a pro telefon, kterému se čtvereček nedaří přečíst
                 if (pageUrl != null) {
-                    val s = android.text.SpannableStringBuilder(t("pa_pc"))
+                    // adresa na vlastním řádku, aby se nelámala uprostřed
+                    val s = android.text.SpannableStringBuilder(t("pa_pc").trimEnd()).append('\n')
                     val from = s.length
                     s.append(pageUrl)
                     s.setSpan(android.text.style.ForegroundColorSpan(Theme.TEXT), from, s.length, 0)
@@ -1461,6 +1462,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.71"
-    const val VERSION_CODE = 71
+    const val VERSION = "verze 0.72"
+    const val VERSION_CODE = 72
 }
