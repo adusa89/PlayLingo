@@ -81,6 +81,17 @@ class MainActivity : Activity() {
     private lateinit var menu: LinearLayout
     /** Místo pro ozubené kolo (Nastavení): v telefonu vpravo nahoře, na televizi dole v levém sloupci. */
     private lateinit var gear: LinearLayout
+    /** Telefon: vodorovně posuvná řada záložek menu (na televizi null). */
+    private var menuScroll: HorizontalScrollView? = null
+
+    /** Posune vodorovnou řadu záložek tak, aby vybraná byla celá vidět (doprostřed, když to jde). */
+    private fun scrollTabIntoView(scroll: HorizontalScrollView?, tab: View?, smooth: Boolean = true) {
+        if (scroll == null || tab == null) return
+        scroll.post {
+            val x = maxOf(0, tab.left - (scroll.width - tab.width) / 2)
+            if (smooth) scroll.smoothScrollTo(x, 0) else scroll.scrollTo(x, 0)
+        }
+    }
     private lateinit var content: LinearLayout
     private var section = Section.HOME
     private var demo: SubtitleOverlay? = null
@@ -332,7 +343,8 @@ class MainActivity : Activity() {
         logoRow.addView(gear)
         top.addView(logoRow)
         menu = ui.hbox()
-        top.addView(HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(menu) }, ui.lp(top = 8))
+        menuScroll = HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(menu) }
+        top.addView(menuScroll, ui.lp(top = 8))
         root.addView(top, ui.lp())
 
         val scroll = ScrollView(this).apply { isFillViewport = true }
@@ -352,6 +364,7 @@ class MainActivity : Activity() {
 
     private fun buildShell() {
         if (narrow) { buildNarrowShell(); return }
+        menuScroll = null
         val root = ui.hbox().apply {
             setBackgroundColor(Theme.BG)
             gravity = Gravity.TOP
@@ -424,6 +437,7 @@ class MainActivity : Activity() {
                 tag = "menu_${s.name}"
             }
             if (s == Section.SETTINGS) gear.addView(item, ui.lp()) else menu.addView(item, menuLp())
+            if (active && narrow) scrollTabIntoView(menuScroll, item)
         }
     }
 
@@ -1299,6 +1313,7 @@ class MainActivity : Activity() {
         if (!lic.canRun) { content.addView(ui.section(t("m_license"))); license() }
 
         val tabs = ui.hbox()
+        var activeTab: View? = null
         for (tab in SettingsTab.values()) {
             val active = tab == settingsTab
             tabs.addView(ui.text(t(tab.key), 16f, if (active) Theme.BG else Theme.TEXT, bold = true).apply {
@@ -1309,9 +1324,13 @@ class MainActivity : Activity() {
                 setPadding(ui.dp(18), ui.dp(9), ui.dp(18), ui.dp(9))
                 setOnClickListener { settingsTab = tab; render(keepFocus = true) }
                 tag = "stab_${tab.name}"
+                if (active) activeTab = this
             }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { rightMargin = ui.dp(8) })
         }
-        add(HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; clipChildren = false; clipToPadding = false; addView(tabs) }, 14)
+        val tabScroll = HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; clipChildren = false; clipToPadding = false; addView(tabs) }
+        add(tabScroll, 14)
+        // vybraná záložka celá na obrazovce (řada se překresluje, takže by jinak začínala vždy zleva)
+        scrollTabIntoView(tabScroll, activeTab, smooth = false)
 
         when (settingsTab) {
             SettingsTab.GENERAL -> settingsGeneral()
@@ -1790,6 +1809,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.83"
-    const val VERSION_CODE = 83
+    const val VERSION = "verze 0.84"
+    const val VERSION_CODE = 84
 }
