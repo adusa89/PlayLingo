@@ -54,14 +54,14 @@ internal val LG_S: Map<String, Pair<String, String>> = mapOf(
     "lg_dev_note" to ("PlayLingo režim nijak neprodlužuje – to jde jen v televizi v aplikaci Developer Mode (Extend). Kolik zbývá, se tu zjišťuje nejvýš jednou za hodinu." to "PlayLingo režim nijako nepredlžuje – to ide len v televízore v aplikácii Developer Mode (Extend). Koľko zostáva, sa tu zisťuje najviac raz za hodinu."),
     "lg_dev_check" to ("Zjistit znovu" to "Zistiť znova"),
     "lg_dev_fail" to ("Teď se nepodařilo zeptat LG – ukazuji poslední známý údaj." to "Teraz sa nepodarilo opýtať LG – ukazujem posledný známy údaj."),
-    "lg_help" to ("Na televizi LG běží PlayLingo jen jako obrazovka s pruhem; číst a překládat musí toto zařízení. Aplikaci pro televizi sem nahraješ tlačítkem níže (taky v Nastavení). Televize k tomu potřebuje vývojářský režim LG – ten po čase vyprší, pokud ho v televizi neprodloužíš (Developer Mode → Extend), a PlayLingo pak z televize zmizí." to "Na televízore LG beží PlayLingo len ako obrazovka s pruhom; čítať a prekladať musí toto zariadenie. Aplikáciu pre televízor sem nahráš tlačidlom nižšie (aj v Nastaveniach). Televízor na to potrebuje vývojársky režim LG – ten po čase vyprší, ak ho v televízore nepredĺžiš (Developer Mode → Extend), a PlayLingo potom z televízora zmizne."),
+    "lg_help" to ("Na televizi LG běží PlayLingo jen jako obrazovka s pruhem; číst a překládat musí toto zařízení. Aplikaci pro televizi sem nahraješ tlačítkem níže (taky na stránce Domů u typu televize LG). Televize k tomu potřebuje vývojářský režim LG – ten po čase vyprší, pokud ho v televizi neprodloužíš (Developer Mode → Extend), a PlayLingo pak z televize zmizí." to "Na televízore LG beží PlayLingo len ako obrazovka s pruhom; čítať a prekladať musí toto zariadenie. Aplikáciu pre televízor sem nahráš tlačidlom nižšie (aj na stránke Domov pri type televízora LG). Televízor na to potrebuje vývojársky režim LG – ten po čase vyprší, ak ho v televízore nepredĺžiš (Developer Mode → Extend), a PlayLingo potom z televízora zmizne."),
     "lg_manual_h" to ("Jiné cesty" to "Iné cesty"),
     "lg_manual" to ("Z počítače: nástrojem LG ares (ares-install) – postup je na github.com/adusa89/PlayLingo ve složce webos.\nZ obchodu LG: až bude PlayLingo v obchodě LG Content Store, půjde nainstalovat odtamtud i bez vývojářského režimu." to "Z počítača: nástrojom LG ares (ares-install) – postup je na github.com/adusa89/PlayLingo v priečinku webos.\nZ obchodu LG: keď bude PlayLingo v obchode LG Content Store, pôjde nainštalovať odtiaľ aj bez vývojárskeho režimu."),
 )
 
 internal val LG_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
-        "lg_help" to "On an LG TV, PlayLingo only works as a screen with the bar; this device does the reading and translating. Install the TV app with the button below (also in Settings). The TV needs LG Developer Mode – it expires after a while unless you extend it on the TV (Developer Mode → Extend), and then PlayLingo disappears from the TV.",
+        "lg_help" to "On an LG TV, PlayLingo only works as a screen with the bar; this device does the reading and translating. Install the TV app with the button below (also on the Home page with TV type LG). The TV needs LG Developer Mode – it expires after a while unless you extend it on the TV (Developer Mode → Extend), and then PlayLingo disappears from the TV.",
         "lg_open" to "Install PlayLingo on LG TV",
         "lg_title" to "PlayLingo on your LG TV",
         "lg_intro" to "Install the PlayLingo app on your LG TV from here – no computer needed. The TV needs LG Developer Mode turned on (it is free). This device must be in the same home network as the TV.",
@@ -114,7 +114,7 @@ internal val LG_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_manual" to "From a computer: with the LG tool ares (ares-install) – see github.com/adusa89/PlayLingo, folder webos.\nFrom the LG store: once PlayLingo is in LG Content Store, it can be installed from there without Developer Mode.",
     ),
     Lang.PL to mapOf(
-        "lg_help" to "Na telewizorze LG PlayLingo działa tylko jako ekran z paskiem; czyta i tłumaczy to urządzenie. Aplikację na telewizor zainstalujesz przyciskiem poniżej (także w Ustawieniach). Telewizor potrzebuje trybu deweloperskiego LG – po czasie wygasa, jeśli go nie przedłużysz na telewizorze (Developer Mode → Extend), i wtedy PlayLingo znika z telewizora.",
+        "lg_help" to "Na telewizorze LG PlayLingo działa tylko jako ekran z paskiem; czyta i tłumaczy to urządzenie. Aplikację na telewizor zainstalujesz przyciskiem poniżej (także na stronie głównej przy typie telewizora LG). Telewizor potrzebuje trybu deweloperskiego LG – po czasie wygasa, jeśli go nie przedłużysz na telewizorze (Developer Mode → Extend), i wtedy PlayLingo znika z telewizora.",
         "lg_open" to "Zainstaluj PlayLingo na telewizorze LG",
         "lg_title" to "PlayLingo na telewizor LG",
         "lg_intro" to "Stąd zainstalujesz aplikację PlayLingo na telewizorze LG – bez komputera. Telewizor potrzebuje włączonego trybu deweloperskiego LG (jest darmowy). To urządzenie musi być w tej samej sieci domowej co telewizor.",
@@ -167,7 +167,7 @@ internal val LG_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_manual" to "Z komputera: narzędziem LG ares (ares-install) – opis na github.com/adusa89/PlayLingo w folderze webos.\nZe sklepu LG: gdy PlayLingo będzie w LG Content Store, da się je zainstalować stamtąd bez trybu deweloperskiego.",
     ),
     Lang.DE to mapOf(
-        "lg_help" to "Auf einem LG-Fernseher ist PlayLingo nur der Bildschirm mit dem Balken; lesen und übersetzen muss dieses Gerät. Die Fernseher-App installierst du mit der Schaltfläche unten (auch in den Einstellungen). Der Fernseher braucht den LG-Entwicklermodus – er läuft nach einiger Zeit ab, wenn du ihn nicht am Fernseher verlängerst (Developer Mode → Extend), und dann verschwindet PlayLingo vom Fernseher.",
+        "lg_help" to "Auf einem LG-Fernseher ist PlayLingo nur der Bildschirm mit dem Balken; lesen und übersetzen muss dieses Gerät. Die Fernseher-App installierst du mit der Schaltfläche unten (auch auf der Startseite beim Fernsehertyp LG). Der Fernseher braucht den LG-Entwicklermodus – er läuft nach einiger Zeit ab, wenn du ihn nicht am Fernseher verlängerst (Developer Mode → Extend), und dann verschwindet PlayLingo vom Fernseher.",
         "lg_open" to "PlayLingo auf LG-Fernseher installieren",
         "lg_title" to "PlayLingo für deinen LG-Fernseher",
         "lg_intro" to "Von hier installierst du die App PlayLingo auf deinem LG-Fernseher – ganz ohne Computer. Der Fernseher braucht dafür den eingeschalteten LG-Entwicklermodus (kostenlos). Dieses Gerät muss im selben Heimnetz sein wie der Fernseher.",
@@ -220,7 +220,7 @@ internal val LG_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_manual" to "Vom Computer: mit dem LG-Werkzeug ares (ares-install) – Anleitung auf github.com/adusa89/PlayLingo im Ordner webos.\nAus dem LG-Store: sobald PlayLingo im LG Content Store ist, lässt es sich dort ohne Entwicklermodus installieren.",
     ),
     Lang.HU to mapOf(
-        "lg_help" to "LG tévén a PlayLingo csak képernyőként fut a sávval; olvasni és fordítani ennek az eszköznek kell. A tévés alkalmazást az alábbi gombbal telepítheted (a Beállításokban is). A tévének LG fejlesztői mód kell – ez egy idő után lejár, ha nem hosszabbítod meg a tévén (Developer Mode → Extend), és akkor a PlayLingo eltűnik a tévéről.",
+        "lg_help" to "LG tévén a PlayLingo csak képernyőként fut a sávval; olvasni és fordítani ennek az eszköznek kell. A tévés alkalmazást az alábbi gombbal telepítheted (a kezdőlapon is, LG tévétípusnál). A tévének LG fejlesztői mód kell – ez egy idő után lejár, ha nem hosszabbítod meg a tévén (Developer Mode → Extend), és akkor a PlayLingo eltűnik a tévéről.",
         "lg_open" to "PlayLingo telepítése LG tévére",
         "lg_title" to "PlayLingo az LG tévédre",
         "lg_intro" to "Innen telepítheted a PlayLingo alkalmazást az LG tévédre – számítógép nélkül. A tévén be kell kapcsolni az LG fejlesztői módot (ingyenes). Ennek az eszköznek ugyanazon az otthoni hálózaton kell lennie, mint a tévének.",
@@ -273,7 +273,7 @@ internal val LG_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_manual" to "Számítógépről: az LG ares eszközével (ares-install) – leírás: github.com/adusa89/PlayLingo, webos mappa.\nAz LG áruházból: ha a PlayLingo bekerül az LG Content Store-ba, onnan fejlesztői mód nélkül is telepíthető lesz.",
     ),
     Lang.UK to mapOf(
-        "lg_help" to "На телевізорі LG PlayLingo працює лише як екран зі смугою; читає й перекладає цей пристрій. Застосунок для телевізора встановиш кнопкою нижче (також у Налаштуваннях). Телевізору потрібен режим розробника LG – він згодом закінчується, якщо не подовжити його на телевізорі (Developer Mode → Extend), і тоді PlayLingo зникає з телевізора.",
+        "lg_help" to "На телевізорі LG PlayLingo працює лише як екран зі смугою; читає й перекладає цей пристрій. Застосунок для телевізора встановиш кнопкою нижче (також на головній сторінці для типу телевізора LG). Телевізору потрібен режим розробника LG – він згодом закінчується, якщо не подовжити його на телевізорі (Developer Mode → Extend), і тоді PlayLingo зникає з телевізора.",
         "lg_open" to "Встановити PlayLingo на телевізор LG",
         "lg_title" to "PlayLingo на телевізор LG",
         "lg_intro" to "Звідси ти встановиш застосунок PlayLingo на телевізор LG – без комп’ютера. Телевізору потрібен увімкнений режим розробника LG (безкоштовний). Цей пристрій має бути в тій самій домашній мережі, що й телевізор.",
@@ -326,7 +326,7 @@ internal val LG_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_manual" to "З комп’ютера: інструментом LG ares (ares-install) – опис на github.com/adusa89/PlayLingo у теці webos.\nЗ магазину LG: коли PlayLingo буде в LG Content Store, його можна буде встановити звідти без режиму розробника.",
     ),
     Lang.ES to mapOf(
-        "lg_help" to "En una tele LG, PlayLingo solo funciona como pantalla con la barra; leer y traducir lo hace este dispositivo. Instala la app de la tele con el botón de abajo (también en Ajustes). La tele necesita el modo desarrollador de LG: caduca con el tiempo si no lo amplías en la tele (Developer Mode → Extend), y entonces PlayLingo desaparece de la tele.",
+        "lg_help" to "En una tele LG, PlayLingo solo funciona como pantalla con la barra; leer y traducir lo hace este dispositivo. Instala la app de la tele con el botón de abajo (también en la página de inicio con el tipo de televisor LG). La tele necesita el modo desarrollador de LG: caduca con el tiempo si no lo amplías en la tele (Developer Mode → Extend), y entonces PlayLingo desaparece de la tele.",
         "lg_open" to "Instalar PlayLingo en la tele LG",
         "lg_title" to "PlayLingo en tu tele LG",
         "lg_intro" to "Desde aquí instalas la app PlayLingo en tu tele LG, sin ordenador. La tele necesita el modo desarrollador de LG activado (es gratis). Este dispositivo debe estar en la misma red doméstica que la tele.",
@@ -379,7 +379,7 @@ internal val LG_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_manual" to "Desde un ordenador: con la herramienta de LG ares (ares-install); instrucciones en github.com/adusa89/PlayLingo, carpeta webos.\nDesde la tienda LG: cuando PlayLingo esté en LG Content Store, se podrá instalar desde allí sin modo desarrollador.",
     ),
     Lang.FR to mapOf(
-        "lg_help" to "Sur une TV LG, PlayLingo n’est que l’écran avec la barre ; la lecture et la traduction se font sur cet appareil. Installe l’app de la TV avec le bouton ci-dessous (aussi dans Réglages). La TV a besoin du mode développeur LG : il expire au bout d’un moment si tu ne le prolonges pas sur la TV (Developer Mode → Extend), et PlayLingo disparaît alors de la TV.",
+        "lg_help" to "Sur une TV LG, PlayLingo n’est que l’écran avec la barre ; la lecture et la traduction se font sur cet appareil. Installe l’app de la TV avec le bouton ci-dessous (aussi sur la page d’accueil avec le type de téléviseur LG). La TV a besoin du mode développeur LG : il expire au bout d’un moment si tu ne le prolonges pas sur la TV (Developer Mode → Extend), et PlayLingo disparaît alors de la TV.",
         "lg_open" to "Installer PlayLingo sur la TV LG",
         "lg_title" to "PlayLingo sur ta TV LG",
         "lg_intro" to "D’ici, tu installes l’app PlayLingo sur ta TV LG, sans ordinateur. La TV doit avoir le mode développeur LG activé (gratuit). Cet appareil doit être sur le même réseau domestique que la TV.",
@@ -432,7 +432,7 @@ internal val LG_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_manual" to "Depuis un ordinateur : avec l’outil LG ares (ares-install), voir github.com/adusa89/PlayLingo, dossier webos.\nDepuis la boutique LG : quand PlayLingo sera dans LG Content Store, il pourra s’installer de là sans mode développeur.",
     ),
     Lang.IT to mapOf(
-        "lg_help" to "Su una TV LG, PlayLingo funziona solo come schermo con la barra; leggere e tradurre spetta a questo dispositivo. Installa l’app per la TV con il pulsante qui sotto (anche nelle Impostazioni). La TV ha bisogno della modalità sviluppatore LG: scade dopo un po’ se non la estendi sulla TV (Developer Mode → Extend), e allora PlayLingo sparisce dalla TV.",
+        "lg_help" to "Su una TV LG, PlayLingo funziona solo come schermo con la barra; leggere e tradurre spetta a questo dispositivo. Installa l’app per la TV con il pulsante qui sotto (anche nella pagina Home con il tipo di televisore LG). La TV ha bisogno della modalità sviluppatore LG: scade dopo un po’ se non la estendi sulla TV (Developer Mode → Extend), e allora PlayLingo sparisce dalla TV.",
         "lg_open" to "Installa PlayLingo sulla TV LG",
         "lg_title" to "PlayLingo sulla tua TV LG",
         "lg_intro" to "Da qui installi l’app PlayLingo sulla tua TV LG, senza computer. La TV deve avere attiva la modalità sviluppatore LG (gratuita). Questo dispositivo deve essere nella stessa rete di casa della TV.",

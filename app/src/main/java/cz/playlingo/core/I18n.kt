@@ -176,10 +176,6 @@ object I18n {
         "s_debug" to ("Diagnostický režim (co aplikace čte, rychlost)" to "Diagnostický režim (čo aplikácia číta, rýchlosť)"),
         "s_test" to ("Zkušební verze (dřív než ostatní)" to "Skúšobné verzie (skôr ako ostatní)"),
         "s_test_desc" to ("Aplikace nabídne i verze, které se teprve zkoušejí. Mohou obsahovat chyby." to "Aplikácia ponúkne aj verzie, ktoré sa ešte len skúšajú. Môžu obsahovať chyby."),
-        "s_tv" to ("Posílat titulky do televize LG" to "Posielať titulky do televízora LG"),
-        "s_tv_desc" to ("Pro televize LG, které si obraz hry samy nepřečtou: toto zařízení čte a překládá a televize ukazuje pruh přes hru. V televizi spusť PlayLingo – toto zařízení si v domácí síti najde sama. Když je vypnuto, nic se neposílá." to "Pre televízory LG, ktoré si obraz hry samy neprečítajú: toto zariadenie číta a prekladá a televízor ukazuje pruh cez hru. V televízore spusti PlayLingo – toto zariadenie si v domácej sieti nájde sám. Keď je vypnuté, nič sa neposiela."),
-        "st_tv_on" to ("Televize LG: připojena" to "Televízor LG: pripojený"),
-        "st_tv_wait" to ("Televize LG: čekám, až se připojí" to "Televízor LG: čakám, kým sa pripojí"),
         "on" to ("ZAP" to "ZAP"),
         "off" to ("VYP" to "VYP"),
         "a11y_hint" to ("V nastavení TV najdi Usnadnění → PlayLingo a zapni ho." to "V nastaveniach TV nájdi Zjednodušenie ovládania → PlayLingo a zapni ho."),
@@ -214,11 +210,11 @@ object I18n {
 
     /**
      * Texty kolem PlayStationu, přihlášení přes telefon, hlášení o stavu (core/I18nDiag.kt)
-     * a nahrání do televize LG (core/I18nLg.kt) – mají přednost před obecnými se stejným klíčem.
+     * nahrání do televize LG (core/I18nLg.kt) a typ televize s průvodcem pro Samsung (core/I18nSamsung.kt) – mají přednost před obecnými se stejným klíčem.
      */
-    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S
+    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + SS_S
     private val PX: Map<Lang, Map<String, String>> =
-        Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) + (DIAG_X[it] ?: emptyMap()) + (LG_X[it] ?: emptyMap()) }
+        Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) + (DIAG_X[it] ?: emptyMap()) + (LG_X[it] ?: emptyMap()) + (SS_X[it] ?: emptyMap()) }
 
     fun t(lang: Lang, key: String): String {
         val p = PS[key] ?: S[key] ?: return key

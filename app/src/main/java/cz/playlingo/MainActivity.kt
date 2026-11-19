@@ -34,6 +34,8 @@ import cz.playlingo.core.Ps5Host
 import cz.playlingo.core.UpdateCheck
 import cz.playlingo.core.SubtitleHistory
 import cz.playlingo.core.TranslationProbe
+import cz.playlingo.core.TvSender
+import cz.playlingo.core.TvType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -97,6 +99,9 @@ class MainActivity : Activity() {
     private var lastFrames = 0L
     private var lastStage = cz.playlingo.core.LinkStatus.Stage.OFF
     private var ticks = 0
+    /** Kolik televizí LG / Samsung bylo připojeno a kdy se naposledy ohlásila (pro obnovu stránky Domů). */
+    private var lastTv = -1
+    private var lastTvSeen = 0L
 
     private val ticker = object : Runnable {
         override fun run() {
@@ -105,7 +110,8 @@ class MainActivity : Activity() {
             val typing = currentFocus is EditText
             val changed = lastRunning != TranslatorService.running || lastPaused != TranslatorService.paused ||
                 lastLink != Ps5Link.state || (lastFrames == 0L) != (TranslatorService.framesDecoded == 0L) ||
-                lastStage != TranslatorService.linkStatus().stage
+                lastStage != TranslatorService.linkStatus().stage ||
+                (section == Section.HOME && (lastTv != TranslatorService.tvConnected || lastTvSeen != (TvSender.lastSeen?.at ?: 0L)))
             // náhled obrazu z PlayStationu se obnovuje každé 3 s (ne když uživatel zrovna píše)
             val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 &&
                 (section == Section.HOME || section == Section.PS5)
@@ -376,6 +382,8 @@ class MainActivity : Activity() {
         lastLink = Ps5Link.state
         lastFrames = TranslatorService.framesDecoded
         lastStage = TranslatorService.linkStatus().stage
+        lastTv = TranslatorService.tvConnected
+        lastTvSeen = TvSender.lastSeen?.at ?: 0L
         if (wizard >= 0) { renderWizard(focusedTag); return }
         renderMenu()
         content.removeAllViews()
@@ -608,16 +616,46 @@ class MainActivity : Activity() {
 
         // jazyk překladu hned na první stránce
         langRow("homelang", 18)
+        // kde se překlad ukazuje: toto zařízení (Android TV), nebo televize LG / Samsung po síti
+        tvTypeRow()
 
         content.addView(ui.section(t("check_title")))
         val check = ui.card()
-        check.addView(ui.checkRow(overlayOk, false, t("chk_overlay"), t("ok"), t("fix")) { section = Section.SETTINGS; render() })
+        // pruh na tomto zařízení je potřeba jen pro Android TV; LG a Samsung ho ukazují samy
+        if (!Prefs.tvSend(this)) check.addView(ui.checkRow(overlayOk, false, t("chk_overlay"), t("ok"), t("fix")) { section = Section.SETTINGS; render() })
         check.addView(ui.checkRow(modelOk, false, t("chk_model") + " (${lang.label})", t("ok"), t("download")) { downloadModel() })
         check.addView(ui.checkRow(host != null, false, t("chk_ps5") + (host?.let { " (${it.name})" } ?: ""), t("ok"), t("set_up")) { section = Section.PS5; render() })
         add(check, 0)
         add(ui.text(t("tip_ps5"), 14f, Theme.MUTED), 16)
         // telefon, na kterém běží celá aplikace: cesta zpět k pomocníkovi pro přihlášení
         if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 20)
+    }
+
+    /**
+     * Typ televize na Domů jen jedním řádkem („Typ televize: LG (webOS) – připojeno“); OK na něm otevře
+     * nabídku typů ([TvChoice.show]). U LG a Samsungu se pod ním nabízí nahrání aplikace do televize,
+     * jen dokud se z ní aplikace ještě nikdy neohlásila ([TvChoice.needsInstall]).
+     */
+    private fun tvTypeRow() {
+        val type = Prefs.tvType(this)
+        val (line, connected) = TvChoice.line(this)
+        add(tagged(ui.text(line, 16f, if (connected) Theme.OK else Theme.TEXT, bold = connected).apply {
+            isFocusable = true
+            isClickable = true
+            background = ui.focusBg(Theme.CARD)
+            setPadding(ui.dp(16), ui.dp(10), ui.dp(16), ui.dp(10))
+            setOnClickListener { TvChoice.show(this@MainActivity) { render(true) } }
+        }, "tvtype"), 10)
+        if (TvChoice.needsInstall(this, type)) {
+            add(tagged(ui.button(TvChoice.installLabel(this, type)) { TvChoice.openInstall(this, type) }, "tvinstall"), 8)
+        }
+        // LG: když vývojářský režim brzy vyprší, aplikace z televize zmizí – upozornit
+        if (type == TvType.LG) {
+            LgInstallActivity.shortLine(this)?.takeIf { it.second }?.let { (s, _) -> add(ui.text(s, 14f, Theme.WARN, bold = true), 6) }
+            LgDevMode.refresh(this, false) {
+                runOnUiThread { if (!isFinishing && wizard < 0 && section == Section.HOME && currentFocus !is EditText) render(true) }
+            }
+        }
     }
 
     /** Náhled: co aplikace z PlayStationu právě vidí (důkaz, že spojení funguje). */
@@ -1133,15 +1171,10 @@ class MainActivity : Activity() {
             Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
         }, "testch"), 8)
         add(ui.text(t("s_test_desc"), 14f, Theme.MUTED), 6)
-        // Na konci, aby se nezměnilo pořadí položek nad tím (zkouška se jimi prokliká naslepo).
-        add(tagged(ui.settingRow(t("s_tv"), onOff(Prefs.tvSend(this))) {
-            Prefs.setTvSend(this, !Prefs.tvSend(this)); applyToService(); render(true)
-        }, "tvsend"), 8)
-        add(ui.text(t("s_tv_desc"), 14f, Theme.MUTED), 6)
-        // nahrání PlayLingo do televize LG z tohoto zařízení (vývojářský režim LG) a kolik dní mu zbývá
-        add(tagged(ui.button(t("lg_open")) { startActivity(Intent(this, LgInstallActivity::class.java)) }, "lginstall"), 8)
-        LgInstallActivity.shortLine(this)?.let { (s, warn) -> add(ui.text(s, 14f, if (warn) Theme.WARN else Theme.MUTED, bold = warn), 6) }
-        LgDevMode.refresh(this, false) { runOnUiThread { if (!isFinishing && section == Section.SETTINGS && currentFocus !is EditText) render(true) } }
+        // Typ televize (Android TV / LG / Samsung) – stejná nabídka jako z řádku na Domů.
+        add(tagged(ui.settingRow(t("tv_type"), TvChoice.label(this, Prefs.tvType(this))) {
+            TvChoice.show(this) { render(true) }
+        }, "tvtype"), 8)
         // jazyk aplikace je nezávislý na jazyku překladu (ten je na stránce Překlad)
         val uiLang = Prefs.uiLang(this)
         add(tagged(ui.settingRow(t("l_ui_lang"), uiLang.label) {
@@ -1231,6 +1264,9 @@ class MainActivity : Activity() {
         content.addView(ui.section(t("lg_title")))
         add(ui.card().apply { addView(ui.text(t("lg_help"), 15f, Theme.MUTED)) }, 0)
         add(tagged(ui.button(t("lg_open")) { startActivity(Intent(this, LgInstallActivity::class.java)) }, "lghelp"), 8)
+        content.addView(ui.section(t("ss_title")))
+        add(ui.card().apply { addView(ui.text(t("ss_help"), 15f, Theme.MUTED)) }, 0)
+        add(tagged(ui.button(t("ss_open")) { startActivity(Intent(this, SamsungInstallActivity::class.java)) }, "sshelp"), 8)
         content.addView(ui.section(t("adb_title")))
         add(ui.card().apply {
             isFocusable = true

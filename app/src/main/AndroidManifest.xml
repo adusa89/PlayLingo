@@ -74,6 +74,12 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- PlayLingo do televize Samsung: návod, uložení balíčku .wgt a ověření připojení -->
+        <activity
+            android:name=".SamsungInstallActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden" />
+
         <activity
             android:name=".CalibrationActivity"
             android:exported="false"

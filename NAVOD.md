@@ -103,17 +103,23 @@ a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televiz
 - **Aplikace minule spadla** – po dalším spuštění to napíše na stránce Domů. Kdyby se to opakovalo, pošli hlášení (další bod).
 - **Hlášení chyby**: Nápověda → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení.
 
-## 8. Televize LG
-Televize LG si obraz hry sama nepřečte. PlayLingo v ní jen ukazuje hru s pruhem a číst
-a překládat musí telefon nebo box s Androidem ve stejné domácí síti (v telefonu tlačítko
-„Použít telefon pro televizi LG“, v boxu Nastavení → „Posílat titulky do televize LG“).
+## 8. Televize LG a Samsung
+Televize LG a Samsung si obraz hry samy nepřečtou. PlayLingo v nich jen ukazuje hru s pruhem
+a číst a překládat musí telefon nebo box s Androidem ve stejné domácí síti. Na stránce Domů
+je řádek **Typ televize** (OK ho změní, stejně jako Nastavení → Typ televize): Android TV
+(pruh ukazuje toto zařízení, jako dřív), LG (webOS) nebo Samsung (Tizen). V telefonu jsou
+tlačítka „Použít telefon pro televizi LG“ a „… Samsung“. Řádek na Domů ukazuje, jestli je
+aplikace z televize připojená; dokud se nikdy nepřipojila, je pod ním tlačítko k nahrání
+PlayLinga do televize. Kdo měl dřív zapnuté „Posílat titulky do televize LG“, má typ LG.
+
+### Televize LG
 
 **Nahrání PlayLingo do televize LG z telefonu nebo boxu (bez počítače):**
 1. Na webu webostv.developer.lge.com si založ účet LG (zdarma).
 2. V televizi otevři obchod LG Content Store, nainstaluj aplikaci **Developer Mode**, přihlas se
    v ní tím účtem a zapni **Dev Mode Status**. Televize se restartuje.
 3. Znovu otevři Developer Mode a zapni **Key Server**. Uvidíš adresu televize (IP) a **Passphrase**.
-4. V PlayLingu zvol „Nahrát PlayLingo do televize LG“ (Nastavení, pomocník v telefonu nebo
+4. V PlayLingu zvol „Nahrát PlayLingo do televize LG“ (Domů u typu LG, pomocník v telefonu nebo
    Nápověda), opiš adresu a Passphrase a zvol „Nahrát do televize“. PlayLingo se v televizi
    nainstaluje a spustí. Příště už Passphrase není potřeba – stejným tlačítkem televizi
    aktualizuješ. Starší verzi přes novější nikdy nenahraje.
@@ -124,6 +130,26 @@ PlayLingo u tlačítka (pod 3 dny upozorní). Prodloužit ho jde jen v televizi:
 
 Jiné cesty: z počítače nástrojem LG `ares` (postup ve `webos/CTI-ME.md`), nebo z obchodu LG,
 až tam PlayLingo bude.
+
+### Televize Samsung
+Samsung pustí do televize vlastní aplikaci jen ve vývojářském režimu a jen podepsanou
+certifikátem, který Samsung vystaví na tvůj účet Samsung (zdarma) právě pro tvou televizi.
+To PlayLingo za tebe udělat neumí, proto se aplikace nahrává nástrojem Samsungu. Průvodce
+„Nahrát PlayLingo do televize Samsung“ (Domů u typu Samsung, pomocník v telefonu, Nápověda)
+tě provede:
+1. **Vývojářský režim:** v televizi otevři Aplikace (Apps), na ovladači zadej 1 2 3 4 5, zapni
+   **Developer mode** a do **Host PC IP** napiš adresu počítače (nebo telefonu), ze kterého budeš
+   nahrávat. Televizi restartuj (podrž vypínač, dokud nezhasne a znovu nenaběhne).
+2. **Ulož soubor** s aplikací (tlačítko „Uložit soubor“) – třeba na Disk Google, odkud ho vezmeš
+   v počítači. Soubor není podepsaný.
+3. **Podepiš a nahraj** ho: nejjistěji v počítači nástrojem **Tizen Studio** od Samsungu (Device
+   Manager → připojit televizi, Certificate Manager → certifikát Samsung s přihlášením účtem
+   Samsung, pak podepsat a nahrát), nebo komunitním instalátorem, který umí vlastní soubor .wgt
+   (např. Apps2Samsung). Certifikát si schovej – aktualizace musí být podepsaná stejným.
+4. **Spusť PlayLingo v televizi** a vyber vstup HDMI. Průvodce ukáže „Hotovo“, až se aplikace
+   z televize opravdu připojí, a do televize pošle zkušební větu.
+
+Podrobnosti a důvody jsou v `tizen/CTI-ME.md`.
 
 ## Licence a zdrojový kód
 Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng

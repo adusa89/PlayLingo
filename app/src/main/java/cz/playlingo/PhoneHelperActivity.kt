@@ -21,6 +21,7 @@ import cz.playlingo.core.LoginClient
 import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.Ps5
 import cz.playlingo.core.UpdateCheck
+import cz.playlingo.core.TvType
 import java.util.Locale
 
 /**
@@ -137,7 +138,7 @@ class PhoneHelperActivity : Activity() {
         val debuggable = applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0
         if (i?.getBooleanExtra("helperlogin", false) == true && debuggable) openLogin()
         // jen ve zkušebním sestavení: celá aplikace v telefonu (stejně jako tlačítko pro televizi LG)
-        if (i?.getBooleanExtra("fullapp", false) == true && debuggable) useForLgTv()
+        if (i?.getBooleanExtra("fullapp", false) == true && debuggable) useForTv(TvType.LG)
     }
 
     private fun add(v: View, top: Int = 12) = content.addView(v, ui.lp(top = top))
@@ -171,17 +172,20 @@ class PhoneHelperActivity : Activity() {
             }, 14)
         }
 
-        // Televize LG si titulky sama nepřečte: číst, překládat a posílat je do ní může tento telefon.
-        // Pak tu místo pomocníka běží celá aplikace (viz core/TvSender).
+        // Televize LG a Samsung si titulky samy nepřečtou: číst, překládat a posílat je do nich může
+        // tento telefon. Pak tu místo pomocníka běží celá aplikace (viz core/TvSender).
         add(ui.card().apply {
             addView(ui.text(t("hp_lg_title"), 18f, Theme.TEXT, bold = true))
             addView(ui.text(t("hp_lg_text"), 15f, Theme.MUTED), ui.lp(top = 6))
-            addView(ui.button(t("hp_lg_btn"), primary = true) { if (!busy) useForLgTv() }, ui.lp(top = 12))
+            addView(ui.button(t("hp_lg_btn"), primary = true) { if (!busy) useForTv(TvType.LG) }, ui.lp(top = 12))
+            addView(ui.button(t("hp_ss_btn"), primary = true) { if (!busy) useForTv(TvType.SAMSUNG) }, ui.lp(top = 8))
             // nahrát PlayLingo do televize LG přímo z telefonu (vývojářský režim LG)
             addView(ui.button(t("lg_open")) { if (!busy) startActivity(Intent(this@PhoneHelperActivity, LgInstallActivity::class.java)) }, ui.lp(top = 8))
             LgInstallActivity.shortLine(this@PhoneHelperActivity)?.let { (s, warn) ->
                 addView(ui.text(s, 14f, if (warn) Theme.WARN else Theme.MUTED, bold = warn), ui.lp(top = 6))
             }
+            // Samsung: návod, uložení balíčku a ověření, že se televize připojila
+            addView(ui.button(t("ss_open")) { if (!busy) startActivity(Intent(this@PhoneHelperActivity, SamsungInstallActivity::class.java)) }, ui.lp(top = 8))
         }, 18)
         add(ui.card().apply { addView(ui.text(t("hp_intro"), 15f, Theme.MUTED)) }, 10)
         val tg = target
@@ -224,11 +228,12 @@ class PhoneHelperActivity : Activity() {
      * Telefon bude číst a překládat pro televizi LG: otevře se celá aplikace se zapnutým posíláním
      * titulků. Účet, který je tu už ověřený, si vezme rovnou – párování pak přeskočí přihlášení.
      */
-    private fun useForLgTv() {
+    /** Telefon bude číst a překládat pro televizi LG nebo Samsung (typ televize se nastaví na Domů). */
+    private fun useForTv(type: TvType) {
         Prefs.setForceTv(this, true)
-        Prefs.setTvSend(this, true)
+        Prefs.setTvType(this, type)
         if (Ps5.parseAccountId(Prefs.psnId(this)) == null) Prefs.phoneAccounts(this).firstOrNull()?.let { Prefs.setPsnId(this, it.id) }
-        log("lg mode")
+        log(if (type == TvType.LG) "lg mode" else "samsung mode")
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }

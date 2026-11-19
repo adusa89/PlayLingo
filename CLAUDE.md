@@ -28,6 +28,8 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `Updater.kt` – aktualizace z aplikace (stažení nové verze a předání systému k instalaci)
   - `LgInstallActivity.kt`, `LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt` – nahrání aplikace
     do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG)
+  - `TvChoice.kt` – typ televize (Android TV / LG / Samsung): nabídka, řádek na Domů, nahrání do televize
+  - `SamsungInstallActivity.kt` – průvodce PlayLingem pro televizi Samsung (viz Televize Samsung)
   - `DemoFeeder.kt`, `TestCardActivity.kt` – ukázková „hra“ pro zkoušku bez PlayStationu
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
   knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
@@ -35,9 +37,12 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   `app/src/main/cpp` (úloha `patchChiaki` v `app/build.gradle.kts`).
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení, zkouška, vydání.
 - `ci/mistni-kontrola` – překlad a unit testy bez Android SDK (viz níže).
-- `buildSrc` – jen zpřístupní `core/LgIpk.kt` sestavení (úloha `lgBalicek`, viz Televize LG).
+- `buildSrc` – jen zpřístupní `core/LgIpk.kt` a `core/SamsungWgt.kt` sestavení (úlohy `lgBalicek`
+  a `samsungBalicek`, viz Televize LG a Televize Samsung).
 - `webos` – PlayLingo pro televize LG (viz Televize LG): `webos/obchod` je aplikace pro televizi,
-  `webos/zkouska` diagnostika. Do APK se nic z toho nedostane.
+  `webos/zkouska` diagnostika. Do APK jde jen balíček z `webos/obchod/app` (úloha `lgBalicek`).
+- `tizen` – PlayLingo pro televize Samsung (viz Televize Samsung): `tizen/app` se společným kódem
+  s `webos/obchod/app`, do APK jako nepodepsaný `.wgt` (úloha `samsungBalicek`).
 - `pc` – zkušební čtečka pro počítač s Windows (viz `pc/CTI-ME.md`): čte titulky z okna s obrazem
   hry, přeloží je a pošle do televize LG. Překládá se proti téže složce `core` jako aplikace,
   takže změna v `core` se týká i jí – po úpravě `core` ověř i `gradlew -p pc installDist`.
@@ -184,15 +189,26 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   najde sama: projde adresy své sítě na portu 8787. Spojení je WebSocket obsloužený ručně na obou
   stranách. Novinky ve zprávách přidávej jen jako nepovinná pole (tak přibylo `casti` s barvami jmen
   a volbami odpovědí) – starší aplikace v televizi musí dál ukázat aspoň obyčejný `text`.
-- Android: volba Nastavení → „Posílat titulky do televize LG“ (`Prefs.tvSend`, výchozí vypnuto).
-  `SubtitleOverlay` předává `TvSender` každou změnu pruhu. S vypnutou volbou se nic neotevírá ani
-  neposílá a aplikace se chová jako dřív. Se zapnutou se čte i tehdy, když je vidět aplikace,
-  a nevyžaduje se povolení pruhu.
-- Telefon: pomocník (`PhoneHelperActivity`) má od 0.63 tlačítko „Použít telefon pro televizi LG“.
-  Zapne `Prefs.forceTv` a `Prefs.tvSend`, předá už ověřený účet do párování a otevře celou
+- Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →
+  `TvType`). Kdo ho nezvolil, řídí se starým klíčem `tv_send` (zapnuto = LG), takže dřívější
+  uživatelé LG o nic nepřijdou; `setTvType` klíč `tv_send` drží v souladu. `Prefs.tvSend` = typ
+  LG nebo Samsung. Volí se jedním řádkem na Domů (OK otevře nabídku) a řádkem v Nastavení – obojí
+  přes `TvChoice.show(activity) { … }`. Bývalý přepínač „Posílat titulky do televize LG“ a tlačítko
+  „Nahrát PlayLingo do televize LG“ v Nastavení nejsou. Na Domů je pro LG/Samsung stav spojení
+  (`TvChoice.line`) a tlačítko k nahrání aplikace do televize jen do chvíle, než se z ní aplikace
+  poprvé ohlásí (`TvChoice.needsInstall`, `Prefs.tvSeen`); pro Android TV se ukazuje kontrola
+  povolení pruhu. `SubtitleOverlay` předává `TvSender` každou změnu pruhu. U Android TV se nic
+  neotevírá ani neposílá a aplikace se chová jako dřív. U LG/Samsungu se čte i tehdy, když je
+  vidět aplikace, a nevyžaduje se povolení pruhu.
+- Televize po připojení pošle `pripojeno` a od verze 1.1.0 v něm i `platforma` („webos“/„tizen“)
+  a `verze`. `TvSender` zprávy od televize čte (maskované rámce WebSocketu, `readFrame`) a poslední
+  ohlášení drží v `TvSender.lastSeen` (`TvAnnounce`); podle něj Domů a průvodce Samsung poznají,
+  co v televizi běží.
+- Telefon: pomocník (`PhoneHelperActivity`) má od 0.63 tlačítko „Použít telefon pro televizi LG“
+  a vedle něj „… Samsung“. Zapne `Prefs.forceTv` a nastaví typ televize, předá už ověřený účet do párování a otevře celou
   aplikaci. Jestli se celá aplikace dá na telefonu pohodlně ovládat, umí ověřit jen uživatel.
 - **Nahrání do televize z Androidu** (přehled ve `webos/CTI-ME.md`): tlačítko „Nahrát PlayLingo do
-  televize LG“ v Nastavení (pod volbou posílání), v pomocníkovi v telefonu a v Nápovědě otevře
+  televize LG“ na Domů (typ LG, dokud se televize neohlásila), v pomocníkovi v telefonu a v Nápovědě otevře
   `LgInstallActivity`. APK nese `assets/lg/receiver.ipk` + `receiver-manifest.json`; skládá je při
   sestavení úloha `lgBalicek` (`app/build.gradle.kts`) kódem `core/LgIpk.kt`, který `buildSrc`
   sdílí se sestavením – žádný Node ani Python. Rozložení odpovídá `ares-package` (ověřeno), datum
@@ -205,16 +221,43 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   (`LgDevMode`) se ptají služby LG nejvýš jednou za hodinu; **nic se neprodlužuje automaticky**.
   Rozhodování a čtení odpovědí je v `core/LgInstall.kt` s testy. Skutečnou televizi zkouška
   v emulátoru nemá – instalaci ověří jen uživatel. Při změně `webos/obchod/app` zvyš verzi
-  v `appinfo.json`, jinak Android televizi neaktualizuje (stejná verze = jen spustit).
+  v `appinfo.json` i `platforma.js`, jinak Android televizi neaktualizuje (stejná verze = jen spustit).
   Převzato podle PlayCaption (AGPL-3.0) – hlavičky souborů zachovej.
+- `webos/obchod/app/app.js`, `style.css` a `index.html` jsou **společné s aplikací pro Samsung**
+  (kopie v `tizen/app`); co je jen pro LG, je v `platforma.js` (`window.PlayLingoTv`). Při změně
+  společného souboru ho zkopíruj do `tizen/app` – jinak spadne sestavení APK (`samsungBalicek`)
+  i unit test `SamsungTest`. Zkouška obou bez televize: `node tizen/test/prijimac.test.js`.
 - Televize uživatele má prohlížeč Chromium 38. Kód pro televizi proto musí zůstat ve starém zápisu
   JavaScriptu: žádné `let`/`const`, šipkové funkce, `Promise`, `fetch` ani šablonové řetězce.
 - Zkoušení bez Androidu: `node webos/posilac.js` posílá z počítače zkušební věty, `pc/` čte
   a překládá na počítači. Nástroj LG (`ares-package`, `ares-install`, `ares-launch`, `ares-inspect`
   z `@webos-tools/cli`) nahraje aplikaci do televize ve vývojářském režimu; `ares-inspect` dá živý
   přístup do běžící aplikace.
-- Změny jen ve složkách `webos` a `pc` nemění verzi aplikace pro Android TV a commitují se
-  s `[skip ci]`. Balíčky `.ipk` se necommitují.
+- Změny jen ve složkách `webos`, `tizen` a `pc` nemění verzi aplikace pro Android TV a commitují se
+  s `[skip ci]`. Balíčky `.ipk` a `.wgt` se necommitují. (Jdou ale do APK – nová verze aplikace
+  pro televizi se k lidem dostane až s další verzí pro Android.)
+
+## Televize Samsung (Tizen)
+
+Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vědět při úpravách.
+
+- Stejný princip jako LG: televize ukazuje hru z HDMI a pruh, věty dostává z Androidu stejnými
+  zprávami (`core/TvSender.kt`). `tizen/app` = kopie `app.js`, `style.css`, `index.html` z
+  `webos/obchod/app` + vlastní `platforma.js` (obraz `tizen.tvwindow` pod průhlednou stránkou,
+  `tizen.systeminfo`, Zpět = 10009) a `config.xml` (balíček `PlayLingo1`, id `PlayLingo1.PlayLingo`).
+  Verze v `config.xml` a `platforma.js` se musí shodovat (hlídá sestavení). Starý zápis JS (ES5).
+- APK nese `assets/samsung/receiver.wgt` + `receiver-manifest.json` (`signed: false`); skládá je
+  úloha `samsungBalicek` kódem `core/SamsungWgt.kt` (ZIP s pevným datem, přes `buildSrc`).
+- **Přímá instalace z Androidu není a záměrně**: Samsung přijme jen balíček podepsaný
+  distribučním certifikátem vystaveným na účet Samsung pro DUID konkrétní televize; podpis
+  a nahrání (SDB, port 26101) se bez skutečné televize nedají ověřit. Průvodce
+  `SamsungInstallActivity` vysvětlí vývojářský režim (Apps → 12345 → Host PC IP), uloží .wgt
+  přes systémový dialog, pojmenuje Tizen Studio / komunitní instalátory a **úspěch hlásí jen
+  podle ohlášení aplikace z televize** (`TvCheck`: stejná/novější verze = hotovo). Když neběží
+  překlad, otevře si port 8787 sám (vlastní `TvSender`) a po úspěchu pošle zkušební větu.
+- Rozhodování a čtení zpráv: `core/TvReceiver.kt` (`TvType`, `TvAnnounce`, `TvCheck`,
+  `SamsungInstall`), testy `SamsungTest`. Skutečná televize Samsung zatím nikdy nebyla vyzkoušená.
+- Převzato podle přijímače PlayCaption pro Samsung (AGPL-3.0) – hlavičky souborů zachovej.
 
 ## Texty aplikace a jazyky
 
@@ -242,12 +285,15 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
   na pád (`cr_…`): `core/I18nDiag.kt` (`DIAG_S`, `DIAG_X`).
 - texty nahrání do televize LG (`lg_…`; chyby `lg_e_<LgError>`, kroky `lg_p_<LgPhase>`):
   `core/I18nLg.kt` (`LG_S`, `LG_X`).
+- typ televize (`tv_…`, společné `s_tv_desc`, `st_tv_…`, `hp_lg_title`/`hp_lg_text`) a průvodce
+  Samsung (`ss_…`): `core/I18nSamsung.kt` (`SS_S`, `SS_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
 
-Aplikace pro televizi LG (`webos/obchod`) má vlastní texty česky a anglicky přímo v `app.js`
-a tlačítko Jazyk na úvodní obrazovce; do obchodu LG se podává s anglickými podklady.
+Aplikace pro televizi LG (`webos/obchod`) a Samsung (`tizen/app`, týž `app.js`) má vlastní texty
+česky a anglicky přímo v `app.js` a tlačítko Jazyk na úvodní obrazovce; do obchodu LG se podává
+s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nemá zmiňovat Samsung).
 
 ## Na co zkouška spoléhá (neměnit jen tak)
 

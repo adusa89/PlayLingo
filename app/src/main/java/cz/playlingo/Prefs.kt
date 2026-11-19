@@ -11,6 +11,7 @@ import cz.playlingo.core.License
 import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.ScreenLayout
 import cz.playlingo.core.Ps5Host
+import cz.playlingo.core.TvType
 import cz.playlingo.core.UsageStats
 
 /** Nastavení aplikace. */
@@ -69,9 +70,18 @@ object Prefs {
     /** Brát i zkušební verze (sestavené z rozpracované větve, ještě neschválené pro všechny). */
     fun testChannel(c: Context) = bool(c, "test_channel", false)
     fun setTestChannel(c: Context, v: Boolean) = setBool(c, "test_channel", v)
-    /** Posílat přeložené titulky do televize LG, kde PlayLingo běží jen jako obrazovka (výchozí: ne). */
-    fun tvSend(c: Context) = bool(c, "tv_send", false)
-    fun setTvSend(c: Context, v: Boolean) = setBool(c, "tv_send", v)
+    /**
+     * Typ televize (volba na stránce Domů): Android TV ukazuje pruh samo, LG a Samsung dostávají
+     * hotové věty po síti. Kdo ho nezvolil, řídí se starou volbou „Posílat titulky do televize LG“
+     * (`tv_send`) – zapnutá = LG.
+     */
+    fun tvType(c: Context): TvType = TvType.from(p(c).getString("tv_type", null), bool(c, "tv_send", false))
+    fun setTvType(c: Context, v: TvType) = p(c).edit().putString("tv_type", v.key).putBoolean("tv_send", v.sends).apply()
+    /** Posílat přeložené titulky do televize LG nebo Samsung, kde PlayLingo běží jen jako obrazovka (výchozí: ne). */
+    fun tvSend(c: Context) = tvType(c).sends
+    /** Z televize s danou platformou („webos“, „tizen“) se už ohlásila aplikace PlayLingo: „model · verze“, jinak null. */
+    fun tvSeen(c: Context, platform: String): String? = p(c).getString("tv_seen_$platform", null)
+    fun setTvSeen(c: Context, platform: String, v: String) = p(c).edit().putString("tv_seen_$platform", v).apply()
     /** Číslo verze, která běžela naposledy (0 = první spuštění) – aby šlo po aktualizaci říct, že proběhla. */
     fun seenVersion(c: Context): Int = p(c).getInt("seen_version", 0)
     fun setSeenVersion(c: Context, v: Int) = p(c).edit().putInt("seen_version", v).apply()
