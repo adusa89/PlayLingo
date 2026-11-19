@@ -100,6 +100,32 @@ val patchChiaki by tasks.registering(Copy::class) {
 }
 tasks.named("preBuild") { dependsOn(patchChiaki) }
 
+// Aplikace pro televizi LG (webos/obchod/app) jako balíček .ipk přímo v APK: z telefonu nebo boxu
+// jde nainstalovat do televize ve vývojářském režimu (LgInstaller.kt). Balíček skládá
+// core/LgIpk.kt (přes buildSrc) stejně jako ares-package, jen s pevným datem 1. 1. 2000.
+// Po sestavení se přečte zpět a porovná se zdroji. Výsledek: assets lg/receiver.ipk
+// a lg/receiver-manifest.json (id, verze, velikost, sha256). Nic se necommituje.
+val lgAssets = layout.buildDirectory.dir("generated/lgAssets")
+val lgBalicek by tasks.registering {
+    val src = rootProject.file("webos/obchod/app")
+    inputs.dir(src)
+    outputs.dir(lgAssets)
+    doLast {
+        val files = src.walkTopDown().filter { it.isFile && !it.name.startsWith(".") }
+            .associate { it.relativeTo(src).invariantSeparatorsPath to it.readBytes() }
+        val ipk = cz.playlingo.core.LgIpk.build(files)
+        val (id, version) = cz.playlingo.core.LgIpk.verify(ipk, files)
+        require(id == cz.playlingo.core.LgIpk.APP_ID) { "webos/obchod/app má jiné id: $id" }
+        val out = lgAssets.get().dir("lg").asFile
+        out.deleteRecursively(); out.mkdirs()
+        out.resolve("receiver.ipk").writeBytes(ipk)
+        out.resolve("receiver-manifest.json").writeText(cz.playlingo.core.LgIpk.manifest(id, version, ipk))
+        logger.lifecycle("LG: ${cz.playlingo.core.LgIpk.fileName(id, version)} (${ipk.size} B)")
+    }
+}
+android.sourceSets.getByName("main").assets.srcDir(lgAssets)
+tasks.named("preBuild") { dependsOn(lgBalicek) }
+
 dependencies {
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation("com.google.mlkit:translate:17.0.3")
@@ -108,6 +134,9 @@ dependencies {
 
     // QR kód s přihlašovací adresou Sony (přihlášení účtem PlayStation přes telefon)
     implementation("com.google.zxing:core:3.5.3")
+
+    // Instalace aplikace do televize LG ve vývojářském režimu (SSH/SFTP, udržovaná větev JSch)
+    implementation("com.github.mwiede:jsch:2.28.8")
 
     testImplementation("junit:junit:4.13.2")
 }

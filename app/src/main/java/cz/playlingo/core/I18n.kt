@@ -212,10 +212,13 @@ object I18n {
         Lang.ES to I18N_ES, Lang.FR to I18N_FR, Lang.IT to I18N_IT, Lang.EN to I18N_EN,
     )
 
-    /** Texty kolem PlayStationu a přihlášení přes telefon – mají přednost před obecnými se stejným klíčem. */
-    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S
+    /**
+     * Texty kolem PlayStationu, přihlášení přes telefon a nahrání do televize LG (core/I18nLg.kt) –
+     * mají přednost před obecnými se stejným klíčem.
+     */
+    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + LG_S
     private val PX: Map<Lang, Map<String, String>> =
-        Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) }
+        Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) + (LG_X[it] ?: emptyMap()) }
 
     fun t(lang: Lang, key: String): String {
         val p = PS[key] ?: S[key] ?: return key

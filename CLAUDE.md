@@ -23,6 +23,8 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `SubtitleOverlay.kt`, `TitulkyAccessibility.kt` – pruh s překladem přes Usnadnění
   - `MainActivity.kt` – všechny obrazovky a průvodce
   - `Updater.kt` – aktualizace z aplikace (stažení nové verze a předání systému k instalaci)
+  - `LgInstallActivity.kt`, `LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt` – nahrání aplikace
+    do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG)
   - `DemoFeeder.kt`, `TestCardActivity.kt` – ukázková „hra“ pro zkoušku bez PlayStationu
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
   knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
@@ -30,6 +32,7 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   `app/src/main/cpp` (úloha `patchChiaki` v `app/build.gradle.kts`).
 - `.github/workflows/build.yml`, `ci/emulator-test.sh` – sestavení, zkouška, vydání.
 - `ci/mistni-kontrola` – překlad a unit testy bez Android SDK (viz níže).
+- `buildSrc` – jen zpřístupní `core/LgIpk.kt` sestavení (úloha `lgBalicek`, viz Televize LG).
 - `webos` – PlayLingo pro televize LG (viz Televize LG): `webos/obchod` je aplikace pro televizi,
   `webos/zkouska` diagnostika. Do APK se nic z toho nedostane.
 - `pc` – zkušební čtečka pro počítač s Windows (viz `pc/CTI-ME.md`): čte titulky z okna s obrazem
@@ -183,6 +186,22 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
 - Telefon: pomocník (`PhoneHelperActivity`) má od 0.63 tlačítko „Použít telefon pro televizi LG“.
   Zapne `Prefs.forceTv` a `Prefs.tvSend`, předá už ověřený účet do párování a otevře celou
   aplikaci. Jestli se celá aplikace dá na telefonu pohodlně ovládat, umí ověřit jen uživatel.
+- **Nahrání do televize z Androidu** (přehled ve `webos/CTI-ME.md`): tlačítko „Nahrát PlayLingo do
+  televize LG“ v Nastavení (pod volbou posílání), v pomocníkovi v telefonu a v Nápovědě otevře
+  `LgInstallActivity`. APK nese `assets/lg/receiver.ipk` + `receiver-manifest.json`; skládá je při
+  sestavení úloha `lgBalicek` (`app/build.gradle.kts`) kódem `core/LgIpk.kt`, který `buildSrc`
+  sdílí se sestavením – žádný Node ani Python. Rozložení odpovídá `ares-package` (ověřeno), datum
+  je pevně 1. 1. 2000 (webOS 5 odmítá 1970). Instalace (`LgInstaller`, JSch): Key Server
+  `:9991/webos_rsa` + Passphrase (neukládá se) → SSH `prisoner@:9922` → verze v
+  `/media/developer/apps/usr/palm/applications/cz.playlingo.tv/appinfo.json` → stejná/novější jen
+  spustit, **nikdy nesnižovat verzi** → jinak SFTP, `appInstallService/dev/install`, kontrola, spuštění.
+  Otisk klíče televize se pamatuje, změnu musí potvrdit uživatel („Spárovat znovu“); klíč SSH
+  a klíč relace jsou zašifrované přes Android Keystore (`LgVault`). Zbývající dny režimu
+  (`LgDevMode`) se ptají služby LG nejvýš jednou za hodinu; **nic se neprodlužuje automaticky**.
+  Rozhodování a čtení odpovědí je v `core/LgInstall.kt` s testy. Skutečnou televizi zkouška
+  v emulátoru nemá – instalaci ověří jen uživatel. Při změně `webos/obchod/app` zvyš verzi
+  v `appinfo.json`, jinak Android televizi neaktualizuje (stejná verze = jen spustit).
+  Převzato podle PlayCaption (AGPL-3.0) – hlavičky souborů zachovej.
 - Televize uživatele má prohlížeč Chromium 38. Kód pro televizi proto musí zůstat ve starém zápisu
   JavaScriptu: žádné `let`/`const`, šipkové funkce, `Promise`, `fetch` ani šablonové řetězce.
 - Zkoušení bez Androidu: `node webos/posilac.js` posílá z počítače zkušební věty, `pc/` čte
@@ -213,7 +232,9 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
 - texty kolem PlayStationu: `core/I18nPs5.kt` (`PS5_S` pro češtinu a slovenštinu, `PS5_X` pro ostatní
   včetně angličtiny);
 - texty přihlášení přes telefon (kroky `pa_…`, stránka z televize `wp_…`, pomocník v telefonu
-  `hp_…`): `core/I18nLogin.kt` (`LOGIN_S`, `LOGIN_X`).
+  `hp_…`): `core/I18nLogin.kt` (`LOGIN_S`, `LOGIN_X`);
+- texty nahrání do televize LG (`lg_…`; chyby `lg_e_<LgError>`, kroky `lg_p_<LgPhase>`):
+  `core/I18nLg.kt` (`LG_S`, `LG_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.

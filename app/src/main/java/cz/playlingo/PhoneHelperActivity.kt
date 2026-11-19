@@ -75,6 +75,8 @@ class PhoneHelperActivity : Activity() {
         super.onResume()
         // po návratu z dotazu systému na instalaci ukázat, jak aktualizace dopadla
         if (web == null) render()
+        // vývojářský režim televize LG: nejvýš jednou za hodinu se zeptat, kolik zbývá
+        LgDevMode.refresh(this, false) { runOnUiThread { if (!isFinishing && web == null) render() } }
     }
 
     /** Na pozadí zjistí, jestli není ke stažení novější verze (se zapnutým zkušebním kanálem i v něm). */
@@ -175,6 +177,11 @@ class PhoneHelperActivity : Activity() {
             addView(ui.text(t("hp_lg_title"), 18f, Theme.TEXT, bold = true))
             addView(ui.text(t("hp_lg_text"), 15f, Theme.MUTED), ui.lp(top = 6))
             addView(ui.button(t("hp_lg_btn"), primary = true) { if (!busy) useForLgTv() }, ui.lp(top = 12))
+            // nahrát PlayLingo do televize LG přímo z telefonu (vývojářský režim LG)
+            addView(ui.button(t("lg_open")) { if (!busy) startActivity(Intent(this@PhoneHelperActivity, LgInstallActivity::class.java)) }, ui.lp(top = 8))
+            LgInstallActivity.shortLine(this@PhoneHelperActivity)?.let { (s, warn) ->
+                addView(ui.text(s, 14f, if (warn) Theme.WARN else Theme.MUTED, bold = warn), ui.lp(top = 6))
+            }
         }, 18)
         add(ui.card().apply { addView(ui.text(t("hp_intro"), 15f, Theme.MUTED)) }, 10)
         val tg = target

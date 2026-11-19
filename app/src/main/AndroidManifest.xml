@@ -61,6 +61,13 @@
             </intent-filter>
         </activity>
 
+        <!-- nahrání PlayLingo do televize LG ve vývojářském režimu (z Nastavení a z pomocníka) -->
+        <activity
+            android:name=".LgInstallActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity
             android:name=".CalibrationActivity"
             android:exported="false"

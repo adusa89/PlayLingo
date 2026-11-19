@@ -26,7 +26,10 @@ ve `../zkouska` po síti nic nepřijímá.
 ## Sestavení a zkouška
 
 - Balíček: `ares-package --no-minify webos/obchod/app -o webos/obchod` (nástroj LG z `@webos-tools/cli`).
-  Vznikne `cz.playlingo.tv_<verze>_all.ipk`; necommituje se.
+  Vznikne `cz.playlingo.tv_<verze>_all.ipk`; necommituje se. Stejný balíček (jen s pevným datem
+  souborů) skládá i sestavení APK úlohou `lgBalicek` a PlayLingo pro Android ho umí do televize
+  ve vývojářském režimu nahrát sám (viz `../CTI-ME.md`, Nahrání do televize z Androidu). Verze
+  v `app/appinfo.json` rozhoduje, jestli Android televizi aktualizuje – při změně aplikace ji zvyš.
 - Do televize ve vývojářském režimu: `ares-install -d lgtv webos/obchod/cz.playlingo.tv_<verze>_all.ipk`.
 - V počítači: otevřít `app/index.html` v prohlížeči. Značka v adrese vynutí jazyk a obrazovku:
   `#cs`, `#en`, `#en-ukazka`, `#cs-napoveda`. Stejně vznikly snímky ve `snimky/`.
