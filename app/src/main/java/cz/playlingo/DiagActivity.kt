@@ -160,6 +160,7 @@ object DiagReport {
             .append("Snímků: ").append(TranslatorService.framesDecoded).append(", obraz: ").append(TranslatorService.videoSize.ifEmpty { "–" })
             .append(", čtení: ").append(TranslatorService.readMs).append(" ms").append('\n')
             .append("Knihovna: ").append(Ps5Link.selfTest())
+            .append(Ps5Link.recentEndings().takeIf { it.isNotEmpty() }?.let { "\nPlayStation ukončil spojení:\n  " + it.joinToString("\n  ") } ?: "")
             .append(TranslatorService.startError?.let { "\nChyba spuštění: $it" } ?: "")
 
         val crash = CrashLog.last(c)

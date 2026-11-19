@@ -6,6 +6,7 @@ package cz.playlingo.core
  * `%d` = počet sekund.
  */
 internal val DIAG_S: Map<String, Pair<String, String>> = mapOf(
+    "ls_ended" to ("PlayStation spojení ukončil sám (%s). Aplikace to za chvíli zkusí znovu." to "PlayStation spojenie ukončil sám (%s). Aplikácia to o chvíľu skúsi znova."),
     "ls_off" to ("Překlad neběží" to "Preklad nebeží"),
     "ls_paused" to ("Překlad je pozastavený" to "Preklad je pozastavený"),
     "ls_demo" to ("Běží zkouška bez PlayStationu" to "Beží skúška bez PlayStationu"),
@@ -37,6 +38,7 @@ internal val DIAG_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val DIAG_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "ls_ended" to "The PlayStation ended the connection itself (%s). The app will try again shortly.",
         "ls_off" to "Translation is not running",
         "ls_paused" to "Translation is paused",
         "ls_demo" to "The demo without a PlayStation is running",
@@ -66,6 +68,7 @@ internal val DIAG_X: Map<Lang, Map<String, String>> = mapOf(
         "cr_note" to "The app closed unexpectedly last time. If it happens again, please send a report:",
     ),
     Lang.PL to mapOf(
+        "ls_ended" to "PlayStation sam zakończył połączenie (%s). Aplikacja za chwilę spróbuje ponownie.",
         "ls_off" to "Tłumaczenie nie działa",
         "ls_paused" to "Tłumaczenie jest wstrzymane",
         "ls_demo" to "Działa próba bez PlayStation",
@@ -95,6 +98,7 @@ internal val DIAG_X: Map<Lang, Map<String, String>> = mapOf(
         "cr_note" to "Ostatnio aplikacja nieoczekiwanie się zamknęła. Jeśli to się powtórzy, wyślij zgłoszenie:",
     ),
     Lang.DE to mapOf(
+        "ls_ended" to "Die PlayStation hat die Verbindung selbst beendet (%s). Die App versucht es gleich erneut.",
         "ls_off" to "Übersetzung läuft nicht",
         "ls_paused" to "Übersetzung ist pausiert",
         "ls_demo" to "Test ohne PlayStation läuft",
@@ -124,6 +128,7 @@ internal val DIAG_X: Map<Lang, Map<String, String>> = mapOf(
         "cr_note" to "Die App wurde letztes Mal unerwartet beendet. Falls das wieder passiert, schicke bitte einen Bericht:",
     ),
     Lang.HU to mapOf(
+        "ls_ended" to "A PlayStation maga bontotta a kapcsolatot (%s). Az alkalmazás hamarosan újra próbálkozik.",
         "ls_off" to "A fordítás nem fut",
         "ls_paused" to "A fordítás szünetel",
         "ls_demo" to "A PlayStation nélküli próba fut",
@@ -153,6 +158,7 @@ internal val DIAG_X: Map<Lang, Map<String, String>> = mapOf(
         "cr_note" to "Az alkalmazás legutóbb váratlanul bezárult. Ha újra megtörténik, küldj jelentést:",
     ),
     Lang.UK to mapOf(
+        "ls_ended" to "PlayStation сама завершила з’єднання (%s). Застосунок незабаром спробує знову.",
         "ls_off" to "Переклад не запущено",
         "ls_paused" to "Переклад призупинено",
         "ls_demo" to "Працює пробний режим без PlayStation",
@@ -182,6 +188,7 @@ internal val DIAG_X: Map<Lang, Map<String, String>> = mapOf(
         "cr_note" to "Минулого разу застосунок несподівано закрився. Якщо це повториться, надішли звіт:",
     ),
     Lang.ES to mapOf(
+        "ls_ended" to "La PlayStation terminó la conexión por sí misma (%s). La aplicación lo intentará de nuevo enseguida.",
         "ls_off" to "La traducción no está activa",
         "ls_paused" to "La traducción está en pausa",
         "ls_demo" to "Prueba sin PlayStation en marcha",
@@ -211,6 +218,7 @@ internal val DIAG_X: Map<Lang, Map<String, String>> = mapOf(
         "cr_note" to "La última vez la app se cerró inesperadamente. Si vuelve a pasar, envía un informe:",
     ),
     Lang.FR to mapOf(
+        "ls_ended" to "La PlayStation a mis fin elle-même à la connexion (%s). L’application va réessayer sous peu.",
         "ls_off" to "La traduction n’est pas lancée",
         "ls_paused" to "La traduction est en pause",
         "ls_demo" to "Essai sans PlayStation en cours",
@@ -240,6 +248,7 @@ internal val DIAG_X: Map<Lang, Map<String, String>> = mapOf(
         "cr_note" to "La dernière fois, l’application s’est fermée de façon inattendue. Si cela se reproduit, envoie un rapport :",
     ),
     Lang.IT to mapOf(
+        "ls_ended" to "La PlayStation ha chiuso da sola la connessione (%s). L’app riproverà tra poco.",
         "ls_off" to "La traduzione non è attiva",
         "ls_paused" to "La traduzione è in pausa",
         "ls_demo" to "Prova senza PlayStation in corso",

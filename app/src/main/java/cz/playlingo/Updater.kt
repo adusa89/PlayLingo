@@ -62,6 +62,9 @@ object Updater {
     fun remoteVersion(channel: UpdateCheck.Channel): UpdateCheck.Remote? = try {
         val c = java.net.URL(UpdateCheck.url(channel, "version.txt")).openConnection() as java.net.HttpURLConnection
         c.connectTimeout = 5000; c.readTimeout = 5000
+        // vždy čerstvé číslo verze, ne uložené z minula (nová verze se jinak ukázala až po pár spuštěních)
+        c.useCaches = false
+        c.setRequestProperty("Cache-Control", "no-cache")
         try {
             if (c.responseCode == 200) UpdateCheck.parse(c.inputStream.bufferedReader().use { it.readText().take(100) }) else null
         } finally { c.disconnect() }

@@ -47,6 +47,22 @@ class Ps5Link(
             private set
         @Volatile var needsLoginPin = false
             private set
+        /**
+         * Důvod, se kterým spojení naposledy ukončil sám PlayStation (null = neukončil, nebo se od té
+         * doby zase spojilo). Jen pro zobrazení na Domů – na opakování spojení nemá vliv.
+         */
+        @Volatile var endedByConsole: String? = null
+            private set
+        private val endings = ArrayDeque<String>()
+
+        /** Posledních pár ukončení ze strany PlayStationu (čas, důvod, jak dlouho spojení vydrželo) pro hlášení. */
+        fun recentEndings(): List<String> = synchronized(endings) { endings.toList() }
+
+        private fun noteEnding(line: String) = synchronized(endings) {
+            endings.addLast(line)
+            while (endings.size > 8) endings.removeFirst()
+        }
+
         /** Kdy se navázalo právě běžící spojení (uptime, 0 = nespojeno) – pro stav „obraz přichází“. */
         @Volatile var connectedSince = 0L
             private set
@@ -78,6 +94,7 @@ class Ps5Link(
 
     override fun start() {
         stopped = false
+        endedByConsole = null
         exec.execute { connect() }
     }
 
@@ -121,6 +138,7 @@ class Ps5Link(
                 log("connected")
                 state = Ps5.Link.CONNECTED
                 reason = null
+                endedByConsole = null
                 connectedAt = SystemClock.uptimeMillis()
                 sessionConnectedAt = connectedAt
                 connectedSince = connectedAt
@@ -137,6 +155,12 @@ class Ps5Link(
             is QuitEvent -> {
                 log("quit ${e.reason} ${e.reasonString ?: ""}")
                 reason = e.reasonString?.takeIf { it.isNotBlank() } ?: e.reason.toString()
+                if (!stopped) {
+                    endedByConsole = reason
+                    val held = if (sessionConnectedAt > 0) (SystemClock.uptimeMillis() - sessionConnectedAt) / 1000 else -1
+                    val time = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT).format(java.util.Date())
+                    noteEnding("$time ${e.reason} ${reason}" + (if (held >= 0) " · spojení trvalo $held s" else " · před spojením"))
+                }
                 exec.execute { drop(s); failed() }
             }
             else -> {}

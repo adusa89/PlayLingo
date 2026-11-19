@@ -699,6 +699,10 @@ class MainActivity : Activity() {
             val ls = TranslatorService.linkStatus()
             status.addView(ui.text("● " + cz.playlingo.core.LinkStatus.line(Prefs.uiLang(this), ls, Prefs.console(this)), 15f,
                 if (ls.warning) Theme.WARN else if (ls.image) Theme.OK else Theme.MUTED).apply { tag = "linkline" }, ui.lp(top = 8))
+            // spojení ukončil sám PlayStation: ukázat jeho důvod, ať je vidět, že nejde o výpadek sítě
+            if (!ls.console && Prefs.console(this) == Console.PLAYSTATION) Ps5Link.endedByConsole?.let { why ->
+                status.addView(ui.text(t("ls_ended").replace("%s", why), 14f, Theme.WARN), ui.lp(top = 4))
+            }
         }
         add(status, 18)
         if (crashNote) add(ui.card().apply {
@@ -1860,6 +1864,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.86"
-    const val VERSION_CODE = 86
+    const val VERSION = "verze 0.87"
+    const val VERSION_CODE = 87
 }
