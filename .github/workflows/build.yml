@@ -19,6 +19,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle     # knihovny se nestahují při každém běhu znovu
 
       - name: Nástroje pro nativní část (spojení s PlayStationem)
         run: |
@@ -78,6 +79,27 @@ jobs:
             TestPreklad.apk
             podpis.txt
 
+      # Rozpracované větve: APK jde do zkušebního kanálu hned, jak je sestavené a podepsané (asi 5 minut
+      # od odeslání), a nečeká čtvrt hodiny na emulátory. Kanál má zapnutý jen ten, kdo verze zkouší.
+      # Jak zkoušky dopadly, se do popisu vydání doplní potom (úloha „Vydat APK ke stažení“).
+      # Hlavní větve se to netýká: verze pro všechny vychází dál až po úspěšné zkoušce.
+      - name: Zkušební kanál hned po sestavení
+        if: startsWith(github.ref, 'refs/heads/') && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/zaloha-')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(cat podpis.txt 2>/dev/null)" != "stálý" ]; then
+            echo "::warning::APK není podepsané stálým klíčem, proto se do zkušebního kanálu nevydává (zůstává tam předchozí verze)."
+            exit 0
+          fi
+          CODE=$(grep -oE 'versionCode = [0-9]+' app/build.gradle.kts | grep -oE '[0-9]+')
+          NAME=$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | cut -d'"' -f2)
+          mkdir -p "$RUNNER_TEMP/zkusebni"
+          echo "$CODE $NAME" > "$RUNNER_TEMP/zkusebni/version.txt"
+          cp TestPreklad.apk "$RUNNER_TEMP/zkusebni/PlayLingo.apk"
+          gh release delete zkusebni --yes --cleanup-tag || true
+          gh release create zkusebni "$RUNNER_TEMP/zkusebni/PlayLingo.apk" "$RUNNER_TEMP/zkusebni/version.txt" --target "$GITHUB_SHA" --prerelease --latest=false --title "PlayLingo – zkušební verze $NAME" --notes "Zkušební verze $NAME z větve ${GITHUB_REF#refs/heads/}. Sestavená a podepsaná stálým klíčem; zkouška v emulátoru teprve běží. Nabídne se jen tomu, kdo má v aplikaci zapnuté Zkušební verze."
+
       - name: Sestavení zkušební verze pro emulátor (x86)
         run: |
           ./gradlew assembleDebug --no-daemon -Pabis=x86
@@ -136,10 +158,14 @@ jobs:
             exit 0
           fi
           PODPIS="Podpis: $(cat podpis.txt)."
-          # Rozpracované větve: zkušební kanál. Nemění „latest“ ani vydání pod číslem verze.
+          # Rozpracované větve: APK už ve zkušebním kanálu je (vyšlo hned po sestavení). Tady se jen
+          # do popisu doplní, že prošlo zkouškou – pokud mezitím kanál nepřepsalo novější odeslání.
           if [ "$GITHUB_REF" != "refs/heads/main" ] && [ "${GITHUB_REF#refs/heads/zaloha-}" = "$GITHUB_REF" ]; then
-            gh release delete zkusebni --yes --cleanup-tag || true
-            gh release create zkusebni PlayLingo.apk version.txt --target "$GITHUB_SHA" --prerelease --latest=false --title "PlayLingo – zkušební verze $NAME" --notes "Zkušební verze $NAME z větve ${GITHUB_REF#refs/heads/}, vyzkoušená v emulátoru Android TV. Nabídne se jen tomu, kdo má v aplikaci zapnuté Nastavení → Zkušební verze. $PODPIS"
+            if [ "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/zkusebni" --jq .object.sha 2>/dev/null)" = "$GITHUB_SHA" ]; then
+              gh release edit zkusebni --notes "Zkušební verze $NAME z větve ${GITHUB_REF#refs/heads/}, vyzkoušená v emulátoru Android TV. Nabídne se jen tomu, kdo má v aplikaci zapnuté Zkušební verze. $PODPIS"
+            else
+              echo "Zkušební kanál už patří jinému odeslání – popis se nemění."
+            fi
             exit 0
           fi
           # Každá verze zůstává ke stažení natrvalo pod vlastním číslem (záloha, ke které se dá vrátit).

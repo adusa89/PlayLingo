@@ -44,12 +44,14 @@ Každý push (na jakoukoli větev) spustí GitHub Actions:
 1. unit testy (`./gradlew testDebugUnitTest`),
 2. sestavení APK pro televize (ARM) a zkušebního APK pro emulátor (x86),
 3. zkoušku v emulátoru Android TV na Androidu 9, 11, 13 a 14 (`ci/emulator-test.sh`),
-4. vydání, jen když zkouška prošla:
-   - z `main` → `latest` (nabídne se všem) a vydání pod číslem verze,
-   - z větví `zaloha-…` → jen vydání pod číslem verze,
-   - z ostatních větví → zkušební kanál `zkusebni` (nabídne se jen tomu, kdo má v aplikaci
-     zapnuté Nastavení → Zkušební verze). Tak se nové věci zkoušejí na televizi uživatele,
-     aniž by šly všem.
+4. vydání:
+   - z `main` → `latest` (nabídne se všem) a vydání pod číslem verze – **jen když zkouška prošla**,
+   - z větví `zaloha-…` → jen vydání pod číslem verze, také až po zkoušce,
+   - z ostatních větví → zkušební kanál `zkusebni` (nabídne se jen tomu, kdo má v aplikaci zapnuté
+     Zkušební verze). Sem jde APK **hned po sestavení a kontrole podpisu**, asi 5 minut od odeslání,
+     a na emulátory nečeká (krok „Zkušební kanál hned po sestavení“ v úloze `build`). Až zkoušky
+     projdou, doplní se to do popisu vydání. Ve zkušebním kanálu tedy může být i verze, která
+     zkouškou neprošla – než ji uživateli doporučíš, podívej se na výsledek běhu.
 
 Když v sezení není Android SDK (`ANDROID_HOME` je prázdné), nejde APK sestavit místně. Kód ale
 jde přeložit a unit testy pustit: `cd ci/mistni-kontrola && gradle test` (asi minuta). Dělej to
