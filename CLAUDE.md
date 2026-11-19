@@ -79,8 +79,9 @@ pomocník, celá aplikace v telefonu v šesti velikostech displeje a písma (mal
 velký, na šířku, tablet) a překlad ukázkové hry. Výsledky a snímky jsou ve větvích
 `test-results-phone30` a `-phone34` (snímky `p1_…` pomocník, `p2_<velikost>_<stránka>` celá
 aplikace). Zatím vydání nezdržuje. Po každé změně rozložení si ty snímky prohlédni.
-Přihlašovací stránka Sony uvnitř pomocníka se zkouší jen na Androidu 11: emulátor Androidu 14
-při jejím vykreslení spadl celý (dvakrát ze dvou běhů). Když emulátor během zkoušky přestane
+Přihlašovací stránka Sony uvnitř pomocníka se v telefonu zkouší jen na Androidu 11 a v Android TV
+jen do Androidu 13 (snímek `12p`): emulátor Androidu 14 při jejím vykreslení zamrzne celý (telefon
+dvakrát ze dvou běhů, Android TV 19. 11. 2026 třikrát ze čtyř – zkouška pak stála do limitu 50 minut). Když emulátor během zkoušky přestane
 odpovídat, je v `result.txt` řádek `EMULATOR SPADL` s částí, před kterou se to stalo – to je
 chyba emulátoru, ne aplikace, a stačí běh pustit znovu.
 

@@ -79,9 +79,16 @@ sleep 8; shot 12n_ucet_z_telefonu
 #     televize čeká na účet; pak přihlašovací stránka Sony uvnitř aplikace.
 adb shell "am start -n $PKG/.PhoneHelperActivity -a android.intent.action.VIEW -d 'playlingo://login?h=10.0.2.15&p=8765&k=abcd2345&l=cs'"
 sleep 4; shot 12o_pomocnik
-adb shell "am start -n $PKG/.PhoneHelperActivity -a android.intent.action.VIEW -d 'playlingo://login?h=10.0.2.15&p=8765&k=abcd2345&l=cs' --ez helperlogin true"
-sleep 25; shot 12p_pomocnik_prihlaseni
-key 4; sleep 1; key 4; sleep 1; key 4; sleep 1
+#     Přihlašovací stránka Sony jen do Androidu 13: emulátor Androidu 14 (na GitHubu bez grafické
+#     karty) při jejím vykreslení zamrzne celý a zkouška pak stojí až do limitu 50 minut (19. 11. 2026
+#     třikrát ze čtyř běhů, vždy na snímku 12p; stejně jako v ci/phone-test.sh). Přihlášení u Sony
+#     emulátor stejně neověří – to umí jen skutečné zařízení.
+SDK=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
+if [ "${SDK:-0}" -lt 34 ]; then
+  adb shell "am start -n $PKG/.PhoneHelperActivity -a android.intent.action.VIEW -d 'playlingo://login?h=10.0.2.15&p=8765&k=abcd2345&l=cs' --ez helperlogin true"
+  sleep 25; shot 12p_pomocnik_prihlaseni
+  key 4; sleep 1; key 4; sleep 1; key 4; sleep 1
+fi
 
 # 6c) zkouška překladu: typické herní repliky projdou překladem stejně jako titulky ze hry.
 #     Do výsledku se nepočítá; věty a jejich překlad jsou v preklad.txt (podle nich se ladí přirozenost).
