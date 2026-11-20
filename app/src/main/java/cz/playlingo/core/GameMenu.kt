@@ -150,7 +150,7 @@ object GameMenu {
 /**
  * Menu otevřené na obrazovce v čase: položky se **doplňují** (jedno čtení občas některou vynechá – menu tím
  * neblikne), vybraná se pozná i jako ta, která v čtení chybí (bílý pruh s tmavým písmem se čte špatně), a menu
- * zmizí až po [MISSES] čteních bez něj za sebou. [update] vrací, co ukázat (null = nic), a jestli se to změnilo.
+ * zmizí až po [MISSES] čteních bez něj za sebou (4 × 0,4 s – při posunu výběru hra menu na okamžik překreslí). [update] vrací, co ukázat (null = nic), a jestli se to změnilo.
  */
 class MenuTracker(private val spec: MenuSpec) {
     private var kind: String? = null
@@ -194,5 +194,5 @@ class MenuTracker(private val spec: MenuSpec) {
         return Result(v, changed)
     }
 
-    companion object { const val MISSES = 2 }
+    companion object { const val MISSES = 4 }
 }

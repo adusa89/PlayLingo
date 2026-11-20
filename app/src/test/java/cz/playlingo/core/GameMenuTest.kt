@@ -88,8 +88,8 @@ class GameMenuTest {
         r = t.update(read("Map", "Store", "Help", "Photo Studio", "Settings"))
         assertEquals(listOf("Map", "Game", "Store", "Help", "Photo Studio", "Settings"), r.view!!.items)
         assertEquals(1, r.view!!.selected)
-        // jedno čtení bez menu → nic se nemění (neblikne), druhé → menu zavřené
-        assertEquals(false, t.update(null).changed)
+        // čtení bez menu → nic se nemění (neblikne), až po MISSES za sebou → menu zavřené
+        repeat(MenuTracker.MISSES - 1) { assertEquals(false, t.update(null).changed) }
         assertNull(t.update(null).view)
     }
 }

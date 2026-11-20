@@ -759,7 +759,7 @@ class TranslatorService : Service() {
      */
     private suspend fun checkMenu(now: Long, ov: SubtitleOverlay): Boolean {
         val spec = menuSpec ?: return false
-        if (now - menuCheckAt < (if (menuShown) 700 else 1500)) return menuShown
+        if (now - menuCheckAt < (if (menuShown) 400 else 1500)) return menuShown
         if (!menuShown && ov.isShown) return false
         menuCheckAt = now
         val crop = reader?.grabMenu(0.6f) ?: return menuShown
@@ -771,7 +771,7 @@ class TranslatorService : Service() {
         val tracker = menuTracker ?: cz.playlingo.core.MenuTracker(spec).also { menuTracker = it }
         val (view, changed) = tracker.update(cz.playlingo.core.GameMenu.read(lines, crop.fullW, crop.fullH, spec))
         if (view == null) {
-            if (menuShown) { menuShown = false; menuKey = ""; ov.hide(); tp("MENU|off") }
+            if (menuShown) { menuShown = false; menuKey = ""; ov.hide(); tp("MENU|off|" + lines.take(10).joinToString(" / ") { it.text.take(30) }) }
             return false
         }
         if (changed || view.key != menuKey) {
