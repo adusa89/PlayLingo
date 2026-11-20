@@ -61,6 +61,15 @@ class GameMenuTest {
         assertNull(GameMenu.read(listOf(line("Map", 22, 200), line("Store", 22, 230)), w, h, spec))
     }
 
+    @Test fun boxNeverMovesDownWhileMenuIsOpen() {
+        val t = MenuTracker(spec)
+        fun read(y: Float, vararg items: String) = MenuView("pause", items.toList(), -1, box = 0.3f to y)
+        // vybraná horní „Map“ se přečetla → seznam začíná u ní
+        assertEquals(0.25f, t.update(read(0.25f, "Map", "Game", "Store")).view!!.box!!.second, 0.001f)
+        // další čtení ji vynechá (začíná u Game níž) → pozice zůstane
+        assertEquals(0.25f, t.update(read(0.28f, "Game", "Store", "Help")).view!!.box!!.second, 0.001f)
+    }
+
     @Test fun selectedNeedsClearlyBrighterRow() {
         assertEquals(-1, GameMenu.selected(listOf(60, 70, 80)))
         assertEquals(1, GameMenu.selected(listOf(60, 200, 70)))

@@ -89,10 +89,12 @@ object GameMenu {
             description = body.joinToString(" ") { it.text.trim() }.replace(Regex("\\s+"), " ").trim().ifEmpty { null }
             below = ((body.maxOfOrNull { it.bottom } ?: head.bottom) + lineH * 2).toFloat()
         }
-        // překlad v pravém sloupci pod anglickým popisem (tam je volno)
+        // překlad v pravém sloupci pod anglickým popisem (tam je volno) – pevně, ať neskáče podle délky popisu:
+        // popis v GTA VI končí nejníž kolem 30 % výšky (snímky majitele), pod ním je prázdno
         val x = (head?.left?.toFloat()?.div(w) ?: 0.55f)
+        val y = maxOf(0.34f, below / h).coerceAtMost(0.7f)
         return MenuView("settings", tabs.map { it.first }, selected(tabs.map { it.second }),
-            head?.text?.trim()?.let { titleCase(it) }, description, tabs.map { it.third }, x to (below / h).coerceAtMost(0.7f))
+            head?.text?.trim()?.let { titleCase(it) }, description, tabs.map { it.third }, x to y)
     }
 
     /** Záložky v jednom řádku: najde známé názvy zleva doprava; jas každé odhadne podle její části řádku. */
@@ -178,7 +180,15 @@ class MenuTracker(private val spec: MenuSpec) {
             val missing = items.filter { it !in read.items }
             if (missing.size == 1) sel = items.indexOf(missing[0])
         }
-        val v = read.copy(items = items, selected = sel, tops = items.map { tops[it] ?: 0 }, box = read.box ?: last?.box)
+        // místo překladu drží během otevřeného menu pozici: nikdy se neposune dolů (vybraná horní položka se občas
+        // nepřečte a seznam by „ujel“ o řádek – majitel 20. 11. 2026), jen nahoru, když se najde výš položená položka
+        val prev = last?.takeIf { it.kind == read.kind }?.box
+        val box = when {
+            prev == null -> read.box
+            read.box == null -> prev
+            else -> prev.first to minOf(prev.second, read.box.second)
+        }
+        val v = read.copy(items = items, selected = sel, tops = items.map { tops[it] ?: 0 }, box = box)
         val changed = v.key != last?.key
         last = v
         return Result(v, changed)
