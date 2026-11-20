@@ -323,7 +323,7 @@ object GameProfiles {
         "Donnie", "Shirley", "Vicki", "Frankie", "Andrea", "Nicole", "Petra", "Valentina", "Manuel", "Benedict",
         "Delights", "Cheetah", "Elegy", "Moreau", "Salton", "Southwind", "Millport", "M7", "Kingfishers", "Final Chapter",
         "The Chamber", "Game", "Map", "Help", "Save", "Store", "Progress", "Brief", "Settings",
-    ) + GTA6_COMMON + Gta5.COMMON + Rdr2.COMMON + AlanWake2.COMMON + ReRequiem.COMMON + Bond007.COMMON
+    ) + GTA6_COMMON + Gta5.COMMON + Rdr2.COMMON + AlanWake2.COMMON + ReRequiem.COMMON + Bond007.COMMON + Diablo4.COMMON
 
     val GAMES: List<GameProfile> = listOf(
         GameProfile("rdr2", "Red Dead Redemption 2", RDR2, Rdr2.CAST, Rdr2.TERMS, Rdr2.HUD, Rdr2.MENU),
@@ -332,6 +332,7 @@ object GameProfiles {
         GameProfile("alanwake2", "Alan Wake 2", AlanWake2.NAMES.distinct(), AlanWake2.CAST, hud = AlanWake2.HUD, menu = AlanWake2.MENU),
         GameProfile("re9", "Resident Evil Requiem", ReRequiem.NAMES.distinct(), ReRequiem.CAST, ReRequiem.TERMS, ReRequiem.HUD, ReRequiem.MENU),
         GameProfile("bond", "007 First Light", Bond007.NAMES.distinct(), Bond007.CAST),
+        GameProfile("diablo4", "Diablo IV", Diablo4.NAMES.distinct(), Diablo4.CAST, Diablo4.TERMS, Diablo4.HUD, Diablo4.MENU),
         GameProfile("tlou", "The Last of Us", TLOU, TLOU_CAST),
         GameProfile("gow", "God of War", GOW, GOW_CAST),
         GameProfile("spiderman", "Spider-Man", SPIDERMAN, SPIDERMAN_CAST),

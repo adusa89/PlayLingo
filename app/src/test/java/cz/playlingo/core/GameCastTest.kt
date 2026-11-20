@@ -137,5 +137,7 @@ class GameCastTest {
         g.onText("SAGA: The Oh Deer Diner in Bright Falls.")
         g.onText("We should go back to Cauldron Lake.")
         assertEquals("alanwake2", g.guess()?.id)
+        assertEquals(Gender.F, GameProfiles.of("diablo4").cast.genderOf("LILITH"))
+        assertEquals("pevnost", GameProfiles.of("diablo4").termsFor(Lang.CS)["stronghold"])
     }
 }

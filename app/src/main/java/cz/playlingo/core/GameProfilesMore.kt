@@ -1,7 +1,7 @@
 package cz.playlingo.core
 
 /*
- * Profily her přidané 20. 11. 2026 (GTA V, RDR2 navíc, Alan Wake 2, Resident Evil Requiem, 007 First Light).
+ * Profily her přidané 20. 11. 2026 (GTA V, RDR2 navíc, Alan Wake 2, Resident Evil Requiem, 007 First Light, Diablo IV).
  * Data z wiki, oficiálních manuálů a průvodců (sbírali pomocníci; zdroje v historii sezení) – nápisy a menu
  * jsou nejméně jisté, ladí se podle záznamu ze hry (ci/sbirej-hru.ps1). Hry s oficiální češtinou
  * (Cyberpunk 2077, Ghost of Yōtei, Marvel's Wolverine) profil nepotřebují.
@@ -302,4 +302,50 @@ internal object Bond007 {
         f("Cressida Bright", "Cressida"), m("Lennox Monroe", "Monroe"), m("Sir Nicholas Webb", "Sir Nicholas", "Webb"),
         m("Damien Webb", "Damien"), m("009"),
     )
+}
+
+/** Diablo IV (+ Vessel of Hatred, Lord of Hatred) – oficiální češtinu nemá (PS Store: jen polština aj.). */
+internal object Diablo4 {
+    val COMMON = listOf(
+        "Dry Steppes", "Fractured Peaks", "Tree of Whispers", "Cathedral of Light", "Church of the Light", "Knights Penitent",
+        "Burning Hells", "High Heavens", "Pools of Creation", "Sightless Eye", "Cosmic Archives", "Saltwind", "Celestia",
+        "Imperial Library", "Firebreak Manor", "Backwater", "Helltide", "Infernal Hordes", "Nightmare Dungeon",
+        "Echoing Hatred", "Dark Citadel", "Undercity", "Fell Council", "Prime Evil", "Prime Evils", "Lesser Evils",
+        "Hollows", "Wanderer", "Beast in the Ice", "Wandering Death", "Butcher", "Avarice", "Hateborn Abomination",
+        "Harlequin Crest", "Shako", "Doombringer", "The Grandfather", "Ring of Starless Skies", "Melted Heart",
+        "Mother's Embrace", "Heir of Perdition", "Murmuring Obols", "Red Dust", "Aberrant Cinders", "Horadric Cube",
+        "Spiritborn", "Oracle Queen", "Amazon Queen", "Codex of Power",
+        "Diablo", "Baal", "Belial", "Azmodan", "Tyrael", "Margrave", "Elias", "Vigo", "Prava", "Eru", "Iosef", "Donan",
+        "Amazons", "Westmarch", "Tristram", "Sanctuary", "Lycander", "Philios",
+    )
+    val NAMES = COMMON + listOf(
+        "Kyovashad", "Scosglen", "Kehjistan", "Hawezar", "Nahantu", "Skovos", "Skovos Isles", "Temis", "Cetos", "Athulua",
+        "Xanderos", "Atanos", "Skartara", "Ked Bardu", "Cerrigar", "Gea Kul", "Zarbinzet", "Caldeum", "Menestad", "Yelesna",
+        "Nevesk", "Braestaig", "Tarsarak", "Jirandai", "Kor Valar", "Kor Dragan", "Tur Dulra", "Alzuuda", "Vyeresz",
+        "Khanduras", "Kurast", "Kurast Bazaar", "Kurast Undercity", "Travincal", "Akarat's Tomb", "Arreat", "Mount Arreat",
+        "Lilith", "Inarius", "Lorath", "Lorath Nahr", "Neyrelle", "Taissa", "Yorin", "Vhenard", "Nafain", "Timue", "Rathma",
+        "Mephisto", "Astaroth", "Duriel", "Andariel", "Varshan", "Grigoire", "Lord Zir", "Ashava", "Urivar", "Akarat",
+        "Sankekur", "Adreona", "Shi Yugong", "Zoltun Kulle", "Raheir", "Horadrim", "Zakarum", "Que-Hegan", "Triune",
+        "Askari", "Nephalem", "Lilith's Altar", "Tyrael's Might", "Andariel's Visage", "Ahavarion", "Selig", "Nesekem",
+        "Godslayer Crown", "Daughter of Hatred", "Lord of Hatred",
+    )
+    // rod jen u ověřených postav (Vigo, Prava, Vhenard, Nafain, Timue jen jako jména)
+    val CAST = listOf(
+        f("Lilith", "Daughter of Hatred", "Queen of the Succubi"), m("Inarius"), m("Lorath", "Lorath Nahr"), f("Neyrelle"),
+        m("Donan"), m("Iosef"), m("Elias"), m("Rathma"), m("Mephisto", "Lord of Hatred"), m("Astaroth"),
+        m("Duriel", "Lord of Pain"), f("Andariel", "Maiden of Anguish"), m("Tyrael"), m("Akarat"), m("Eru"), m("Shi Yugong"),
+        f("Adreona", "Amazon Queen"), f("Taissa"), m("Yorin"),
+    )
+    val TERMS = mapOf(
+        "cs" to mapOf("soulstone" to "kámen duší", "waypoint" to "cestovní bod", "stronghold" to "pevnost", "sigil" to "pečeť",
+            "elixir" to "elixír"),
+        "sk" to mapOf("soulstone" to "kameň duší", "waypoint" to "cestovný bod", "stronghold" to "pevnosť", "sigil" to "pečať",
+            "elixir" to "elixír"),
+    )
+    val HUD = listOf("Stronghold Reclaimed", "Level Up", "Quest Completed", "Dungeon Completed", "Waypoint Discovered",
+        "You Died", "Respawn at Checkpoint")
+    val MENU = listOf("Inventory", "Skill Tree", "Paragon", "Codex of Power", "Collections", "Journal", "Quests",
+        "Achievements", "Battle Pass", "Wardrobe", "Options", "Gameplay", "Graphics", "Accessibility", "Controls",
+        "Leave Game", "Exit Game", "Change Character", "Create New", "Online Play", "Campaign Mode", "Seasonal Realm",
+        "Eternal Realm", "Customer Support")
 }
