@@ -640,6 +640,8 @@ private class Aplikace {
             try {
                 var n = najdiPs5(k) ?: return@thread selhalo("PS5 · nenalezena v síti")
                 if (!n.pripravena) {
+                    // probouzet jen se zapnutou volbou (výchozí vypnuto, přání majitele)
+                    if (!nast.probouzet) return@thread selhalo("PS5 · klidový režim · zapni ji ovladačem")
                     val cislo = k.probuzeni ?: return@thread selhalo("PS5 · klidový režim · zapni ji ovladačem")
                     krok = "Probouzení PS5…"; ui()
                     Chiaki.probud(n.adresa, cislo)
@@ -876,6 +878,7 @@ private class Aplikace {
                 else vyber(r, jmena, jmena.indexOf(vybranaKonzole()?.jmeno)) { nast.konzole = jmena[it]; ps5 = null; hledatPs5(); r.obnov() }
             }.also { radky += it })
             add(Radek("Spárovat PS5", { "" }) { sparovat() }.also { radky += it })
+            add(volba("Probouzet PS5", listOf("Ne", "Ano"), { if (nast.probouzet) 1 else 0 }) { nast.probouzet = it == 1 })
             add(Radek("chiaki-ng", { if (stahovani != null) "stahování" else if (Chiaki.exe() != null) "připraveno" else "chybí" }) {
                 if (Chiaki.exe() == null) stahnoutChiaki() else Chiaki.exe()?.parentFile?.let { runCatching { java.awt.Desktop.getDesktop().open(it) } }
             }.also { radky += it })

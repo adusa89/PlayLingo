@@ -33,6 +33,8 @@ class Nastaveni(private val soubor: File = File(Nastroje.slozka, "aplikace.prope
     val ukazka: Boolean get() = zdroj == "ukazka"
     /** Jméno spárované konzole v chiaki-ng (prázdné = první). */
     var konzole: String get() = text("konzole", ""); set(v) = nastav("konzole", v)
+    /** Probouzet PS5 z klidového režimu při Hrát (výchozí vypnuto – PS5 se zapíná ovladačem). */
+    var probouzet: Boolean get() = text("probouzet", "false") == "true"; set(v) = nastav("probouzet", v)
     var jazyk: String get() = text("jazyk", "cs"); set(v) = nastav("jazyk", v)
     /** pc | tv | oboje */
     var vystup: String get() = text("vystup", "pc"); set(v) = nastav("vystup", v)
