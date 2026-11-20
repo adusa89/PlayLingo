@@ -140,13 +140,14 @@ object TvChoice {
         return (name + (model?.let { " $it" } ?: "") + " · " + state) to connected
     }
 
-    fun openInstall(activity: Activity, type: TvType = Prefs.tvType(activity)) {
+    /** [update] = z Domů u starší aplikace v TV LG: rovnou aktualizovat, stránka s přípravou jen při chybě (od 0.97.39). */
+    fun openInstall(activity: Activity, type: TvType = Prefs.tvType(activity), update: Boolean = false) {
         val cls = when (type) {
             TvType.LG -> LgInstallActivity::class.java
             TvType.SAMSUNG -> SamsungInstallActivity::class.java
             TvType.ANDROID -> return
         }
-        activity.startActivity(Intent(activity, cls))
+        activity.startActivity(Intent(activity, cls).putExtra(LgInstallActivity.EXTRA_UPDATE, update && type == TvType.LG))
     }
 
     /** Popisek tlačítka k nahrání aplikace do televize daného typu; u LG se starší verzí „Aktualizovat…“. */

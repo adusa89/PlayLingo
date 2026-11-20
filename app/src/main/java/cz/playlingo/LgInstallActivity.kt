@@ -194,6 +194,9 @@ class LgInstallActivity : Activity() {
         setContentView(scroll)
         render()
         LgDevMode.refresh(this, false) { runOnUiThread { if (!isFinishing && !running) render(true) } }
+        // z Domů „Aktualizovat v TV“: spárovaná TV se známou adresou → rovnou nahrát; jinak stránka s přípravou
+        if (savedInstanceState == null && intent?.getBooleanExtra(EXTRA_UPDATE, false) == true &&
+            ip.isNotEmpty() && runCatching { vault.paired(LgInstall.address(ip)) }.getOrDefault(false)) start(false)
     }
 
     override fun onDestroy() {
@@ -251,11 +254,7 @@ class LgInstallActivity : Activity() {
             // spárovaná TV se známou adresou: hlavní je jedno tlačítko, příprava až na přání
             actions(paired, compact = true)
             add(devRow(), 22)
-            add(tagged(ui.settingRow(t("lg_more"), "$ip ▼", Theme.MUTED) {
-                expanded = true
-                render()
-                content.findViewWithTag<View>("lgip")?.requestFocus()
-            }, "lgmore"), 10)
+            // příprava (adresa, kamera, Passphrase) se ukáže sama, až když něco nejde – bez řádku „Jiná TV…“ (majitel 20. 11. 2026)
         } else {
             // krok za krokem: kroky, které jde poznat, se odškrtávají samy (televize v síti, vývojářský režim, Key Server)
             add(stepsCard(), 18)
@@ -457,6 +456,8 @@ class LgInstallActivity : Activity() {
     companion object {
         private const val REQ_CAMERA = 41
         private const val REQ_SCAN = 42
+        /** Otevřeno z Domů „Aktualizovat v TV“: spárovanou TV rovnou aktualizovat. */
+        const val EXTRA_UPDATE = "update"
 
         /** Řádek o vývojářském režimu (text, upozornit?) – i pro Nastavení a pomocníka v telefonu. */
         fun devLine(c: Context): Pair<String, Boolean> {
