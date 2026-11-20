@@ -123,6 +123,12 @@ rod, pojmy a co v titulcích přeskočit, jiná místa obrazovky se nečtou; **T
 zná profil (GTA VI: prompty pro hráče pod titulky; Diablo IV: úkol, menu, tooltipy – `navrhy/preklad-menu.md`).
 Texty hry se nemíchají s replikami v pruhu. Bez profilu (univerzální) jen titulky.
 
+**Texty hry od 0.97.24 (aplikace v TV 1.5.5):** volba Titulky → Hra → „Rozsah čtení“ (`Prefs.gameTexts`, výchozí titulky
+a texty hry). GTA (profil `prompts = true`): poslední krátký řádek bez mluvčího a bez interpunkce pod replikou je pokyn
+(`TextLogic.markPrompt`, `Segment.prompt`) – překládá se zvlášť, v pruhu menší šedý řádek, do TV `{"pokyn":true}`; s „jen
+titulky“ ho `SubtitleOverlay` vynechá. Diablo IV: chat se nečte (`GameProfile.skip`, regex v `Diablo4.SKIP`), mluvčí
+„Jachal says:“ (`SPEAKER_SAYS`). Jason má i přezdívku J-dog.
+
 **Profil hry dál (od 0.97.4)**, vše v `core/GameProfiles.kt` (testy `GameCastTest`):
 - `terms` – herní pojmy s pevným překladem po jazycích (jdou do `Prefs.glossary` před vlastní slovník, ten má
   přednost); jen pojmy, které mají v 1. a 4. pádě stejný tvar (výraz se vkládá do věty hotový).

@@ -6,6 +6,9 @@ package cz.playlingo.core
  */
 internal val GAME_S: Map<String, Pair<String, String>> = mapOf(
     "gp_profile" to ("Profil hry" to "Profil hry"),
+    "gp_scope" to ("Rozsah čtení" to "Rozsah čítania"),
+    "gp_scope_all" to ("titulky a texty hry" to "titulky a texty hry"),
+    "gp_scope_subs" to ("jen titulky" to "len titulky"),
     "gp_guess_desc" to ("Jména v titulcích odpovídají hře %s. Po přepnutí profilu budou jména, rod postav a pojmy přesně podle ní." to "Mená v titulkoch zodpovedajú hre %s. Po prepnutí profilu budú mená, rod postáv a pojmy presne podľa nej."),
     "gp_switch" to ("Přepnout" to "Prepnúť"),
     "gp_keep" to ("Nechat" to "Nechať"),
@@ -19,6 +22,9 @@ internal val GAME_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "gp_scope" to "Reading scope",
+        "gp_scope_all" to "subtitles and game texts",
+        "gp_scope_subs" to "subtitles only",
         "gp_profile" to "Game profile",
         "gp_guess_desc" to "Names in the subtitles suggest %s. Switch the game profile? Names, character genders and terms will then match this game exactly.",
         "gp_switch" to "Switch",
@@ -31,6 +37,9 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_skip" to "Full-screen texts · skipped",
     ),
     Lang.PL to mapOf(
+        "gp_scope" to "Zakres czytania",
+        "gp_scope_all" to "napisy i teksty gry",
+        "gp_scope_subs" to "tylko napisy",
         "gp_profile" to "Profil gry",
         "gp_guess_desc" to "Według imion w napisach to chyba %s. Przełączyć profil gry? Imiona, płeć postaci i pojęcia będą wtedy dokładnie według tej gry.",
         "gp_switch" to "Przełącz",
@@ -43,6 +52,9 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_skip" to "Napisy na cały ekran · pomijane",
     ),
     Lang.DE to mapOf(
+        "gp_scope" to "Leseumfang",
+        "gp_scope_all" to "Untertitel und Spieltexte",
+        "gp_scope_subs" to "nur Untertitel",
         "gp_profile" to "Spielprofil",
         "gp_guess_desc" to "Die Namen in den Untertiteln deuten auf %s hin. Spielprofil wechseln? Namen, Geschlecht der Figuren und Begriffe passen dann genau zu diesem Spiel.",
         "gp_switch" to "Wechseln",
@@ -55,6 +67,9 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_skip" to "Bildschirmtexte · übersprungen",
     ),
     Lang.HU to mapOf(
+        "gp_scope" to "Olvasás köre",
+        "gp_scope_all" to "feliratok és játékszövegek",
+        "gp_scope_subs" to "csak feliratok",
         "gp_profile" to "Játékprofil",
         "gp_guess_desc" to "A feliratokban szereplő nevek alapján ez %s. Átváltod a játékprofilt? A nevek, a szereplők neme és a kifejezések ekkor pontosan ehhez a játékhoz igazodnak.",
         "gp_switch" to "Átváltás",
@@ -67,6 +82,9 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_skip" to "Teljes képernyős feliratok · kihagyva",
     ),
     Lang.UK to mapOf(
+        "gp_scope" to "Обсяг читання",
+        "gp_scope_all" to "субтитри й тексти гри",
+        "gp_scope_subs" to "лише субтитри",
         "gp_profile" to "Профіль гри",
         "gp_guess_desc" to "За іменами в субтитрах це схоже на %s. Перемкнути профіль гри? Імена, рід персонажів і терміни тоді будуть точно за цією грою.",
         "gp_switch" to "Перемкнути",
@@ -79,6 +97,9 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_skip" to "Написи на весь екран · пропускаються",
     ),
     Lang.ES to mapOf(
+        "gp_scope" to "Alcance de lectura",
+        "gp_scope_all" to "subtítulos y textos del juego",
+        "gp_scope_subs" to "solo subtítulos",
         "gp_profile" to "Perfil del juego",
         "gp_guess_desc" to "Por los nombres de los subtítulos parece %s. ¿Cambiar el perfil del juego? Los nombres, el género de los personajes y los términos se ajustarán exactamente a este juego.",
         "gp_switch" to "Cambiar",
@@ -91,6 +112,9 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_skip" to "Textos a pantalla completa · se omiten",
     ),
     Lang.FR to mapOf(
+        "gp_scope" to "Portée de lecture",
+        "gp_scope_all" to "sous-titres et textes du jeu",
+        "gp_scope_subs" to "sous-titres seulement",
         "gp_profile" to "Profil du jeu",
         "gp_guess_desc" to "D’après les noms dans les sous-titres, cela ressemble à %s. Changer de profil de jeu ? Les noms, le genre des personnages et les termes correspondront alors exactement à ce jeu.",
         "gp_switch" to "Changer",
@@ -103,6 +127,9 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_skip" to "Textes plein écran · ignorés",
     ),
     Lang.IT to mapOf(
+        "gp_scope" to "Ambito di lettura",
+        "gp_scope_all" to "sottotitoli e testi del gioco",
+        "gp_scope_subs" to "solo sottotitoli",
         "gp_profile" to "Profilo del gioco",
         "gp_guess_desc" to "Dai nomi nei sottotitoli sembra %s. Cambiare profilo del gioco? Nomi, genere dei personaggi e termini corrisponderanno esattamente a questo gioco.",
         "gp_switch" to "Cambia",

@@ -52,6 +52,8 @@ class SubtitleOverlay(
     private val matchOriginalSize: Boolean = false,
     /** Okraj nad a pod textem 0–3 ([Prefs.BAR_PADS]). */
     private val barPad: Int = 1,
+    /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky a texty hry), nebo vynechat (Jen titulky). */
+    private val showPrompts: Boolean = true,
     /**
      * Dostane každou změnu pruhu: text překladu a jeho řádky zvlášť s barvami jmen a volbami
      * ([TvSender.partsJson]) a vzhled pruhu pro televizi ([TvLook]), nebo null při schování. Tudy jdou titulky i do televize LG
@@ -159,6 +161,13 @@ class SubtitleOverlay(
         segments.forEachIndexed { i, s ->
             if (i > 0) sb.append('\n')
             val lineStart = sb.length
+            if (s.prompt) {
+                // pokyn pro hráče (GTA): menší a šedý, ať se neplete s replikou
+                sb.append(s.body)
+                sb.setSpan(ForegroundColorSpan(originalColor), lineStart, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.setSpan(RelativeSizeSpan(0.75f), lineStart, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                return@forEachIndexed
+            }
             if (s.choice) {
                 // volba odpovědi: odrážka a řádek zarovnaný vlevo, ať je vidět, že jde o seznam
                 sb.append(TextLogic.CHOICE_MARK)
@@ -203,12 +212,13 @@ class SubtitleOverlay(
      * v režimu "přes titulky" se pruh položí přesně přes něj.
      */
     fun show(
-        segments: List<Segment>, original: String?, textTop: Float, textBottom: Float,
+        allSegments: List<Segment>, original: String?, textTop: Float, textBottom: Float,
         textLeft: Float = -1f, textRight: Float = -1f,
         /** Výška řádku originálu jako zlomek výšky obrazu (0 = neznámá). */
         lineHeight: Float = 0f,
     ) {
         isShown = true
+        val segments = if (showPrompts) allSegments else allSegments.filter { !it.prompt }
         val colors = if (coloredSpeaker) speakerColors.colorsFor(segments) else emptyMap()
         onText?.let { send ->
             // televize LG/Samsung: stejný vzhled a poloha jako tady (obrazovka televize 1920×1080)

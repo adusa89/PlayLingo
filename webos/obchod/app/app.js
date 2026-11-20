@@ -437,6 +437,14 @@
     for (i = 0; i < casti.length; i++) {
       c = casti[i] || {};
       radek = document.createElement('div');
+      if (c.pokyn) {
+        // pokyn pro hráče (GTA) – menší a šedý řádek, ne replika (od 1.5.5)
+        seznam = null;
+        radek.className = 'pokyn';
+        radek.textContent = String(c.text || '');
+        t.appendChild(radek);
+        continue;
+      }
       if (c.volba) {
         // volby pod sebou zarovnané vlevo, celý seznam uprostřed pruhu
         if (!seznam) {

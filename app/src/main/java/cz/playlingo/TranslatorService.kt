@@ -239,6 +239,8 @@ class TranslatorService : Service() {
     @Volatile private var glossary: Glossary? = null
     /** Hlášky a menu podle profilu hry (přeskočí se při čtení). */
     @Volatile private var screen: cz.playlingo.core.GameScreen = cz.playlingo.core.GameScreen.EMPTY
+    /** Profil hry píše pod repliky pokyny pro hráče (GTA) – poslední krátký řádek se označí jako pokyn. */
+    @Volatile private var prompts = false
     /** Odhad hry podle jmen v titulcích – jen nabídka v Nastavení, nic se nepřepíná. */
     private val gameGuess = cz.playlingo.core.GameGuess()
 
@@ -408,6 +410,7 @@ class TranslatorService : Service() {
         if (autoFind) layout = layout.copy(read = autoZone.current)
         glossary = Prefs.glossary(this)
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
+        prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
         // změna hry nebo slovníku → dřívější překlady už neplatí
         val sig = Prefs.glossarySignature(this)
         if (sig != Prefs.savedGlossarySignature(this)) {
@@ -442,6 +445,7 @@ class TranslatorService : Service() {
             debug, Prefs.coloredSpeaker(this),
             Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this),
             barPad = Prefs.barPad(this),
+            showPrompts = Prefs.gameTexts(this),
             onText = sender?.let { s -> { text: String?, parts: String?, look: String? -> if (text == null) s.hide() else s.show(text, parts, look) } }
         )
         resetReading()
@@ -862,12 +866,13 @@ class TranslatorService : Service() {
     private suspend fun translateSegments(text: String): List<Segment>? {
         val l = lang   // jazyk se může během překladu změnit – celý text se překládá do jednoho
         val out = ArrayList<Segment>()
-        for (s in TextLogic.segments(text)) {
+        val segs = TextLogic.segments(text).let { if (prompts) TextLogic.markPrompt(it) else it }
+        for (s in segs) {
             val body = TextLogic.normalizeCase(s.body)
             val raw = QuickWords.lookup(l.code, body) ?: translate(l, TextLogic.forTranslator(body)) ?: return null
             // rod postav (mluvčí, oslovený) – až po paměti překladů, ta je jen podle textu
             val tr = glossary?.genders(l, body, raw, s.speaker) ?: raw
-            out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice))
+            out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice, s.prompt))
         }
         return out
     }

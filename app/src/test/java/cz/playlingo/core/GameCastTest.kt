@@ -145,4 +145,24 @@ class GameCastTest {
         assertEquals(true, OfflinePrep.standardize("I'm sick of this.").contains("sick of"))
         assertEquals("pevnost", GameProfiles.of("diablo4").termsFor(Lang.CS)["stronghold"])
     }
+
+    @Test fun promptsSaysAndChat() {
+        // GTA: pokyn pro hráče pod replikou (záznam majitele 20. 11. 2026)
+        val segs = TextLogic.markPrompt(TextLogic.segments("Aviator: What's going on? Hey ladies, you might wanna convince your boyfriends\nTake your shot"))
+        assertEquals(listOf(false, true), segs.map { it.prompt })
+        assertEquals("Take your shot", segs.last().body)
+        // poslední řádek repliky s interpunkcí ani pokračování malým písmem pokyn není
+        assertEquals(false, TextLogic.markPrompt(TextLogic.segments("Lucia: Keep playing.\nJason: Fine.")).last().prompt)
+        assertEquals(false, TextLogic.markPrompt(TextLogic.segments("Aviator: Hey ladies\nto get up off that table")).last().prompt)
+        assertEquals(false, TextLogic.markPrompt(TextLogic.segments("Take your shot")).last().prompt)   // samotný řádek = nevíme
+        // Diablo IV: „Jachal says: …“ je mluvčí
+        assertEquals("Jachal", TextLogic.splitSpeaker("Jachal says: That's a mighty fine weapon.").speaker)
+        assertEquals("Orell", TextLogic.splitSpeaker("Orell says; The Light is needed.").speaker)
+        // chat se nečte
+        val d = GameProfiles.of("diablo4").screen
+        assertEquals(true, d.isHud("[Trade] TITUS: wtb Greater Lair Key]"))
+        assertEquals(true, d.isHud("Trade) TTUS: wib Greater Lair Keyl"))
+        assertEquals(false, d.isHud("Trade the gold for the key."))
+        assertEquals(Gender.M, GameProfiles.of("gta6").cast.genderOf("J-dog"))
+    }
 }

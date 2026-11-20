@@ -14,7 +14,11 @@ data class OcrBlock(val lines: List<OcrLine>)
  * Část titulku: volitelné jméno mluvčího ("Dutch") a samotný text.
  * [choice] = jedna z voleb odpovědi, které hra nabízí (ukáže se jako položka seznamu).
  */
-data class Segment(val speaker: String?, val body: String, val choice: Boolean = false)
+data class Segment(
+    val speaker: String?, val body: String, val choice: Boolean = false,
+    /** Pokyn pro hráče pod titulkem (GTA: „Take your shot“) – ne replika; ukazuje se zvlášť menším písmem. */
+    val prompt: Boolean = false,
+)
 
 /**
  * Výsledek výběru textu z jedné oblasti obrazovky.
@@ -43,6 +47,8 @@ object TextLogic {
     // "Dutch: We need money." / "Uncle Bob: ..." / "Mary-Beth: ..." (max 3 slova, každé s velkým písmenem)
     // Mezera za dvojtečkou není povinná (OCR ji někdy vynechá), ale pak musí následovat písmeno nebo uvozovka.
     private val SPEAKER = Regex("^([A-Z][A-Za-z'.\\-]{0,20}(?: [A-Z][A-Za-z'.\\-]{0,20}){0,2}):\\s*((?=[A-Za-z\"'(.]).+)$")
+    // "Jachal says: …" / "Jachal says; …" (Diablo IV) – jméno a „says“
+    private val SPEAKER_SAYS = Regex("^([A-Z][A-Za-z'.\\-]{0,20}(?: [A-Z][A-Za-z'.\\-]{0,20}){0,2}) says[:;]\\s*(.+)$")
     // "[Dutch] We need money." – jméno v hranatých závorkách
     private val SPEAKER_BRACKET = Regex("^\\[([A-Za-z][A-Za-z'.\\- ]{0,30})]\\s*(.+)$")
     // samotné jméno na řádku ("DUTCH:" nebo "[Dutch]"), text je až na dalším řádku
@@ -424,7 +430,7 @@ object TextLogic {
     /** Oddělí jméno mluvčího ("Arthur: Hello") od textu. */
     fun splitSpeaker(line: String): Segment {
         val t = line.trim()
-        val m = SPEAKER.find(t) ?: SPEAKER_BRACKET.find(t) ?: return Segment(null, t)
+        val m = SPEAKER_SAYS.find(t) ?: SPEAKER.find(t) ?: SPEAKER_BRACKET.find(t) ?: return Segment(null, t)
         val name = m.groupValues[1].trim()
         if (NOT_SPEAKERS.any { it.equals(name, ignoreCase = true) }) return Segment(null, t)
         return Segment(name, m.groupValues[2].trim())
@@ -487,6 +493,20 @@ object TextLogic {
     }
 
     /** Rozdělí celý text pásu na segmenty (každý řádek může mít svého mluvčího). */
+    /**
+     * Pokyn pro hráče na posledním řádku (GTA: „Take your shot“, „Wait your turn“ pod replikou): bez mluvčího,
+     * 1–6 slov, začíná velkým písmenem, bez interpunkce na konci, a nad ním je aspoň jeden řádek. Takový řádek
+     * se označí [Segment.prompt]. Jen pro hry, jejichž profil to má ([GameProfile.prompts]).
+     */
+    fun markPrompt(segs: List<Segment>): List<Segment> {
+        if (segs.size < 2) return segs
+        val last = segs.last()
+        val words = last.body.split(' ').count { w -> w.any { it.isLetter() } }
+        val ok = last.speaker == null && !last.choice && words in 1..6 && last.body.first().isUpperCase() &&
+            last.body.last() !in ".!?…,\"'”“-–:;" && !isLyrics(last.body)
+        return if (ok) segs.dropLast(1) + last.copy(prompt = true) else segs
+    }
+
     fun segments(text: String): List<Segment> =
         text.split('\n').map { it.trim() }.filter { it.isNotEmpty() }.map { l ->
             if (l.startsWith(CHOICE_MARK.trim())) Segment(null, l.removePrefix(CHOICE_MARK.trim()).trim(), choice = true)

@@ -1382,6 +1382,10 @@ class MainActivity : Activity() {
                 } catch (_: Exception) {}
             }, "gameguess"), 8)
         }
+        // rozsah čtení: jen titulky, nebo i texty hry z profilu (prompty v GTA…)
+        if (game.id != "all") add(tagged(ui.settingRow(t("gp_scope"), t(if (Prefs.gameTexts(this)) "gp_scope_all" else "gp_scope_subs")) {
+            Prefs.setGameTexts(this, !Prefs.gameTexts(this)); applyToService(); render(true)
+        }, "gamescope"), 8)
         add(tagged(ui.settingRow(t("gp_list"), if (gameListOpen) "▲" else "▼") { gameListOpen = !gameListOpen; render(true) }, "gamelist"), 8)
         if (!gameListOpen) return
         add(ui.text(t("t_game_desc") + " " + t("t_game_deepl"), 14f, Theme.MUTED), 8)
@@ -2201,6 +2205,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.23"
-    const val VERSION_CODE = 120
+    const val VERSION = "verze 0.97.24"
+    const val VERSION_CODE = 121
 }

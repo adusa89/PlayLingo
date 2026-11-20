@@ -50,7 +50,7 @@
 
   window.PlayLingoTv = {
     platforma: 'webos',
-    verze: '1.5.4',
+    verze: '1.5.5',
 
     // hotovo(model, system) – jen když televize odpoví
     zjistiTelevizi: function (hotovo) {

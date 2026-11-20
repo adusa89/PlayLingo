@@ -176,6 +176,10 @@ object Prefs {
     fun setReaderDevice(c: Context, v: Boolean) = setBool(c, "reader_device", v)
 
     // ---- hra a slovník ----
+    /** Rozsah čtení u hry s profilem: true = titulky a texty hry (prompty…), false = jen titulky. Výchozí ano. */
+    fun gameTexts(c: Context): Boolean = bool(c, "game_texts", true)
+    fun setGameTexts(c: Context, v: Boolean) = setBool(c, "game_texts", v)
+
     /** Okraj pruhu nad a pod textem 0–3 (násobek velikosti písma, viz [BAR_PADS]); výchozí 1. */
     val BAR_PADS = floatArrayOf(0.04f, 0.16f, 0.32f, 0.5f)
     fun barPad(c: Context): Int = p(c).getInt("bar_pad", 1).coerceIn(0, 3)
