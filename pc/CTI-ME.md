@@ -14,7 +14,7 @@ z okna. Druhý účet ani přihlášení přes telefon tu nejsou potřeba. Zatí
 **Dvojklik na `pc\PlayLingo.cmd`** otevře okno aplikace (při prvním spuštění a po změně kódu se
 předtím asi minutu sestavuje). Potřebuje Javu 17 (Temurin) a pro Připravit i Python 3.10+.
 
-- **Domů** – velký stav (Připraveno / Hledání PS5… / Probouzení PS5… (jen se zapnutou volbou „Probouzet PS5“ v Nastavení, výchozí vypnuto) / Spouštění hry… / Běží /
+- **Domů** – velký stav (Připraveno / Hledání PS5… / Probouzení PS5… / Spouštění hry… / Běží /
   Čeká na okno hry / Chybí příprava), Hrát (u chiaki-ng) nebo Spustit / Zastavit a řádky
   „Popis · hodnota“ s tečkou jako v aplikaci pro TV: chiaki-ng (chybí = Stáhnout), PS5 (nespárováno
   = Spárovat, zapnutá / klidový režim / nenalezena = Hledat), u jiného programu okno hry
