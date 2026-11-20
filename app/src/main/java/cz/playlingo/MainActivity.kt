@@ -468,7 +468,7 @@ class MainActivity : Activity() {
             Section.HOME -> home()
             Section.PS5 -> ps5()
             // Titulky: nejdřív vzhled, pod ním kde se čtou
-            Section.LOOK -> { look(); content.addView(ui.section(t("m_zones"))); zones() }
+            Section.LOOK -> subtitlesPage()
             // Nastavení (⚙): záložky Obecné / Čtení a překlad / Ladění a hlášení / Experimentální
             Section.SETTINGS -> settings()
             Section.HISTORY -> history()
@@ -709,8 +709,8 @@ class MainActivity : Activity() {
             running && link == Ps5.Link.WAITING -> { title = ct("m_ps5"); sub = ct("st_waiting"); color = Theme.WARN }
             running -> { title = ct("m_ps5"); sub = ct("st_connecting"); color = Theme.WARN }
             ready -> { title = t("st_ready"); sub = ""; color = Theme.ACCENT }
-            !paired && overlayOk && modelOk -> { title = t("st_setup"); sub = ct("st_nops5"); color = Theme.WARN }
-            else -> { title = t("st_setup"); sub = t("st_setup_sub"); color = Theme.WARN }
+            // co chybí, ukazují body pod nadpisem – bez dalšího textu
+            else -> { title = t("st_setup"); sub = ""; color = Theme.WARN }
         }
         if (running && !demoRun && link != Ps5.Link.CONNECTED && !(onXbox && link == Ps5.Link.FAILED))
             TranslatorService.linkReason?.let { sub += "\n(" + (if (onXbox) t(it) else it) + ")" }
@@ -837,11 +837,11 @@ class MainActivity : Activity() {
                     onClick = { TvChoice.show(this) { render(true) } })
             }
         }
-        // síť tohoto zařízení (celé vysvětlení k 2,4 GHz je v Nápovědě)
+        // síť tohoto zařízení – jen věcně, bez varování (vysvětlení k výpadkům je v Nápovědě)
         when (NetInfo.kind(this)) {
             Ps5.Net.CABLE -> row(Theme.OK, t("h_net_cable"), "hnet")
             Ps5.Net.WIFI_5 -> row(Theme.OK, t("h_net_5"), "hnet")
-            Ps5.Net.WIFI_24 -> row(Theme.WARN, t("h_net_24"), "hnet")
+            Ps5.Net.WIFI_24 -> row(Theme.OK, t("h_net_24"), "hnet")
             Ps5.Net.UNKNOWN -> {}
         }
         // rychlost čtení (o kolik se titulek opozdí za obrazem)
@@ -853,8 +853,6 @@ class MainActivity : Activity() {
         val tl = Prefs.lang(this)
         if (!modelOk) row(Theme.WARN, t("w_model").replace("%s", tl.label), "hmodel", t("download"), { downloadModel() })
         else row(Theme.OK, tl.label + " · " + t(if (DeeplTranslator.activeKey(this) != null) "dl_mode_on" else "h_offline"), "hmodel")
-        // telefon jako čtečka: šetření baterie může PlayLingo při zhasnutém displeji uspat (0.95: odpojování od PS5)
-        if (!Prefs.isTv(this) && !batteryUnrestricted()) row(Theme.WARN, t("h_battery"), "hbat", t("h_battery_fix"), { askBatteryUnrestricted() })
         // verze aplikace (a v televizi)
         val tvVer = TvSender.lastSeen?.announce?.takeIf { type.sends && it.platform == type.platform }?.version
         row(Theme.MUTED, "PlayLingo ${BuildInfo.VERSION.removePrefix("verze ")}" + (tvVer?.let { " · " + t("h_ver_tv").replace("%s", it) } ?: ""), "hver")
@@ -937,7 +935,6 @@ class MainActivity : Activity() {
     private fun ps5() {
         ps5Form()
         if (TranslatorService.running && !TranslatorService.demo) preview()
-        add(ui.text(ct("tip_ps5"), 14f, Theme.MUTED), 20)
     }
 
     private fun input(hintKey: String, value: String, tagName: String, number: Boolean) = EditText(this).apply {
@@ -1279,29 +1276,6 @@ class MainActivity : Activity() {
 
     // ======================= OBLASTI =======================
 
-    private fun zones() {
-        add(ui.text(t("z_desc"), 16f, Theme.MUTED), 8)
-        add(tagged(ui.button(t("z_calibrate"), primary = true) {
-            startActivity(Intent(this, CalibrationActivity::class.java))
-        }, "calib"), 20)
-        val l = Prefs.layout(this)
-        content.addView(ui.section(t("z_title")))
-        add(tagged(ui.settingRow(t("z_cover"), if (l.cover) t("z_cover_on") else t("z_cover_off")) {
-            Prefs.setLayout(this, l.copy(cover = !l.cover)); applyToService(); render(true)
-        }, "cover"), 0)
-        add(tagged(ui.settingRow(t("z_auto"), onOff(Prefs.autoZone(this))) {
-            Prefs.setAutoZone(this, !Prefs.autoZone(this)); applyToService(); render(true)
-        }, "zauto"), 8)
-        add(ui.text(t("z_auto_desc"), 14f, Theme.MUTED), 6)
-        add(tagged(ui.settingRow(t("z_only_subs"), onOff(Prefs.onlySubtitles(this))) {
-            Prefs.setOnlySubtitles(this, !Prefs.onlySubtitles(this)); applyToService(); render(true)
-        }, "onlysubs"), 8)
-        add(tagged(ui.button(t("z_reset")) {
-            Prefs.setLayout(this, ScreenLayout()); applyToService()
-            toast(t("z_reset_done")); render(true)
-        }, "zreset"), 16)
-    }
-
     // ======================= VZHLED =======================
 
     /** Řádek s výběrem jazyka překladu (stránka Titulky; v průvodci krok Jazyk překladu). */
@@ -1316,66 +1290,119 @@ class MainActivity : Activity() {
         }, tag), top)
     }
 
-    private fun look() {
-        val sizeIdx = Prefs.TEXT_SIZES.indexOf(Prefs.textSize(this)).let { if (it < 0) 2 else it }
-        // LG / Samsung: vzhled a oblasti jsou zvlášť pro každou televizi (TvProfile) – pro kterou teď
-        TvProfile.activeName(this)?.let { add(ui.text(t("tv_profile_for").replace("%s", it), 14f, Theme.MUTED), 10) }
+    /** Titulky: otevřená skupina (-1 = žádná). */
+    private var lookOpen = -1
+
+    /**
+     * Stránka Titulky (od 0.97.1) po vzoru Nápovědy: rozbalovací skupiny Jazyk a písmo / Pruh s překladem /
+     * Oblasti titulků a dole obnovení vzhledu. Žádné vysvětlující texty mezi řádky – popis volby se ukáže
+     * jen v dialogu, když ji hráč zapíná ([confirmOn]); podrobnosti jsou v Nápovědě.
+     */
+    private fun subtitlesPage() {
         langRow("lang", 16)
+        val groups = listOf<Pair<String, () -> Unit>>(
+            "lk_text" to { lookText() },
+            "lk_bar" to { lookBar() },
+            "m_zones" to { lookZones() },
+        )
+        groups.forEachIndexed { i, (key, build) ->
+            val open = lookOpen == i
+            add(tagged(ui.settingRow(t(key), if (open) "▲" else "▼") { lookOpen = if (open) -1 else i; render(true) }, "lk$i"), if (i == 0) 14 else 8)
+            if (open) build()
+        }
+        add(tagged(ui.settingRow(t("l_reset"), "↺", Theme.MUTED) {
+            Prefs.setTextSize(this, Prefs.DEFAULT_TEXT_SIZE); Prefs.setOpacity(this, 100); Prefs.setTextColorIndex(this, 0)
+            Prefs.setBoldText(this, false); Prefs.setHoldMs(this, 1000)
+            Prefs.setLayout(this, Prefs.layout(this).withPosition(cz.playlingo.core.ScreenLayout.Position.OVER).withBarWidth(0.84f))
+            applyToService(); render(true); showDemo()
+        }, "lreset"), 20)
+    }
+
+    /** Volba s popisem: popis se ukáže v dialogu jen při zapínání; vypnutí je hned. */
+    private fun confirmOn(title: String, desc: String, turnOn: () -> Unit) {
+        try {
+            AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(title).setMessage(desc)
+                .setPositiveButton(t("on")) { d, _ -> d.dismiss(); turnOn() }
+                .setNegativeButton(t("wz_back")) { d, _ -> d.dismiss() }
+                .show()
+        } catch (_: Exception) { turnOn() }
+    }
+
+    /** Jazyk a písmo: jazyk překladu, velikost, barva, tučně, originál, barvy jmen. */
+    private fun lookText() {
+        val sizeIdx = Prefs.TEXT_SIZES.indexOf(Prefs.textSize(this)).let { if (it < 0) 2 else it }
         add(tagged(ui.settingRow(t("l_size_auto"), onOff(Prefs.matchSize(this))) {
             Prefs.setMatchSize(this, !Prefs.matchSize(this)); applyToService(); render(true)
-        }, "sizeauto"), 8)
+        }, "sizeauto"), 6)
         // pevná velikost se nabízí jen tehdy, když se písmo neřídí originálem
         if (!Prefs.matchSize(this)) add(tagged(ui.settingRow(t("l_size"), t("size_$sizeIdx")) {
             choose(t("l_size"), Prefs.TEXT_SIZES.indices.map { t("size_$it") }, sizeIdx) { i ->
                 Prefs.setTextSize(this, Prefs.TEXT_SIZES[i]); applyToService(); render(true); showDemo()
             }
-        }, "size"), 8)
+        }, "size"), 6)
+        val colorIdx = Prefs.textColorIndex(this)
+        add(tagged(ui.settingRow(t("l_color"), t("color_$colorIdx"), Prefs.TEXT_COLORS[colorIdx]) {
+            choose(t("l_color"), Prefs.TEXT_COLORS.indices.map { t("color_$it") }, colorIdx) { i ->
+                Prefs.setTextColorIndex(this, i); applyToService(); render(true); showDemo()
+            }
+        }, "color"), 6)
+        add(tagged(ui.settingRow(t("l_bold"), onOff(Prefs.boldText(this))) {
+            Prefs.setBoldText(this, !Prefs.boldText(this)); applyToService(); render(true); showDemo()
+        }, "bold"), 6)
+        add(tagged(ui.settingRow(t("l_original"), onOff(Prefs.showOriginal(this))) {
+            Prefs.setShowOriginal(this, !Prefs.showOriginal(this)); applyToService(); render(true); showDemo()
+        }, "original"), 6)
+        add(tagged(ui.settingRow(t("l_speaker"), onOff(Prefs.coloredSpeaker(this))) {
+            Prefs.setColoredSpeaker(this, !Prefs.coloredSpeaker(this)); applyToService(); render(true); showDemo()
+        }, "speaker"), 6)
+    }
+
+    /** Pruh s překladem: poloha, šířka, průhlednost, jak dlouho zůstane (u LG/Samsungu pro kterou televizi). */
+    private fun lookBar() {
+        // LG / Samsung: vzhled a oblasti jsou zvlášť pro každou televizi (TvProfile)
+        TvProfile.activeName(this)?.let { add(ui.text(t("tv_profile_for").replace("%s", it), 14f, Theme.MUTED), 6) }
         val lay = Prefs.layout(this)
         add(tagged(ui.settingRow(t("l_pos"), t("pos_" + lay.position.name.lowercase())) {
             val all = cz.playlingo.core.ScreenLayout.Position.values().filter { it != cz.playlingo.core.ScreenLayout.Position.CUSTOM }
             choose(t("l_pos"), all.map { t("pos_" + it.name.lowercase()) }, all.indexOf(lay.position)) { i ->
                 Prefs.setLayout(this, lay.withPosition(all[i])); applyToService(); render(true); showDemo()
             }
-        }, "pos"), 8)
+        }, "pos"), 6)
         val widthPct = Math.round(lay.barWidth * 100)
         add(tagged(ui.settingRow(t("l_width"), "$widthPct %") {
             choose(t("l_width"), Prefs.BAR_WIDTHS.map { "$it %" }, Prefs.BAR_WIDTHS.indexOf(widthPct)) { i ->
                 Prefs.setLayout(this, lay.withBarWidth(Prefs.BAR_WIDTHS[i] / 100f)); applyToService(); render(true); showDemo()
             }
-        }, "width"), 8)
-        val colorIdx = Prefs.textColorIndex(this)
-        add(tagged(ui.settingRow(t("l_color"), t("color_$colorIdx"), Prefs.TEXT_COLORS[colorIdx]) {
-            choose(t("l_color"), Prefs.TEXT_COLORS.indices.map { t("color_$it") }, colorIdx) { i ->
-                Prefs.setTextColorIndex(this, i); applyToService(); render(true); showDemo()
-            }
-        }, "color"), 8)
-        add(tagged(ui.settingRow(t("l_bold"), onOff(Prefs.boldText(this))) {
-            Prefs.setBoldText(this, !Prefs.boldText(this)); applyToService(); render(true); showDemo()
-        }, "bold"), 8)
+        }, "width"), 6)
         add(tagged(ui.settingRow(t("l_opacity"), "${Prefs.opacity(this)} %") {
             choose(t("l_opacity"), Prefs.OPACITIES.map { "$it %" }, Prefs.OPACITIES.indexOf(Prefs.opacity(this))) { i ->
                 Prefs.setOpacity(this, Prefs.OPACITIES[i]); applyToService(); render(true); showDemo()
             }
-        }, "opacity"), 8)
-        add(tagged(ui.settingRow(t("l_original"), onOff(Prefs.showOriginal(this))) {
-            Prefs.setShowOriginal(this, !Prefs.showOriginal(this)); applyToService(); render(true); showDemo()
-        }, "original"), 8)
-        add(tagged(ui.settingRow(t("l_speaker"), onOff(Prefs.coloredSpeaker(this))) {
-            Prefs.setColoredSpeaker(this, !Prefs.coloredSpeaker(this)); applyToService(); render(true); showDemo()
-        }, "speaker"), 8)
+        }, "opacity"), 6)
         val hold = Prefs.holdMs(this)
         add(tagged(ui.settingRow(t("l_hold"), if (hold == 0) t("off") else "+${hold / 1000} s") {
             choose(t("l_hold"), Prefs.HOLD_TIMES.map { if (it == 0) t("off") else "+${it / 1000} s" }, Prefs.HOLD_TIMES.indexOf(hold)) { i ->
                 Prefs.setHoldMs(this, Prefs.HOLD_TIMES[i]); applyToService(); render(true)
             }
-        }, "hold"), 8)
-        add(tagged(ui.button(t("l_fine")) { startActivity(Intent(this, CalibrationActivity::class.java)) }, "fine"), 8)
-        add(tagged(ui.button(t("l_reset")) {
-            Prefs.setTextSize(this, Prefs.DEFAULT_TEXT_SIZE); Prefs.setOpacity(this, 100); Prefs.setTextColorIndex(this, 0)
-            Prefs.setBoldText(this, false); Prefs.setHoldMs(this, 1000)
-            Prefs.setLayout(this, Prefs.layout(this).withPosition(cz.playlingo.core.ScreenLayout.Position.OVER).withBarWidth(0.84f))
-            applyToService(); render(true); showDemo()
-        }, "lreset"), 8)
+        }, "hold"), 6)
+        add(tagged(ui.settingRow(t("l_fine"), "›") { startActivity(Intent(this, CalibrationActivity::class.java)) }, "fine"), 6)
+    }
+
+    /** Oblasti titulků: automatika (popis v dialogu), jen titulky, ruční nastavení nad snímkem, obnovení. */
+    private fun lookZones() {
+        add(tagged(ui.settingRow(t("z_auto"), onOff(Prefs.autoZone(this))) {
+            if (Prefs.autoZone(this)) { Prefs.setAutoZone(this, false); applyToService(); render(true) }
+            else confirmOn(t("z_auto"), t("z_auto_desc")) { Prefs.setAutoZone(this, true); applyToService(); render(true) }
+        }, "zauto"), 6)
+        add(tagged(ui.settingRow(t("z_only_subs"), onOff(Prefs.onlySubtitles(this))) {
+            Prefs.setOnlySubtitles(this, !Prefs.onlySubtitles(this)); applyToService(); render(true)
+        }, "onlysubs"), 6)
+        add(tagged(ui.settingRow(t("z_calibrate"), "›") { startActivity(Intent(this, CalibrationActivity::class.java)) }, "calib"), 6)
+        add(tagged(ui.settingRow(t("z_reset"), "↺", Theme.MUTED) {
+            Prefs.setLayout(this, ScreenLayout()); applyToService()
+            toast(t("z_reset_done")); render(true)
+        }, "zreset"), 6)
     }
 
     // ======================= PŘEKLAD =======================
@@ -1538,6 +1565,11 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("s_test"), onOff(Prefs.testChannel(this))) {
             Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
         }, "testch"), 8)
+        // telefon jako čtečka: běh na pozadí (šetření baterie) – stav a cesta k povolení
+        if (!Prefs.isTv(this)) {
+            val bg = batteryUnrestricted()
+            add(tagged(ui.settingRow(t("h_battery_fix"), onOff(bg), if (bg) Theme.OK else Theme.WARN) { askBatteryUnrestricted() }, "battery"), 8)
+        }
         // telefon, na kterém běží celá aplikace: cesta zpět k pomocníkovi pro přihlášení
         if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 8)
 
@@ -1872,6 +1904,12 @@ class MainActivity : Activity() {
         if (TranslatorService.running && !TranslatorService.demo) { moveTaskToBack(true); return }
         if (!SubtitleOverlay.canShow(this) && !Prefs.tvSend(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
         if (!Prefs.consoleReady(this)) { section = Section.PS5; render(); return }
+        // telefon jako čtečka: jednou se zeptat na běh na pozadí (jinak ho šetření baterie se zhasnutým
+        // displejem uspí a spojení s konzolí vypadává); dál jen v ⚙ Nastavení → Obecné, ne na Domů
+        if (!Prefs.isTv(this) && !batteryUnrestricted()) {
+            val once = getSharedPreferences("ui_jednou", MODE_PRIVATE)
+            if (!once.getBoolean("baterie", false)) { once.edit().putBoolean("baterie", true).apply(); askBatteryUnrestricted() }
+        }
         busyText = t("prep_model")
         OfflineTranslator.ensureModel(Prefs.lang(this)) { ok ->
             runOnUiThread {
@@ -2038,6 +2076,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97"
-    const val VERSION_CODE = 97
+    const val VERSION = "verze 0.97.1"
+    const val VERSION_CODE = 98
 }

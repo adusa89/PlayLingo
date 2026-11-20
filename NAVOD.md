@@ -64,7 +64,7 @@ PlayStation nebo Xbox), Titulky a Nápověda.
 Stránka **Domů** ukazuje jen to podstatné: stav překladu, tlačítka Spustit / Zastavit a pod stavem přehled
 v bodech – zelená tečka jede, oranžová potřebuje pozornost (a má rovnou tlačítko), šedá je jen informace:
 konzole a jestli přichází obraz, televize (u Android TV povolení pruhu), síť tohoto zařízení, rychlost čtení,
-jazyk a způsob překladu, u telefonu šetření baterie a verze aplikace (i v televizi). OK na řádku konzole nebo
+jazyk a způsob překladu a verze aplikace (i v televizi). OK na řádku konzole nebo
 televize je změní. Náhled obrazu z konzole je na stránce Konzole.
 
 **Nápověda** je postup od začátku v kapitolách (Instalace, Příprava konzole, Televize, Jazyk a kvalita
@@ -143,8 +143,9 @@ a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televiz
 - **Nic se nečte** – zapni ⚙ Nastavení → Ladění a hlášení → Diagnostický režim; uvidíš, co aplikace čte.
 - **Na PS5 pořád naskakuje „ovladač odpojen / účet připojen“** – s druhým účtem se připojuje i jiné zařízení
   (třeba aplikace PS Remote Play) a PS5 pak spojení přehazuje. Domů to od 0.97 napíše. Druhý účet ať slouží jen PlayLingu.
-- **Telefon jako čtečka: spojení vypadává, když telefon zhasne displej** – na Domů povol „Běh na pozadí“
-  (jinak ho šetření baterie uspí). Od 0.97 drží PlayLingo telefon při překladu vzhůru sám.
+- **Telefon jako čtečka: spojení vypadává, když telefon zhasne displej** – v ⚙ Nastavení → Obecné zapni
+  „Povolit běh na pozadí“ (jinak ho šetření baterie uspí; poprvé se na to aplikace zeptá sama při Spustit).
+  Od 0.97 drží PlayLingo telefon při překladu vzhůru sám.
 - **Spojení vypadává na Wi-Fi 2,4 GHz** – ve stejném pásmu vysílají ovladače konzole. Připoj konzoli kabelem
   nebo dej zařízení s PlayLingem na 5 GHz. Když telefon sám přechází na 2,4 GHz, je to router (stejný název sítě
   pro obě pásma a slabší 5 GHz signál); pomůže samostatný název sítě pro 5 GHz.

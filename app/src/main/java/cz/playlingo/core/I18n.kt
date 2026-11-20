@@ -52,7 +52,6 @@ object I18n {
         "st_paused_sub" to ("Překlad čeká. Pokračuj tlačítkem níže." to "Preklad čaká. Pokračuj tlačidlom nižšie."),
         "st_ready" to ("Připraveno" to "Pripravené"),
         "st_setup" to ("Ještě je potřeba nastavit" to "Ešte treba nastaviť"),
-        "st_setup_sub" to ("Projdi kontrolní seznam níže." to "Prejdi kontrolný zoznam nižšie."),
         "b_go_game" to ("Zpět do hry (HDMI)" to "Späť do hry (HDMI)"),
         "b_testcard" to ("Zkouška na ukázce (bez hry)" to "Skúška na ukážke (bez hry)"),
         "t_game" to ("Hra" to "Hra"),
@@ -96,12 +95,7 @@ object I18n {
         "need_overlay" to ("Nejdřív povol zobrazení titulků (Nastavení → Povolení)." to "Najprv povoľ zobrazenie titulkov (Nastavenia → Povolenia)."),
 
         // ---- oblasti ----
-        "z_title" to ("Kde se titulky čtou a zobrazují" to "Kde sa titulky čítajú a zobrazujú"),
-        "z_desc" to ("Modrý rámeček = kde jsou anglické titulky hry. Aplikace čte jen uvnitř něj." to "Modrý rámček = kde sú anglické titulky hry. Aplikácia číta len vnútri neho."),
         "z_calibrate" to ("Nastavit oblasti nad snímkem ze hry" to "Nastaviť oblasti nad snímkou z hry"),
-        "z_cover" to ("Černý pruh přes anglické titulky" to "Čierny pruh cez anglické titulky"),
-        "z_cover_on" to ("Přes titulky (zakryje angličtinu)" to "Cez titulky (zakryje angličtinu)"),
-        "z_cover_off" to ("Nad titulky (angličtina zůstane vidět)" to "Nad titulky (angličtina zostane viditeľná)"),
         "z_only_subs" to ("Číst jen titulky (ignorovat menu a nápovědy)" to "Čítať len titulky (ignorovať menu a nápovedy)"),
         "z_reset" to ("Obnovit výchozí oblasti" to "Obnoviť predvolené oblasti"),
         "z_reset_done" to ("Oblasti vráceny na výchozí." to "Oblasti vrátené na predvolené."),

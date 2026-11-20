@@ -472,6 +472,20 @@ Aplikace pro televizi LG (`webos/obchod`) a Samsung (`tizen/app`, týž `app.js`
 česky a anglicky přímo v `app.js` a tlačítko Jazyk na úvodní obrazovce; do obchodu LG se podává
 s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nemá zmiňovat Samsung).
 
+## Zásady vzhledu (přání majitele, platí pro všechny obrazovky)
+
+- **Stránky jsou věcné, hezké, bez balastu.** Domů ukazuje jen stav v krátkých bodech s tečkou (zelená = jede,
+  oranžová = hráč musí něco udělat – a pak s tlačítkem, šedá = jen informace). Žádné vysvětlující věty,
+  rady, varování „může vypadávat“ ani návody (např. ne „Wi-Fi 2,4 GHz – může vypadávat“, ne „telefon může
+  při zhasnutém displeji…“ – Wi-Fi 2,4 GHz je prostě zelený řádek „Síť: Wi-Fi 2,4 GHz“).
+- **Vysvětlení patří do Nápovědy** (kapitoly v `help()`), popis volby do **dialogu při jejím zapnutí**
+  (`confirmOn` v MainActivity) – ne jako šedý text mezi řádky.
+- **Související volby do rozbalovacích skupin** po vzoru Nápovědy (`settingRow` s ▼/▲, barevná šipka) –
+  majitel Nápovědu v tomhle stylu výslovně chválil. Akce jako „Nastavit oblasti“ jsou řádky ve stejném
+  stylu (s „›“), ne velká žlutá tlačítka; velké žluté je jen hlavní akce stránky (Spustit, Spárovat).
+- **Rozlišuj zařízení:** co dává smysl jen na Android TV / boxu (Zpět do hry HDMI, povolení pruhu) a co jen
+  v telefonu jako čtečce pro LG/Samsung (běh na pozadí) – `Prefs.isTv`, `Prefs.tvType`.
+
 ## Obrazovky a průvodce
 
 - **Menu** (`Section` v MainActivity, v tomto pořadí): Domů, Konzole (nadpis stránky PlayStation /
@@ -493,11 +507,16 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   zelená/oranžová/šedá; řádek, který potřebuje zásah, má pod sebou tlačítko): konzole + obraz (`LinkStatus`,
   při ukončení ze strany PS5 důvod, při převzetí jiným zařízením `ls_other_device`), televize (Android TV =
   povolení pruhu; LG/Samsung = `TvChoice.short`, nenahraná / zastaralá aplikace s tlačítkem nahrání – jinak
-  žádné tlačítko), síť (`h_net_…`), rychlost čtení, jazyk + offline/DeepL (chybějící balíček s tlačítkem),
-  na telefonu šetření baterie (`h_battery`, dotaz `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) a verze (i v televizi).
+  žádné tlačítko), síť (`h_net_…`, vždy zeleně), rychlost čtení, jazyk + offline/DeepL (chybějící balíček
+  s tlačítkem) a verze (i v televizi). Běh na pozadí (telefon, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) se
+  zeptá jednou při prvním Spustit (`ui_jednou`) a dál je jen v ⚙ Nastavení → Obecné, na Domů ne.
   Řádek konzole/televize OK = změna. Samostatný souhrnný řádek ani návody v textu tam už nejsou. Náhled obrazu
   je jen na stránce Konzole (s popiskem `pv_stale`, když obraz nechodí). „Zpět do hry (HDMI)“ jen na zařízení
   v televizi (`Prefs.isTv`); telefon jako čtečka má jen Pozastavit a Zastavit. Jednorázové volby na Domů nepatří.
+- **Titulky** (od 0.97.1, `subtitlesPage`): nahoře jazyk překladu (zkouška `13_nabidka_jazyk` na něj míří
+  šipkou vpravo + OK), pod ním rozbalovací skupiny Jazyk a písmo / Pruh s překladem / Oblasti titulků
+  (`lookOpen`) a dole řádek Obnovit vzhled. Automatika oblastí ukáže popis v dialogu jen při zapnutí.
+  Volba „Černý pruh přes anglické titulky“ zmizela – je to totéž co poloha „Přes titulky“.
 - **Nápověda** (od 0.97, `help()`, texty `core/I18nHelp.kt`): nahoře „Nápověda pro“ (typ televize, výchozí
   zvolený), pod tím kapitoly 1–8 jako `settingRow` (OK rozbalí, `helpOpen`): instalace, příprava konzole (druhý
   účet, Remote Play, `rp_hide`, `ps5_rest` / Xbox), televize (povolení pruhu / pomocník LG / průvodce Samsung),
