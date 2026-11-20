@@ -36,8 +36,8 @@ internal val HELP_S: Map<String, Pair<String, String>> = mapOf(
     "ls_other_device" to ("Remote Play na PS5 teď používá jiné zařízení se stejným účtem (třeba aplikace PS Remote Play). PlayLingo se připojí, až ho uvolní." to "Remote Play na PS5 teraz používa iné zariadenie s rovnakým účtom (napríklad aplikácia PS Remote Play). PlayLingo sa pripojí, keď ho uvoľní."),
     "pv_stale" to ("Náhled je poslední přijatý snímek – teď obraz nepřichází:" to "Náhľad je posledná prijatá snímka – teraz obraz neprichádza:"),
     "lg_s_current" to ("V televizi je aktuální PlayLingo %s – stačí ho spustit." to "V televízore je aktuálne PlayLingo %s – stačí ho spustiť."),
-    "lg_launch" to ("Spustit PlayLingo v televizi" to "Spustiť PlayLingo v televízore"),
-    "tv_current" to ("PlayLingo je v televizi (verze %s)" to "PlayLingo je v televízore (verzia %s)"),
+    "lg_launch" to ("Spustit PlayLingo v TV" to "Spustiť PlayLingo v TV"),
+    "tv_current" to ("PlayLingo v TV · verze %s" to "PlayLingo v TV · verzia %s"),
     "lg_pass_other" to ("Zadat Passphrase znovu (jiná televize nebo nové spárování)" to "Zadať Passphrase znova (iný televízor alebo nové spárovanie)"),
 )
 

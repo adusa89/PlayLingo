@@ -17,7 +17,7 @@ object I18n {
         "wz_s3" to ("Připojení PlayStationu" to "Pripojenie PlayStationu"),
         "wz_s4" to ("Hotovo" to "Hotovo"),
         "wz_perm" to ("Aby aplikace mohla ukázat titulky přes hru, zapni ji v nastavení televize: Usnadnění → PlayLingo → Zapnout. Pak se tlačítkem Zpět vrať sem." to "Aby aplikácia mohla ukázať titulky cez hru, zapni ju v nastaveniach televízora: Zjednodušenie ovládania → PlayLingo → Zapnúť. Potom sa tlačidlom Späť vráť sem."),
-        "wz_perm_open" to ("Otevřít nastavení televize" to "Otvoriť nastavenia televízora"),
+        "wz_perm_open" to ("Otevřít nastavení TV" to "Otvoriť nastavenia TV"),
         "wz_model" to ("Překlad běží přímo v televizi, zdarma a bez internetu. Jen teď jednou stáhnu jazykový model (asi 30 MB)." to "Preklad beží priamo v televízore, zadarmo a bez internetu. Len teraz raz stiahnem jazykový model (asi 30 MB)."),
         "wz_done" to ("Všechno je připravené. Spusť překlad, ve hře zapni titulky a hraj." to "Všetko je pripravené. Spusti preklad, v hre zapni titulky a hraj."),
         "wz_done_auto" to ("Titulky si aplikace na obrazovce najde sama – nic dalšího nastavovat nemusíš." to "Titulky si aplikácia na obrazovke nájde sama – nič ďalšie nastavovať nemusíš."),

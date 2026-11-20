@@ -35,7 +35,7 @@ internal val PS5_S: Map<String, Pair<String, String>> = mapOf(
     "acc2" to ("Důležité: v aplikaci se přihlas DRUHÝM účtem PlayStation, ne tím, na kterém hraješ. Kdyby se aplikace připojila tvým herním účtem, konzole by ti při hraní vypínala ovladač a zhasínala obraz.\n\nDruhý účet je zdarma: na PlayStationu zvol Přidat uživatele a založ nový účet s jiným e-mailem. Hrát budeš dál na svém účtu a se svými hrami – druhý účet se jen „dívá“." to "Dôležité: v aplikácii sa prihlás DRUHÝM účtom PlayStation, nie tým, na ktorom hráš. Keby sa aplikácia pripojila tvojím herným účtom, konzola by ti pri hraní vypínala ovládač a zhasínala obraz.\n\nDruhý účet je zadarmo: na PlayStatione zvoľ Pridať používateľa a založ nový účet s iným e-mailom. Hrať budeš ďalej na svojom účte a so svojimi hrami – druhý účet sa len „pozerá“."),
     "pa_example" to ("Příklad adresy (tvůj kód bude jiný):" to "Príklad adresy (tvoj kód bude iný):"),
     "s_quality" to ("Přesnost čtení titulků" to "Presnosť čítania titulkov"),
-    "q_auto" to ("Automaticky podle televize" to "Automaticky podľa televízora"),
+    "q_auto" to ("Automaticky podle TV" to "Automaticky podľa TV"),
     "q_std" to ("Standardní (šetří Wi-Fi a výkon)" to "Štandardná (šetrí Wi-Fi a výkon)"),
     "q_high" to ("Vysoká (i drobné titulky)" to "Vysoká (aj drobné titulky)"),
     "q_desc" to ("Vysoká přesnost bere z PlayStationu ostřejší kopii obrazu, takže přečte i drobné titulky. Když se překlad zpožďuje nebo vypadává, zkus Standardní." to "Vysoká presnosť berie z PlayStationu ostrejšiu kópiu obrazu, takže prečíta aj drobné titulky. Keď sa preklad oneskoruje alebo vypadáva, skús Štandardnú."),

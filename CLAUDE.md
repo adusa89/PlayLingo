@@ -523,6 +523,8 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 - **Stavové hlášky, ne věty a bez tykání** (přání majitele, 20. 11. 2026): na Domů, v řádcích a v menu jen
   „Popis · hodnota“ („LG OLED55B7 · připojeno“, nejistý odhad jen „Grand Theft Auto VI?“), ne „Hraješ asi …“ ani jiné oslovení hráče. Kratší
   i v úzkém menu telefonu. Platí pro nové texty ve všech jazycích; staré s tykáním přepisuj, když na ně narazíš.
+- **„TV“ místo „televize“** v krátkých textech (řádky, tlačítka, stavy, kroky nahrávání): „Nahrát do TV“,
+  „PlayLingo v TV LG 1.4.0“. Slovo televize jen v Nápovědě a delších popisech. „DeepL online“, ne „přes internet“.
 - **Krátké stavové řádky:** „PS5-151 · připojeno“, „LG OLED55B7 · připojeno“ – jméno a jedno slovo stavu,
   žádné dlouhé věty. Popisky voleb bez závorek s vysvětlením („Diagnostický režim“, ne „… (co aplikace čte)“).
 - **Rozlišuj zařízení:** co dává smysl jen na Android TV / boxu (Zpět do hry HDMI, povolení pruhu) a co jen
@@ -558,7 +560,9 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   stahování pod ním – samostatná karta aktualizace není) a řádek PlayLingo v televizi (chybí / starší oranžově
   s tlačítkem nahrání, aktuální zeleně).
   Od 0.97.9 řádek hry jen s názvem: vybraná hra zeleně („Grand Theft Auto VI“, OK = výběr hry `pickGame`); když
-  `GameGuess` z titulků pozná jinou hru, oranžově s otazníkem („Grand Theft Auto VI?“) a tlačítkem Přepnout. Univerzální profil bez odhadu = řádek není. Na novou verzi se aplikace ptá i po návratu do ní (nejvýš jednou za 5 min). Běh na pozadí (telefon, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) se
+  `GameGuess` z titulků pozná jinou hru, oranžově s otazníkem za vybranou hrou („Call of Duty · Grand Theft Auto VI?“, s univerzálním
+  profilem jen „Grand Theft Auto VI?“) a tlačítkem Přepnout – jeden řádek, vybraná hra se nepřepíše.
+  Od 0.97.10: „PlayLingo v TV LG 1.4.0“ (`h_ver_tv` dostává typ + verzi), překlad „Čeština · DeepL online + offline“. Univerzální profil bez odhadu = řádek není. Na novou verzi se aplikace ptá i po návratu do ní (nejvýš jednou za 5 min). Běh na pozadí (telefon, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) se
   zeptá jednou při prvním Spustit (`ui_jednou`) a dál je jen v ⚙ Nastavení → Obecné, na Domů ne.
   Řádek konzole/televize OK = změna. Samostatný souhrnný řádek ani návody v textu tam už nejsou. Náhled obrazu
   je jen na stránce Konzole (s popiskem `pv_stale`, když obraz nechodí). „Zpět do hry (HDMI)“ jen na zařízení

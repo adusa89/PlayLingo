@@ -871,7 +871,8 @@ class MainActivity : Activity() {
         // S univerzálním profilem a bez odhadu řádek není.
         val game = GameProfiles.of(Prefs.gameId(this))
         val guess = Prefs.gameGuess(this)?.let { GameProfiles.of(it) }
-        if (guess != null) row(Theme.WARN, guess.title + "?", "hgame", t("gp_switch"),
+        // vybraná hra zůstává vidět, odhad je za ní s otazníkem: „Call of Duty · Grand Theft Auto VI?“
+        if (guess != null) row(Theme.WARN, (if (game.id != "all") game.title + " · " else "") + guess.title + "?", "hgame", t("gp_switch"),
             { Prefs.setGameId(this, guess.id); applyToService(); render(true) }, onClick = { pickGame() })
         else if (game.id != "all") row(Theme.OK, game.title, "hgame", onClick = { pickGame() })
         // verze PlayLinga: aktuální zeleně, novější ke stažení oranžově s tlačítkem Aktualizovat v řádku
@@ -896,15 +897,16 @@ class MainActivity : Activity() {
         }
         // aplikace v televizi LG/Samsung: stejně – chybí / starší oranžově s tlačítkem nahrání, aktuální zeleně
         if (type.sends) {
+            val tvName = if (type == TvType.LG) "LG" else "Samsung"
             val bundled = TvChoice.bundledVersion(this, type)
             val old = TvChoice.outdated(this, type)
             val current = TvChoice.upToDate(this, type)
             when {
-                TvChoice.needsInstall(this, type) -> row(Theme.WARN, t("h_tv_app_none"), "htvapp", t("w_install"), { TvChoice.openInstall(this, type) })
-                old != null -> row(Theme.WARN, "PlayLingo " + t("h_ver_tv").replace("%s", old.first) + " · " + t("h_ver_new").replace("%s", old.second),
+                TvChoice.needsInstall(this, type) -> row(Theme.WARN, t("h_tv_app_none").replace("%s", tvName), "htvapp", t("w_install"), { TvChoice.openInstall(this, type) })
+                old != null -> row(Theme.WARN, "PlayLingo " + t("h_ver_tv").replace("%s", "$tvName ${old.first}") + " · " + t("h_ver_new").replace("%s", old.second),
                     "htvapp", t("w_install"), { TvChoice.openInstall(this, type) })
-                current != null -> row(Theme.OK, "PlayLingo " + t("h_ver_tv").replace("%s", current), "htvapp")
-                bundled != null -> row(Theme.MUTED, "PlayLingo " + t("h_ver_tv").replace("%s", "?"), "htvapp")
+                current != null -> row(Theme.OK, "PlayLingo " + t("h_ver_tv").replace("%s", "$tvName $current"), "htvapp")
+                bundled != null -> row(Theme.MUTED, "PlayLingo " + t("h_ver_tv").replace("%s", "$tvName ?"), "htvapp")
             }
         }
     }
@@ -2156,6 +2158,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.9"
-    const val VERSION_CODE = 106
+    const val VERSION = "verze 0.97.10"
+    const val VERSION_CODE = 107
 }
