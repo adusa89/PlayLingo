@@ -1097,18 +1097,23 @@ class MainActivity : Activity() {
         if (draftPsn.isEmpty()) draftPsn = Prefs.psnId(this)
 
         // ---- průvodce spárováním: šest malých kroků, na každé obrazovce jedna věc ----
-        val step = pairStep.coerceIn(0, 5)
+        // Kroky (index → pořadí na obrazovce): 0 zapnout PS5, 1 najít PS5, 2–3 přihlášení účtem (4 = záloha
+        // opsáním kódu), 6 příprava na PS5 (druhý účet, Remote Play, skrytí hlášky – předposlední, těsně před
+        // kódem, protože se dělá ve stejném menu PS5), 5 kód z PS5 a spárování. Indexy 0–5 zůstaly kvůli zkoušce.
+        val step = pairStep.coerceIn(0, 6)
         val have = Ps5.parseAccountId(draftPsn) != null
-        val key = when (step) { 0 -> "pg_1"; 1 -> "pg_2"; 2 -> "pa_1"; 3 -> "pa_2"; 4 -> "pa_3"; else -> "pg_4" }
+        val key = when (step) { 0 -> "pg_0"; 1 -> "pg_2"; 2 -> "pa_1"; 3 -> "pa_2"; 4 -> "pa_3"; 6 -> "pg_1"; else -> "pg_4" }
+        val pos = when (step) { 0 -> 1; 1 -> 2; 2 -> 3; 3, 4 -> 4; 6 -> 5; else -> 6 }
         // kolikátý krok spárování to je (pruh rozdělený na dílky)
-        add(ui.steps(step + 1, 6, steps(step + 1, 6)), 16)
+        add(ui.steps(pos, 6, steps(pos, 6)), 16)
         add(ui.text(t("${key}_title"), 22f, Theme.TEXT, bold = true), 2)
         var nextOk = true
         when (step) {
-            0 -> add(ui.card().apply {
+            0 -> add(ui.card().apply { addView(ui.text(t("pg_0_text"), 17f, Theme.TEXT)) }, 10)
+            // předposlední krok: všechno, co se dělá na PS5 v Nastavení → Systém → Remote Play
+            6 -> add(ui.card().apply {
+                // očíslovaný postup na PS5 (druhý účet, Remote Play, skrytí hlášky) – vše v jednom menu
                 addView(ui.text(t("pg_1_text"), 17f, Theme.TEXT))
-                // hláška „Remote Play je připojena“ by jinak svítila přes hru; bez probouzení ze sítě aplikace spící PS5 nevzbudí
-                addView(ui.text(t("rp_hide") + "\n\n" + t("ps5_rest"), 14f, Theme.MUTED), ui.lp(top = 10))
             }, 10)
             1 -> {
                 add(ui.card().apply { addView(ui.text(t("pg_2_text"), 17f, Theme.TEXT)) }, 10)
@@ -1178,7 +1183,11 @@ class MainActivity : Activity() {
         if (step > 0) row.addView(tagged(ui.button(t("wz_back")) {
             saveDrafts()
             // z kroku s číslem z PS5 zpět rovnou před přihlášení, když už je účet ověřený
-            pairStep = if (step == 5 && have) 1 else step - 1
+            pairStep = when {
+                step == 5 -> 6                    // z kódu zpět na přípravu PS5
+                step == 6 -> if (have) 1 else 3   // z přípravy zpět před přihlášení (účet už je)
+                else -> step - 1
+            }
             pairMsg = null; render()
         }, "pback"), wrapLp())
         // stránka z televize se v telefonu neotevřela → rovnou na záložní krok se čtverečkem na Sony
@@ -1188,7 +1197,7 @@ class MainActivity : Activity() {
         }, "pstuck"), wrapLp())
         add(row, 14)
         // první krok: celý postup s odkazy na založení účtu Sony (i do iPhonu) – pod tlačítky, ať ta zůstanou vidět
-        if (step == 0) add(helpLink(cz.playlingo.core.HelpLinks.PS5_PREP, t("help_ps5")), 14)
+        if (step == 6) add(helpLink(cz.playlingo.core.HelpLinks.PS5_PREP, t("help_ps5")), 14)
         // účet už je uložený: nabídnout nové přihlášení (jiný účet, nebo když spárování s tímhle nejde)
         if (step == 5 && have && !pairBusy) add(tagged(ui.button(t("ps5_acc_again")) {
             saveDrafts()
@@ -1213,22 +1222,23 @@ class MainActivity : Activity() {
     private fun pairNext() {
         saveDrafts()
         val have = Ps5.parseAccountId(draftPsn) != null
-        when (pairStep.coerceIn(0, 5)) {
+        when (pairStep.coerceIn(0, 6)) {
             0 -> { pairStep = 1; pairMsg = null; render(); if (draftIp.isEmpty()) findPs5() }
             1 -> {
                 if (!Ps5.validHost(draftIp)) { pairNote(t("ps5_bad_ip"), Theme.BAD); return }
                 Prefs.setPs5Ip(this, draftIp)
-                pairStep = if (have) 5 else 2; pairMsg = null; render()
+                pairStep = if (have) 6 else 2; pairMsg = null; render()
             }
-            2 -> { pairStep = if (have) 5 else 3; pairMsg = null; render() }
+            2 -> { pairStep = if (have) 6 else 3; pairMsg = null; render() }
             3 -> { pairStep = 4; pairMsg = null; render() }
+            6 -> { pairStep = 5; pairMsg = null; render() }
         }
     }
 
     /** Stránka pro telefon běží jen po dobu, kdy průvodce ukazuje kroky přihlášení účtem (2 až 4). */
     private fun syncLoginPage() {
         val pairing = Prefs.console(this) == Console.PLAYSTATION && Prefs.ps5Host(this) == null && (wizard == W_PAIR || (wizard < 0 && section == Section.PS5))
-        val want = pairing && pairStep.coerceIn(0, 5) in 2..4
+        val want = pairing && pairStep.coerceIn(0, 6) in 2..4
         if (want && loginServer == null) {
             loginServer = LoginServer(
                 lang = { Prefs.uiLang(this) },
@@ -1256,7 +1266,7 @@ class MainActivity : Activity() {
     /** Telefon poslal ověřený účet (ze stránky nebo z PlayLinga v telefonu) → rovnou na číslo z PS5. */
     private fun accountFromPhone(a: PhoneLogin.Account) {
         Prefs.setPsnId(this, a.id)
-        pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = a.id; draftAuth = ""; pairStep = 5 }
+        pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = a.id; draftAuth = ""; pairStep = 6 }
     }
 
     /** Čtvereček (QR kód) s adresou a vedle něj text; na úzké obrazovce je text pod čtverečkem. */
@@ -1296,7 +1306,7 @@ class MainActivity : Activity() {
             val id = PsnAuth.accountIdForCode(code)
             if (id != null) {
                 Prefs.setPsnId(this, id)
-                pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = id; draftAuth = ""; pairStep = 5 }
+                pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = id; draftAuth = ""; pairStep = 6 }
             } else pairNote(t("ph_bad"), Theme.BAD)
         }, "tp-code").start()
     }
