@@ -5,7 +5,8 @@
  * v napodobeném prohlížeči (bez knihoven) a ověří: televize najde PlayLingo v síti, ohlásí se
  * platformou a verzí (zpráva „pripojeno“), ukáže obyčejný text i řádky `casti`, použije vzhled pruhu
  * z Androidu (pole `vzhled`) a odpoví „hotovo“,
- * a pošle svůj záznam událostí (zpráva „zaznam“, bez textu titulků).
+ * pošle svůj záznam událostí (zpráva „zaznam“, bez textu titulků) a že nabídka Vzhled titulků
+ * (OK při hře) posílá žádosti „zmen“.
  * Na Samsungu navíc, že se obraz ze vstupu HDMI pustí přes tizen.tvwindow pod stránku.
  */
 'use strict';
@@ -176,6 +177,23 @@ function zkus(platforma, verze, dalsi) {
       assert.strictEqual(tv.prvky.pruh.style.top, '');
       ws.onmessage({ data: '{"typ":"skryj","id":3}' });
       assert.strictEqual(tv.prvky.pruh.style.display, 'none');
+      // nabídka Vzhled titulků (od 1.4.0): Android pošle volby, OK je při hře otevře, šipky požádají o změnu
+      ws.onmessage({ data: '{"typ":"nastaveni","pruhlednost":90,"velikost":22,"podleHry":true,"poloha":"tesne","original":false}' });
+      tv.stiskni(13);
+      assert.strictEqual(tv.prvky.panel.style.display, 'block', 'OK otevře nabídku');
+      assert.strictEqual(tv.prvky.pruh.style.display, 'flex', 'v nabídce je vidět ukázka pruhu');
+      tv.stiskni(39);
+      var zmeny = tv.odeslano.filter(function (z) { return z.typ === 'zmen'; });
+      assert.deepStrictEqual(zmeny.map(function (z) { return z.klic + '=' + z.hodnota; }), ['pruhlednost=100']);
+      assert.strictEqual(tv.prvky.pruh.style.background, 'rgba(0,0,0,1)', 'náhled hned po změně');
+      tv.stiskni(40); tv.stiskni(39);
+      tv.stiskni(40); tv.stiskni(37);
+      zmeny = tv.odeslano.filter(function (z) { return z.typ === 'zmen'; });
+      assert.deepStrictEqual(zmeny.map(function (z) { return z.klic + '=' + z.hodnota; }), ['pruhlednost=100', 'velikost=18', 'poloha=pres']);
+      tv.stiskni(platforma === 'tizen' ? 10009 : 461);
+      assert.strictEqual(tv.prvky.panel.style.display, 'none', 'Zpět zavře nabídku');
+      assert.strictEqual(tv.prvky.pruh.style.display, 'none', 'ukázka po zavření zmizí');
+      assert.strictEqual(tv.document.body.className, 's-hra', 'Zpět v nabídce neopustí hru');
       // záznam událostí: hned po ohlášení odešlo, co se nasbíralo (start, hledání, připojení)
       var zaznam1 = tv.odeslano.filter(function (z) { return z.typ === 'zaznam'; });
       assert.ok(zaznam1.length >= 1, 'po připojení odešel záznam');

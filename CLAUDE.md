@@ -210,6 +210,16 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   `poloha: "tesne"`, aplikace v televizi 1.3.1): pruh jde těsně nad nalezený anglický řádek. „Nad oblastí
   čtení“ (`ABOVE`) stojí na místě nad celou oblastí. V uloženém rozložení je to 7. číslo = 2 (starší verze
   ho čtou jako „přes titulky“).
+- **Vzhled z ovladače televize** (od 0.89, aplikace v televizi 1.4.0, `core/TvSettings.kt` s testy
+  `TvSettingsTest`): Android pošle `{"typ":"nastaveni",…}` (po připojení a po každé změně, v
+  `reloadSettings`), televize při hře na OK ukáže nabídku (pozadí, velikost, poloha, originál; `panel…`
+  v `app.js`, náhled hned po změně) a pošle `{"typ":"zmen","klic":…,"hodnota":…}`. `TvSender` ji předá
+  jen po `TvSettings.parse` (jen tyhle 4 volby a hodnoty z `Prefs.OPACITIES`/`TEXT_SIZES`/polohy bez
+  vlastní), `TranslatorService.applyTvChange` uloží do Prefs (profil té televize) a `reloadSettings`.
+  Telefon zůstává jediné místo s celým nastavením. Seznamy hodnot jsou na třech místech (Prefs,
+  TvSettings, app.js) – měň je najednou.
+- **Domů hlásí starou aplikaci v televizi** (`TvChoice.outdated`: ohlášená verze vs. `receiver-manifest.json`
+  v APK, text `w_tv_old`), s tlačítkem k nahrání.
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →
   `TvType`). Kdo ho nezvolil, řídí se starým klíčem `tv_send` (zapnuto = LG), takže dřívější
   uživatelé LG o nic nepřijdou; `setTvType` klíč `tv_send` drží v souladu. `Prefs.tvSend` = typ

@@ -161,6 +161,14 @@ na Domů ukazuje, jestli je aplikace z televize připojená; dokud se nikdy nep�
 upozornění s tlačítkem „Nahrát do televize“. Nahrát (i aktualizovat) aplikaci v televizi jde
 kdykoli i z ⚙ Nastavení. Kdo měl dřív zapnuté „Posílat titulky do televize LG“, má typ LG.
 
+Pruh v televizi vypadá podle Titulků v PlayLingu (průhlednost, písmo, barva, poloha). Když je
+v televizi starší PlayLingo, než nese aplikace v telefonu, upozorní na to Domů s tlačítkem k nahrání.
+
+**Vzhled titulků přímo v televizi** (aplikace v televizi od 1.4.0): při hře stiskni na ovladači
+**OK**. Otevře se malá nabídka: pozadí pruhu, velikost písma, poloha pruhu a originál. Šipkami
+▲▼ vybíráš, ◀▶ měníš, Zpět nabídku zavře. Změna se hned uloží v PlayLingu v telefonu, takže
+telefon a televize mají vždycky stejné nastavení. Všechno ostatní se nastavuje jen v telefonu.
+
 ### Televize LG
 
 **Nahrání PlayLingo do televize LG z telefonu nebo boxu (bez počítače):**

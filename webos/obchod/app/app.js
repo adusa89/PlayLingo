@@ -46,7 +46,20 @@
       np_2: 'Podle průvodce v ní spárujte PlayStation 5. Zařízení musí být ve stejné domácí síti jako televize.',
       np_3: 'V PlayLingu na Androidu zapněte Nastavení → Posílat titulky do televize a spusťte překlad.',
       np_4: 'Tady v televizi vyberte vstup HDMI s PlayStationem. Televize si PlayLingo v síti najde sama.',
-      np_sony: 'Aplikace není produktem společnosti Sony Interactive Entertainment. „PlayStation“ a „PS5“ jsou jejich ochranné známky.'
+      np_sony: 'Aplikace není produktem společnosti Sony Interactive Entertainment. „PlayStation“ a „PS5“ jsou jejich ochranné známky.',
+      pn_nadpis: 'Vzhled titulků',
+      pn_pruhlednost: 'Pozadí pruhu',
+      pn_velikost: 'Velikost písma',
+      pn_poloha: 'Poloha pruhu',
+      pn_original: 'Ukazovat i originál',
+      pn_velikosti: ['Podle hry', 'Velmi malé', 'Malé', 'Střední', 'Velké', 'Velmi velké', 'Obří'],
+      pn_polohy: ['Přes titulky', 'Těsně nad titulkem', 'Nad oblastí čtení', 'Nahoře'],
+      pn_vlastni: 'Vlastní (z telefonu)',
+      pn_ano: 'Zapnuto',
+      pn_ne: 'Vypnuto',
+      pn_ovladani: '▲▼ volba · ◀▶ změna · Zpět zavře. Ostatní nastavení je v PlayLingu v telefonu.',
+      pn_ukazka: 'Takhle bude vypadat překlad titulků.',
+      pn_tip: 'Tlačítkem OK otevřete vzhled titulků.'
     },
     en: {
       nadpis: 'Translated game subtitles',
@@ -72,7 +85,20 @@
       np_2: 'Follow its guide to pair your PlayStation 5. The device must be in the same home network as the TV.',
       np_3: 'In PlayLingo on Android, turn on Settings → Send subtitles to TV and start translating.',
       np_4: 'Here on the TV, choose the HDMI input of your PlayStation. The TV finds PlayLingo in the network by itself.',
-      np_sony: 'This app is not a product of Sony Interactive Entertainment. “PlayStation” and “PS5” are their trademarks.'
+      np_sony: 'This app is not a product of Sony Interactive Entertainment. “PlayStation” and “PS5” are their trademarks.',
+      pn_nadpis: 'Subtitle look',
+      pn_pruhlednost: 'Bar background',
+      pn_velikost: 'Text size',
+      pn_poloha: 'Bar position',
+      pn_original: 'Show the original too',
+      pn_velikosti: ['Like the game', 'Very small', 'Small', 'Medium', 'Large', 'Very large', 'Huge'],
+      pn_polohy: ['Over the subtitles', 'Right above the subtitle', 'Above the reading area', 'At the top'],
+      pn_vlastni: 'Custom (from the phone)',
+      pn_ano: 'On',
+      pn_ne: 'Off',
+      pn_ovladani: '▲▼ choose · ◀▶ change · Back closes. Everything else is in PlayLingo on the phone.',
+      pn_ukazka: 'This is how the translation will look.',
+      pn_tip: 'Press OK for the subtitle look.'
     }
   };
 
@@ -351,6 +377,131 @@
     vzhledPruhu(vzhled);
   }
 
+  // ---- Vzhled titulků z ovladače (od 1.4.0) -----------------------------
+  // Všechno nastavení patří PlayLingu na Androidu. Televize dostane zprávou `nastaveni` pár voleb,
+  // ukáže je v malé nabídce (OK při hře) a o změnu požádá zprávou `zmen`; Android ji ověří, uloží
+  // a pošle zpět nové hodnoty (viz core/TvSettings.kt). Hodnoty jsou stejné jako v telefonu.
+  var PRUHLEDNOSTI = [60, 80, 90, 100];
+  var VELIKOSTI = [0, 18, 22, 26, 32, 40, 48];
+  var POLOHY = ['pres', 'tesne', 'nad', 'nahore'];
+  var nastaveni = null;
+  var panelRadek = -1;
+  var posledni = null;
+  var ukazkaVidet = false;
+
+  function prectiNastaveni(z) {
+    var n = {
+      pruhlednost: cislo(z.pruhlednost, 0, 100, 100),
+      velikost: z.podleHry === true ? 0 : cislo(z.velikost, 0, 120, 22),
+      poloha: POLOHY.indexOf(z.poloha) >= 0 ? z.poloha : 'vlastni',
+      original: z.original === true
+    };
+    return n;
+  }
+
+  // Poslední vzhled z Androidu upravený podle voleb v nabídce (náhled hned po změně).
+  function nahled() {
+    var v = {}, k, zdroj = (posledni && posledni.vzhled) || { pozadi: 100, pismo: 50, poloha: 'nad', cteni: [0.74, 0.98], sirka: 0.84 };
+    for (k in zdroj) { if (Object.prototype.hasOwnProperty.call(zdroj, k)) { v[k] = zdroj[k]; } }
+    if (!nastaveni) { return v; }
+    v.pozadi = nastaveni.pruhlednost;
+    if (nastaveni.velikost > 0) { v.pismo = Math.round(nastaveni.velikost * 50 / 22); }
+    if (nastaveni.poloha === 'nahore') { v.poloha = 'stred'; v.stred = 0.08; }
+    else if (nastaveni.poloha !== 'vlastni') { v.poloha = nastaveni.poloha; }
+    if (!nastaveni.original) { delete v.original; }
+    return v;
+  }
+
+  function panelHodnota(i) {
+    var n = nastaveni;
+    if (i === 0) { return n.pruhlednost + ' %'; }
+    if (i === 1) { return T.pn_velikosti[Math.max(0, VELIKOSTI.indexOf(n.velikost))] || (n.velikost + ''); }
+    if (i === 2) { return POLOHY.indexOf(n.poloha) >= 0 ? T.pn_polohy[POLOHY.indexOf(n.poloha)] : T.pn_vlastni; }
+    return n.original ? T.pn_ano : T.pn_ne;
+  }
+
+  function panelKresli() {
+    var p = el('panel'), i, radek, popis, hodnota, nazvy;
+    if (panelRadek < 0 || !nastaveni) { p.style.display = 'none'; return; }
+    nazvy = [T.pn_pruhlednost, T.pn_velikost, T.pn_poloha, T.pn_original];
+    p.textContent = '';
+    radek = document.createElement('div');
+    radek.className = 'pn-nadpis';
+    radek.textContent = T.pn_nadpis;
+    p.appendChild(radek);
+    for (i = 0; i < nazvy.length; i++) {
+      radek = document.createElement('div');
+      radek.className = 'pn-radek' + (i === panelRadek ? ' vybrane' : '');
+      popis = document.createElement('span');
+      popis.className = 'pn-popis';
+      popis.textContent = nazvy[i];
+      hodnota = document.createElement('span');
+      hodnota.className = 'pn-hodnota';
+      hodnota.textContent = '◀ ' + panelHodnota(i) + ' ▶';
+      radek.appendChild(popis);
+      radek.appendChild(hodnota);
+      p.appendChild(radek);
+    }
+    radek = document.createElement('div');
+    radek.className = 'pn-ovladani';
+    radek.textContent = T.pn_ovladani;
+    p.appendChild(radek);
+    p.style.display = 'block';
+    // náhled: skutečný titulek, nebo ukázková věta, když zrovna žádný není
+    if (!posledni || ukazkaVidet || el('pruh').style.display === 'none') {
+      ukazkaVidet = true;
+      pruhCasti(null, T.pn_ukazka, nahled());
+    } else if (posledni) {
+      pruhCasti(posledni.casti, posledni.text, nahled());
+    }
+  }
+
+  function panelOtevri() {
+    if (!nastaveni || !spojeni) { return; }
+    panelRadek = 0;
+    zapis('nabídka vzhledu otevřena');
+    panelKresli();
+  }
+
+  function panelZavri() {
+    if (panelRadek < 0) { return; }
+    panelRadek = -1;
+    el('panel').style.display = 'none';
+    if (ukazkaVidet) { ukazkaVidet = false; pruh(null); }
+  }
+
+  function dalsi(seznam, hodnota, krok) {
+    var i = seznam.indexOf(hodnota);
+    if (i < 0) { return seznam[0]; }
+    return seznam[(i + krok + seznam.length) % seznam.length];
+  }
+
+  function panelZmen(krok) {
+    var n = nastaveni, klic, hodnota;
+    if (!n || !spojeni) { return; }
+    if (panelRadek === 0) { n.pruhlednost = dalsi(PRUHLEDNOSTI, n.pruhlednost, krok); klic = 'pruhlednost'; hodnota = n.pruhlednost; }
+    else if (panelRadek === 1) { n.velikost = dalsi(VELIKOSTI, n.velikost, krok); klic = 'velikost'; hodnota = n.velikost; }
+    else if (panelRadek === 2) { n.poloha = dalsi(POLOHY, n.poloha, krok); klic = 'poloha'; hodnota = n.poloha; }
+    else { n.original = !n.original; klic = 'original'; hodnota = n.original; }
+    try { spojeni.send(JSON.stringify({ typ: 'zmen', klic: klic, hodnota: hodnota })); } catch (e) { zapis('změnu se nepodařilo poslat'); }
+    zapis('změna vzhledu: ' + klic);
+    panelKresli();
+  }
+
+  // Klávesy při hře: OK otevře nabídku; v ní šipky a Zpět. Vrací true, když klávesu vyřídila.
+  function panelKlavesa(klavesa, zpet) {
+    if (panelRadek < 0) {
+      if (klavesa === 13 && nastaveni && spojeni) { panelOtevri(); return true; }
+      return false;
+    }
+    if (zpet) { panelZavri(); }
+    else if (klavesa === 38) { panelRadek = (panelRadek + 3) % 4; panelKresli(); }
+    else if (klavesa === 40) { panelRadek = (panelRadek + 1) % 4; panelKresli(); }
+    else if (klavesa === 37) { panelZmen(-1); }
+    else if (klavesa === 39 || klavesa === 13) { panelZmen(1); }
+    return true;
+  }
+
   function ukazZpet(ano) {
     if (zpetCasovac !== null) { clearTimeout(zpetCasovac); zpetCasovac = null; }
     el('zpet').style.display = ano ? 'block' : 'none';
@@ -377,6 +528,7 @@
     zavri(spojeni);
     spojeni = null;
     hlaseni('');
+    panelZavri();
     pruh(null);
     P.skryjVstup();
     el('obraz').innerHTML = '';
@@ -464,18 +616,29 @@
     pruh(null);
     hlaseni(T.pripojeno);
     pozdeji(function () { if (spojeni === ws) { hlaseni(''); } }, 6000);
+    // nápověda k nabídce vzhledu, jakmile ji Android nabídne (zpráva nastaveni přijde hned po připojení)
+    pozdeji(function () { if (spojeni === ws && nastaveni && el('hlaseni').textContent === T.pripojeno) { hlaseni(T.pripojeno + ' ' + T.pn_tip); } }, 800);
     ws.onerror = null;
     ws.onmessage = function (udalost) {
       var z;
       try { z = JSON.parse(udalost.data); } catch (e) { return; }
+      if (z.typ === 'nastaveni') {
+        // volby vzhledu z Androidu (po připojení a po každé změně)
+        nastaveni = prectiNastaveni(z);
+        if (panelRadek >= 0) { panelKresli(); }
+        return;
+      }
       if (z.typ === 'ukaz') {
         hlaseni('');
-        pruhCasti(z.casti, String(z.text || ''), z.vzhled);
+        posledni = { casti: z.casti, text: String(z.text || ''), vzhled: z.vzhled };
+        ukazkaVidet = false;
+        pruhCasti(z.casti, String(z.text || ''), panelRadek >= 0 ? nahled() : z.vzhled);
         // jen délka a počet řádků, ne text titulku
         zapis('ukaž #' + z.id + ': ' + String(z.text || '').length + ' znaků' +
           (z.casti && z.casti.length ? ', ' + z.casti.length + ' částí' : '') + (z.vzhled ? ', vzhled ' + String(z.vzhled.poloha || '?') + ' ' + String(z.vzhled.pozadi) + ' %' : ''));
       } else if (z.typ === 'skryj') {
-        pruh(null);
+        posledni = null;
+        if (panelRadek >= 0) { ukazkaVidet = true; pruhCasti(null, T.pn_ukazka, nahled()); } else { pruh(null); }
         zapis('skryj #' + z.id);
       } else {
         return;
@@ -488,6 +651,8 @@
       if (spojeni !== ws || !prijem) { return; }
       zapis('spojení se ztratilo, hledám znovu');
       spojeni = null;
+      nastaveni = null;
+      panelZavri();
       pruh(null);
       hlaseni(T.hledam);
       pozdeji(hledej, 2000);
@@ -602,6 +767,7 @@
   document.addEventListener('keydown', function (udalost) {
     var klavesa = udalost.keyCode;
     var zpet = P.jeZpet(klavesa);
+    if (strana === 'hra' && panelKlavesa(klavesa, zpet)) { udalost.preventDefault(); return; }
     if (strana !== 'domu') {
       // V ukázce a nápovědě je označené tlačítko Zpět, takže ho potvrdí i OK.
       if (zpet || (klavesa === 13 && strana !== 'hra')) { prejdi('domu'); udalost.preventDefault(); }

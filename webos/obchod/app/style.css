@@ -127,3 +127,15 @@ h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; 
 }
 .bod span { flex: 1; }
 .bod b { color: #FFFFFF; }
+
+/* Nabídka Vzhled titulků při hře (OK na ovladači) – nad hrou vpravo nahoře, nad pruhem. */
+#panel {
+  display: none; position: absolute; right: 60px; top: 60px; width: 820px; z-index: 5;
+  padding: 26px 34px; background: rgba(14, 16, 20, 0.94); border-left: 8px solid #F2C14E; border-radius: 8px;
+  color: #E9E6DF; font-size: 32px;
+}
+#panel .pn-nadpis { font-size: 40px; font-weight: bold; color: #F2C14E; margin-bottom: 18px; }
+#panel .pn-radek { display: flex; justify-content: space-between; padding: 12px 16px; border-radius: 6px; }
+#panel .pn-radek.vybrane { background: #F2C14E; color: #0E1014; font-weight: bold; }
+#panel .pn-hodnota { margin-left: 24px; white-space: nowrap; }
+#panel .pn-ovladani { margin-top: 18px; font-size: 24px; color: #A8B0B8; }

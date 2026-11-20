@@ -68,6 +68,28 @@ object TvChoice {
 
     fun needsInstall(c: Context, type: TvType = Prefs.tvType(c)): Boolean = type.sends && !seen(c, type)
 
+    /** Verze aplikace pro televizi, kterou nese tohle APK (z receiver-manifest.json); null = nejde zjistit. */
+    fun bundledVersion(c: Context, type: TvType): String? = try {
+        val dir = when (type) { TvType.LG -> "lg"; TvType.SAMSUNG -> "samsung"; TvType.ANDROID -> return null }
+        val m = c.assets.open("$dir/receiver-manifest.json").use { String(it.readBytes(), Charsets.UTF_8) }
+        cz.playlingo.core.MiniJson.obj(m)?.get("version") as? String
+    } catch (_: Exception) { null }
+
+    /**
+     * V televizi je starší PlayLingo než to, které nese tohle APK → (verze v televizi, nová verze), jinak null.
+     * Verzi v televizi bere z posledního ohlášení (i z dřívějška, `Prefs.tvSeen`).
+     */
+    fun outdated(c: Context, type: TvType = Prefs.tvType(c)): Pair<String, String>? {
+        val p = type.platform ?: return null
+        val bundled = bundledVersion(c, type) ?: return null
+        val live = TvSender.lastSeen?.announce?.takeIf { it.platform == p }
+        val seen = live ?: Prefs.tvSeen(c, p)?.substringAfterLast(" · ")
+            ?.let { cz.playlingo.core.TvAnnounce(p, it, null, null, null) } ?: return null
+        val check = cz.playlingo.core.TvCheck.of(seen, p, bundled)
+        return if (check == cz.playlingo.core.TvCheck.OLDER || check == cz.playlingo.core.TvCheck.NO_VERSION)
+            (seen.version ?: "?") to bundled else null
+    }
+
     /**
      * Televize do souhrnného řádku na Domů: „Android TV“, nebo u LG/Samsungu značka, model (když se
      * televize už ohlásila) a stav spojení („LG OLED55B7 · připojeno“). Druhá hodnota = připojeno.

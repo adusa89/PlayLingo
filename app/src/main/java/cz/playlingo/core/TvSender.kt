@@ -36,6 +36,8 @@ import java.util.concurrent.Executors
  * průvodce nahráním do televize a stránka Domů poznají, že je aplikace v televizi nainstalovaná
  * a v jaké verzi ([lastSeen]). Od verze 1.2.0 televize posílá i svůj záznam událostí
  * `{"typ":"zaznam","radky":["…"]}` (po připojení a pak po dávkách) – ukládá ho [TvLog].
+ * Od 0.89 Android posílá `{"typ":"nastaveni",…}` a televize (od 1.4.0) smí poslat `{"typ":"zmen",…}` –
+ * pár voleb vzhledu z ovladače, viz [TvSettings].
  * Ostatní zprávy od televize (`hotovo`) se jen přečtou a zahodí.
  * Bez Androidu, aby šlo vyzkoušet v unit testech.
  */
@@ -156,6 +158,10 @@ class TvSender(private val log: (String) -> Unit = {}) {
     private var shown: String? = null
     private var shownParts: String? = null
     private var shownLook: String? = null
+    /** Zpráva `nastaveni` s volbami, které jdou měnit i v televizi ([TvSettings]); null = neposílat. */
+    @Volatile private var settings: String? = null
+    /** Televize požádala o změnu vzhledu ([TvSettings.parse] už ověřil volbu i hodnotu). */
+    @Volatile var onChange: ((TvSettings.Change) -> Unit)? = null
 
     val running: Boolean get() = server?.isClosed == false
 
@@ -209,6 +215,13 @@ class TvSender(private val log: (String) -> Unit = {}) {
         shownParts = parts
         shownLook = look
         broadcast(showMessage(++nextId, text, parts, look))
+    }
+
+    /** Pošle televizím aktuální volby vzhledu (po spuštění a po každé změně); nové televize je dostanou po připojení. */
+    fun sendSettings(message: String) {
+        if (message == settings) return
+        settings = message
+        broadcast(message)
     }
 
     /** Schová pruh na televizi. */
@@ -269,6 +282,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
             // aby se nová televize o žádnou změnu nepřipravila
             synchronized(this) {
                 clients.add(c)
+                settings?.let { m -> val b = frame(m); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
                 shown?.let { t -> val b = frame(showMessage(++nextId, t, shownParts, shownLook)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
             }
             log("tv connected, now ${clients.size}")
@@ -283,6 +297,11 @@ class TvSender(private val log: (String) -> Unit = {}) {
                 }
                 // záznam událostí z televize (od verze 1.2.0) – do souboru pro hlášení
                 TvLog.parse(msg)?.let { TvLog.add(it) }
+                // změna vzhledu z ovladače televize (od aplikace v televizi 1.4.0) – jen povolené volby a hodnoty
+                TvSettings.parse(msg)?.let { ch ->
+                    log("tv change ${ch.javaClass.simpleName}")
+                    try { onChange?.invoke(ch) } catch (_: Throwable) {}
+                }
             }
         } catch (_: Throwable) {
         } finally { drop(c) }

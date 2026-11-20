@@ -42,6 +42,7 @@ import cz.playlingo.core.SubtitleTracker
 import cz.playlingo.core.TextLogic
 import cz.playlingo.core.TranslationCache
 import cz.playlingo.core.TvSender
+import cz.playlingo.core.TvSettings
 import cz.playlingo.core.UsageStats
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -352,12 +353,16 @@ class TranslatorService : Service() {
                 it.onAnnounce = { a ->
                     if (TvProfile.onAnnounce(this, a)) android.os.Handler(android.os.Looper.getMainLooper()).post { if (running) reloadSettings() }
                 }
+                // vzhled změněný ovladačem televize: uložit jako z telefonu a načíst znovu
+                it.onChange = { ch -> android.os.Handler(android.os.Looper.getMainLooper()).post { if (running) applyTvChange(ch) } }
                 it.start(); tv = it; activeTv = it
             }
         } else {
             tv?.stop(); tv = null; activeTv = null
         }
         val sender = tv
+        sender?.sendSettings(TvSettings.message(Prefs.opacity(this), Prefs.textSize(this), Prefs.matchSize(this),
+            Prefs.layout(this).position, Prefs.showOriginal(this)))
         overlay = SubtitleOverlay(
             this, screenW, screenH, layout, Prefs.textSize(this), Prefs.opacity(this),
             debug, Prefs.coloredSpeaker(this),
@@ -369,6 +374,19 @@ class TranslatorService : Service() {
         modelTries = 0
         prepareModel(l)
         updateNotification()
+    }
+
+    /** Změna vzhledu z ovladače televize ([TvSettings]): stejné hodnoty jako v Titulkách v telefonu. */
+    private fun applyTvChange(ch: TvSettings.Change) {
+        when (ch) {
+            is TvSettings.Change.Opacity -> Prefs.setOpacity(this, ch.percent)
+            is TvSettings.Change.TextSize -> if (ch.sp == 0) Prefs.setMatchSize(this, true)
+                else { Prefs.setMatchSize(this, false); Prefs.setTextSize(this, ch.sp) }
+            is TvSettings.Change.Position -> Prefs.setLayout(this, Prefs.layout(this).withPosition(ch.position))
+            is TvSettings.Change.Original -> Prefs.setShowOriginal(this, ch.show)
+        }
+        tp("TVSET|${ch.javaClass.simpleName}")
+        reloadSettings()
     }
 
     /** Kolikrát se za tohoto běhu zkoušelo stáhnout jazykový balíček (po neúspěchu se zkouší znovu). */

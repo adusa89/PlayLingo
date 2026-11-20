@@ -811,7 +811,13 @@ class MainActivity : Activity() {
         if (!paired && Prefs.console(this) == Console.XBOX) warn(ui.checkRow(false, false, ct("chk_ps5_missing"), t("ok"), t("set_up")) { section = Section.PS5; render() })
         if (TvChoice.needsInstall(this, type)) {
             warn(ui.checkRow(false, false, TvChoice.label(this, type) + ": " + t("tv_st_never"), t("ok"), t("w_install")) { TvChoice.openInstall(this, type) })
-        } else if (running && type.sends && TranslatorService.tvConnected == 0) note(t("st_tv_wait"))
+        } else {
+            // v televizi je starší PlayLingo, než nese tahle aplikace – nové volby (vzhled pruhu…) by tam chyběly
+            TvChoice.outdated(this, type)?.let { (old, new) ->
+                warn(ui.checkRow(false, false, t("w_tv_old").replace("%1", old).replace("%2", new), t("ok"), t("w_install")) { TvChoice.openInstall(this, type) })
+            }
+            if (running && type.sends && TranslatorService.tvConnected == 0) note(t("st_tv_wait"))
+        }
         // LG: když vývojářský režim brzy vyprší, aplikace z televize zmizí – upozornit
         if (type == TvType.LG) {
             LgInstallActivity.shortLine(this)?.takeIf { it.second }?.let { (s, _) -> note(s) }
@@ -1873,6 +1879,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.88"
-    const val VERSION_CODE = 88
+    const val VERSION = "verze 0.89"
+    const val VERSION_CODE = 89
 }
