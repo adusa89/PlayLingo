@@ -8,6 +8,13 @@ object UiState {
     /** Je vidět ukázková „herní“ obrazovka? Tu aplikace čte jako hru. */
     @Volatile var testCard = false
 
+    /**
+     * Stojí o barevný náhled hry jen stránka Konzole a nastavení oblastí (od 0.97.14). Dřív se náhled
+     * počítal každé 1,5 s na jakékoli obrazovce aplikace – i na Domů, kde vidět není (telefon jako čtečka
+     * mívá aplikaci otevřenou celou hru).
+     */
+    @Volatile var previewWanted = false
+
     @Volatile private var screens = 0
     @Volatile private var hiddenAt = 0L
 

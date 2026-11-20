@@ -98,6 +98,12 @@ object DeeplTranslator {
     /** Nový nebo odebraný klíč: dřívější chyby (např. odmítnutý klíč) už neplatí. */
     fun newKey() { backoff = DeeplBackoff() }
 
+    /**
+     * Jen ke zobrazení („DeepL online + offline“): zapnuto, jazyk DeepL umí a klíč je uložený. Klíč se
+     * nedešifruje (Keystore) – Domů a stav pro TV se ptají často, služba si klíč bere jednou přes [activeKey].
+     */
+    fun active(c: Context): Boolean = DeeplKey.enabled(c) && Deepl.target(Prefs.lang(c)) != null && DeeplKey.has(c)
+
     /** Klíč, se kterým má služba DeepL používat; null = pokus vypnutý, chybí klíč, jazyk DeepL neumí. */
     fun activeKey(c: Context): String? {
         if (!DeeplKey.enabled(c) || Deepl.target(Prefs.lang(c)) == null) return null

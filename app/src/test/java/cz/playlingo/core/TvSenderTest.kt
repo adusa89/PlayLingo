@@ -113,4 +113,10 @@ class TvSenderTest {
             assertEquals(0, sender.connected)
         } finally { sender.stop() }
     }
+
+    @Test fun statusMessageForTv() {
+        val m = TvSender.statusMessage(listOf("ok" to "PS5-151 · připojeno", "pozor" to "Překlad · \"neběží\""))
+        assertEquals("{\"typ\":\"stav\",\"radky\":[{\"barva\":\"ok\",\"text\":\"PS5-151 · připojeno\"}," +
+            "{\"barva\":\"pozor\",\"text\":\"Překlad · \\\"neběží\\\"\"}]}", m)
+    }
 }

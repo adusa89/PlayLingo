@@ -25,27 +25,28 @@
   var TEXTY = {
     cs: {
       nadpis: 'Překlad titulků ze hry',
-      popis: 'Televize ukáže hru z PlayStationu a přes ni pruh s překladem. Číst a překládat ' +
-        'musí aplikace PlayLingo v telefonu nebo boxu s Androidem ve stejné domácí síti.',
-      otazka: 'Do kterého vstupu je zapojený PlayStation?',
+      popis: 'Čte a překládá PlayLingo na Androidu ve stejné síti',
+      otazka: 'Vstup s PlayStationem',
+      tl_vzhled: 'Vzhled titulků',
       tl_ukazka: 'Ukázka',
-      tl_napoveda: 'Jak to funguje',
+      tl_napoveda: 'Nápověda',
       tl_jazyk: 'Jazyk: čeština',
       tl_zpet: 'Zpět',
       tl_konec: 'Ukončit',
-      ovladani: 'Šipkami vyberte, potvrďte tlačítkem OK. Tlačítko Zpět vrátí tuto obrazovku, na ní aplikaci ukončí.',
-      hledam: 'Hledám PlayLingo v domácí síti… V aplikaci PlayLingo na Androidu zapněte ' +
-        'Nastavení → Posílat titulky do televize.',
-      pripojeno: 'PlayLingo je připojeno. Překlad se ukáže, jakmile ve hře někdo promluví.',
-      bez_vstupu: 'Vstup HDMI %1 se nepodařilo otevřít. Tlačítkem Zpět vyberte jiný.',
-      bez_site: 'Televize není připojená k domácí síti.',
+      ovladani: '◀ ▶ ▲ ▼ výběr · OK potvrdit · Zpět ukončit',
+      st_hledam: 'hledám v síti…',
+      st_pripojeno: 'připojeno',
+      st_vstup: 'nejde otevřít',
+      st_sit: 'TV bez sítě',
+      st_ok: 'OK · vzhled titulků',
       uk_stitek: 'Ukázka',
       uk_popis: 'Hra ukazuje titulky anglicky. PlayLingo je přečte, přeloží a překlad ukáže v černém pruhu dole.',
       np_nadpis: 'Jak to funguje',
       np_1: 'Do telefonu nebo boxu s Androidem nainstalujte PlayLingo: github.com/adusa89/PlayLingo',
       np_2: 'Podle průvodce v ní spárujte PlayStation 5. Zařízení musí být ve stejné domácí síti jako televize.',
-      np_3: 'V PlayLingu na Androidu zapněte Nastavení → Posílat titulky do televize a spusťte překlad.',
+      np_3: 'V PlayLingu na Androidu zvolte Nastavení → Typ TV podle této televize a spusťte překlad.',
       np_4: 'Tady v televizi vyberte vstup HDMI s PlayStationem. Televize si PlayLingo v síti najde sama.',
+      np_5: 'Během hry: OK otevře vzhled titulků (pozadí, písmo, poloha, originál). Totéž je v nabídce pod Vzhled titulků.',
       np_sony: 'Aplikace není produktem společnosti Sony Interactive Entertainment. „PlayStation“ a „PS5“ jsou jejich ochranné známky.',
       pn_nadpis: 'Vzhled titulků',
       pn_pruhlednost: 'Pozadí pruhu',
@@ -58,33 +59,33 @@
       pn_ano: 'Zapnuto',
       pn_ne: 'Vypnuto',
       pn_ovladani: '▲▼ volba · ◀▶ změna · Zpět zavře. Ostatní nastavení je v PlayLingu v telefonu.',
-      pn_ukazka: 'Takhle bude vypadat překlad titulků.',
-      pn_tip: 'Tlačítkem OK otevřete vzhled titulků.'
+      pn_ukazka: 'Takhle bude vypadat překlad titulků.'
     },
     en: {
       nadpis: 'Translated game subtitles',
-      popis: 'The TV shows your PlayStation game with a translation bar over it. Reading and ' +
-        'translating is done by the PlayLingo app on an Android phone or box in the same home network.',
-      otazka: 'Which input is your PlayStation connected to?',
+      popis: 'Reading and translating: PlayLingo on Android in the same network',
+      otazka: 'PlayStation input',
+      tl_vzhled: 'Subtitle look',
       tl_ukazka: 'Demo',
-      tl_napoveda: 'How it works',
+      tl_napoveda: 'Help',
       tl_jazyk: 'Language: English',
       tl_zpet: 'Back',
       tl_konec: 'Exit',
-      ovladani: 'Select with the arrow keys and press OK. The Back button returns to this screen and exits the app from here.',
-      hledam: 'Looking for PlayLingo in your home network… In PlayLingo on Android, turn on ' +
-        'Settings → Send subtitles to TV.',
-      pripojeno: 'PlayLingo is connected. The translation appears as soon as someone speaks in the game.',
-      bez_vstupu: 'HDMI %1 could not be opened. Press Back and choose another input.',
-      bez_site: 'The TV is not connected to your home network.',
+      ovladani: '◀ ▶ ▲ ▼ select · OK confirm · Back exit',
+      st_hledam: 'searching the network…',
+      st_pripojeno: 'connected',
+      st_vstup: 'cannot open',
+      st_sit: 'TV offline',
+      st_ok: 'OK · subtitle look',
       uk_stitek: 'Demo',
       uk_popis: 'The game shows subtitles in English. PlayLingo reads them, translates them and shows ' +
         'the translation in the black bar below (here: Czech).',
       np_nadpis: 'How it works',
       np_1: 'Install PlayLingo on an Android phone or box: github.com/adusa89/PlayLingo',
       np_2: 'Follow its guide to pair your PlayStation 5. The device must be in the same home network as the TV.',
-      np_3: 'In PlayLingo on Android, turn on Settings → Send subtitles to TV and start translating.',
+      np_3: 'In PlayLingo on Android, choose Settings → TV type matching this TV and start translating.',
       np_4: 'Here on the TV, choose the HDMI input of your PlayStation. The TV finds PlayLingo in the network by itself.',
+      np_5: 'While playing: OK opens the subtitle look (background, text, position, original). The same is in the menu under Subtitle look.',
       np_sony: 'This app is not a product of Sony Interactive Entertainment. “PlayStation” and “PS5” are their trademarks.',
       pn_nadpis: 'Subtitle look',
       pn_pruhlednost: 'Bar background',
@@ -97,8 +98,7 @@
       pn_ano: 'On',
       pn_ne: 'Off',
       pn_ovladani: '▲▼ choose · ◀▶ change · Back closes. Everything else is in PlayLingo on the phone.',
-      pn_ukazka: 'This is how the translation will look.',
-      pn_tip: 'Press OK for the subtitle look.'
+      pn_ukazka: 'This is how the translation will look.'
     }
   };
 
@@ -229,10 +229,63 @@
 
   // ---- Obrazovky --------------------------------------------------------
 
-  function hlaseni(text) {
-    var e = el('hlaseni');
-    e.textContent = text || '';
-    e.style.display = text ? 'block' : 'none';
+  // ---- Stav při hře (od 1.5.0): body s tečkou jako Domů v PlayLingu na Androidu --------------
+  // Vlastní řádky televize (vstup HDMI, spojení s PlayLingem) a pod nimi řádky z Androidu
+  // (zpráva {"typ":"stav","radky":[{"barva":"ok|pozor|info","text":"…"}]}, od PlayLinga 0.97.14).
+  // Když je všechno zelené, po chvíli zmizí; oranžový řádek zůstává, dokud se to nespraví.
+  var stav = { vstupChyba: false, bezSite: false, android: [] };
+  var stavPodpis = '';
+  var stavCasovac = null;
+
+  function stavRadky() {
+    var r = [];
+    if (!prijem) { return r; }
+    r.push({ barva: stav.vstupChyba ? 'pozor' : 'ok', text: 'HDMI ' + prijem.hdmi + (stav.vstupChyba ? ' · ' + T.st_vstup : '') });
+    if (spojeni) { r.push({ barva: 'ok', text: 'PlayLingo · ' + T.st_pripojeno }); }
+    else { r.push({ barva: 'pozor', text: stav.bezSite ? T.st_sit : 'PlayLingo · ' + T.st_hledam }); }
+    if (spojeni) { r = r.concat(stav.android); }
+    if (spojeni && nastaveni) { r.push({ barva: 'info', text: T.st_ok }); }
+    return r;
+  }
+
+  // ukazat: true = ukázat znovu; jinak se jen překreslí, když je vidět (nebo když se stav změnil)
+  function stavKresli(ukazat) {
+    var e = el('hlaseni'), r = stavRadky(), i, radek, tecka, text, pozor = false, podpis = '';
+    for (i = 0; i < r.length; i++) { podpis += r[i].barva + r[i].text + '|'; if (r[i].barva === 'pozor') { pozor = true; } }
+    if (podpis !== stavPodpis) { stavPodpis = podpis; ukazat = true; }
+    if (!r.length) { e.style.display = 'none'; return; }
+    if (!ukazat && e.style.display !== 'block') { return; }
+    e.textContent = '';
+    for (i = 0; i < r.length; i++) {
+      radek = document.createElement('div');
+      radek.className = 'st-radek';
+      tecka = document.createElement('span');
+      tecka.className = 'tecka ' + r[i].barva;
+      text = document.createElement('span');
+      text.textContent = r[i].text;
+      radek.appendChild(tecka);
+      radek.appendChild(text);
+      e.appendChild(radek);
+    }
+    e.style.display = 'block';
+    if (stavCasovac) { clearTimeout(stavCasovac); stavCasovac = null; }
+    if (!pozor) { stavCasovac = setTimeout(function () { el('hlaseni').style.display = 'none'; }, 8000); }
+  }
+
+  function stavSkryj() {
+    if (stavCasovac) { clearTimeout(stavCasovac); stavCasovac = null; }
+    el('hlaseni').style.display = 'none';
+  }
+
+  function prectiStav(z) {
+    var out = [], i, b, rr = z.radky;
+    if (!rr || !rr.length) { return out; }
+    for (i = 0; i < rr.length && i < 6; i++) {
+      if (!rr[i] || typeof rr[i].text !== 'string') { continue; }
+      b = rr[i].barva === 'ok' || rr[i].barva === 'pozor' ? rr[i].barva : 'info';
+      out.push({ barva: b, text: rr[i].text.substring(0, 80) });
+    }
+    return out;
   }
 
   function pruh(text) {
@@ -386,6 +439,7 @@
   var POLOHY = ['pres', 'tesne', 'nad', 'nahore'];
   var nastaveni = null;
   var panelRadek = -1;
+  var chciVzhled = false;   // Vzhled titulků z úvodní obrazovky: otevřít nabídku hned po připojení
   var posledni = null;
   var ukazkaVidet = false;
 
@@ -527,7 +581,10 @@
     hledani++;
     zavri(spojeni);
     spojeni = null;
-    hlaseni('');
+    stav = { vstupChyba: false, bezSite: false, android: [] };
+    stavPodpis = '';
+    stavSkryj();
+    chciVzhled = false;
     panelZavri();
     pruh(null);
     P.skryjVstup();
@@ -560,7 +617,7 @@
   function ukazVstup(cislo) {
     P.ukazVstup(cislo, el('obraz'), function () {
       zapis('vstup HDMI ' + cislo + ' se nepodařilo otevřít');
-      if (strana === 'hra' && !spojeni) { hlaseni(T.bez_vstupu.replace('%1', cislo)); }
+      if (strana === 'hra') { stav.vstupChyba = true; stavKresli(true); }
     });
   }
 
@@ -571,7 +628,7 @@
     pamet('hdmi', String(cislo));
     oznac(cislo - 1);
     zapis('hra: HDMI ' + cislo + (pevna ? ', pevná adresa ' + pevna : ''));
-    hlaseni(T.hledam);
+    stavKresli(true);
     if (!bezVstupu) { ukazVstup(cislo); }
     hledej();
   }
@@ -614,10 +671,8 @@
     zapis('připojeno k ' + adresa);
     if (!prijem.pevna) { pamet('titulky', adresa); }
     pruh(null);
-    hlaseni(T.pripojeno);
-    pozdeji(function () { if (spojeni === ws) { hlaseni(''); } }, 6000);
-    // nápověda k nabídce vzhledu, jakmile ji Android nabídne (zpráva nastaveni přijde hned po připojení)
-    pozdeji(function () { if (spojeni === ws && nastaveni && el('hlaseni').textContent === T.pripojeno) { hlaseni(T.pripojeno + ' ' + T.pn_tip); } }, 800);
+    stav.bezSite = false;
+    stavKresli(true);
     ws.onerror = null;
     ws.onmessage = function (udalost) {
       var z;
@@ -626,10 +681,20 @@
         // volby vzhledu z Androidu (po připojení a po každé změně)
         nastaveni = prectiNastaveni(z);
         if (panelRadek >= 0) { panelKresli(); }
+        // z nabídky Vzhled titulků na úvodní obrazovce: nabídka se otevře hned po připojení
+        if (chciVzhled && panelRadek < 0) { chciVzhled = false; panelOtevri(); }
+        stavKresli(false);
+        return;
+      }
+      if (z.typ === 'stav') {
+        // stav z Androidu (konzole, překlad, hra) – body s tečkou jako na Domů
+        stav.android = prectiStav(z);
+        stavKresli(false);
         return;
       }
       if (z.typ === 'ukaz') {
-        hlaseni('');
+        // první titulek: zelený přehled už není potřeba (oranžový zůstane)
+        if (stavPodpis.indexOf('pozor') < 0) { stavSkryj(); }
         posledni = { casti: z.casti, text: String(z.text || ''), vzhled: z.vzhled };
         ukazkaVidet = false;
         pruhCasti(z.casti, String(z.text || ''), panelRadek >= 0 ? nahled() : z.vzhled);
@@ -652,9 +717,10 @@
       zapis('spojení se ztratilo, hledám znovu');
       spojeni = null;
       nastaveni = null;
+      stav.android = [];
       panelZavri();
       pruh(null);
-      hlaseni(T.hledam);
+      stavKresli(true);
       pozdeji(hledej, 2000);
     };
     // platforma a verze: podle nich průvodce na Androidu pozná, že je aplikace v televizi nainstalovaná
@@ -684,7 +750,7 @@
         var m = /^(\d+\.\d+\.\d+\.)(\d+)$/.exec(ip || '');
         if (!m) {
           zapis('adresa televize neznámá (' + (ip || '-') + (odpovedela ? '' : ', systém neodpověděl') + ')');
-          if (odpovedela) { hlaseni(T.bez_site); }
+          if (odpovedela) { stav.bezSite = true; stavKresli(false); }
           znovu();
           return;
         }
@@ -744,6 +810,11 @@
       pamet('jazyk', jazyk);
     }
     else if (akce === 'ukazka') { spustUkazku(); }
+    else if (akce === 'vzhled') {
+      // vzhled se mění při hře (náhled přes obraz): spustí naposledy použitý vstup a po připojení otevře nabídku
+      spustHru(parseInt(pamet('hdmi'), 10) || 1);
+      chciVzhled = true;
+    }
     else if (akce === 'konec') { ukonci(); }
     else { prejdi('napoveda'); }
   }
@@ -754,14 +825,14 @@
     P.ukonci();
   }
 
-  // Domů jsou dvě řady: čtyři vstupy (0–3) a pod nimi Ukázka (4), Jak to funguje (5), Jazyk (6)
-  // a Ukončit (7).
+  // Domů jsou dvě řady: čtyři vstupy (0–3) a pod nimi pět menších tlačítek – Vzhled titulků (4),
+  // Ukázka (5), Nápověda (6), Jazyk (7), Ukončit (8). Šipka nahoru/dolů jde na nejbližší tlačítko druhé řady.
   function sipka(klavesa) {
     var v = vybrane;
     if (klavesa === 37) { if (v !== 0 && v !== 4) { oznac(v - 1); } }
-    else if (klavesa === 39) { if (v !== 3 && v !== 7) { oznac(v + 1); } }
-    else if (klavesa === 40) { if (v < 4) { oznac(v + 4); } }
-    else if (klavesa === 38) { if (v >= 4) { oznac(v - 4); } }
+    else if (klavesa === 39) { if (v !== 3 && v !== 8) { oznac(v + 1); } }
+    else if (klavesa === 40) { if (v < 4) { oznac(4 + Math.round(v * 4 / 3)); } }
+    else if (klavesa === 38) { if (v >= 4) { oznac(Math.round((v - 4) * 3 / 4)); } }
   }
 
   document.addEventListener('keydown', function (udalost) {

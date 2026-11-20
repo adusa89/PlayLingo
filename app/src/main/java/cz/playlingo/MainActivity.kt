@@ -147,6 +147,8 @@ class MainActivity : Activity() {
         override fun run() {
             // obnov obrazovku, když se změnil stav překladu (např. zastavení z notifikace)
             ticks++
+            // stav pro aplikaci v TV (jen LG/Samsung, jen když překlad neběží; posílá se jen změna)
+            if (ticks % 2 == 0) TvIdle.ensure(this@MainActivity)
             val typing = currentFocus is EditText
             val changed = lastRunning != TranslatorService.running || lastPaused != TranslatorService.paused ||
                 lastLink != TranslatorService.linkState || (lastFrames == 0L) != (TranslatorService.framesDecoded == 0L) ||
@@ -154,8 +156,8 @@ class MainActivity : Activity() {
                 (section == Section.HOME && (lastTv != TranslatorService.tvConnected || lastTvSeen != (TvSender.lastSeen?.at ?: 0L) ||
                     lastGuess != Prefs.gameGuess(this@MainActivity)))
             // náhled obrazu z PlayStationu se obnovuje každé 3 s (ne když uživatel zrovna píše)
-            val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 &&
-                (section == Section.HOME || section == Section.PS5)
+            // (jen na stránce Konzole – Domů náhled nemá a překreslovat ho každé 3 s bylo zbytečné)
+            val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 && section == Section.PS5
             if ((changed || preview) && !typing && !pairBusy) render(keepFocus = true)
             main.postDelayed(this, 1000)
         }
@@ -312,6 +314,7 @@ class MainActivity : Activity() {
 
     override fun onPause() {
         TvIdle.stop()
+        UiState.previewWanted = false
         UiState.hidden()
         main.removeCallbacks(ticker)
         Prefs.setStats(this, TranslatorService.statsFor(this))
@@ -486,6 +489,8 @@ class MainActivity : Activity() {
         lastGuess = Prefs.gameGuess(this)
         // aplikace v televizi LG/Samsung se může připojit i před Spustit (skutečný stav na Domů)
         TvIdle.ensure(this)
+        // barevný náhled hry jen pro stránku Konzole (jinde by se zbytečně počítal každé 1,5 s)
+        UiState.previewWanted = wizard < 0 && section == Section.PS5
         // pevná hlavička jen v Nastavení (nadpis a záložky), jinde schovaná a obsah s běžným odsazením
         pinned.removeAllViews()
         val pin = wizard < 0 && section == Section.SETTINGS
@@ -873,7 +878,7 @@ class MainActivity : Activity() {
         // překlad: jazyk, offline / DeepL, chybějící balíček
         val tl = Prefs.lang(this)
         if (!modelOk) row(Theme.WARN, t("w_model").replace("%s", tl.label), "hmodel", t("download"), { downloadModel() })
-        else row(Theme.OK, tl.label + " · " + t(if (DeeplTranslator.activeKey(this) != null) "dl_mode_on" else "h_offline"), "hmodel")
+        else row(Theme.OK, tl.label + " · " + t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline"), "hmodel")
         // hra: vybraný profil zeleně; titulky ukazují na jinou hru → oranžově s Přepnout (GameGuess, nic se nepřepíná samo).
         // S univerzálním profilem a bez odhadu řádek není.
         val game = GameProfiles.of(Prefs.gameId(this))
@@ -2165,6 +2170,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.13"
-    const val VERSION_CODE = 110
+    const val VERSION = "verze 0.97.14"
+    const val VERSION_CODE = 111
 }

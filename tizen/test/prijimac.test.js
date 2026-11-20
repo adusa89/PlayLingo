@@ -36,7 +36,7 @@ function prvek(id) {
 function spust(platforma) {
   var prvky = {};
   var tlacitka = [1, 2, 3, 4].map(function (n) { var t = prvek('hdmi' + n); t.setAttribute('data-akce', 'hdmi'); t.setAttribute('data-hdmi', String(n)); return t; })
-    .concat(['ukazka', 'napoveda', 'jazyk', 'konec'].map(function (a) { var t = prvek(a); t.setAttribute('data-akce', a); return t; }));
+    .concat(['vzhled', 'ukazka', 'napoveda', 'jazyk', 'konec'].map(function (a) { var t = prvek(a); t.setAttribute('data-akce', a); return t; }));
   var klavesy = [];
   var odeslano = [];
   var spojeni = [];
@@ -194,6 +194,14 @@ function zkus(platforma, verze, dalsi) {
       assert.strictEqual(tv.prvky.panel.style.display, 'none', 'Zpět zavře nabídku');
       assert.strictEqual(tv.prvky.pruh.style.display, 'none', 'ukázka po zavření zmizí');
       assert.strictEqual(tv.document.body.className, 's-hra', 'Zpět v nabídce neopustí hru');
+      // stav z Androidu (od 1.5.0): body s tečkou pod vlastními řádky televize (HDMI, PlayLingo)
+      ws.onmessage({ data: JSON.stringify({ typ: 'stav', radky: [{ barva: 'pozor', text: 'PS5-151 · bez obrazu' }, { barva: 'zla', text: 'Čeština' }] }) });
+      var st = tv.prvky.hlaseni.children;
+      assert.strictEqual(tv.prvky.hlaseni.style.display, 'block', 'oranžový stav je vidět');
+      assert.strictEqual(st[0].children[1].textContent, 'HDMI 1');
+      assert.strictEqual(st[2].children[1].textContent, 'PS5-151 · bez obrazu');
+      assert.strictEqual(st[2].children[0].className, 'tecka pozor');
+      assert.strictEqual(st[3].children[0].className, 'tecka info', 'neznámá barva = šedá');
       // záznam událostí: hned po ohlášení odešlo, co se nasbíralo (start, hledání, připojení)
       var zaznam1 = tv.odeslano.filter(function (z) { return z.typ === 'zaznam'; });
       assert.ok(zaznam1.length >= 1, 'po připojení odešel záznam');

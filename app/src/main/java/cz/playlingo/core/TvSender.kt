@@ -108,6 +108,13 @@ class TvSender(private val log: (String) -> Unit = {}) {
             }
         fun hideMessage(id: Int) = "{\"typ\":\"skryj\",\"id\":$id}"
 
+        /**
+         * Stav pro televizi jako Domů v aplikaci: řádky (barva „ok“ / „pozor“ / „info“, text).
+         * Aplikace v televizi od 1.5.0 je ukáže pod svými řádky (HDMI, spojení); starší zprávu přeskočí.
+         */
+        fun statusMessage(rows: List<Pair<String, String>>): String =
+            rows.joinToString(",", "{\"typ\":\"stav\",\"radky\":[", "]}") { (b, t) -> "{\"barva\":${json(b)},\"text\":${json(t)}}" }
+
         /** Text jako řetězec JSON (uvozovky, zpětná lomítka a řídicí znaky se zapíšou bezpečně). */
         fun json(s: String): String {
             val sb = StringBuilder(s.length + 2).append('"')
@@ -160,6 +167,8 @@ class TvSender(private val log: (String) -> Unit = {}) {
     private var shownLook: String? = null
     /** Zpráva `nastaveni` s volbami, které jdou měnit i v televizi ([TvSettings]); null = neposílat. */
     @Volatile private var settings: String? = null
+    /** Poslední stav pro televizi (body s tečkou, aplikace v televizi od 1.5.0); nové televize ho dostanou po připojení. */
+    @Volatile private var status: String? = null
     /** Televize požádala o změnu vzhledu ([TvSettings.parse] už ověřil volbu i hodnotu). */
     @Volatile var onChange: ((TvSettings.Change) -> Unit)? = null
 
@@ -224,6 +233,13 @@ class TvSender(private val log: (String) -> Unit = {}) {
         broadcast(message)
     }
 
+    /** Pošle televizím stav (jen když se změnil); nové televize ho dostanou po připojení. */
+    fun sendStatus(message: String) {
+        if (message == status) return
+        status = message
+        broadcast(message)
+    }
+
     /** Schová pruh na televizi. */
     @Synchronized fun hide() {
         if (shown == null) return
@@ -283,6 +299,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
             synchronized(this) {
                 clients.add(c)
                 settings?.let { m -> val b = frame(m); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
+                status?.let { m -> val b = frame(m); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
                 shown?.let { t -> val b = frame(showMessage(++nextId, t, shownParts, shownLook)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
             }
             log("tv connected, now ${clients.size}")

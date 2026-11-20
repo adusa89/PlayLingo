@@ -36,8 +36,8 @@ class CalibrationActivity : Activity() {
         editor.requestFocus()
     }
 
-    override fun onResume() { super.onResume(); UiState.shown() }
-    override fun onPause() { UiState.hidden(); super.onPause() }
+    override fun onResume() { super.onResume(); UiState.shown(); UiState.previewWanted = true }
+    override fun onPause() { UiState.previewWanted = false; UiState.hidden(); super.onPause() }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         val step = if (event.repeatCount > 2) 0.03f else 0.01f

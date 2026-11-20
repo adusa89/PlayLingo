@@ -7,25 +7,28 @@
 </head>
 <body>
 
-<!-- Domů: výběr vstupu HDMI, ukázka, nápověda a přepnutí jazyka -->
+<!-- Domů (od 1.5.0): vstupy HDMI, pod nimi Vzhled titulků, Ukázka, Nápověda, Jazyk, Ukončit -->
 <div id="domu" class="strana">
-  <div class="znacka">PlayLingo</div>
-  <h1 data-t="nadpis"></h1>
-  <p class="popis" data-t="popis"></p>
+  <div class="hlavicka">
+    <div class="znacka">PlayLingo</div>
+    <div class="podnadpis" data-t="nadpis"></div>
+  </div>
 
   <p class="krok" data-t="otazka"></p>
   <div class="rada">
-    <div class="tl" data-akce="hdmi" data-hdmi="1">HDMI 1</div>
-    <div class="tl" data-akce="hdmi" data-hdmi="2">HDMI 2</div>
-    <div class="tl" data-akce="hdmi" data-hdmi="3">HDMI 3</div>
-    <div class="tl" data-akce="hdmi" data-hdmi="4">HDMI 4</div>
+    <div class="tl hdmi" data-akce="hdmi" data-hdmi="1">HDMI 1</div>
+    <div class="tl hdmi" data-akce="hdmi" data-hdmi="2">HDMI 2</div>
+    <div class="tl hdmi" data-akce="hdmi" data-hdmi="3">HDMI 3</div>
+    <div class="tl hdmi" data-akce="hdmi" data-hdmi="4">HDMI 4</div>
   </div>
   <div class="rada">
+    <div class="tl mensi" data-akce="vzhled" data-t="tl_vzhled"></div>
     <div class="tl mensi" data-akce="ukazka" data-t="tl_ukazka"></div>
     <div class="tl mensi" data-akce="napoveda" data-t="tl_napoveda"></div>
     <div class="tl mensi" data-akce="jazyk" data-t="tl_jazyk"></div>
     <div class="tl mensi" data-akce="konec" data-t="tl_konec"></div>
   </div>
+  <p class="popis" data-t="popis"></p>
   <p class="drobne" data-t="ovladani"></p>
 </div>
 
@@ -53,6 +56,7 @@
     <div class="bod"><i>2</i><span data-t="np_2"></span></div>
     <div class="bod"><i>3</i><span data-t="np_3"></span></div>
     <div class="bod"><i>4</i><span data-t="np_4"></span></div>
+    <div class="bod"><i>5</i><span data-t="np_5"></span></div>
   </div>
   <p class="drobne" data-t="np_sony"></p>
 </div>

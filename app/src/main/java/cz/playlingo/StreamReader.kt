@@ -260,7 +260,7 @@ class StreamReader(private val width: Int, private val height: Int) {
         decoded++
         val now = SystemClock.uptimeMillis()
         lastFrameAt = now
-        if (UiState.visible && now - lastColorAt > 1500) { lastColorAt = now; colorSnapshot = grayHalf() }
+        if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) { lastColorAt = now; colorSnapshot = grayHalf() }
     }
 
     /** Šedý náhled v poloviční velikosti (když nejsou k dispozici barvy). */
@@ -311,7 +311,7 @@ class StreamReader(private val width: Int, private val height: Int) {
         val now = SystemClock.uptimeMillis()
         lastFrameAt = now
         // barevný náhled jen pro obrazovku aplikace – při hraní se nedělá
-        if (UiState.visible && now - lastColorAt > 1500) {
+        if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) {
             lastColorAt = now
             colorSnapshot = colorHalf(img)
         }
@@ -336,7 +336,7 @@ class StreamReader(private val width: Int, private val height: Int) {
      * tehdy, když čtečka předchozí už vzala, nebo je čas na barevný náhled.)
      */
     fun wantsFrame(): Boolean {
-        if (UiState.visible && SystemClock.uptimeMillis() - lastColorAt > 1500) return true
+        if (UiState.visible && UiState.previewWanted && SystemClock.uptimeMillis() - lastColorAt > 1500) return true
         return synchronized(frameLock) { frameW == 0 || grabbedSerial == frameSerial }
     }
 
@@ -364,7 +364,7 @@ class StreamReader(private val width: Int, private val height: Int) {
         decoded++
         val now = SystemClock.uptimeMillis()
         lastFrameAt = now
-        if (UiState.visible && now - lastColorAt > 1500) {
+        if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) {
             lastColorAt = now
             colorSnapshot = try {
                 val hw = w / 2; val hh = h / 2

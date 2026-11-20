@@ -54,10 +54,11 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   `webos/zkouska` diagnostika. Do APK jde jen balíček z `webos/obchod/app` (úloha `lgBalicek`).
 - `tizen` – PlayLingo pro televize Samsung (viz Televize Samsung): `tizen/app` se společným kódem
   s `webos/obchod/app`, do APK jako nepodepsaný `.wgt` (úloha `samsungBalicek`).
-- `pc` – zkušební čtečka pro počítač s Windows (viz `pc/CTI-ME.md`): čte titulky z okna s obrazem
-  hry, přeloží je a ukáže v pruhu přes okno hry (`pc/src/Pruh.kt`, výchozí) nebo pošle do televize LG
-  (`-Vystup tv`). Základ budoucí aplikace pro Windows / handheld: hráč hraje v chiaki-ng na hlavním
-  účtu, PlayLingo se ke konzoli nepřipojuje. Překládá se proti téže složce `core` jako aplikace,
+- `pc` – PlayLingo pro počítač s Windows (viz `pc/CTI-ME.md`), zkušební: okno aplikace
+  (`pc/PlayLingo.cmd`, `src/Aplikace.kt` – Domů / Titulky / ⚙ Nastavení ve vzhledu aplikace pro TV)
+  čte titulky z okna s obrazem hry, přeloží je a ukáže v pruhu přes okno hry (`src/Pruh.kt`) nebo
+  pošle do televize LG. Základ budoucí aplikace pro Windows / handheld: hráč hraje v chiaki-ng na
+  hlavním účtu, PlayLingo se ke konzoli nepřipojuje. Texty zatím jen česky. Překládá se proti téže složce `core` jako aplikace,
   takže změna v `core` se týká i jí – po úpravě `core` ověř i `gradlew -p pc installDist`.
   Do APK se nedostane a sestavení na GitHubu o ní neví.
 
@@ -260,6 +261,14 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   vlastní), `TranslatorService.applyTvChange` uloží do Prefs (profil té televize) a `reloadSettings`.
   Telefon zůstává jediné místo s celým nastavením. Seznamy hodnot jsou na třech místech (Prefs,
   TvSettings, app.js) – měň je najednou.
+- **Stav v televizi a nová úvodní obrazovka** (od 0.97.14, aplikace v televizi 1.5.0): při hře je vlevo nahoře
+  přehled v bodech jako Domů (`stavKresli` v `app.js`): vlastní řádky televize (HDMI, PlayLingo · připojeno / hledám)
+  a pod nimi řádky z Androidu – zpráva `{"typ":"stav","radky":[{"barva":"ok|pozor|info","text":…}]}`
+  (`TvSender.statusMessage` / `sendStatus`, obsah `TvStatus.rows` v `TvChoice.kt`: konzole a obraz, překlad
+  neběží, jazyk + DeepL, hra). Posílá ji služba každé 2 s (jen změna) a `TvIdle` z otevřené aplikace. Zelený
+  přehled po 8 s / prvním titulku zmizí, oranžový zůstává. Žádné věty („Hledám PlayLingo…“) – jen stavy.
+  Úvodní obrazovka: řada HDMI 1–4 a pod ní Vzhled titulků (spustí naposledy použitý vstup a po připojení otevře
+  nabídku vzhledu, `chciVzhled`), Ukázka, Nápověda (bod 5 = OK při hře), Jazyk, Ukončit; šipky v `sipka`.
 - **Domů hlásí starou aplikaci v televizi** (`TvChoice.outdated`: ohlášená verze vs. `receiver-manifest.json`
   v APK, text `w_tv_old`), s tlačítkem k nahrání.
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →
@@ -685,6 +694,10 @@ a pomocník LG (5 kroků). Nový postup o víc krocích = přidej `ui.steps`, no
 - **Velikost výřezu čtení nezrychlí.** Čas jednoho čtení (ML Kit) je ve zkoušce stejný při
   zvětšení 1× i 1,5× i při menší oblasti (měřeno na 0.54, řádky `READ|ocr=…` a `SCALE|`
   ve větvích `test-results-api…`). Menší výřez ani vypnuté zvětšování proto čtení nezrychlí.
+- **Co aplikace dělá, když je otevřená** (0.97.14): barevný náhled hry jen pro stránku Konzole a nastavení
+  oblastí (`UiState.previewWanted`), Domů se kvůli náhledu nepřekresluje; stav DeepL k zobrazení přes
+  `DeeplTranslator.active` (bez dešifrování klíče v Keystore), verze aplikace pro TV z APK se čte jednou.
+  Telefon jako čtečka mívá aplikaci otevřenou celou hru – nic drahého nedávej do `render()` ani do tickeru.
 - Úpravy výkonu ověřuj na snímcích a časech ze zkoušky, ne odhadem. Emulátor čte jeden snímek
   3–6 s, skutečná televize zlomek toho – z emulátoru jde brát jen porovnání, ne skutečné časy.
 

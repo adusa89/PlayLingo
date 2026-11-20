@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import cz.playlingo.core.Console
 import cz.playlingo.core.TvSender
 import cz.playlingo.core.TvType
 
@@ -69,7 +70,12 @@ object TvChoice {
     fun needsInstall(c: Context, type: TvType = Prefs.tvType(c)): Boolean = type.sends && !seen(c, type)
 
     /** Verze aplikace pro televizi, kterou nese tohle APK (z receiver-manifest.json); null = nejde zjistit. */
-    fun bundledVersion(c: Context, type: TvType): String? = try {
+    fun bundledVersion(c: Context, type: TvType): String? = bundled.getOrPut(type) { readBundled(c, type) ?: "" }.ifEmpty { null }
+
+    /** Verze v APK se za běhu nemění – soubor se čte jen jednou (Domů ji potřebuje při každém překreslení). */
+    private val bundled = java.util.concurrent.ConcurrentHashMap<TvType, String>()
+
+    private fun readBundled(c: Context, type: TvType): String? = try {
         val dir = when (type) { TvType.LG -> "lg"; TvType.SAMSUNG -> "samsung"; TvType.ANDROID -> return null }
         val m = c.assets.open("$dir/receiver-manifest.json").use { String(it.readBytes(), Charsets.UTF_8) }
         cz.playlingo.core.MiniJson.obj(m)?.get("version") as? String
@@ -147,10 +153,52 @@ object TvIdle {
 
     @Synchronized fun ensure(c: android.content.Context) {
         if (TranslatorService.running || !Prefs.tvSend(c)) { stop(); return }
-        if (sender?.running == true) return
-        val s = TvSender { }
-        sender = if (s.start()) s else null
+        if (sender?.running != true) {
+            val s = TvSender { }
+            sender = if (s.start()) s else null
+        }
+        // stav pro televizi (překlad neběží, konzole, jazyk, hra) – posílá se jen změna
+        sender?.sendStatus(TvStatus.message(c))
     }
 
     @Synchronized fun stop() { sender?.stop(); sender = null }
+}
+
+/**
+ * Stav pro aplikaci v televizi LG/Samsung (od 0.97.14, televize od 1.5.0): stejné body jako Domů –
+ * konzole a obraz, překlad (běží / neběží), jazyk a DeepL, hra. Krátké stavové řádky, žádné věty.
+ */
+object TvStatus {
+    fun message(c: android.content.Context): String = TvSender.statusMessage(rows(c))
+
+    fun rows(c: android.content.Context): List<Pair<String, String>> {
+        val out = ArrayList<Pair<String, String>>()
+        val console = Prefs.console(c)
+        val name = when (console) {
+            Console.PLAYSTATION -> Prefs.ps5Host(c)?.name
+            Console.XBOX -> if (XboxAccount.ready(c)) XboxAccount.consoleName(c) else null
+        } ?: if (console == Console.XBOX) "Xbox" else "PS5"
+        if (TranslatorService.running && !TranslatorService.demo) {
+            val (b, st) = when (TranslatorService.linkStatus().stage) {
+                cz.playlingo.core.LinkStatus.Stage.IMAGE -> "ok" to c.tx("tv_st_on")
+                cz.playlingo.core.LinkStatus.Stage.STALLED, cz.playlingo.core.LinkStatus.Stage.NO_IMAGE -> "pozor" to c.tx("h_con_noimg")
+                cz.playlingo.core.LinkStatus.Stage.FAILED -> "pozor" to c.tx("h_con_fail")
+                cz.playlingo.core.LinkStatus.Stage.PAUSED -> "info" to c.tx("st_paused").lowercase()
+                else -> "info" to c.tx("h_con_wait")
+            }
+            out += b to "$name · $st"
+        } else {
+            val ready = Prefs.consoleReady(c)
+            out += (if (ready) "info" else "pozor") to "$name · " + c.tx(if (ready) "h_con_ready" else "sum_nopair")
+            out += "pozor" to c.tx("tvs_stopped")
+        }
+        val lang = Prefs.lang(c)
+        out += if (!OfflineTranslator.isReady(lang)) "pozor" to c.tx("w_model").replace("%s", lang.label)
+            else "ok" to lang.label + " · " + c.tx(if (DeeplTranslator.active(c)) "dl_mode_on" else "h_offline")
+        val game = cz.playlingo.core.GameProfiles.of(Prefs.gameId(c))
+        val guess = Prefs.gameGuess(c)?.let { cz.playlingo.core.GameProfiles.of(it) }
+        if (guess != null) out += "pozor" to (if (game.id != "all") game.title + " · " else "") + guess.title + "?"
+        else if (game.id != "all") out += "ok" to game.title
+        return out
+    }
 }

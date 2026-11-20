@@ -353,6 +353,20 @@ class TranslatorService : Service() {
     }
 
     /** Načte nastavení (po spuštění i po změně v aplikaci) a znovu vytvoří pruh. */
+    /** Stav pro televizi (TvStatus) každé 2 s – posílá se jen změna, takže to televizi ani síť nezatěžuje. */
+    private val tvStatusTick = object : Runnable {
+        override fun run() {
+            val s = tv ?: return
+            try { s.sendStatus(TvStatus.message(this@TranslatorService)) } catch (_: Throwable) {}
+            tvStatusHandler.postDelayed(this, 2000)
+        }
+    }
+    private val tvStatusHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private fun startTvStatus() {
+        tvStatusHandler.removeCallbacks(tvStatusTick)
+        if (tv != null) tvStatusHandler.post(tvStatusTick)
+    }
+
     private fun reloadSettings() {
         val newLang = Prefs.lang(this)
         if (newLang != lang) {
@@ -394,6 +408,7 @@ class TranslatorService : Service() {
             tv?.stop(); tv = null; activeTv = null
         }
         val sender = tv
+        startTvStatus()
         sender?.sendSettings(TvSettings.message(Prefs.opacity(this), Prefs.textSize(this), Prefs.matchSize(this),
             Prefs.layout(this).position, Prefs.showOriginal(this)))
         overlay = SubtitleOverlay(
@@ -960,6 +975,7 @@ class TranslatorService : Service() {
     }
 
     override fun onDestroy() {
+        tvStatusHandler.removeCallbacks(tvStatusTick)
         try { netCallback?.let { getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(it) } } catch (_: Throwable) {}
         netCallback = null
         try { screenReceiver?.let { unregisterReceiver(it) } } catch (_: Throwable) {}
