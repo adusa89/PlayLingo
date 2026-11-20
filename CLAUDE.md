@@ -529,7 +529,7 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   je jen na stránce Konzole (s popiskem `pv_stale`, když obraz nechodí). „Zpět do hry (HDMI)“ jen na zařízení
   v televizi (`Prefs.isTv`); telefon jako čtečka má jen Pozastavit a Zastavit. Jednorázové volby na Domů nepatří.
 - **Titulky** (od 0.97.1, `subtitlesPage`): nahoře jazyk překladu (zkouška `13_nabidka_jazyk` na něj míří
-  šipkou vpravo + OK), pod ním rozbalovací skupiny Jazyk a písmo / Pruh s překladem / Oblasti titulků
+  šipkou vpravo + OK), pod ním rozbalovací skupiny Písmo / Pruh s překladem / Oblasti titulků
   (`lookOpen`) a dole řádek Obnovit vzhled. Automatika oblastí ukáže popis v dialogu jen při zapnutí.
   Volba „Černý pruh přes anglické titulky“ zmizela – je to totéž co poloha „Přes titulky“.
 - **Instalace** (do 0.97.1 se jmenovala Nápověda; klíč `m_help`, `help()`) – návodné věci patří sem, ne do
