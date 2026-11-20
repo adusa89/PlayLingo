@@ -11,7 +11,8 @@ Další verze už se instalují samy z aplikace (tlačítko „Aktualizovat“).
 2. Povol jí instalaci aplikací: Nastavení → Aplikace → Zabezpečení a omezení → **Neznámé zdroje**
    → zapni u **Downloader** (na Google TV: Nastavení → Systém → O systému → 7× klepni na „Sestavení
    OS Android TV“, pak Aplikace → Zabezpečení → Neznámé zdroje).
-3. V Downloaderu napiš do řádku adresu výše a zvol **Go**. Po stažení zvol **Install**.
+3. V Downloaderu napiš do řádku krátkou adresu **adusa89.github.io/PlayLingo/tv** (vede rovnou na aplikaci;
+   funguje i dlouhý odkaz výše) a zvol **Go**. Po stažení zvol **Install**.
 
 <a id="usb"></a>
 ## Cesta 2: USB flash disk
