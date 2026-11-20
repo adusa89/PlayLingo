@@ -53,6 +53,13 @@ class SpeakerColors(
         return color
     }
 
+    /** Barva naučená z obrazu hry – nahradí přidělenou (ne barvu z profilu hry). */
+    @Synchronized fun learn(name: String, color: Int) {
+        val k = key(name)
+        if (k.isEmpty() || preset.containsKey(k)) return
+        known[k] = color
+    }
+
     /** Barvy všech mluvčích v pruhu (jméno → barva). */
     fun colorsFor(segments: List<Segment>): Map<String, Int> =
         segments.mapNotNull { it.speaker }.distinct().associateWith { colorOf(it) }

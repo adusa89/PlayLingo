@@ -411,6 +411,7 @@ class TranslatorService : Service() {
         glossary = Prefs.glossary(this)
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
         prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
+        coloredSpeaker = Prefs.coloredSpeaker(this)
         // změna hry nebo slovníku → dřívější překlady už neplatí
         val sig = Prefs.glossarySignature(this)
         if (sig != Prefs.savedGlossarySignature(this)) {
@@ -457,6 +458,39 @@ class TranslatorService : Service() {
     }
 
     /** Změna vzhledu z ovladače televize ([TvSettings]): stejné hodnoty jako v Titulkách v telefonu. */
+    /** Barvy jmen: požádat čtečku obrazu o barvu jména, které ještě nemá naučenou (jednou za jméno a chvíli). */
+    @Volatile private var coloredSpeaker = true
+    private val colorAsked = HashMap<String, Long>()
+    private fun askNameColor(blocks: List<cz.playlingo.core.OcrBlock>, text: String, x0: Int, y0: Int) {
+        val r = reader ?: return
+        val now = SystemClock.uptimeMillis()
+        for (line in blocks.flatMap { it.lines }) {
+            val seg = TextLogic.splitSpeaker(line.text)
+            val name = seg.speaker ?: continue
+            if (!text.contains(name)) continue
+            val key = cz.playlingo.core.SpeakerColors.key(name)
+            // naučená nebo z profilu → už se nečte; jinak nejvýš jednou za 3 s pro to jméno
+            if (cz.playlingo.core.NameColor.learned(name) != null || now - (colorAsked[key] ?: 0L) < 3000) continue
+            colorAsked[key] = now
+            val frac = (name.length + 1).toFloat() / maxOf(1, line.text.length)
+            val nameRight = line.left + ((line.right - line.left) * frac).toInt()
+            r.requestColor(StreamReader.ColorRequest(TextLogic.normalizeName(name),
+                (x0 + line.left).toFloat() / capW, (y0 + line.top).toFloat() / capH,
+                (x0 + nameRight).toFloat() / capW, (y0 + line.bottom).toFloat() / capH))
+            return
+        }
+    }
+
+    /** Výsledek čtení barvy: zapsat (měření, naučené barvy) a dát pruhu, když se barva shoduje aspoň 2×. */
+    private fun takeNameColor() {
+        val r = reader ?: return
+        val (name, rgb, us) = r.colorResult ?: return
+        r.colorResult = null
+        cz.playlingo.core.NameColor.record(name, rgb, us)
+        tp("COLOR|$name|${rgb?.let { cz.playlingo.core.SpeakerColors.hex(it) } ?: "-"}|us=$us")
+        cz.playlingo.core.NameColor.learned(name)?.let { c -> overlay?.learnColor(name, c) }
+    }
+
     /** Ukázková věta v pruhu (rychlá nabídka vzhledu), jen když není vidět skutečný titulek. */
     private var sampleShown = false
     private fun quickSample() {
@@ -744,6 +778,8 @@ class TranslatorService : Service() {
             screen = screen,
         )
         if (picked.text.isNotEmpty()) lastOcrText = picked.text
+        takeNameColor()
+        if (coloredSpeaker && picked.text.isNotEmpty()) askNameColor(blocks, picked.text, x0, y0)
         // záznam pro ladění profilů her: co bylo v oblasti čtení a co se z toho vzalo
         cz.playlingo.core.ScreenReads.add(result.text, when {
             foreignScreen -> "jiný jazyk"

@@ -79,6 +79,9 @@ class SubtitleOverlay(
     private val density = host.resources.displayMetrics.density
     /** Každý mluvčí má svou barvu jména (po dobu čtení stálou). */
     private val speakerColors = SpeakerColors(speakerPreset)
+
+    /** Barva jména naučená z obrazu hry ([cz.playlingo.core.NameColor]); barva z profilu hry má přednost. */
+    fun learnColor(name: String, color: Int) = speakerColors.learn(name, color)
     private val choiceColor = SpeakerColors.PALETTE[0]
     private val originalColor = Color.rgb(0xA8, 0xB0, 0xB8)
 
