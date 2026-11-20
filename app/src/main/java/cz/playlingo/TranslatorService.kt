@@ -376,7 +376,22 @@ class TranslatorService : Service() {
     private val tvStatusHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private fun startTvStatus() {
         tvStatusHandler.removeCallbacks(tvStatusTick)
+        tvStatusHandler.removeCallbacks(panelTick)
         if (tv != null) tvStatusHandler.post(tvStatusTick)
+        // Android TV: stejný stav v bodech přes hru vlevo nahoře (StatusPanel), jako má TV LG
+        else if (Prefs.tvType(this) == cz.playlingo.core.TvType.ANDROID) tvStatusHandler.post(panelTick)
+    }
+
+    /** Stav přes hru na Android TV každé 2 s (ukáže se jen při změně; jen když aplikace není vidět). */
+    private val panelTick = object : Runnable {
+        override fun run() {
+            if (!running) return
+            try {
+                if (demo || UiState.visible) StatusPanel.hide()
+                else StatusPanel.update(this@TranslatorService, TvStatus.rows(this@TranslatorService))
+            } catch (_: Throwable) {}
+            tvStatusHandler.postDelayed(this, 2000)
+        }
     }
 
     private fun reloadSettings() {
@@ -791,6 +806,7 @@ class TranslatorService : Service() {
                     }
                 } else synchronized(showLock) {
                     sampleShown = false   // skutečný titulek nahradil ukázku rychlé nabídky
+                    StatusPanel.onSubtitle()
                     ov.show(segs, original, top, bottom, left, right, lineHeight = lineH)
                     ++showSeq
                 }
@@ -999,6 +1015,8 @@ class TranslatorService : Service() {
 
     override fun onDestroy() {
         tvStatusHandler.removeCallbacks(tvStatusTick)
+        tvStatusHandler.removeCallbacks(panelTick)
+        StatusPanel.reset()
         if (self === this) self = null
         QuickLook.close()
         try { netCallback?.let { getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(it) } } catch (_: Throwable) {}
