@@ -98,9 +98,15 @@ class MainActivity : Activity() {
         }
     }
     private lateinit var content: LinearLayout
+    /**
+     * Pevná hlavička nad posuvnou částí (Nastavení: nadpis a záložky zůstávají nahoře, posouvá se jen obsah).
+     * Jinde je prázdná a schovaná.
+     */
+    private lateinit var pinned: LinearLayout
+    private var pageScroll: ScrollView? = null
+    private var contentTop = 0
     private var section = Section.HOME
     private var demo: SubtitleOverlay? = null
-    private var testResult: String? = null
     private var busyText: String? = null
     private var lastRunning = false
     private var lastPaused = false
@@ -352,9 +358,13 @@ class MainActivity : Activity() {
         top.addView(menuScroll, ui.lp(top = 8))
         root.addView(top, ui.lp())
 
+        pinned = ui.vbox().apply { setBackgroundColor(Theme.BG); setPadding(ui.dp(16), ui.dp(18), ui.dp(16), ui.dp(10)); visibility = View.GONE }
+        root.addView(pinned, ui.lp())
         val scroll = ScrollView(this).apply { isFillViewport = true }
         content = ui.vbox().apply { setPadding(ui.dp(16), ui.dp(18), ui.dp(16), ui.dp(32)) }
+        contentTop = ui.dp(18)
         scroll.addView(content)
+        pageScroll = scroll
         root.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
         setContentView(root)
     }
@@ -394,10 +404,16 @@ class MainActivity : Activity() {
         side.addView(gear, ui.lp())
         root.addView(side, LinearLayout.LayoutParams(ui.dp(280), LinearLayout.LayoutParams.MATCH_PARENT))
 
+        val column = ui.vbox().apply { clipChildren = true }
+        pinned = ui.vbox().apply { setBackgroundColor(Theme.BG); setPadding(ui.dp(48), ui.dp(34), ui.dp(64), ui.dp(10)); visibility = View.GONE }
+        column.addView(pinned, ui.lp())
         val scroll = ScrollView(this).apply { isFillViewport = true; clipChildren = false; clipToPadding = false }
         content = ui.vbox().apply { setPadding(ui.dp(48), ui.dp(34), ui.dp(64), ui.dp(48)) }
+        contentTop = ui.dp(34)
         scroll.addView(content)
-        root.addView(scroll, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f))
+        pageScroll = scroll
+        column.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+        root.addView(column, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f))
         setContentView(root)
     }
 
@@ -460,10 +476,16 @@ class MainActivity : Activity() {
         lastStage = TranslatorService.linkStatus().stage
         lastTv = TranslatorService.tvConnected
         lastTvSeen = TvSender.lastSeen?.at ?: 0L
+        // pevná hlavička jen v Nastavení (nadpis a záložky), jinde schovaná a obsah s běžným odsazením
+        pinned.removeAllViews()
+        val pin = wizard < 0 && section == Section.SETTINGS
+        pinned.visibility = if (pin) View.VISIBLE else View.GONE
+        content.setPadding(content.paddingLeft, if (pin) ui.dp(8) else contentTop, content.paddingRight, content.paddingBottom)
         if (wizard >= 0) { renderWizard(focusedTag); return }
         renderMenu()
         content.removeAllViews()
-        content.addView(ui.text(ct(if (section == Section.HISTORY) section.key else menuSection().key), 30f, Theme.TEXT, bold = true))
+        // nadpis stránky jen u Historie – ostatní stránky mají název v menu (přání majitele, od 0.97.6)
+        if (section == Section.HISTORY) content.addView(ui.text(ct(section.key), 30f, Theme.TEXT, bold = true))
         when (section) {
             Section.HOME -> home()
             Section.PS5 -> ps5()
@@ -1544,7 +1566,7 @@ class MainActivity : Activity() {
     // ======================= NASTAVENÍ =======================
 
     /** Záložky Nastavení (⚙) v tomto pořadí; [key] = název záložky. */
-    private enum class SettingsTab(val key: String) { GENERAL("st_general"), READ("st_read"), DEMO("st_demo"), DIAG("s_diag"), EXPERIMENTAL("dl_section") }
+    private enum class SettingsTab(val key: String) { GENERAL("st_general"), READ("st_read"), EXPERIMENTAL("dl_section") }
 
     private var settingsTab = SettingsTab.GENERAL
 
@@ -1568,21 +1590,20 @@ class MainActivity : Activity() {
                 background = ui.focusBg(if (active) Theme.ACCENT else Theme.CARD, radius = 20)
                 ui.pop(this)
                 setPadding(ui.dp(18), ui.dp(9), ui.dp(18), ui.dp(9))
-                setOnClickListener { settingsTab = tab; render(keepFocus = true) }
+                // jiná záložka = obsah od začátku (hned pod záložkami, ty jsou připnuté nahoře)
+                setOnClickListener { settingsTab = tab; render(keepFocus = true); pageScroll?.post { pageScroll?.scrollTo(0, 0) } }
                 tag = "stab_${tab.name}"
                 if (active) activeTab = this
             }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { rightMargin = ui.dp(8) })
         }
         val tabScroll = HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; clipChildren = false; clipToPadding = false; addView(tabs) }
-        add(tabScroll, 14)
+        pinned.addView(tabScroll, ui.lp())
         // vybraná záložka celá na obrazovce (řada se překresluje, takže by jinak začínala vždy zleva)
         scrollTabIntoView(tabScroll, activeTab, smooth = false)
 
         when (settingsTab) {
             SettingsTab.GENERAL -> settingsGeneral()
             SettingsTab.READ -> { settingsRead(); translate() }
-            SettingsTab.DEMO -> settingsDemo()
-            SettingsTab.DIAG -> settingsDiag()
             SettingsTab.EXPERIMENTAL -> experimentalSection()
         }
     }
@@ -1649,25 +1670,17 @@ class MainActivity : Activity() {
      * Demo režim: všechno na vyzkoušení bez konzole na jednom místě (ukázková hra, ukázka pruhu,
      * zkouška překladu) – po správném nastavení to hráč nepotřebuje, proto to není na Domů ani v Titulcích.
      */
-    private fun settingsDemo() {
-        add(ui.text(t("st_demo_d"), 15f, Theme.MUTED), 0)
-        if (TranslatorService.running && TranslatorService.demo) {
-            add(tagged(ui.button(t("b_testcard"), primary = true) { startActivity(Intent(this, TestCardActivity::class.java)) }, "demogame"), 12)
-            add(tagged(ui.button(t("b_stop")) { stopTranslation() }, "demostop"), 8)
-        } else if (!TranslatorService.running) {
-            add(tagged(ui.button(t("b_demo"), primary = true) { startDemo() }, "demo"), 12)
-        }
-        add(tagged(ui.button(t("l_demo")) { showDemo() }, "demobar"), 8)
-        add(tagged(ui.button(t("t_test")) { testTranslation() }, "testtr"), 8)
-        testResult?.let { add(ui.card().apply { addView(ui.text(it, 15f)) }, 12) }
-    }
+    /** Rozbalená skupina Ladění a hlášení v části Experimentální. */
+    private var diagOpen = false
 
-    /** Ladění a hlášení: diagnostický režim a hlášení o stavu (k vyfocení). */
+    /** Ladění a hlášení (rozbalovací skupina v Experimentální): diagnostický režim a hlášení o stavu. */
     private fun settingsDiag() {
+        add(tagged(ui.settingRow(t("s_diag"), if (diagOpen) "▲" else "▼") { diagOpen = !diagOpen; render(true) }, "diag"), 18)
+        if (!diagOpen) return
         add(tagged(ui.settingRow(t("s_debug"), onOff(Prefs.debug(this))) {
             Prefs.setDebug(this, !Prefs.debug(this)); applyToService(); render(true)
-        }, "debug"), 0)
-        add(tagged(ui.button(t("rep_btn")) { makeReport() }, "sreport"), 8)
+        }, "debug"), 8)
+        add(tagged(ui.settingRow(t("rep_btn"), "›") { makeReport() }, "sreport"), 8)
     }
 
     /**
@@ -1689,6 +1702,7 @@ class MainActivity : Activity() {
         val d = deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }) { url, text -> qrRow(url, text) }.also { deeplUi = it }
         d.build(content)
         logShareRow()
+        settingsDiag()
     }
 
     // ======================= HISTORIE =======================
@@ -2072,18 +2086,6 @@ class MainActivity : Activity() {
         }
     }
 
-    /** Přeloží ukázkovou větu ze hry – ověří, že je jazykový model připravený. */
-    private fun testTranslation() {
-        val sample = "Well, I reckon we ought to ride out to Greyford before the marshals show up, Marek."
-        val lang = Prefs.lang(this)
-        testResult = t("t_testing"); render(true)
-        scope.launch {
-            val off = try { OfflineTranslator.translate(lang, sample) } catch (e: Exception) { null }
-            testResult = "${t("t_original")}: $sample\n\n" + (if (off != null) "${t("t_off_ok")}: $off" else t("t_off_fail"))
-            if (section == Section.SETTINGS) render(true)
-        }
-    }
-
     private fun clearMemory() {
         filesDir.listFiles()?.filter { it.name.startsWith("preklady_") }?.forEach { it.delete() }
         TranslatorService.requestCacheClear()
@@ -2124,6 +2126,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.5"
-    const val VERSION_CODE = 102
+    const val VERSION = "verze 0.97.6"
+    const val VERSION_CODE = 103
 }
