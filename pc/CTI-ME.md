@@ -43,9 +43,24 @@ Nastavení se ukládá do `%LOCALAPPDATA%\PlayLingoTools\aplikace.properties`.
 1. Domů → „chiaki-ng · chybí“ → **Stáhnout**: přenosná verze z posledního vydání
    `streetpea/chiaki-ng` (x64 nebo ARM, ~120 MB) do `%LOCALAPPDATA%\PlayLingoTools\chiaki-ng`,
    nic se neinstaluje. Nainstalovaný chiaki-ng (Program Files) se najde taky.
-2. „PS5 · nespárováno“ → **Spárovat**: otevře se chiaki-ng, v něm se jednou spáruje s PS5
-   (hlavní účet). chiaki-ng si to uloží do registru (`HKCU\Software\Chiaki\Chiaki\registered_hosts`),
-   PlayLingo odtud bere jméno konzole a číslo pro probuzení.
+2. „PS5 · nespárováno“ → **Spárovat** (nebo ⚙ → Spárovat PS5): průvodce PlayLinga ve třech krocích,
+   do chiaki-ng se nic nezadává (`src/Parovani.kt`):
+   1. **PS5 v síti** – najde zapnutou PS5 (klidový režim nestačí), u více konzolí „Jiná PS5“.
+   2. **Účet PlayStation** (hlavní účet, na kterém se hraje) – bez opisování čísla účtu:
+      - telefonem: čtvereček vede na stránku z PC (`core/LoginServer.kt` jako na Android TV, vlastní
+        text stránky pro PC); po přihlášení u Sony se na ni vloží adresa „redirect“ a PC si účet vezme;
+      - nebo **Přihlásit v prohlížeči** tohoto PC: po přihlášení stačí adresu stránky „redirect“
+        zkopírovat, PlayLingo ji samo převezme ze schránky.
+      Uloží se jen číslo a jméno účtu (`aplikace.properties`), příště se krok rovnou odškrtne („Jiný účet“).
+      Windows se při prvním otevření stránky může zeptat na povolení sítě pro Javu – bez něj funguje
+      jen přihlášení v prohlížeči PC.
+   3. **Kód z PS5** – 8 číslic (PS5: Nastavení → Systém → Remote Play → Spárovat zařízení) → Spárovat.
+   Spárování dělá PlayLingo samo (`src/Registrace.kt`, protokol z `chiaki-ng/lib/src/regist.c`
+   a `rpcrypt.c` pro PS5) a výsledek zapíše tam, kam si ho ukládá chiaki-ng
+   (`HKCU\Software\Chiaki\Chiaki\registered_hosts`, `Chiaki.uloz` – stejný tvar jako QSettings
+   v chiaki-ng). Odtud ho chiaki-ng vezme při hře a PlayLingo jméno konzole a číslo pro probuzení.
+   Otevřený chiaki-ng by si seznam konzolí při zavření přepsal, proto ho průvodce nabídne zavřít.
+   Chyby jsou krátké stavy: „Kód · neplatný“, „PS5 · obrazovka s kódem zavřená“, „Účet · neplatný“…
 3. **Hrát**: PlayLingo najde PS5 v síti (zpráva z `core/Ps5.kt`), z klidového režimu ji probudí
    (zpráva WAKEUP jako v `chiaki-ng/lib/src/discovery.c`), spustí
    `chiaki stream <konzole> <adresa> --fullscreen --exit-app-on-stream-exit` a čte okno toho procesu
@@ -99,7 +114,9 @@ bez předávání ze zařízení.
    `-Vystup pc | tv | oboje` – kam s překladem (výchozí pruh na počítači).
 3. Jen s výstupem do TV: na televizi LG spustit PlayLingo a vybrat vstup HDMI. Televize si počítač najde sama.
 
-Pro snímky při ladění okno přijme `-Dplaylingo.stranka=Titulky` a `-Dplaylingo.autostart=1`.
+Pro snímky při ladění okno přijme `-Dplaylingo.stranka=Titulky` a `-Dplaylingo.autostart=1`;
+`-Dplaylingo.parovani=1` otevře průvodce spárováním a s `-Dplaylingo.snimek=<složka>` uloží po 4 s
+všechny jeho kroky jako `parovani-1…4.png` (jen okno průvodce, ne celá obrazovka) a zavře ho.
 
 Konzole pustí jen jedno takové spojení najednou: chiaki-ng na počítači a PlayLingo na Androidu
 se u jedné konzole nedají použít současně. Stejně tak smí na portu 8787 v počítači poslouchat jen

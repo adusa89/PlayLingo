@@ -40,6 +40,9 @@ class Nastaveni(private val soubor: File = File(Nastroje.slozka, "aplikace.prope
     var deepl: Boolean get() = text("deepl", "false") == "true"; set(v) = nastav("deepl", v)
     /** Záznam hry pro ladění (snímky + co se četlo) do `zaznamy\pc-<čas>\`. */
     var zaznamHry: Boolean get() = text("zaznamHry", "false") == "true"; set(v) = nastav("zaznamHry", v)
+    /** Účet PlayStation pro spárování (zakódované číslo účtu a jméno; heslo se nikdy neukládá). */
+    var ucetId: String get() = text("ucetId", ""); set(v) = nastav("ucetId", v)
+    var ucetJmeno: String get() = text("ucetJmeno", ""); set(v) = nastav("ucetJmeno", v)
 
     var velikost: Int get() = cislo("velikost", 100); set(v) = nastav("velikost", v)
     var pozadi: Int get() = cislo("pozadi", 90); set(v) = nastav("pozadi", v)
