@@ -123,7 +123,7 @@ rod, pojmy a co v titulcích přeskočit, jiná místa obrazovky se nečtou; **T
 zná profil (GTA VI: prompty pro hráče pod titulky; Diablo IV: úkol, menu, tooltipy – `navrhy/preklad-menu.md`).
 Texty hry se nemíchají s replikami v pruhu. Bez profilu (univerzální) jen titulky.
 
-**Barvy jmen z profilu hry (od 0.97.26):** `GameProfile.colors` (jméno → barva jako v titulcích hry; GTA VI Jason
+**Barvy jmen z profilu hry (od 0.97.27):** `GameProfile.colors` (jméno → barva jako v titulcích hry; GTA VI Jason
 žlutě, Lucia modře; GTA V Michael modře, Franklin zeleně, Trevor oranžově) platí i pro přezdívky (`colorsByKey`) a dostane
 je `SpeakerColors(preset)`; ostatní postavy mají barvu z palety bez těchto. Z obrazu se barva zatím nečte.
 **Aplikace v TV 1.5.6:** se zapnutým ukazovátkem Magic Remote posílá TV OK jako kliknutí – kliknutí při hře = OK
