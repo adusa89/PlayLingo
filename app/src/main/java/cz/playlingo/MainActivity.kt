@@ -843,7 +843,9 @@ class MainActivity : Activity() {
                 val refusal = Ps5Link.refusal
                 if (Ps5Link.otherDevice || refusal == Ps5.Refusal.IN_USE) card.addView(ui.text(t("ls_other_device"), 14f, Theme.WARN), ui.lp(top = 2))
                 // PS5 odmítla spojení ještě před obrazem: místo anglické hlášky knihovny co s tím (od 0.97.31)
-                else if (refusal != null && refusal != Ps5.Refusal.UNKNOWN) {
+                // i neznámý důvod má radu: nejčastěji chybí „Povolit Remote Play“ pod účtem pro PlayLingo (kolega majitele,
+                // 20. 11. 2026 – PS5 to hlásí obecným kódem, knihovna jen „Unknown Session Request Error“)
+                else if (refusal != null) {
                     card.addView(ui.text(t("ps5_ref_" + refusal.name.lowercase()).replace("%s", accName()), 14f, Theme.WARN), ui.lp(top = 2))
                     if (refusal == Ps5.Refusal.ACCOUNT) card.addView(tagged(ui.smallButton(t("ps5_ref_repair")) { section = Section.PS5; render() }, "hrepair"), ui.lp(top = 6))
                 }
@@ -2286,6 +2288,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.32"
-    const val VERSION_CODE = 129
+    const val VERSION = "verze 0.97.33"
+    const val VERSION_CODE = 130
 }

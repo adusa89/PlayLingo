@@ -242,7 +242,7 @@ class Ps5Link(
                             }
                         }
                     } catch (_: Exception) { null } ?: ""
-                    refusal = Ps5.refusal(tail)
+                    refusal = Ps5.refusal(tail) ?: Ps5.Refusal.UNKNOWN.takeIf { e.reasonString?.contains("Session Request", ignoreCase = true) == true }
                     // řádky knihovny k odmítnutí (bez klíčů – registrační klíč se do záznamu nepíše celý, i tak přes Redact)
                     tail.lines().filter { l -> listOf("Application Reason", "Session request", "session request", "RP-Version", "Nonce", "Regist")
                         .any { it in l } && "RP-Registkey" !in l }.takeLast(4)

@@ -68,8 +68,9 @@ internal val PS5_S: Map<String, Pair<String, String>> = mapOf(
     "ps5_ref_account" to ("PS5 nepřijala účet %s · přepni se na něj na PS5 (přihlásí se do PSN) a zkus znovu, jinak spáruj znovu" to "PS5 neprijal účet %s · prepni sa naň na PS5 (prihlási sa do PSN) a skús znova, inak spáruj znova"),
     "ps5_ref_crash" to ("Remote Play na PS5 spadl · PS5 úplně vypni a zapni" to "Remote Play na PS5 spadol · PS5 úplne vypni a zapni"),
     "ps5_ref_version" to ("PS5 a PlayLingo si nerozumí ve verzi Remote Play · aktualizuj systém PS5 a PlayLingo" to "PS5 a PlayLingo si nerozumejú vo verzii Remote Play · aktualizuj systém PS5 a PlayLingo"),
-    "ps5_ref_unreachable" to ("PS5 nepřijímá spojení · zkontroluj na PS5 „Povolit Remote Play“ a že není v klidovém režimu" to "PS5 neprijíma spojenie · skontroluj na PS5 „Povoliť Remote Play“ a že nie je v režime odpočinku"),
+    "ps5_ref_unreachable" to ("PS5 nepřijímá spojení · na PS5 pod účtem %s zapni „Povolit Remote Play“ a zkontroluj, že PS5 není v klidovém režimu" to "PS5 neprijíma spojenie · na PS5 pod účtom %s zapni „Povoliť Remote Play“ a skontroluj, že PS5 nie je v režime odpočinku"),
     "ps5_ref_repair" to ("Spárovat znovu" to "Spárovať znova"),
+    "ps5_ref_unknown" to ("PS5 odmítla spojení · na PS5 pod účtem %s zapni Nastavení → Systém → Remote Play → Povolit Remote Play, pak PS5 úplně vypni a zapni" to "PS5 odmietol spojenie · na PS5 pod účtom %s zapni Nastavenia → Systém → Remote Play → Povoliť Remote Play, potom PS5 úplne vypni a zapni"),
 )
 
 internal val PS5_X: Map<Lang, Map<String, String>> = mapOf(
@@ -137,8 +138,9 @@ internal val PS5_X: Map<Lang, Map<String, String>> = mapOf(
         "ps5_ref_account" to "The PS5 did not accept account %s · switch to it on the PS5 (it signs in to PSN) and try again, otherwise pair again",
         "ps5_ref_crash" to "Remote Play on the PS5 crashed · turn the PS5 fully off and on",
         "ps5_ref_version" to "The PS5 and PlayLingo disagree on the Remote Play version · update the PS5 system and PlayLingo",
-        "ps5_ref_unreachable" to "The PS5 does not accept the connection · check “Enable Remote Play” on the PS5 and that it is not in rest mode",
+        "ps5_ref_unreachable" to "The PS5 does not accept the connection · on the PS5, as %s, turn on “Enable Remote Play” and check that it is not in rest mode",
         "ps5_ref_repair" to "Pair again",
+        "ps5_ref_unknown" to "The PS5 refused the connection · on the PS5, as %s, turn on Settings → System → Remote Play → Enable Remote Play, then turn the PS5 fully off and on",
     ),
     Lang.PL to mapOf(
         "m_ps5" to "PlayStation",
@@ -204,8 +206,9 @@ internal val PS5_X: Map<Lang, Map<String, String>> = mapOf(
         "ps5_ref_account" to "PS5 nie przyjęła konta %s · przełącz się na nie na PS5 (zaloguje się do PSN) i spróbuj ponownie, inaczej sparuj od nowa",
         "ps5_ref_crash" to "Remote Play na PS5 uległo awarii · całkowicie wyłącz i włącz PS5",
         "ps5_ref_version" to "PS5 i PlayLingo nie zgadzają się co do wersji Remote Play · zaktualizuj system PS5 i PlayLingo",
-        "ps5_ref_unreachable" to "PS5 nie przyjmuje połączenia · sprawdź na PS5 „Włącz Granie zdalne” i czy nie jest w trybie spoczynku",
+        "ps5_ref_unreachable" to "PS5 nie przyjmuje połączenia · na PS5 na koncie %s włącz „Włącz Granie zdalne” i sprawdź, czy nie jest w trybie spoczynku",
         "ps5_ref_repair" to "Sparuj ponownie",
+        "ps5_ref_unknown" to "PS5 odrzuciła połączenie · na PS5 na koncie %s włącz Ustawienia → System → Granie zdalne → Włącz Granie zdalne, potem całkowicie wyłącz i włącz PS5",
     ),
     Lang.DE to mapOf(
         "m_ps5" to "PlayStation",
@@ -271,8 +274,9 @@ internal val PS5_X: Map<Lang, Map<String, String>> = mapOf(
         "ps5_ref_account" to "Die PS5 hat das Konto %s nicht angenommen · auf der PS5 zu ihm wechseln (meldet sich bei PSN an) und erneut versuchen, sonst neu koppeln",
         "ps5_ref_crash" to "Remote Play auf der PS5 ist abgestürzt · PS5 ganz aus- und einschalten",
         "ps5_ref_version" to "PS5 und PlayLingo passen bei der Remote-Play-Version nicht zusammen · PS5-System und PlayLingo aktualisieren",
-        "ps5_ref_unreachable" to "Die PS5 nimmt keine Verbindung an · auf der PS5 „Remote Play aktivieren“ prüfen und ob sie im Ruhemodus ist",
+        "ps5_ref_unreachable" to "Die PS5 nimmt keine Verbindung an · auf der PS5 als %s „Remote Play aktivieren“ einschalten und prüfen, ob sie im Ruhemodus ist",
         "ps5_ref_repair" to "Neu koppeln",
+        "ps5_ref_unknown" to "Die PS5 hat die Verbindung abgelehnt · auf der PS5 als %s Einstellungen → System → Remote Play → Remote Play aktivieren einschalten, dann PS5 ganz aus- und einschalten",
     ),
     Lang.HU to mapOf(
         "m_ps5" to "PlayStation",
@@ -338,8 +342,9 @@ internal val PS5_X: Map<Lang, Map<String, String>> = mapOf(
         "ps5_ref_account" to "A PS5 nem fogadta el a(z) %s fiókot · válts rá a PS5-ön (bejelentkezik a PSN-be), és próbáld újra, különben párosíts újra",
         "ps5_ref_crash" to "A Remote Play összeomlott a PS5-ön · kapcsold ki teljesen, majd be a PS5-öt",
         "ps5_ref_version" to "A PS5 és a PlayLingo Remote Play-verziója nem egyezik · frissítsd a PS5 rendszerét és a PlayLingót",
-        "ps5_ref_unreachable" to "A PS5 nem fogad kapcsolatot · ellenőrizd a PS5-ön a „Távoli játék engedélyezése” opciót, és hogy nincs-e nyugalmi módban",
+        "ps5_ref_unreachable" to "A PS5 nem fogad kapcsolatot · a PS5-ön %s felhasználóként kapcsold be a „Távoli játék engedélyezése” opciót, és ellenőrizd, hogy nincs-e nyugalmi módban",
         "ps5_ref_repair" to "Újrapárosítás",
+        "ps5_ref_unknown" to "A PS5 elutasította a kapcsolatot · a PS5-ön %s felhasználóként kapcsold be: Beállítások → Rendszer → Távoli játék → Távoli játék engedélyezése, majd kapcsold ki teljesen és be a PS5-öt",
     ),
     Lang.UK to mapOf(
         "m_ps5" to "PlayStation",
@@ -405,8 +410,9 @@ internal val PS5_X: Map<Lang, Map<String, String>> = mapOf(
         "ps5_ref_account" to "PS5 не прийняла запис %s · перемкнися на нього на PS5 (увійде в PSN) і спробуй ще раз, інакше створи пару знову",
         "ps5_ref_crash" to "Remote Play на PS5 збій · повністю вимкни й увімкни PS5",
         "ps5_ref_version" to "PS5 і PlayLingo не збігаються у версії Remote Play · онови систему PS5 і PlayLingo",
-        "ps5_ref_unreachable" to "PS5 не приймає з’єднання · перевір на PS5 «Увімкнути дистанційну гру» і що вона не в режимі спокою",
+        "ps5_ref_unreachable" to "PS5 не приймає з’єднання · на PS5 під записом %s увімкни «Увімкнути дистанційну гру» й перевір, що вона не в режимі спокою",
         "ps5_ref_repair" to "Створити пару знову",
+        "ps5_ref_unknown" to "PS5 відхилила з’єднання · на PS5 під записом %s увімкни Налаштування → Система → Дистанційна гра → Увімкнути дистанційну гру, потім повністю вимкни й увімкни PS5",
     ),
     Lang.ES to mapOf(
         "m_ps5" to "PlayStation",
@@ -472,8 +478,9 @@ internal val PS5_X: Map<Lang, Map<String, String>> = mapOf(
         "ps5_ref_account" to "La PS5 no aceptó la cuenta %s · cambia a ella en la PS5 (inicia sesión en PSN) e inténtalo de nuevo; si no, vuelve a vincular",
         "ps5_ref_crash" to "Remote Play falló en la PS5 · apaga del todo la PS5 y vuelve a encenderla",
         "ps5_ref_version" to "La PS5 y PlayLingo no coinciden en la versión de Remote Play · actualiza el sistema de la PS5 y PlayLingo",
-        "ps5_ref_unreachable" to "La PS5 no acepta la conexión · comprueba en la PS5 «Activar Uso a distancia» y que no esté en modo de reposo",
+        "ps5_ref_unreachable" to "La PS5 no acepta la conexión · en la PS5, con %s, activa «Activar Uso a distancia» y comprueba que no esté en modo de reposo",
         "ps5_ref_repair" to "Volver a vincular",
+        "ps5_ref_unknown" to "La PS5 rechazó la conexión · en la PS5, con %s, activa Ajustes → Sistema → Uso a distancia → Activar Uso a distancia y luego apaga del todo la PS5 y vuelve a encenderla",
     ),
     Lang.FR to mapOf(
         "m_ps5" to "PlayStation",
@@ -539,8 +546,9 @@ internal val PS5_X: Map<Lang, Map<String, String>> = mapOf(
         "ps5_ref_account" to "La PS5 n’a pas accepté le compte %s · passe dessus sur la PS5 (il se connecte au PSN) et réessaie, sinon refais l’association",
         "ps5_ref_crash" to "Remote Play a planté sur la PS5 · éteins complètement la PS5 puis rallume-la",
         "ps5_ref_version" to "La PS5 et PlayLingo n’ont pas la même version de Remote Play · mets à jour le système de la PS5 et PlayLingo",
-        "ps5_ref_unreachable" to "La PS5 n’accepte pas la connexion · vérifie « Activer la Lecture à distance » sur la PS5 et qu’elle n’est pas en mode repos",
+        "ps5_ref_unreachable" to "La PS5 n’accepte pas la connexion · sur la PS5, sous %s, active « Activer la Lecture à distance » et vérifie qu’elle n’est pas en mode repos",
         "ps5_ref_repair" to "Réassocier",
+        "ps5_ref_unknown" to "La PS5 a refusé la connexion · sur la PS5, sous %s, active Paramètres → Système → Lecture à distance → Activer la Lecture à distance, puis éteins complètement la PS5 et rallume-la",
     ),
     Lang.IT to mapOf(
         "m_ps5" to "PlayStation",
@@ -606,7 +614,8 @@ internal val PS5_X: Map<Lang, Map<String, String>> = mapOf(
         "ps5_ref_account" to "La PS5 non ha accettato l’account %s · passa a quell’account sulla PS5 (accede al PSN) e riprova, altrimenti ripeti l’associazione",
         "ps5_ref_crash" to "Remote Play si è bloccato sulla PS5 · spegni del tutto la PS5 e riaccendila",
         "ps5_ref_version" to "PS5 e PlayLingo non concordano sulla versione di Remote Play · aggiorna il sistema della PS5 e PlayLingo",
-        "ps5_ref_unreachable" to "La PS5 non accetta la connessione · controlla «Abilita Riproduzione remota» sulla PS5 e che non sia in modalità riposo",
+        "ps5_ref_unreachable" to "La PS5 non accetta la connessione · sulla PS5, con %s, attiva «Abilita Riproduzione remota» e controlla che non sia in modalità riposo",
         "ps5_ref_repair" to "Associa di nuovo",
+        "ps5_ref_unknown" to "La PS5 ha rifiutato la connessione · sulla PS5, con %s, attiva Impostazioni → Sistema → Riproduzione remota → Abilita Riproduzione remota, poi spegni del tutto la PS5 e riaccendila",
     ),
 )
