@@ -49,7 +49,7 @@ Pak v aplikaci projdi průvodce:
    aplikaci do televize nahrát rovnou z tohoto kroku, nebo později.
 4. **Jazyk překladu:** vyber ho a počkej na stažení jazykového modelu (jednou, asi 30 MB).
    **Kvalita překladu:** buď **DeepL** (mnohem lepší, zdarma s vlastním klíčem – postup a čtvereček
-   ukáže průvodce, viz bod 9), nebo jen offline překlad (bez internetu, ale hodně doslovný).
+   ukáže průvodce, viz bod 9 – klíč se jen zkopíruje a vloží v telefonu), nebo jen offline překlad (bez internetu, ale hodně doslovný).
 5. **Zobrazení titulků** (jen Android TV): zapni aplikaci v nastavení televize: Usnadnění →
    PlayLingo → Zapnout.
 6. **Připojení konzole:** spáruj PlayStation – viz další bod (Xbox: bod 7b).
@@ -227,30 +227,43 @@ tě provede:
 
 Podrobnosti a důvody jsou v `tizen/CTI-ME.md`.
 
-## 9. Pokus: lepší překlad přes internet (DeepL)
-Zatím jen pro vyzkoušení a **normálně vypnutý**. Najdeš ho v Nastavení (⚙) na záložce
-**Experimentální**. Offline překlad se ukáže hned jako vždy; když DeepL do 1,5 s pošle jiný
-(lepší) překlad, text v pruhu se potichu vymění. Když DeepL nejde (internet, vyčerpaný limit,
-špatný klíč), překládá se dál offline a důvod je vidět v té části Nastavení.
+## 9. Lepší překlad: DeepL (doporučeno)
+Offline překlad je zdarma a bez internetu, ale hodně doslovný. **DeepL** překládá přirozeně, rozumí
+slangu i nadávkám a pro hráče je zdarma – stačí vlastní bezplatný účet DeepL. Nastavíš ho v průvodci
+(krok **Kvalita překladu**) nebo kdykoli v ⚙ Nastavení → Čtení a překlad → **Lepší překlad přes
+DeepL – nastavit** (je to tamtéž jako ⚙ Nastavení → Experimentální).
 
-Když je to zapnuté, **rozpoznaný text titulků se posílá přes internet do DeepL**. Potřebuješ
-vlastní klíč DeepL – je jen tvůj a zůstává zašifrovaný jen v zařízení s PlayLingem.
+Jak to funguje: offline překlad se ukáže hned jako vždy a DeepL ho během chvilky (do 1,5 s) potichu
+nahradí lepším – i v televizi LG / Samsung. Když DeepL nejde (bez internetu, vyčerpaný měsíční limit,
+špatný klíč), překládá se dál offline a důvod je vidět v Nastavení.
 
-Jak klíč získat (zdarma, bez platební karty):
-1. Na deepl.com otevři v horním menu **Developers** → **Free API Key**.
-2. Zaregistruj se e-mailem a heslem. Platební kartu DeepL nechce.
-3. Potvrď e-mail odkazem, který ti DeepL pošle.
-4. Po přihlášení jsi na úvodní stránce účtu („Welcome to DeepL!“). V rámečku s ukázkou je
-   tlačítko **Copy key** – klikni na něj. Klíč končí na `:fx`.
-   Na mobilu se stránka účtu snadno „rozutíká“ – otevři rovnou **https://www.deepl.com/your-account/keys**
-   (v aplikaci tlačítko **Otevřít stránku s klíčem**), tam je u klíče tlačítko pro zkopírování.
-5. V PlayLingu: ⚙ Nastavení → Experimentální → vlož klíč do políčka a dej **Uložit a ověřit klíč**.
-   Na televizi je pohodlnější **Vložit klíč z telefonu**: naskenuj čtvereček, na stránce v telefonu
-   je stejný postup s tlačítkem Otevřít DeepL, klíč vložíš a pošleš do televize.
+### Nastavení klíče – nic se nepíše ovladačem
+Klíč je dlouhý (asi 40 znaků), proto ho do televize **nepíšeš** – zkopíruješ a vložíš ho jen v telefonu.
 
-Po ověření aplikace ukáže, kolik znaků ti tento měsíc zbývá (u bezplatného klíče DeepL dává
-zdarma měsíční limit, např. 1 000 000 znaků). Potom zapni **Lepší překlad přes internet (DeepL)**.
-Klíč jde kdykoli odebrat tlačítkem **Odebrat klíč**.
+1. **Televize ukáže čtvereček.** Naskenuj ho telefonem (Android i iPhone), který je na **stejné
+   Wi‑Fi** jako televize. Otevře se malá stránka „PlayLingo · DeepL“.
+2. **Nemáš účet DeepL?** Na té stránce zvol **Otevřít DeepL** (otevře se na nové kartě):
+   - nahoře **Developers → Free API Key**,
+   - zaregistruj se e-mailem a heslem (platební kartu DeepL nechce),
+   - potvrď e-mail odkazem, který ti DeepL pošle.
+3. **Zkopíruj klíč.** Na stránce PlayLingo zvol **Otevřít stránku s klíčem** (nebo otevři
+   https://www.deepl.com/your-account/keys) a u klíče klepni na tlačítko pro **kopírování**.
+   Klíč končí na `:fx`.
+4. **Vlož klíč.** Vrať se na kartu „PlayLingo · DeepL“, **podrž prst v políčku → Vložit** a zvol
+   **Odeslat do televize**.
+5. Televize klíč ověří, uloží a DeepL sama zapne. Hotovo – víc už nic nastavovat nemusíš.
+
+Když telefon stránku neotevře (je na mobilních datech nebo na jiné Wi‑Fi), připoj ho ke stejné Wi‑Fi
+a čtvereček naskenuj znovu. Ruční psaní klíče ovladačem je jen záloha: pod čtverečkem zvol **Zavřít**
+a objeví se políčko. Přímo v telefonu s PlayLingem klíč jen vložíš do políčka.
+
+### Dobré vědět
+- **Limit:** bezplatný účet DeepL má měsíční limit znaků (aplikace ho po ověření ukáže, i kolik zbývá);
+  stačí na desítky hodin hraní. Opakované věty se znovu neposílají.
+- **Placený DeepL Pro** funguje taky – aplikace pozná druh klíče sama.
+- **Soukromí:** se zapnutým DeepL se **rozpoznaný text titulků posílá přes internet do DeepL**. Klíč je
+  jen tvůj, zůstává zašifrovaný v zařízení s PlayLingem a nikam jinam se neposílá (ani do hlášení).
+- Klíč jde kdykoli odebrat tlačítkem **Odebrat klíč** a DeepL vypnout v Nastavení.
 
 ## Licence a zdrojový kód
 Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng

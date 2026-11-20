@@ -10,5 +10,6 @@ a aplikace se měnit nemusí.
 - [Telefon (Android i iPhone)](telefon.md)
 - [Televize Samsung](samsung.md)
 - [Xbox](xbox.md)
+- [DeepL – lepší překlad](deepl.md)
 
 *English: these pages are linked from the QR codes in the app. Each page has a short English summary at the end.*
