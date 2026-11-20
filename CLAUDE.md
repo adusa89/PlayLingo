@@ -569,11 +569,11 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   „Spustit PlayLingo v televizi“; u spárované televize je políčko Passphrase schované pod tlačítkem
   „Zadat Passphrase znovu“.
 - **Nastavení (⚙)** má záložky (`SettingsTab`) a ukazuje jen obsah vybrané: **Obecné** (konzole, typ
-  televize + nahrání, jazyk aplikace, zařízení, zkušební verze; povolení pruhu jen u Android TV),
+  televize + nahrání, jazyk aplikace, zařízení; povolení pruhu jen u Android TV),
   **Čtení a překlad** (kvalita čtení, překlad, hra, slovník, statistika, historie), **Demo režim** (vše
   na vyzkoušení bez konzole: Zkouška bez PlayStationu, ukázka pruhu, zkouška překladu – na Domů, v Titulcích
   ani v Překladu tato tlačítka nejsou; zkouška v emulátoru je spouští parametry, ne tlačítky), **Ladění a hlášení**
-  (diagnostický režim, hlášení), **Experimentální** (DeepL, záznam v síti). U voleb jsou jen názvy;
+  (diagnostický režim, hlášení), **Experimentální** (zkušební verze – od 0.97.6, DeepL, záznam v síti). U voleb jsou jen názvy;
   dlouhé popisy jsou v Nápovědě v části „Volby v Nastavení“ (`help_settings`). Nová volba = krátký název
   v Nastavení, popis do Nápovědy.
 

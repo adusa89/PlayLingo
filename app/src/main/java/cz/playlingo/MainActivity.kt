@@ -1608,9 +1608,6 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("wz_dev"), t(if (reader) "dev_phone" else "dev_tv")) {
             choose(t("wz_dev_q"), listOf(t("dev_tv"), t("dev_phone")), if (reader) 1 else 0) { i -> setReader(i == 1); render(true) }
         }, "device"), 8)
-        add(tagged(ui.settingRow(t("s_test"), onOff(Prefs.testChannel(this))) {
-            Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
-        }, "testch"), 8)
         // telefon jako čtečka: běh na pozadí (šetření baterie) – stav a cesta k povolení
         if (!Prefs.isTv(this)) {
             val bg = batteryUnrestricted()
@@ -1685,6 +1682,10 @@ class MainActivity : Activity() {
 
     /** Až na konci Nastavení, ať se nezmění nic nad tím (zkouška se tam prokliká naslepo). */
     private fun experimentalSection() {
+        // zkušební verze patří k pokusům (přání majitele, od 0.97.6 tady místo v Obecné)
+        add(tagged(ui.settingRow(t("s_test"), onOff(Prefs.testChannel(this))) {
+            Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
+        }, "testch"), 8)
         val d = deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }) { url, text -> qrRow(url, text) }.also { deeplUi = it }
         d.build(content)
         logShareRow()
