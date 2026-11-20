@@ -411,6 +411,8 @@ class TranslatorService : Service() {
         glossary = Prefs.glossary(this)
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
         prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
+        menuSpec = if (Prefs.gameTexts(this)) cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).menuSpec else null
+        menuShown = false; menuKey = ""; menuWords.clear()
         coloredSpeaker = Prefs.coloredSpeaker(this)
         cz.playlingo.core.NameColor.profile = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey
         // změna hry nebo slovníku → dřívější překlady už neplatí
@@ -727,8 +729,80 @@ class TranslatorService : Service() {
         return allowed
     }
 
+    // ---------------- menu hry (od 0.97.34, zatím GTA VI) ----------------
+
+    /** Menu ke překladu z profilu hry (jen s „Rozsah čtení: Titulky a texty hry“); null = menu se nečte. */
+    @Volatile private var menuSpec: cz.playlingo.core.MenuSpec? = null
+    private var menuCheckAt = 0L
+    /** V pruhu je přeložené menu – titulky se mezitím nečtou (v menu žádné nejsou). */
+    private var menuShown = false
+    private var menuKey = ""
+    /** Překlady popisů a položek menu (jen v paměti; pevné překlady položek jsou v profilu hry). */
+    private val menuWords = HashMap<String, String>()
+
+    /**
+     * Jednou za 1,5 s (v menu za 0,7 s) přečte horní část obrazu a pozná menu hry ([cz.playlingo.core.GameMenu]).
+     * Nečte se, když je v pruhu titulek (hraje se). Vrací true, když je menu vidět – pak se titulky nečtou.
+     */
+    private suspend fun checkMenu(now: Long, ov: SubtitleOverlay): Boolean {
+        val spec = menuSpec ?: return false
+        if (now - menuCheckAt < (if (menuShown) 700 else 1500)) return menuShown
+        if (!menuShown && ov.isShown) return false
+        menuCheckAt = now
+        val crop = reader?.grabMenu(0.6f) ?: return menuShown
+        val result = try { recognizer.process(InputImage.fromBitmap(crop.bmp, 0)).await() } catch (_: Exception) { return menuShown }
+        val lines = result.textBlocks.flatMap { it.lines }.mapNotNull { l ->
+            val bb = l.boundingBox ?: return@mapNotNull null
+            cz.playlingo.core.MenuLine(l.text, bb.left, bb.top, bb.right, bb.bottom, meanGray(crop, bb))
+        }
+        val view = cz.playlingo.core.GameMenu.read(lines, crop.fullW, crop.fullH, spec)
+        if (view == null) {
+            if (menuShown) { menuShown = false; menuKey = ""; ov.hide(); tp("MENU|off") }
+            return false
+        }
+        if (view.key != menuKey) {
+            menuKey = view.key
+            val l = lang
+            val items = view.items.map { spec.word(l, it) ?: menuTranslate(it) }
+            val title = view.title?.let { menuTranslate(it) }
+            val desc = view.description?.let { menuTranslate(it) }
+            val text = cz.playlingo.core.GameMenu.text(items, view.selected, title, desc)
+            synchronized(showLock) {
+                ov.show(text.split('\n').map { Segment(null, it) }, null, -1f, -1f)
+                ++showSeq
+            }
+            tp("MENU|${view.items.joinToString(",")}|vybraná=${view.selected}|popis=${view.title ?: "-"}")
+        }
+        if (!menuShown) resetReading()
+        menuShown = true
+        hideAt = 0
+        return true
+    }
+
+    /** Překlad textu z menu (offline, případně DeepL jako titulky); výsledek se pamatuje. */
+    private suspend fun menuTranslate(text: String): String {
+        menuWords[text]?.let { return it }
+        val out = try { translateSegments(text)?.let { TextLogic.joinSegments(it) }?.replace('\n', ' ') } catch (_: Exception) { null } ?: text
+        if (menuWords.size > 300) menuWords.clear()
+        menuWords[text] = out
+        return out
+    }
+
+    /** Průměrný jas pod řádkem (0–255): vybraná položka menu má bílý pruh, ostatní tmavé pozadí. */
+    private fun meanGray(c: StreamReader.MenuCrop, r: android.graphics.Rect): Int {
+        val x0 = r.left.coerceIn(0, c.w - 1); val x1 = r.right.coerceIn(x0 + 1, c.w)
+        val y0 = r.top.coerceIn(0, c.h - 1); val y1 = r.bottom.coerceIn(y0 + 1, c.h)
+        val sx = maxOf(1, (x1 - x0) / 40); val sy = maxOf(1, (y1 - y0) / 6)
+        var s = 0L; var n = 0
+        var y = y0
+        while (y < y1) { var x = x0; while (x < x1) { s += c.gray[y * c.w + x] and 0xFF; n++; x += sx }; y += sy }
+        return if (n == 0) 0 else (s / n).toInt()
+    }
+
     private suspend fun tick(now: Long) {
         val ov = overlay ?: return
+        // menu hry otevřené → v pruhu je jeho překlad, titulky se nečtou
+        if (checkMenu(now, ov)) { lastMs = SystemClock.uptimeMillis() - now; return }
         val z = layout.read
         val frame = reader?.grab(z.left, z.top, z.right, z.bottom) ?: return      // žádný nový snímek videa
         capW = frame.fullW

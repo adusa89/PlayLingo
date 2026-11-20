@@ -136,6 +136,15 @@ je `SpeakerColors(preset)`; ostatní postavy mají barvu z palety bez těchto. Z
 **Aplikace v TV 1.5.6:** se zapnutým ukazovátkem Magic Remote posílá TV OK jako kliknutí – kliknutí při hře = OK
 (nabídka vzhledu); tlačítko Zpět se při hře neukazuje (rušilo).
 
+**Menu hry od 0.97.34 (zatím GTA VI, `core/GameMenu.kt`, testy `GameMenuTest`):** základ podle snímků majitele (`zaznamy/hra-…`) –
+menu otevřené zleva (Map / Game / Store / Help / Photo Studio / Settings), horní lišta Nastavení (Control Scheme … Account) a nadpis
+s popisem vybrané volby vpravo; jednotlivé volby Nastavení záměrně ne. `GameProfile.menuSpec` (`MenuSpec`: položky, záložky, pevné
+překlady cs/sk, jiné jazyky přes překladač). Služba (`checkMenu` v `tick`) jen když je „Titulky a texty hry“ a v pruhu není titulek:
+jednou za 1,5 s (v menu 0,7 s) `StreamReader.grabMenu` (horních 60 % obrazu, šedě, nejvýš 960 bodů, vlastní bitmapa – nezasahuje
+do čtení titulků) → OCR → `GameMenu.read`. Vybraná položka = výrazně světlejší řádek (bílý pruh, `meanGray`). Překlad se ukáže
+**v pruhu místo titulku** („Mapa · Hra · ▸ Obchod …“ a pod tím „Nadpis: popis“) – v menu titulky nejsou, takže funguje i v TV
+LG / Samsung beze změny aplikace v TV; dokud je menu vidět, titulky se nečtou. V záznamu `MENU|…`. Na skutečné hře neověřeno.
+
 **Texty hry od 0.97.25 (aplikace v TV 1.5.5):** volba Titulky → Hra → „Rozsah čtení“ (`Prefs.gameTexts`, výchozí titulky
 a texty hry). GTA (profil `prompts = true`): poslední krátký řádek bez mluvčího a bez interpunkce pod replikou je pokyn
 (`TextLogic.markPrompt`, `Segment.prompt`) – překládá se zvlášť, v pruhu menší šedý řádek, do TV `{"pokyn":true}`; s „jen

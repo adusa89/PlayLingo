@@ -194,7 +194,11 @@ object DiagReport {
         )
         try {
             val f = Ps5Link.logFile(c)
-            if (f.exists()) parts += "spojení s PlayStationem" to f.readText().takeLast(6000)
+            // bez opakovaných „Heartbeat“ a výpisů bajtů běžícího spojení – jinak zaplnily celý oddíl a důvod
+            // odmítnutí spojení z dřívějška se do hlášení nevešel (hlášení kolegy majitele, 20. 11. 2026)
+            if (f.exists()) parts += "spojení s PlayStationem" to f.readText().takeLast(200_000).lines()
+                .filterNot { "Heartbeat" in it || "CTRL RECEIVED" in it || it.startsWith("[I] offset") || Regex("^\\[[A-Z]]\\s+[0-9a-f]+ ( [0-9a-f]{2})+").containsMatchIn(it) }
+                .joinToString("\n").takeLast(6000)
         } catch (_: Exception) {}
         parts += "televize (záznam z aplikace v televizi)" to TvLog.tail(tvLog, 400).ifBlank { "nic nepřišlo" }
         // ladění profilů her: titulky s překladem a co bylo v oblasti čtení (jen text ze hry, nic osobního)

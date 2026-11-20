@@ -131,6 +131,10 @@ Když telefon sám čte pro televizi LG / Samsung, uložené účty nabídne kro
    (očíslované nebo zarovnané vlevo), ukáže je pruh jako seznam s odrážkami, každou přeloženou
    zvlášť. Menu hry a pokyny k ovládání se dál nepřekládají.
 
+**Menu hry (zatím GTA VI, základ):** když otevřeš menu zleva (Mapa, Hra, Obchod, Nápověda, Fotostudio, Nastavení) nebo
+Nastavení hry, ukáže pruh přeložené položky – vybraná je se šipkou ▸ – a u Nastavení i přeložený nadpis a popis vybrané volby.
+Jednotlivé volby Nastavení se zatím nepřekládají. Funguje s profilem hry GTA VI a s Titulky → Hra → Rozsah čtení „Titulky a texty hry“.
+
 Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪, se nepřekládají.
 
 ## 7. Problémy

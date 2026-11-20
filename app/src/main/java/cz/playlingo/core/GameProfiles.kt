@@ -18,6 +18,8 @@ data class GameProfile(
     val prompts: Boolean = false,
     /** Barvy jmen jako v titulcích hry (jméno postavy → barva 0xAARRGGBB); platí i pro její přezdívky. */
     val colors: Map<String, Int> = emptyMap(),
+    /** Základní menu hry k překladu (menu zleva, lišta Nastavení, popis volby – [GameMenu]); null = menu se nepřekládá. */
+    val menuSpec: MenuSpec? = null,
 ) {
     /** Barvy pro [SpeakerColors]: zjednodušené jméno i všechny přezdívky postavy → barva. */
     val colorsByKey: Map<String, Int> by lazy {
@@ -285,6 +287,21 @@ object GameProfiles {
         "Screen Narration", "Navigation Experience", "UI Text Size", "HDR Calibration", "Safe Zone", "Subtitles",
         "Speaker Names", "Closed Captions", "Aim Assist Strength", "Wanted Stars", "Ticker Feed", "Master Volume",
         "Mute Licensed Music", "GPS Voice", "Vehicle Radio", "Vibration & Haptics Strength", "Adaptive Triggers Resistance")
+    /** Základní menu GTA VI ke překladu (snímky majitele 20. 11. 2026): menu zleva a lišta Nastavení. */
+    private val GTA6_MENU_SPEC = MenuSpec(
+        pause = listOf("Map", "Brief", "Progress", "Game", "Store", "Help", "Photo Studio", "Settings"),
+        tabs = listOf("Control Scheme", "Controller", "Gameplay", "Display", "UI", "Camera", "Audio", "Account"),
+        words = mapOf(
+            "cs" to mapOf("Map" to "Mapa", "Brief" to "Přehled", "Progress" to "Postup", "Game" to "Hra", "Store" to "Obchod",
+                "Help" to "Nápověda", "Photo Studio" to "Fotostudio", "Settings" to "Nastavení",
+                "Control Scheme" to "Schéma ovládání", "Controller" to "Ovladač", "Gameplay" to "Hraní", "Display" to "Obraz",
+                "UI" to "Rozhraní", "Camera" to "Kamera", "Audio" to "Zvuk", "Account" to "Účet"),
+            "sk" to mapOf("Map" to "Mapa", "Brief" to "Prehľad", "Progress" to "Postup", "Game" to "Hra", "Store" to "Obchod",
+                "Help" to "Pomoc", "Photo Studio" to "Fotoštúdio", "Settings" to "Nastavenia",
+                "Control Scheme" to "Schéma ovládania", "Controller" to "Ovládač", "Gameplay" to "Hranie", "Display" to "Obraz",
+                "UI" to "Rozhranie", "Camera" to "Kamera", "Audio" to "Zvuk", "Account" to "Účet"),
+        ),
+    )
     private val TLOU_CAST = listOf(
         m("Joel"), f("Ellie"), m("Tommy"), f("Tess"), f("Marlene"), f("Sarah"), m("Henry"), m("Sam"), f("Abby"),
         m("Lev"), f("Yara"), f("Dina"), m("Jesse"), m("Owen"), f("Mel"), m("Manny"), m("Isaac"),
@@ -345,7 +362,7 @@ object GameProfiles {
         GameProfile("rdr2", "Red Dead Redemption 2", RDR2, Rdr2.CAST, Rdr2.TERMS, Rdr2.HUD, Rdr2.MENU),
         // barvy jmen jako v titulcích GTA VI (majitel ve hře 20. 11. 2026): Jason žlutě, Lucia modře
         GameProfile("gta6", "Grand Theft Auto VI", GTA6, GTA6_CAST, GTA6_TERMS, GTA6_HUD, GTA6_MENU, prompts = true,
-            colors = mapOf("Jason" to SpeakerColors.PALETTE[0], "Lucia" to SpeakerColors.PALETTE[1])),
+            colors = mapOf("Jason" to SpeakerColors.PALETTE[0], "Lucia" to SpeakerColors.PALETTE[1]), menuSpec = GTA6_MENU_SPEC),
         // GTA V: Michael modře, Franklin zeleně, Trevor oranžově (barvy postav v titulcích hry)
         GameProfile("gta", "Grand Theft Auto V", Gta5.NAMES.distinct(), Gta5.CAST, Gta5.TERMS, Gta5.HUD, Gta5.MENU, prompts = true,
             colors = mapOf("Michael" to SpeakerColors.PALETTE[1], "Franklin" to SpeakerColors.PALETTE[2], "Trevor" to SpeakerColors.PALETTE[5])),

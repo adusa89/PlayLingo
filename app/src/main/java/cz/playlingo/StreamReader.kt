@@ -486,6 +486,37 @@ class StreamReader(private val width: Int, private val height: Int) {
      * obrázek – při čtení úzkého pásu s titulky je to několikrát rychlejší.
      * Vrací null, dokud žádný snímek nepřišel, nebo když od minula žádný nový není.
      */
+    /** Výřez pro čtení menu hry: vlastní bitmapa a pole (šedé), aby nerušil čtení titulků ([grab]). */
+    class MenuCrop(val bmp: Bitmap, val gray: IntArray, val x0: Int, val y0: Int, val w: Int, val h: Int, val fullW: Int, val fullH: Int)
+    private var menuBmp: Bitmap? = null
+    private var menuArgb = IntArray(0)
+    private var menuSerial = -1L
+
+    /**
+     * Horní část posledního snímku pro menu hry ([cz.playlingo.core.GameMenu]), zmenšená na nejvýš [maxW] bodů na šířku
+     * (stačí na čtení položek, je rychlejší). null = žádný nový snímek od minula. Volá se jen občas (viz služba).
+     */
+    fun grabMenu(bottom: Float, maxW: Int = 960): MenuCrop? = synchronized(frameLock) {
+        if (frameW <= 0 || frameH <= 0 || menuSerial == frameSerial) return null
+        menuSerial = frameSerial
+        val step = maxOf(1, (frameW + maxW - 1) / maxW)
+        val h0 = (frameH * bottom).toInt().coerceIn(1, frameH)
+        val w = frameW / step; val h = h0 / step
+        if (menuArgb.size != w * h) menuArgb = IntArray(w * h)
+        var o = 0
+        for (y in 0 until h) {
+            val row = y * step * yStride
+            for (x in 0 until w) {
+                val g = yBuf[row + x * step].toInt() and 0xFF
+                menuArgb[o++] = (0xFF shl 24) or (g shl 16) or (g shl 8) or g
+            }
+        }
+        var b = menuBmp
+        if (b == null || b.width != w || b.height != h) { b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888); menuBmp = b }
+        b.setPixels(menuArgb, 0, w, 0, 0, w, h)
+        MenuCrop(b, menuArgb, 0, 0, w, h, w, (frameH / step))
+    }
+
     fun grab(left: Float, top: Float, right: Float, bottom: Float): Crop? = synchronized(frameLock) {
         if (frameW <= 0 || frameH <= 0) return null
         if (grabbedSerial == frameSerial) return null
