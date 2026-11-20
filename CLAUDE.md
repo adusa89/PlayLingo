@@ -218,6 +218,11 @@ náhoda, opakované selhání po změně kódu ne.
 
 ## Nová verze
 
+- **Uložené nastavení hráče se aktualizací nemění (přání majitele, 20. 11. 2026).** Nová verze nesmí smazat, přejmenovat
+  ani „vyresetovat“ žádný uložený klíč v `Prefs` (ani v `tv_profily`, `LgVault`, `DeeplKey`, `XboxAccount`). Nová volba =
+  nový klíč s výchozí hodnotou; změna výchozí hodnoty platí jen pro ty, kdo volbu nikdy neměnili. Když se změní nabídka
+  hodnot (velikosti písma, průhlednosti…), stará uložená hodnota musí dál fungovat (nejbližší platná při čtení, ne výchozí).
+  Jednorázový reset (nový klíč místo starého, jako `ps5_wake2` v 0.97.41) jen na výslovné přání majitele a v commitu to napiš.
 - Při každé změně aplikace zvyš v `app/build.gradle.kts` obojí: `versionCode` (o 1, např. 97 → 98)
   i `versionName`, a stejná čísla v `BuildInfo` na konci `MainActivity.kt`.
   **Číslování od 0.97 (přání majitele, nechce se dostat k 1.0):** po 0.97 jde 0.97.1, 0.97.2, 0.97.3…
