@@ -871,9 +871,9 @@ class MainActivity : Activity() {
         // S univerzálním profilem a bez odhadu řádek není.
         val game = GameProfiles.of(Prefs.gameId(this))
         val guess = Prefs.gameGuess(this)?.let { GameProfiles.of(it) }
-        if (guess != null) row(Theme.WARN, String.format(t("gp_guess"), guess.title), "hgame", t("gp_switch"),
+        if (guess != null) row(Theme.WARN, guess.title + "?", "hgame", t("gp_switch"),
             { Prefs.setGameId(this, guess.id); applyToService(); render(true) }, onClick = { pickGame() })
-        else if (game.id != "all") row(Theme.OK, t("t_game") + " · " + game.title, "hgame", onClick = { pickGame() })
+        else if (game.id != "all") row(Theme.OK, game.title, "hgame", onClick = { pickGame() })
         // verze PlayLinga: aktuální zeleně, novější ke stažení oranžově s tlačítkem Aktualizovat v řádku
         val me = "PlayLingo ${BuildInfo.VERSION.removePrefix("verze ")}"
         val o = update
@@ -1365,10 +1365,10 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("gp_profile"), gameTitle(game)) { pickGame() }, "game"), 0)
         Prefs.gameGuess(this)?.let { id ->
             val g = GameProfiles.of(id)
-            add(tagged(ui.settingRow(String.format(t("gp_guess"), g.title), t("gp_switch") + " ›", Theme.WARN) {
+            add(tagged(ui.settingRow(g.title + "?", t("gp_switch") + " ›", Theme.WARN) {
                 try {
                     AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                        .setTitle(String.format(t("gp_guess"), g.title)).setMessage(String.format(t("gp_guess_desc"), g.title))
+                        .setTitle(g.title + "?").setMessage(String.format(t("gp_guess_desc"), g.title))
                         .setPositiveButton(t("gp_switch")) { d, _ -> d.dismiss(); Prefs.setGameId(this, g.id); applyToService(); render(true) }
                         .setNegativeButton(t("gp_keep")) { d, _ -> d.dismiss(); Prefs.dismissGameGuess(this); render(true) }
                         .show()
@@ -2156,6 +2156,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.8"
-    const val VERSION_CODE = 105
+    const val VERSION = "verze 0.97.9"
+    const val VERSION_CODE = 106
 }

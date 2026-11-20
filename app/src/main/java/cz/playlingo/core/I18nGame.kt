@@ -6,7 +6,6 @@ package cz.playlingo.core
  */
 internal val GAME_S: Map<String, Pair<String, String>> = mapOf(
     "gp_profile" to ("Profil hry" to "Profil hry"),
-    "gp_guess" to ("Čtená hra · %s" to "Čítaná hra · %s"),
     "gp_guess_desc" to ("Jména v titulcích odpovídají hře %s. Po přepnutí profilu budou jména, rod postav a pojmy přesně podle ní." to "Mená v titulkoch zodpovedajú hre %s. Po prepnutí profilu budú mená, rod postáv a pojmy presne podľa nej."),
     "gp_switch" to ("Přepnout" to "Prepnúť"),
     "gp_keep" to ("Nechat" to "Nechať"),
@@ -21,7 +20,6 @@ internal val GAME_S: Map<String, Pair<String, String>> = mapOf(
 internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
         "gp_profile" to "Game profile",
-        "gp_guess" to "Detected game · %s",
         "gp_guess_desc" to "Names in the subtitles suggest %s. Switch the game profile? Names, character genders and terms will then match this game exactly.",
         "gp_switch" to "Switch",
         "gp_keep" to "Keep",
@@ -34,7 +32,6 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
     ),
     Lang.PL to mapOf(
         "gp_profile" to "Profil gry",
-        "gp_guess" to "Wykryta gra · %s",
         "gp_guess_desc" to "Według imion w napisach to chyba %s. Przełączyć profil gry? Imiona, płeć postaci i pojęcia będą wtedy dokładnie według tej gry.",
         "gp_switch" to "Przełącz",
         "gp_keep" to "Zostaw",
@@ -47,7 +44,6 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
     ),
     Lang.DE to mapOf(
         "gp_profile" to "Spielprofil",
-        "gp_guess" to "Erkanntes Spiel · %s",
         "gp_guess_desc" to "Die Namen in den Untertiteln deuten auf %s hin. Spielprofil wechseln? Namen, Geschlecht der Figuren und Begriffe passen dann genau zu diesem Spiel.",
         "gp_switch" to "Wechseln",
         "gp_keep" to "Behalten",
@@ -60,7 +56,6 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
     ),
     Lang.HU to mapOf(
         "gp_profile" to "Játékprofil",
-        "gp_guess" to "Felismert játék · %s",
         "gp_guess_desc" to "A feliratokban szereplő nevek alapján ez %s. Átváltod a játékprofilt? A nevek, a szereplők neme és a kifejezések ekkor pontosan ehhez a játékhoz igazodnak.",
         "gp_switch" to "Átváltás",
         "gp_keep" to "Marad",
@@ -73,7 +68,6 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
     ),
     Lang.UK to mapOf(
         "gp_profile" to "Профіль гри",
-        "gp_guess" to "Розпізнана гра · %s",
         "gp_guess_desc" to "За іменами в субтитрах це схоже на %s. Перемкнути профіль гри? Імена, рід персонажів і терміни тоді будуть точно за цією грою.",
         "gp_switch" to "Перемкнути",
         "gp_keep" to "Залишити",
@@ -86,7 +80,6 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
     ),
     Lang.ES to mapOf(
         "gp_profile" to "Perfil del juego",
-        "gp_guess" to "Juego detectado · %s",
         "gp_guess_desc" to "Por los nombres de los subtítulos parece %s. ¿Cambiar el perfil del juego? Los nombres, el género de los personajes y los términos se ajustarán exactamente a este juego.",
         "gp_switch" to "Cambiar",
         "gp_keep" to "Mantener",
@@ -99,7 +92,6 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
     ),
     Lang.FR to mapOf(
         "gp_profile" to "Profil du jeu",
-        "gp_guess" to "Jeu détecté · %s",
         "gp_guess_desc" to "D’après les noms dans les sous-titres, cela ressemble à %s. Changer de profil de jeu ? Les noms, le genre des personnages et les termes correspondront alors exactement à ce jeu.",
         "gp_switch" to "Changer",
         "gp_keep" to "Garder",
@@ -112,7 +104,6 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
     ),
     Lang.IT to mapOf(
         "gp_profile" to "Profilo del gioco",
-        "gp_guess" to "Gioco rilevato · %s",
         "gp_guess_desc" to "Dai nomi nei sottotitoli sembra %s. Cambiare profilo del gioco? Nomi, genere dei personaggi e termini corrisponderanno esattamente a questo gioco.",
         "gp_switch" to "Cambia",
         "gp_keep" to "Lascia",
