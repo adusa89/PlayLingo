@@ -106,7 +106,7 @@ object QuickLook {
     private fun value(svc: TitulkyAccessibility, i: Int): String = when (i) {
         0 -> "${Prefs.opacity(svc)} %"
         1 -> if (Prefs.matchSize(svc)) svc.tx("qk_size_game")
-            else svc.tx("size_" + Prefs.TEXT_SIZES.indexOf(Prefs.textSize(svc)).coerceAtLeast(0))
+            else Prefs.textSize(svc).toString()
         2 -> svc.tx("pos_" + Prefs.layout(svc).position.name.lowercase())
         else -> svc.tx(if (Prefs.showOriginal(svc)) "on" else "off")
     }

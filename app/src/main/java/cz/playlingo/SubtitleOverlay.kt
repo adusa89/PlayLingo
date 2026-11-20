@@ -226,6 +226,9 @@ class SubtitleOverlay(
             val matched = if (matchOriginalSize) sizeKeeper.next(MatchSize.textPx(lineHeight, screenH)) else 0
             if (matched > 0) tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, matched.toFloat())
             else tv.textSize = textSize.toFloat()
+            // okraje podle velikosti písma (dřív pevné) – menší písmo = nižší a užší pruh
+            val em = tv.textSize
+            tv.setPadding((em * 0.8f).toInt(), (em * 0.16f).toInt(), (em * 0.8f).toInt(), (em * 0.2f).toInt())
             tv.text = format(segments, original, colors)
 
             val hasText = textTop >= 0f && textBottom > textTop

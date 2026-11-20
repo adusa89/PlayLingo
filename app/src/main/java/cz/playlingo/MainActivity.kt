@@ -1493,13 +1493,13 @@ class MainActivity : Activity() {
 
     /** Jazyk a písmo: jazyk překladu, velikost, barva, tučně, originál, barvy jmen. */
     private fun lookText() {
-        val sizeIdx = Prefs.TEXT_SIZES.indexOf(Prefs.textSize(this)).let { if (it < 0) 2 else it }
+        val sizeIdx = Prefs.TEXT_SIZES.indexOf(Prefs.textSize(this)).let { if (it < 0) Prefs.TEXT_SIZES.indexOf(Prefs.DEFAULT_TEXT_SIZE) else it }
         add(tagged(ui.settingRow(t("l_size_auto"), onOff(Prefs.matchSize(this))) {
             Prefs.setMatchSize(this, !Prefs.matchSize(this)); applyToService(); render(true)
         }, "sizeauto"), 6)
         // pevná velikost se nabízí jen tehdy, když se písmo neřídí originálem
-        if (!Prefs.matchSize(this)) add(tagged(ui.settingRow(t("l_size"), t("size_$sizeIdx")) {
-            choose(t("l_size"), Prefs.TEXT_SIZES.indices.map { t("size_$it") }, sizeIdx) { i ->
+        if (!Prefs.matchSize(this)) add(tagged(ui.settingRow(t("l_size"), Prefs.TEXT_SIZES[sizeIdx].toString()) {
+            choose(t("l_size"), Prefs.TEXT_SIZES.map { it.toString() }, sizeIdx) { i ->
                 Prefs.setTextSize(this, Prefs.TEXT_SIZES[i]); applyToService(); render(true); showDemo()
             }
         }, "size"), 6)
@@ -2201,6 +2201,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.20"
-    const val VERSION_CODE = 117
+    const val VERSION = "verze 0.97.21"
+    const val VERSION_CODE = 118
 }

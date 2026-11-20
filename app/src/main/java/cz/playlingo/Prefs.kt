@@ -18,7 +18,7 @@ import cz.playlingo.core.UsageStats
 /** Nastavení aplikace. */
 object Prefs {
     /** Stejné hodnoty nabízí i televize (core/TvSettings, app.js) – měň všude najednou. */
-    val TEXT_SIZES = intArrayOf(12, 15, 18, 22, 26, 32, 40, 48)
+    val TEXT_SIZES = intArrayOf(12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48)
     const val DEFAULT_TEXT_SIZE = 22
     /** Stejné hodnoty nabízí i televize (core/TvSettings, app.js) – měň všude najednou. */
     val OPACITIES = intArrayOf(60, 80, 90, 100)

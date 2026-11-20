@@ -89,7 +89,7 @@ h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; 
   left: 0;
   bottom: 0;
   width: 1920px;
-  min-height: 150px;
+  min-height: 0;
   background: #000000;
   align-items: center;
   justify-content: center;

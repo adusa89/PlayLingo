@@ -53,7 +53,7 @@
       pn_velikost: 'Velikost písma',
       pn_poloha: 'Poloha pruhu',
       pn_original: 'Ukazovat i originál',
-      pn_velikosti: ['Podle hry', 'Drobné', 'Velmi malé', 'Malé', 'Menší', 'Střední', 'Velké', 'Velmi velké', 'Obří'],
+      pn_podle_hry: 'Podle hry',
       pn_polohy: ['Přes titulky', 'Těsně nad titulkem', 'Nad oblastí čtení', 'Nahoře'],
       pn_vlastni: 'Vlastní (z telefonu)',
       pn_ano: 'Zapnuto',
@@ -92,7 +92,7 @@
       pn_velikost: 'Text size',
       pn_poloha: 'Bar position',
       pn_original: 'Show the original too',
-      pn_velikosti: ['Like the game', 'Tiny', 'Very small', 'Small', 'Smaller', 'Medium', 'Large', 'Very large', 'Huge'],
+      pn_podle_hry: 'Like the game',
       pn_polohy: ['Over the subtitles', 'Right above the subtitle', 'Above the reading area', 'At the top'],
       pn_vlastni: 'Custom (from the phone)',
       pn_ano: 'On',
@@ -372,7 +372,8 @@
     t.style.fontSize = cislo(v.pismo, 16, 120, 50) + 'px';
     if (/^#[0-9A-Fa-f]{6}$/.test(String(v.barva || ''))) { t.style.color = v.barva; }
     if (v.tucne === true) { t.style.fontWeight = 'bold'; }
-    t.style.padding = '8px 44px 10px';
+    // okraje podle velikosti písma – menší písmo = nižší pruh (od 1.5.3)
+    t.style.padding = '0.16em 0.8em 0.2em';
     cteni = [cislo(v.cteni && v.cteni[0], 0, 1, 0.74), cislo(v.cteni && v.cteni[1], 0, 1, 0.98)];
     text = null;
     if (v.text && v.text.length >= 2) {
@@ -468,7 +469,7 @@
   // ukáže je v malé nabídce (OK při hře) a o změnu požádá zprávou `zmen`; Android ji ověří, uloží
   // a pošle zpět nové hodnoty (viz core/TvSettings.kt). Hodnoty jsou stejné jako v telefonu.
   var PRUHLEDNOSTI = [60, 80, 90, 100];
-  var VELIKOSTI = [0, 12, 15, 18, 22, 26, 32, 40, 48];
+  var VELIKOSTI = [0, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48];
   var POLOHY = ['pres', 'tesne', 'nad', 'nahore'];
   var nastaveni = null;
   var panelRadek = -1;
@@ -502,7 +503,8 @@
   function panelHodnota(i) {
     var n = nastaveni;
     if (i === 0) { return n.pruhlednost + ' %'; }
-    if (i === 1) { return T.pn_velikosti[Math.max(0, VELIKOSTI.indexOf(n.velikost))] || (n.velikost + ''); }
+    // velikost jako číslo (stejné jako v telefonu), 0 = podle velikosti titulků ve hře
+    if (i === 1) { return n.velikost > 0 ? String(n.velikost) : T.pn_podle_hry; }
     if (i === 2) { return POLOHY.indexOf(n.poloha) >= 0 ? T.pn_polohy[POLOHY.indexOf(n.poloha)] : T.pn_vlastni; }
     return n.original ? T.pn_ano : T.pn_ne;
   }

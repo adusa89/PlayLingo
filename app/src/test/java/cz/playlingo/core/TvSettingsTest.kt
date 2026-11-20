@@ -33,7 +33,7 @@ class TvSettingsTest {
 
     @Test fun hodnotyJakoVTelefonu() {
         assertEquals(TvSettings.OPACITIES, listOf(60, 80, 90, 100))
-        assertEquals(TvSettings.TEXT_SIZES, listOf(12, 15, 18, 22, 26, 32, 40, 48))
+        assertEquals(TvSettings.TEXT_SIZES, listOf(12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48))
         assertEquals(TvSettings.TEXT_SIZES, cz.playlingo.Prefs.TEXT_SIZES.toList())
     }
 }
