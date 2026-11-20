@@ -788,7 +788,9 @@ class TranslatorService : Service() {
         val out = ArrayList<Segment>()
         for (s in TextLogic.segments(text)) {
             val body = TextLogic.normalizeCase(s.body)
-            val tr = QuickWords.lookup(l.code, body) ?: translate(l, TextLogic.forTranslator(body)) ?: return null
+            val raw = QuickWords.lookup(l.code, body) ?: translate(l, TextLogic.forTranslator(body)) ?: return null
+            // rod postav (mluvčí, oslovený) – až po paměti překladů, ta je jen podle textu
+            val tr = glossary?.genders(l, body, raw, s.speaker) ?: raw
             out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice))
         }
         return out

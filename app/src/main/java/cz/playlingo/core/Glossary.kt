@@ -14,6 +14,8 @@ class Glossary(
     terms: Map<String, String> = emptyMap(),
     /** celá anglická věta → překlad */
     sentences: Map<String, String> = emptyMap(),
+    /** postavy hry s rodem – po překladu podle nich [CzechGender] opraví tvary */
+    val cast: Cast = Cast.EMPTY,
 ) {
     private val nameList = names.map { it.trim() }.filter { it.length >= 2 }.distinct()
     private val termMap = terms.entries
@@ -33,6 +35,13 @@ class Glossary(
     }
 
     val size: Int get() = nameList.size + termMap.size + sentenceMap.size
+
+    /**
+     * Doladění hotového překladu jedné části titulku podle postav (rod mluvčího, osloveného
+     * a postavy v textu). [source] je anglický originál části, [speaker] jméno mluvčího z titulku.
+     */
+    fun genders(lang: Lang, source: String, translated: String, speaker: String?): String =
+        if (lang == Lang.CS) CzechGender.fix(cast, source, translated, speaker) else translated
 
     /** Ručně zadaný překlad celé věty, pokud existuje. */
     fun sentence(text: String): String? = sentenceMap[TextLogic.simplify(text)]

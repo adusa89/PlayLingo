@@ -105,6 +105,15 @@ Přirozenost překladu (od 0.69): `core/Natural.kt` sjednocuje v češtině oslo
 (překladač střídá tykání a vykání) a `IDIOMS` v `core/OfflinePrep.kt` nahrazuje obraty, které
 překladač překládá doslova. Obojí se ladí jen podle skutečných výstupů v `preklad.txt`, ne odhadem.
 
+**Rod postav (od 0.97.3)**: profil hry (`core/GameProfiles.kt`) má vedle jmen i postavy s rodem a přezdívkami
+(`GameCharacter`, `m("Jason", "Jas")`, `f("Lucia", "Lu")`); univerzální profil zná postavy všech her (jméno
+s různým rodem v různých hrách vynechá `Cast`). Postavy jdou se slovníkem (`Glossary.cast`) a po překladu každé
+části titulku `Glossary.genders` → `core/CzechGender` (v `GameCast.kt`, testy `GameCastTest`) opraví mužské tvary:
+1. osoba podle mluvčího z titulku („LUCIA: …“), 2. osoba podle oslovení v originálu („Lu, you…“, „…, Lucia?“),
+3. osoba hned za jménem („Lucia šel“). Mění se jen slova u pomocného slovesa / jména a jen spolehlivé koncovky.
+Běží až po paměti překladů (ta je jen podle textu) – ve službě, v `translateSubtitle` i v `DeeplTranslator.merge`.
+Zatím jen čeština. Bez jmen mluvčích v titulcích hry funguje jen 2. a 3. osoba.
+
 Zkouška na Android TV navíc nechá přeložit typické herní repliky (`core/TranslationProbe.kt`)
 a uloží je do `preklad.txt` ve větvích s výsledky – podle něj se ladí přirozenost překladu.
 

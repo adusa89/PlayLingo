@@ -107,7 +107,8 @@ object DeeplTranslator {
     private fun cache(l: Lang) = caches.getOrPut(l) { TranslationCache(1500) }
 
     /** Co se z titulku pošle do DeepL: části (index segmentu), jejich anglický text a text pro DeepL. */
-    class Job(val key: String, val lang: Lang, val index: List<Int>, val bodies: List<String>, val sources: List<String>)
+    class Job(val key: String, val lang: Lang, val index: List<Int>, val bodies: List<String>, val sources: List<String>,
+              val glossary: Glossary? = null)
 
     /**
      * Rozdělí titulek na části stejně jako offline překlad ([TranslatorService.translateSegments]).
@@ -124,7 +125,7 @@ object DeeplTranslator {
             if (glossary?.sentence(input) != null) return@forEachIndexed
             idx += i; bodies += body; src += Deepl.source(input, glossary?.prepare(input))
         }
-        return if (idx.isEmpty()) null else Job(key, lang, idx, bodies, src)
+        return if (idx.isEmpty()) null else Job(key, lang, idx, bodies, src, glossary)
     }
 
     /** Překlady všech částí z paměti DeepL; null = aspoň jedna tam není. */
@@ -143,7 +144,9 @@ object DeeplTranslator {
         job.index.forEachIndexed { k, i ->
             if (i !in out.indices) return@forEachIndexed
             val body = job.bodies[k]
-            val tr = if (job.lang == Lang.CS) Natural.czech(body, texts[k]) else texts[k]
+            val natural = if (job.lang == Lang.CS) Natural.czech(body, texts[k]) else texts[k]
+            // rod postav: DeepL mluvčího nevidí (posílá se jen text repliky)
+            val tr = job.glossary?.genders(job.lang, body, natural, out[i].speaker) ?: natural
             out[i] = out[i].copy(body = TextLogic.finishTranslation(body, tr))
         }
         return out

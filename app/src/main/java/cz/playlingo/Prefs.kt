@@ -192,7 +192,8 @@ object Prefs {
         val sentences = LinkedHashMap(BuiltinPhrases.forLang(lang))
         val terms = LinkedHashMap<String, String>()
         for ((k, v) in user) if (Glossary.isSentence(k)) sentences[k] = v else terms[k] = v
-        return Glossary(GameProfiles.of(gameId(c)).names, terms, sentences)
+        val game = GameProfiles.of(gameId(c))
+        return Glossary(game.names, terms, sentences, game.cast)
     }
 
     /** Otisk nastavení slovníku – když se změní, paměť překladů se smaže. */

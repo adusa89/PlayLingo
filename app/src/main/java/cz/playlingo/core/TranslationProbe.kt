@@ -32,6 +32,10 @@ object TranslationProbe {
         "You shouldn't have come here.", "They're coming!", "He got away.", "I think we lost them.",
         "The bridge is out, we have to swim.", "If we keep going like this, they will find us.",
         "I don't think anyone has been here for years.", "Get on your horse, we ride at dawn.",
+        // rod podle postavy (GTA VI: Lucia/Lu žena, Jason/Jas muž – CzechGender)
+        "LUCIA: I was ready for this.", "LUCIA: I told you I would come back.", "LUCIA: I'm glad you're here.",
+        "LUCIA: I thought you were dead, Jason.", "JASON: Lu, you were right.", "JASON: Are you crazy, Lucia?",
+        "JASON: Be careful, Lu.", "Lucia went home.", "Lucia is ready.",
         // oslovení více lidí (tykání se tu měnit nesmí)
         "You two, come with me.", "All of you, get out!", "You and your friends should leave.",
         "Boys, get on your horses.", "Are you all ready?", "You guys wait here.",

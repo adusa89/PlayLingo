@@ -91,7 +91,8 @@ object OfflineTranslator {
         val out = ArrayList<String>()
         for (s in TextLogic.segments(text)) {
             val body = TextLogic.normalizeCase(s.body)
-            val tr = QuickWords.lookup(lang.code, body) ?: translate(lang, TextLogic.forTranslator(body), glossary)
+            val raw = QuickWords.lookup(lang.code, body) ?: translate(lang, TextLogic.forTranslator(body), glossary)
+            val tr = glossary?.genders(lang, body, raw, s.speaker) ?: raw
             out.add((s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + TextLogic.finishTranslation(body, tr))
         }
         return out.joinToString(" ")
