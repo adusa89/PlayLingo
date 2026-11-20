@@ -142,6 +142,18 @@ class Ui(private val ctx: Context) {
         }
 
     /**
+     * Menší žluté tlačítko uvnitř karty (řádky na Domů, kapitoly Nápovědy). Běžné tlačítko má barvu karty
+     * a v kartě splývá s textem.
+     */
+    fun smallButton(label: String, onClick: () -> Unit): TextView = button(label, onClick = onClick).apply {
+        textSize = 15f
+        setTextColor(Theme.ACCENT_DARK)
+        typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
+        background = focusBg(Theme.ACCENT, radius = 20)
+        setPadding(dp(20), dp(8), dp(20), dp(8))
+    }
+
+    /**
      * Řádek nastavení: vlevo popis, vpravo hodnota (ZAP/VYP, velikost…).
      * Kliknutí OK na ovladači hodnotu změní.
      */

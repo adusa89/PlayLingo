@@ -30,12 +30,15 @@ object TvLook {
     fun json(
         layout: ScreenLayout, opacityPercent: Int, textPx: Int, color: Int, bold: Boolean,
         textTop: Float, textBottom: Float, textLeft: Float, textRight: Float, original: String?,
+        /** Okraj pruhu 0–3 (aplikace v TV od 1.5.4; starší ho přeskočí). */
+        pad: Int = 1,
     ): String {
         val sb = StringBuilder("{")
         sb.append("\"pozadi\":").append(opacityPercent.coerceIn(0, 100))
         sb.append(",\"pismo\":").append(textPx.coerceIn(16, 120))
         sb.append(",\"barva\":\"").append(SpeakerColors.hex(color)).append('"')
         if (bold) sb.append(",\"tucne\":true")
+        sb.append(",\"okraj\":").append(pad.coerceIn(0, 3))
         // „tesne“ = těsně nad nalezený titulek; starší aplikace v televizi ho neznají a položí pruh jako „nad“
         val pos = when { layout.cover -> "pres"; layout.isAuto && layout.hug -> "tesne"; layout.isAuto -> "nad"; else -> "stred" }
         sb.append(",\"poloha\":\"").append(pos).append('"')

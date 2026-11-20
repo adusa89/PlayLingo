@@ -108,6 +108,7 @@ internal val I18N_HU: Map<String, String> = mapOf(
     "l_original" to "Az angol eredeti megjelenítése is",
     "l_speaker" to "A beszélők neve színesen",
     "l_hold" to "A fordítás tovább maradjon a képernyőn",
+    "l_pad" to "Sáv margója",
     "l_lang" to "A fordítás nyelve",
     "l_ui_lang" to "Az alkalmazás nyelve",
     "l_pos" to "Feliratok helyzete",

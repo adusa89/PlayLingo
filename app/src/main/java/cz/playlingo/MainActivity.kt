@@ -820,13 +820,7 @@ class MainActivity : Activity() {
             card.addView(tagged(r, tag), ui.lp(top = if (rows++ == 0) 10 else 0))
             if (action != null && onAction != null) {
                 // malé žluté tlačítko (běžné tlačítko má barvu karty a v kartě splývalo s textem)
-                card.addView(tagged(ui.button(action) { onAction() }.apply {
-                    textSize = 15f
-                    setTextColor(Theme.ACCENT_DARK)
-                    typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD)
-                    background = ui.focusBg(Theme.ACCENT, radius = 20)
-                    setPadding(ui.dp(20), ui.dp(8), ui.dp(20), ui.dp(8))
-                }, tag + "_fix"),
+                card.addView(tagged(ui.smallButton(action) { onAction() }, tag + "_fix"),
                     LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(30); bottomMargin = ui.dp(4) })
             }
         }
@@ -1542,6 +1536,12 @@ class MainActivity : Activity() {
                 Prefs.setOpacity(this, Prefs.OPACITIES[i]); applyToService(); render(true); showDemo()
             }
         }, "opacity"), 6)
+        // okraj pruhu nad a pod textem (0–3): jak moc pruh přesahuje písmo
+        add(tagged(ui.settingRow(t("l_pad"), Prefs.barPad(this).toString()) {
+            choose(t("l_pad"), (0..3).map { it.toString() }, Prefs.barPad(this)) { i ->
+                Prefs.setBarPad(this, i); applyToService(); render(true); showDemo()
+            }
+        }, "barpad"), 6)
         val hold = Prefs.holdMs(this)
         add(tagged(ui.settingRow(t("l_hold"), if (hold == 0) t("off") else "+${hold / 1000} s") {
             choose(t("l_hold"), Prefs.HOLD_TIMES.map { if (it == 0) t("off") else "+${it / 1000} s" }, Prefs.HOLD_TIMES.indexOf(hold)) { i ->
@@ -1866,7 +1866,7 @@ class MainActivity : Activity() {
             keys.forEachIndexed { i, k -> addView(ui.text(t(k), 16f, if (i == 0) Theme.TEXT else Theme.MUTED), ui.lp(top = if (i == 0) 0 else 10)) }
         }
         fun LinearLayout.button(label: String, tag: String, onClick: () -> Unit) =
-            addView(tagged(ui.button(label) { onClick() }, tag), ui.lp(w = LinearLayout.LayoutParams.WRAP_CONTENT, top = 12))
+            addView(tagged(ui.smallButton(label) { onClick() }, tag), ui.lp(w = LinearLayout.LayoutParams.WRAP_CONTENT, top = 12))
         // stránka s návodem: v telefonu tlačítko do prohlížeče, na televizi čtvereček pro telefon
         fun LinearLayout.page(url: String, tag: String) {
             if (!Prefs.isTv(this@MainActivity)) button(t("help_page"), tag) {
@@ -2175,7 +2175,7 @@ class MainActivity : Activity() {
         val o = SubtitleOverlay(
             this, w, h, Prefs.layout(this), Prefs.textSize(this), Prefs.opacity(this),
             false, Prefs.coloredSpeaker(this),
-            Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this)
+            Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), barPad = Prefs.barPad(this)
         )
         demo = o
         o.show(
@@ -2201,6 +2201,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.21"
-    const val VERSION_CODE = 118
+    const val VERSION = "verze 0.97.22"
+    const val VERSION_CODE = 119
 }

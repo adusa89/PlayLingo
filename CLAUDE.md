@@ -278,6 +278,11 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   posílal přes službu každé tlačítko. Změny přes `TranslatorService.quickChange` → `applyTvChange` (jako z TV LG),
   bez titulku ukázková věta (`quickSample`). Jen když běží překlad a aplikace není vidět. Funguje-li tlačítko při HDMI,
   záleží na výrobci TV – ověří jen majitel; po aktualizaci může být potřeba vypnout a zapnout službu v Usnadnění.
+- **Od 0.97.22 (aplikace v televizi 1.5.4):** okraj pruhu nad a pod textem 0–3 (`Prefs.barPad`, `BAR_PADS`, klíč `bar_pad`
+  v `TvProfiles.KEYS`, Titulky → Pruh s překladem; do TV pole `okraj` v `TvLook`). Ve stavu v TV je OK jako tlačítko
+  v rámečku (`klavesa`), ne šedá tečka. Po nahrání do TV LG se hned uloží nová verze (`TvSender.lastSeen`,
+  `Prefs.tvSeen`) – dřív Domů hlásilo starou, dokud se TV znovu nepřipojila – a ukáže se dialog s potvrzením.
+  Tlačítka v kartách (Domů, Nápověda) jsou `ui.smallButton` (žlutá; běžné `ui.button` v kartě splývá).
 - **Od 0.97.21 (aplikace v televizi 1.5.3):** velikost písma je číslo 12–48 po dvou (`Prefs.TEXT_SIZES`,
   `TvSettings.TEXT_SIZES`, `VELIKOSTI` v `app.js` – měň najednou, hlídá `TvSettingsTest`), slovní popisky nejsou. Okraje
   pruhu jsou podle velikosti písma (Android `SubtitleOverlay.show`, TV `padding` v em), bez pevné výšky 150 px.

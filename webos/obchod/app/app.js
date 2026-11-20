@@ -38,7 +38,7 @@
       st_pripojeno: 'připojeno',
       st_vstup: 'nejde otevřít',
       st_sit: 'TV bez sítě',
-      st_ok: 'OK · vzhled titulků',
+      st_ok: 'vzhled titulků',
       uk_stitek: 'Ukázka',
       uk_popis: 'Hra ukazuje titulky anglicky. PlayLingo je přečte, přeloží a překlad ukáže v černém pruhu dole.',
       np_nadpis: 'Jak to funguje',
@@ -76,7 +76,7 @@
       st_pripojeno: 'connected',
       st_vstup: 'cannot open',
       st_sit: 'TV offline',
-      st_ok: 'OK · subtitle look',
+      st_ok: 'subtitle look',
       uk_stitek: 'Demo',
       uk_popis: 'The game shows subtitles in English. PlayLingo reads them, translates them and shows ' +
         'the translation in the black bar below (here: Czech).',
@@ -244,7 +244,8 @@
     if (spojeni) { r.push({ barva: 'ok', text: 'PlayLingo · ' + T.st_pripojeno }); }
     else { r.push({ barva: 'pozor', text: stav.bezSite ? T.st_sit : 'PlayLingo · ' + T.st_hledam }); }
     if (spojeni) { r = r.concat(stav.android); }
-    if (spojeni && nastaveni) { r.push({ barva: 'info', text: T.st_ok }); }
+    // nápověda k OK: tlačítko v rámečku místo šedé tečky (od 1.5.4)
+    if (spojeni && nastaveni) { r.push({ barva: 'klavesa', text: T.st_ok }); }
     return r;
   }
 
@@ -260,7 +261,8 @@
       radek = document.createElement('div');
       radek.className = 'st-radek';
       tecka = document.createElement('span');
-      tecka.className = 'tecka ' + r[i].barva;
+      if (r[i].barva === 'klavesa') { tecka.className = 'klavesa'; tecka.textContent = 'OK'; }
+      else { tecka.className = 'tecka ' + r[i].barva; }
       text = document.createElement('span');
       text.textContent = r[i].text;
       radek.appendChild(tecka);
@@ -373,7 +375,9 @@
     if (/^#[0-9A-Fa-f]{6}$/.test(String(v.barva || ''))) { t.style.color = v.barva; }
     if (v.tucne === true) { t.style.fontWeight = 'bold'; }
     // okraje podle velikosti písma – menší písmo = nižší pruh (od 1.5.3)
-    t.style.padding = '0.16em 0.8em 0.2em';
+    // okraj nad a pod textem podle volby 0–3 v telefonu (od 1.5.4; bez ní 1)
+    x = [0.04, 0.16, 0.32, 0.5][Math.round(cislo(v.okraj, 0, 3, 1))];
+    t.style.padding = x + 'em 0.8em ' + (x + 0.04) + 'em';
     cteni = [cislo(v.cteni && v.cteni[0], 0, 1, 0.74), cislo(v.cteni && v.cteni[1], 0, 1, 0.98)];
     text = null;
     if (v.text && v.text.length >= 2) {

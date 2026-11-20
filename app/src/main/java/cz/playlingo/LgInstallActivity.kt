@@ -358,6 +358,22 @@ class LgInstallActivity : Activity() {
             }
             resultText = t(key).replace("%s", r.version) + "\n" + t(if (r.launched) "lg_r_launched" else "lg_r_nolaunch")
             LgDevMode.refresh(this, false) { runOnUiThread { if (!isFinishing && !running) render(true) } }
+            // verze v TV je teď ta nahraná: Domů ji ví hned, i když se aplikace v TV ještě znovu nepřipojila
+            // (do 0.97.21 tam zůstávalo staré ohlášení a Domů dál hlásilo „nová …“)
+            if (r.action == LgAction.INSTALL || r.action == LgAction.UPDATE) {
+                val old = cz.playlingo.core.TvSender.lastSeen?.announce?.takeIf { it.platform == cz.playlingo.core.TvAnnounce.WEBOS }
+                if (old != null) cz.playlingo.core.TvSender.lastSeen = cz.playlingo.core.TvSender.Companion.Seen(old.copy(version = r.version), System.currentTimeMillis())
+                Prefs.setTvSeen(this, cz.playlingo.core.TvAnnounce.WEBOS, listOfNotNull(old?.model, r.version).joinToString(" · "))
+            }
+            // zřetelné potvrzení (dřív jen řádek textu – působilo to „tiše“)
+            val doneText = resultText
+            try {
+                android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                    .setTitle("✔ PlayLingo " + r.version + " · TV LG")
+                    .setMessage(doneText)
+                    .setPositiveButton(t("ok")) { d, _ -> d.dismiss(); finish() }
+                    .show()
+            } catch (_: Exception) {}
         } else if (e != null && e.code != LgError.CANCELLED) {
             error = e.code; errorDetail = e.detail
         }

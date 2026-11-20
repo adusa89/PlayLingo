@@ -108,6 +108,7 @@ internal val I18N_UK: Map<String, String> = mapOf(
     "l_original" to "Показувати й англійський оригінал",
     "l_speaker" to "Імена персонажів кольором",
     "l_hold" to "Залишати переклад на екрані довше",
+    "l_pad" to "Поле смуги",
     "l_lang" to "Мова перекладу",
     "l_ui_lang" to "Мова застосунку",
     "l_pos" to "Положення субтитрів",

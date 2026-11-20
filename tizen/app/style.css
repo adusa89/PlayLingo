@@ -81,6 +81,11 @@ h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; 
 #hlaseni .tecka.ok { background: #4ADE80; }
 #hlaseni .tecka.pozor { background: #F59E0B; }
 #hlaseni .tecka.info { background: #8C887F; }
+/* tlačítko ovladače (OK) v rámečku místo tečky */
+#hlaseni .klavesa {
+  flex: none; margin-right: 14px; padding: 0 12px; border: 2px solid #E9E6DF; border-radius: 8px;
+  font-size: 22px; font-weight: bold; line-height: 32px; color: #E9E6DF;
+}
 
 /* Stejný černý pruh jako v aplikaci pro Android TV. */
 #pruh {

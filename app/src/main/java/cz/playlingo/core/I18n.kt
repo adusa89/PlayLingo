@@ -121,6 +121,7 @@ object I18n {
         "l_original" to ("Zobrazit i anglický originál" to "Zobraziť aj anglický originál"),
         "l_speaker" to ("Jména mluvčích barevně" to "Mená hovoriacich farebne"),
         "l_hold" to ("Nechat překlad déle na obrazovce" to "Nechať preklad dlhšie na obrazovke"),
+        "l_pad" to ("Okraj pruhu" to "Okraj pruhu"),
         "l_lang" to ("Jazyk překladu" to "Jazyk prekladu"),
         "l_ui_lang" to ("Jazyk aplikace" to "Jazyk aplikácie"),
         "l_pos" to ("Poloha titulků" to "Poloha titulkov"),

@@ -50,6 +50,8 @@ class SubtitleOverlay(
     private val bold: Boolean = false,
     /** Velikost písma překladu podle anglického originálu (jinak pevná [textSizeSp]). */
     private val matchOriginalSize: Boolean = false,
+    /** Okraj nad a pod textem 0–3 ([Prefs.BAR_PADS]). */
+    private val barPad: Int = 1,
     /**
      * Dostane každou změnu pruhu: text překladu a jeho řádky zvlášť s barvami jmen a volbami
      * ([TvSender.partsJson]) a vzhled pruhu pro televizi ([TvLook]), nebo null při schování. Tudy jdou titulky i do televize LG
@@ -215,7 +217,7 @@ class SubtitleOverlay(
             val tvOriginal = original?.let { o -> TextLogic.segments(o).joinToString("\n") { s ->
                 (s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + s.body } }
             val look = TvLook.json(layout, opacityPercent, TvLook.textPx(textSize, tvMatched), textColor, bold,
-                textTop, textBottom, textLeft, textRight, tvOriginal)
+                textTop, textBottom, textLeft, textRight, tvOriginal, barPad)
             send(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors), look)
         }
         main.post {
@@ -228,7 +230,8 @@ class SubtitleOverlay(
             else tv.textSize = textSize.toFloat()
             // okraje podle velikosti písma (dřív pevné) – menší písmo = nižší a užší pruh
             val em = tv.textSize
-            tv.setPadding((em * 0.8f).toInt(), (em * 0.16f).toInt(), (em * 0.8f).toInt(), (em * 0.2f).toInt())
+            val pad = Prefs.BAR_PADS[barPad.coerceIn(0, 3)]
+            tv.setPadding((em * 0.8f).toInt(), (em * pad).toInt(), (em * 0.8f).toInt(), (em * (pad + 0.04f)).toInt())
             tv.text = format(segments, original, colors)
 
             val hasText = textTop >= 0f && textBottom > textTop

@@ -176,6 +176,11 @@ object Prefs {
     fun setReaderDevice(c: Context, v: Boolean) = setBool(c, "reader_device", v)
 
     // ---- hra a slovník ----
+    /** Okraj pruhu nad a pod textem 0–3 (násobek velikosti písma, viz [BAR_PADS]); výchozí 1. */
+    val BAR_PADS = floatArrayOf(0.04f, 0.16f, 0.32f, 0.5f)
+    fun barPad(c: Context): Int = p(c).getInt("bar_pad", 1).coerceIn(0, 3)
+    fun setBarPad(c: Context, v: Int) = p(c).edit().putInt("bar_pad", v.coerceIn(0, 3)).apply()
+
     /** Budit PlayStation z klidového režimu při Spustit (zapne ho na spárovaném druhém účtu); výchozí ne (od 0.97.18). */
     fun ps5Wake(c: Context): Boolean = bool(c, "ps5_wake", false)
     fun setPs5Wake(c: Context, v: Boolean) = setBool(c, "ps5_wake", v)

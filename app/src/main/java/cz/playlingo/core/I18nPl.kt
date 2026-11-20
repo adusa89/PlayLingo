@@ -108,6 +108,7 @@ internal val I18N_PL: Map<String, String> = mapOf(
     "l_original" to "Pokazuj też angielski oryginał",
     "l_speaker" to "Imiona postaci w kolorze",
     "l_hold" to "Zostaw tłumaczenie dłużej na ekranie",
+    "l_pad" to "Margines paska",
     "l_lang" to "Język tłumaczenia",
     "l_ui_lang" to "Język aplikacji",
     "l_pos" to "Położenie napisów",

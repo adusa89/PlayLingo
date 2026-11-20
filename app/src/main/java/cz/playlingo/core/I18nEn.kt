@@ -108,6 +108,7 @@ internal val I18N_EN: Map<String, String> = mapOf(
     "l_original" to "Also show the English original",
     "l_speaker" to "Speaker names in colour",
     "l_hold" to "Keep the translation on screen longer",
+    "l_pad" to "Bar padding",
     "l_lang" to "Translation language",
     "l_ui_lang" to "App language",
     "l_pos" to "Subtitle position",

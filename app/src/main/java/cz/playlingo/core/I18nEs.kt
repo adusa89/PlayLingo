@@ -108,6 +108,7 @@ internal val I18N_ES: Map<String, String> = mapOf(
     "l_original" to "Mostrar también el original en inglés",
     "l_speaker" to "Nombres de los personajes en color",
     "l_hold" to "Mantener la traducción más tiempo en pantalla",
+    "l_pad" to "Margen de la barra",
     "l_lang" to "Idioma de la traducción",
     "l_ui_lang" to "Idioma de la aplicación",
     "l_pos" to "Posición de los subtítulos",
