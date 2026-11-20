@@ -5,7 +5,8 @@
 # Potřebuje nainstalovaný Python 3.10+ a Javu 17 (proměnná JAVA_HOME).
 #
 #   powershell -File pc\priprava.ps1 [-Jazyk cs]
-param([string]$Jazyk = "cs")
+#   -BezSestaveni   jen knihovny a model (tak ji spouští okno aplikace – sestavená už je)
+param([string]$Jazyk = "cs", [switch]$BezSestaveni)
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 $slozka = "$env:LOCALAPPDATA\PlayLingoTools"
@@ -23,5 +24,6 @@ if (-not (Test-Path $model)) {
     Expand-Archive "$model.zip" -DestinationPath $model -Force
     Remove-Item "$model.zip"
 }
+if ($BezSestaveni) { Write-Host "Hotovo."; exit 0 }
 & "$PSScriptRoot\..\gradlew.bat" -p $PSScriptRoot installDist --console=plain -q
 Write-Host "Hotovo. Spuštění: powershell -File pc\spustit.ps1 [-Okno chiaki]"

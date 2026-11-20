@@ -9,6 +9,8 @@ plugins {
     application
 }
 repositories { mavenCentral() }
+// JNA: pruh na obrazovce potřebuje od Windows polohu okna hry a průchod myši skrz pruh
+dependencies { implementation("net.java.dev.jna:jna-platform:5.14.0") }
 kotlin {
     jvmToolchain(17)
     sourceSets["main"].kotlin.srcDirs(rootDir.resolve("../app/src/main/java/cz/playlingo/core"), "src")
