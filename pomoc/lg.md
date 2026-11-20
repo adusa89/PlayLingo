@@ -33,7 +33,7 @@ a **Passphrase** (6 znaků). V telefonu je PlayLingo přečte kamerou, nic se ne
 
 ## 4. Nahrát PlayLingo
 
-V PlayLingu zvol „Nahrát do televize“. Hotovo – příště už Passphrase potřeba není.
+V PlayLingu zvol „Nahrát do TV“ (u starší verze „Aktualizovat v TV“). Hotovo – příště už Passphrase potřeba není.
 
 ## Dobré vědět
 - Vývojářský režim po čase vyprší (PlayLingo ukáže, kolik zbývá). Prodloužíš ho v televizi:

@@ -22,8 +22,10 @@ class GameMenuTest {
         val v = GameMenu.read(lines, w, h, spec)!!
         assertEquals(listOf("Map", "Game", "Store", "Help", "Photo Studio", "Settings"), v.items)
         assertEquals(2, v.selected)
-        assertEquals("Mapa · Hra · ▸ Obchod · Nápověda · Fotostudio · Nastavení",
-            GameMenu.text(v.items.map { spec.word(Lang.CS, it)!! }, v.selected, null, null))
+        // pod sebou, vybraná se značkou »; místo hned vpravo od menu
+        assertEquals("Mapa\nHra\n» Obchod\nNápověda\nFotostudio\nNastavení",
+            GameMenu.text(v.kind, v.items.map { spec.word(Lang.CS, it)!! }, v.selected, null, null))
+        assertEquals(0.3f, v.box!!.first, 0.01f)
     }
 
     @Test fun settingsTabsAndDescription() {
@@ -62,5 +64,23 @@ class GameMenuTest {
     @Test fun selectedNeedsClearlyBrighterRow() {
         assertEquals(-1, GameMenu.selected(listOf(60, 70, 80)))
         assertEquals(1, GameMenu.selected(listOf(60, 200, 70)))
+    }
+
+    @Test fun trackerFillsGapsAndFindsUnreadSelection() {
+        val t = MenuTracker(spec)
+        fun read(vararg items: String) = MenuView("pause", items.toList(), -1, tops = items.map { spec.pause.indexOf(it) * 18 + 135 })
+        // 1. čtení: vše kromě „Map“ (vybraná – tmavé písmo na bílém pruhu se nepřečetlo) a „Photo Studio“
+        var r = t.update(read("Game", "Store", "Help", "Settings"))
+        assertEquals(listOf("Game", "Store", "Help", "Settings"), r.view!!.items)
+        // 2. čtení: Photo Studio přibude, Map pořád chybí → zůstane bez výběru, dokud chybí víc než jedna
+        r = t.update(read("Game", "Store", "Help", "Photo Studio", "Settings"))
+        assertEquals(5, r.view!!.items.size)
+        // 3. čtení: Map přečtená (výběr se posunul na Game, ta teď chybí) → doplněno a vybraná = jediná chybějící
+        r = t.update(read("Map", "Store", "Help", "Photo Studio", "Settings"))
+        assertEquals(listOf("Map", "Game", "Store", "Help", "Photo Studio", "Settings"), r.view!!.items)
+        assertEquals(1, r.view!!.selected)
+        // jedno čtení bez menu → nic se nemění (neblikne), druhé → menu zavřené
+        assertEquals(false, t.update(null).changed)
+        assertNull(t.update(null).view)
     }
 }

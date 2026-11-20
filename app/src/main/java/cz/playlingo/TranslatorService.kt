@@ -422,7 +422,7 @@ class TranslatorService : Service() {
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
         prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
         menuSpec = if (Prefs.gameTexts(this)) cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).menuSpec else null
-        menuShown = false; menuKey = ""; menuWords.clear()
+        menuShown = false; menuKey = ""; menuWords.clear(); menuTracker = null
         coloredSpeaker = Prefs.coloredSpeaker(this)
         cz.playlingo.core.NameColor.profile = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey
         // změna hry nebo slovníku → dřívější překlady už neplatí
@@ -748,6 +748,8 @@ class TranslatorService : Service() {
     /** V pruhu je přeložené menu – titulky se mezitím nečtou (v menu žádné nejsou). */
     private var menuShown = false
     private var menuKey = ""
+    /** Otevřené menu v čase: položky se doplňují, vybraná se pozná i podle chybějící (viz [cz.playlingo.core.MenuTracker]). */
+    private var menuTracker: cz.playlingo.core.MenuTracker? = null
     /** Překlady popisů a položek menu (jen v paměti; pevné překlady položek jsou v profilu hry). */
     private val menuWords = HashMap<String, String>()
 
@@ -766,23 +768,25 @@ class TranslatorService : Service() {
             val bb = l.boundingBox ?: return@mapNotNull null
             cz.playlingo.core.MenuLine(l.text, bb.left, bb.top, bb.right, bb.bottom, meanGray(crop, bb))
         }
-        val view = cz.playlingo.core.GameMenu.read(lines, crop.fullW, crop.fullH, spec)
+        val tracker = menuTracker ?: cz.playlingo.core.MenuTracker(spec).also { menuTracker = it }
+        val (view, changed) = tracker.update(cz.playlingo.core.GameMenu.read(lines, crop.fullW, crop.fullH, spec))
         if (view == null) {
             if (menuShown) { menuShown = false; menuKey = ""; ov.hide(); tp("MENU|off") }
             return false
         }
-        if (view.key != menuKey) {
+        if (changed || view.key != menuKey) {
             menuKey = view.key
             val l = lang
             val items = view.items.map { spec.word(l, it) ?: menuTranslate(it) }
             val title = view.title?.let { menuTranslate(it) }
             val desc = view.description?.let { menuTranslate(it) }
-            val text = cz.playlingo.core.GameMenu.text(items, view.selected, title, desc)
+            val text = cz.playlingo.core.GameMenu.text(view.kind, items, view.selected, title, desc)
             synchronized(showLock) {
-                ov.show(text.split('\n').map { Segment(null, it) }, null, -1f, -1f)
+                // vedle menu, řádky pod sebou (od 0.97.36)
+                ov.show(text.split('\n').map { Segment(null, it) }, null, -1f, -1f, box = view.box)
                 ++showSeq
             }
-            tp("MENU|${view.items.joinToString(",")}|vybraná=${view.selected}|popis=${view.title ?: "-"}")
+            tp("MENU|${view.kind}|${view.items.joinToString(",")}|vybraná=${view.selected}|popis=${view.title ?: "-"}")
         }
         if (!menuShown) resetReading()
         menuShown = true

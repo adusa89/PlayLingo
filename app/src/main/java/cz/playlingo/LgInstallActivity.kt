@@ -21,10 +21,17 @@ import cz.playlingo.core.LgPhase
 import cz.playlingo.core.LgSetup
 
 /**
- * Průvodce: nahrát PlayLingo do televize LG z tohoto zařízení (telefon nebo box) přes vývojářský
- * režim LG, a kolik dní režimu zbývá. Otevírá se z Nastavení (u volby „Posílat titulky do
- * televize LG“) a z pomocníka v telefonu. Ovládá se ovladačem (šipky + OK) i dotykem.
- * Ruční cesta (počítač s nástrojem LG, obchod LG) zůstává popsaná dole.
+ * Průvodce: nahrát (aktualizovat) PlayLingo do televize LG z tohoto zařízení (telefon nebo box) přes
+ * vývojářský režim LG, a kolik dní režimu zbývá. Otevírá se z Domů, Nastavení, průvodce, Nápovědy
+ * a z pomocníka v telefonu. Ovládá se ovladačem (šipky + OK) i dotykem.
+ *
+ * Dva tvary:
+ *  - **stručný** – spárovaná TV se známou adresou: stav („LG OLED55B7 · 1.5.6 → 1.5.8“), jedno velké
+ *    tlačítko (Aktualizovat v TV / Nahrát do TV / Spustit PlayLingo v TV), postup, dny vývojářského
+ *    režimu a řádek „Jiná TV nebo potíže…“, který rozbalí přípravu,
+ *  - **příprava** – TV není spárovaná, adresa chybí, TV/vývojářský režim nejde najít nebo nahrání
+ *    selhalo: karta krok za krokem, adresa, pod ní kamera, Passphrase. Jednou rozbalená zůstane.
+ * Delší vysvětlení (síť, prodloužení režimu, nahrání z počítače) je v Nápovědě (`hc3_lg`).
  */
 class LgInstallActivity : Activity() {
     private lateinit var ui: Ui
@@ -45,6 +52,15 @@ class LgInstallActivity : Activity() {
 
     /** U spárované televize je políčko Passphrase schované, dokud hráč nechce zadat jinou. */
     private var askPass = false
+
+    /**
+     * Rozbalená příprava (karta kroků, adresa, kamera, Passphrase). U spárované TV až na přání („Jiná TV
+     * nebo potíže…“), po chybě nahrání, nebo když TV / vývojářský režim nejde najít; jednou rozbalená
+     * zůstane (stránka by jinak mezi tvary skákala).
+     */
+    private var expanded = false
+    /** Proběhlo už aspoň jedno zjištění stavu TV (do té doby se spárované TV věří). */
+    private var probed = false
 
     // ---- pomocník krok za krokem (core/LgSetup.kt): co se o televizi právě ví ----
     private var probe = LgSetup.Probe(tvFound = false, devMode = false, keyServer = false, paired = false, passphrase = false)
@@ -93,7 +109,9 @@ class LgInstallActivity : Activity() {
                     if (isFinishing || running) return@runOnUiThread
                     val fill = ip.isEmpty() && t != null && found.contains(t)
                     if (fill) ip = t!!
-                    if (next != probe || found != foundTvs || fill) {
+                    val first = !probed
+                    probed = true
+                    if (next != probe || found != foundTvs || fill || first) {
                         probe = next; foundTvs = found
                         // při psaní do políčka nepřekreslovat (zavřela by se klávesnice a skočil kurzor) – až potom
                         if (currentFocus is EditText && !fill) needsRender = true else render(true)
@@ -140,7 +158,7 @@ class LgInstallActivity : Activity() {
         }
         // v televizi už je stejná nebo novější verze: nic se nenahrává, jen se spustí
         val current = TvChoice.upToDate(this@LgInstallActivity, cz.playlingo.core.TvType.LG)
-        if (now == LgSetup.Step.READY) addView(ui.text(current?.let { t("lg_s_current").replace("%s", it) } ?: t("lg_s_ready"), 16f, Theme.OK, bold = true), ui.lp(top = 10))
+        if (now == LgSetup.Step.READY) addView(ui.text("✔ " + (current?.let { t("lg_st_cur").replace("%s", it) } ?: t("lg_s_ready")), 16f, Theme.OK, bold = true), ui.lp(top = 10))
         foundTvs.takeIf { it.isNotEmpty() }?.let { addView(ui.text(t("lg_s_found").replace("%s", it.joinToString(", ")), 14f, Theme.MUTED), ui.lp(top = 8)) }
     }
 
@@ -222,80 +240,131 @@ class LgInstallActivity : Activity() {
         val focused = if (keepFocus) currentFocus?.tag else null
         content.removeAllViews()
         add(ui.text(t("lg_title"), 26f, Theme.TEXT, bold = true), 0)
-        add(ui.text(t("lg_intro"), 16f, Theme.MUTED), 8)
 
-        // krok za krokem: kroky, které jde poznat, se odškrtávají samy (televize v síti, vývojářský režim, Key Server)
-        add(stepsCard(), 18)
-
-        // telefon s kamerou: adresu a Passphrase přečíst z obrazovky televize (LgScanActivity) – napřed,
-        // ať se nic nepíše ručně
-        if (!running && LgScanActivity.available(this)) {
-            add(tagged(ui.button(t("km_scan"), primary = ip.isEmpty()) { scan() }, "lgscan"), 20)
-            add(ui.text(t("km_why"), 14f, Theme.MUTED), 6)
-        }
-        scanNote?.let { add(ui.text(it.first, 15f, if (it.second) Theme.WARN else Theme.OK, bold = true), 10) }
-
-        add(ui.text(t("lg_ip"), 16f, Theme.TEXT, bold = true), 20)
-        add(field(ip, "lg_ip_hint", "lgip", false) { ip = it.trim() }, 6)
         val paired = runCatching { vault.paired(LgInstall.address(ip)) }.getOrDefault(false)
-        // spárovaná televize: prázdné políčko by mátlo („mám něco vyplnit?“) – schované, nabídne se až pod tlačítkem
-        if (!paired || askPass) {
-            add(ui.text(t("lg_pass"), 16f, Theme.TEXT, bold = true), 16)
-            add(field(pass, "lg_pass_hint", "lgpass", true) { val was = LgSetup.passphraseLooksOk(pass); pass = it; if (was != LgSetup.passphraseLooksOk(it)) needsRender = true }, 6)
+        val compact = compact(paired)
+        // krátký stav „LG OLED55B7 · 1.5.6 → 1.5.8“ – jen když o TV něco víme
+        if (paired || Prefs.tvSeen(this, cz.playlingo.core.TvAnnounce.WEBOS) != null)
+            add(ui.text(statusLine(), 18f, Theme.ACCENT, bold = true), 8)
+
+        if (compact) {
+            // spárovaná TV se známou adresou: hlavní je jedno tlačítko, příprava až na přání
+            actions(paired, compact = true)
+            add(devRow(), 22)
+            add(tagged(ui.settingRow(t("lg_more"), "$ip ▼", Theme.MUTED) {
+                expanded = true
+                render()
+                content.findViewWithTag<View>("lgip")?.requestFocus()
+            }, "lgmore"), 10)
+        } else {
+            // krok za krokem: kroky, které jde poznat, se odškrtávají samy (televize v síti, vývojářský režim, Key Server)
+            add(stepsCard(), 18)
+
+            add(ui.text(t("lg_ip"), 16f, Theme.TEXT, bold = true), 20)
+            add(field(ip, "lg_ip_hint", "lgip", false) { ip = it.trim() }, 6)
+            // telefon s kamerou: adresu a Passphrase přečíst z obrazovky televize (LgScanActivity) – pomocník
+            // pod políčkem; hlavní jen dokud adresa chybí
+            if (!running && LgScanActivity.available(this))
+                add(tagged(ui.button(t("km_scan"), primary = ip.isEmpty()) { scan() }, "lgscan"), 10)
+            scanNote?.let { add(ui.text(it.first, 15f, if (it.second) Theme.WARN else Theme.OK, bold = true), 10) }
+            // spárovaná televize: prázdné políčko by mátlo („mám něco vyplnit?“) – schované, nabídne se až pod tlačítkem
+            // (jiný otisk TV: „Spárovat znovu“ potřebuje Passphrase – políčko rovnou)
+            if (!paired || askPass || error == LgError.HOST_CHANGED) {
+                add(ui.text(t("lg_pass"), 16f, Theme.TEXT, bold = true), 16)
+                add(field(pass, "lg_pass_hint", "lgpass", true) { val was = LgSetup.passphraseLooksOk(pass); pass = it; if (was != LgSetup.passphraseLooksOk(it)) needsRender = true }, 6)
+            }
+            actions(paired, compact = false)
+            add(devRow(), 22)
         }
 
+        add(tagged(ui.button(t("wz_back")) { if (running) installer?.cancel(); finish() }, "lgback"), 22)
+
+        val target = focused?.let { content.findViewWithTag<View>(it) }
+            ?: content.findViewWithTag<View>(if (running) "lgcancel" else if (ip.isEmpty() && !compact) "lgip" else "lggo")
+        ui.restoringFocus()   // po překreslení bez „pulzu“ vybraného tlačítka
+        target?.requestFocus()
+    }
+
+    /** Stručný tvar? Jen spárovaná TV; po chybě nebo když TV / vývojářský režim nejde najít se příprava rozbalí natrvalo. */
+    private fun compact(paired: Boolean): Boolean {
+        if (!expanded && (error != null || (probed && LgSetup.step(probe) != LgSetup.Step.READY))) expanded = true
+        return paired && !expanded
+    }
+
+    private enum class Act { INSTALL, UPDATE, LAUNCH }
+
+    /** Co hlavní tlačítko udělá: v TV stejná/novější verze = jen spustit (nikdy nesnižovat), starší = aktualizovat. */
+    private fun act(): Act = when {
+        TvChoice.upToDate(this, cz.playlingo.core.TvType.LG) != null -> Act.LAUNCH
+        TvChoice.outdated(this, cz.playlingo.core.TvType.LG) != null -> Act.UPDATE
+        else -> Act.INSTALL
+    }
+
+    /** „LG OLED55B7 · 1.5.6 → 1.5.8“ / „LG OLED55B7 · 1.5.8 · aktuální“ / „LG · nová 1.5.8“. */
+    private fun statusLine(): String {
+        val lg = cz.playlingo.core.TvType.LG
+        val p = cz.playlingo.core.TvAnnounce.WEBOS
+        // model z živého ohlášení, jinak z uloženého „model · verze“ (nebo jen „verze“ / jen „model“)
+        val model = cz.playlingo.core.TvSender.lastSeen?.announce?.takeIf { it.platform == p }?.model
+            ?: Prefs.tvSeen(this, p)?.let { s ->
+                if (TvChoice.storedVersion(s) == null) s.takeIf { it.isNotBlank() }
+                else s.substringBeforeLast(" · ", "").takeIf { it.isNotBlank() }
+            }
+        val ver = TvChoice.outdated(this, lg)?.let { "${it.first} → ${it.second}" }
+            ?: TvChoice.upToDate(this, lg)?.let { t("lg_st_cur").replace("%s", it) }
+            ?: TvChoice.bundledVersion(this, lg)?.let { t("lg_st_new").replace("%s", it) }
+        return listOfNotNull("LG" + (model?.let { " $it" } ?: ""), ver).joinToString(" · ")
+    }
+
+    /** Hlavní tlačítko, průběh nahrávání, výsledek a chyba. */
+    private fun actions(paired: Boolean, compact: Boolean) {
         if (running) {
             add(ui.text(t("lg_p_" + (phase ?: LgPhase.PACKAGE).name.lowercase()), 17f, Theme.ACCENT, bold = true), 18)
             // nahrávání má pevné kroky (balíček → klíč → spojení → … → spuštění): pruh podle kroku
             val ph = phase ?: LgPhase.PACKAGE
             add(ui.progress((ph.ordinal + 1f) / LgPhase.values().size), 8)
             add(tagged(ui.button(t("lg_cancel")) { installer?.cancel() }, "lgcancel"), 10)
-        } else {
-            // aktuální verze v televizi: LgInstaller ji stejně jen spustí – tak to i říct
-            val current = TvChoice.upToDate(this, cz.playlingo.core.TvType.LG)
-            add(tagged(ui.button(t(if (current != null) "lg_launch" else "lg_go"), primary = true) { start(false) }, "lggo"), 18)
-            if (paired && !askPass) add(tagged(ui.button(t("lg_pass_other")) { askPass = true; render() }, "lgpassother"), 8)
-            resultText?.let { add(ui.text(it, 17f, if (resultOk) Theme.OK else Theme.WARN, bold = true), 14) }
-            error?.let { e ->
-                add(ui.text(t("lg_e_" + e.name.lowercase()) + (errorDetail?.let { "\n($it)" } ?: ""), 16f, Theme.BAD, bold = true), 14)
-                if (e == LgError.HOST_CHANGED) add(tagged(ui.button(t("lg_repair")) { start(true) }, "lgrepair"), 10)
-            }
+            return
         }
+        // aktuální verze v televizi: LgInstaller ji stejně jen spustí – tak to i říct; starší = Aktualizovat
+        val label = when (act()) { Act.LAUNCH -> "lg_launch"; Act.UPDATE -> "lg_update"; Act.INSTALL -> "lg_go" }
+        add(tagged(ui.button(t(label), primary = true) { start(false) }, "lggo"), 18)
+        if (!compact && paired && !askPass && error != LgError.HOST_CHANGED) add(tagged(ui.button(t("lg_pass_other")) { askPass = true; render() }, "lgpassother"), 8)
+        resultText?.let { add(ui.text(it, 17f, if (resultOk) Theme.OK else Theme.WARN, bold = true), 14) }
+        error?.let { e ->
+            add(ui.text(t("lg_e_" + e.name.lowercase()) + (errorDetail?.let { "\n($it)" } ?: ""), 16f, Theme.BAD, bold = true), 14)
+            if (e == LgError.HOST_CHANGED) add(tagged(ui.button(t("lg_repair")) { start(true) }, "lgrepair"), 10)
+        }
+    }
 
-        // vývojářský režim: kolik zbývá
-        add(ui.card().apply {
-            addView(ui.text(t("lg_dev_h"), 18f, Theme.ACCENT, bold = true))
-            val line = devLine(this@LgInstallActivity)
-            addView(ui.text(line.first, 17f, if (line.second) Theme.WARN else Theme.TEXT, bold = line.second), ui.lp(top = 8))
-            if (line.second) addView(ui.text(t("lg_dev_warn"), 15f, Theme.WARN), ui.lp(top = 6))
-            if (LgDevMode.failed) addView(ui.text(t("lg_dev_fail"), 14f, Theme.MUTED), ui.lp(top = 6))
-            addView(ui.text(t("lg_dev_note"), 14f, Theme.MUTED), ui.lp(top = 8))
-            if (LgDevMode.hasSession(this@LgInstallActivity) && !running)
-                addView(tagged(ui.button(t("lg_dev_check")) {
-                    LgDevMode.refresh(this@LgInstallActivity, true) { runOnUiThread { if (!isFinishing && !running) render(true) } }
-                }, "lgdev"), ui.lp(top = 12))
-        }, 22)
-
-        add(ui.card().apply {
-            addView(ui.text(t("lg_manual_h"), 18f, Theme.ACCENT, bold = true))
-            addView(ui.text(t("lg_manual"), 15f, Theme.MUTED), ui.lp(top = 8))
-        }, 14)
-
-        add(tagged(ui.button(t("wz_back")) { if (running) installer?.cancel(); finish() }, "lgback"), 22)
-
-        val target = focused?.let { content.findViewWithTag<View>(it) }
-            ?: content.findViewWithTag<View>(if (running) "lgcancel" else if (ip.isEmpty()) "lgip" else "lggo")
-        ui.restoringFocus()   // po překreslení bez „pulzu“ vybraného tlačítka
-        target?.requestFocus()
+    /** Vývojářský režim jedním řádkem („Vývojářský režim TV · Zbývá dní: 41“); OK = zjistit znovu. */
+    private fun devRow(): View = ui.vbox().apply {
+        val line = devLine(this@LgInstallActivity)
+        val known = LgDevMode.known(this@LgInstallActivity) != null
+        val value = line.first + if (LgDevMode.failed && known) " · " + t("lg_dev_fail") else ""
+        addView(tagged(ui.settingRow(t("lg_dev_h"), value, if (line.second) Theme.WARN else if (known) Theme.ACCENT else Theme.MUTED) {
+            if (!running && LgDevMode.hasSession(this@LgInstallActivity))
+                LgDevMode.refresh(this@LgInstallActivity, true) { runOnUiThread { if (!isFinishing && !running) render(true) } }
+        }, "lgdev"))
+        if (line.second) addView(ui.text(t("lg_dev_warn"), 15f, Theme.WARN, bold = true), ui.lp(top = 6))
     }
 
     private fun scan() {
         if (running) return
         if (checkSelfPermission(android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             @Suppress("DEPRECATION") startActivityForResult(Intent(this, LgScanActivity::class.java), REQ_SCAN)
-        } else {
-            requestPermissions(arrayOf(android.Manifest.permission.CAMERA), REQ_CAMERA)
+            return
         }
+        // před žádostí o kameru jednou věta, k čemu je (dřív šedý text pod tlačítkem)
+        val ask = { requestPermissions(arrayOf(android.Manifest.permission.CAMERA), REQ_CAMERA) }
+        try {
+            android.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(t("km_scan"))
+                .setMessage(t("km_why"))
+                .setPositiveButton(t("ok")) { d, _ -> d.dismiss(); ask() }
+                .setNegativeButton(t("lg_cancel"), null)
+                .show()
+        } catch (_: Exception) { ask() }
     }
 
     @Deprecated("Deprecated in Java")

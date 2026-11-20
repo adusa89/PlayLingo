@@ -149,8 +149,12 @@ object TvChoice {
         activity.startActivity(Intent(activity, cls))
     }
 
-    /** Popisek tlačítka k nahrání aplikace do televize daného typu. */
-    fun installLabel(c: Context, type: TvType): String = c.tx(if (type == TvType.LG) "lg_open" else "ss_open")
+    /** Popisek tlačítka k nahrání aplikace do televize daného typu; u LG se starší verzí „Aktualizovat…“. */
+    fun installLabel(c: Context, type: TvType): String = c.tx(when {
+        type != TvType.LG -> "ss_open"
+        outdated(c, type) != null -> "lg_open_upd"
+        else -> "lg_open"
+    })
 }
 
 /**

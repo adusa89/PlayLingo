@@ -32,6 +32,8 @@ object TvLook {
         textTop: Float, textBottom: Float, textLeft: Float, textRight: Float, original: String?,
         /** Okraj pruhu 0–3 (aplikace v TV od 1.5.4; starší ho přeskočí). */
         pad: Int = 1,
+        /** Pevné místo (levý horní roh ve zlomcích obrazu, text zarovnaný vlevo) – překlad menu hry vedle menu (TV od 1.5.9). */
+        box: Pair<Float, Float>? = null,
     ): String {
         val sb = StringBuilder("{")
         sb.append("\"pozadi\":").append(opacityPercent.coerceIn(0, 100))
@@ -40,8 +42,9 @@ object TvLook {
         if (bold) sb.append(",\"tucne\":true")
         sb.append(",\"okraj\":").append(pad.coerceIn(0, 3))
         // „tesne“ = těsně nad nalezený titulek; starší aplikace v televizi ho neznají a položí pruh jako „nad“
-        val pos = when { layout.cover -> "pres"; layout.isAuto && layout.hug -> "tesne"; layout.isAuto -> "nad"; else -> "stred" }
+        val pos = when { box != null -> "misto"; layout.cover -> "pres"; layout.isAuto && layout.hug -> "tesne"; layout.isAuto -> "nad"; else -> "stred" }
         sb.append(",\"poloha\":\"").append(pos).append('"')
+        if (box != null) sb.append(",\"misto\":[").append(f(box.first)).append(',').append(f(box.second)).append(']')
         if (pos == "stred") sb.append(",\"stred\":").append(f(layout.barCenterY))
         sb.append(",\"sirka\":").append(f(layout.barWidth))
         sb.append(",\"cteni\":[").append(f(layout.read.top)).append(',').append(f(layout.read.bottom)).append(']')

@@ -917,7 +917,7 @@ class MainActivity : Activity() {
                 TvChoice.needsInstall(this, type) -> row(Theme.WARN, t("h_tv_app_none").replace("%s", tvName), "htvapp", t("w_install"), { TvChoice.openInstall(this, type) })
                 // neznámá verze v TV (aplikace před 1.1.0) = bez čísla, ne „?“ (přání majitele, 0.97.30)
                 old != null -> row(Theme.WARN, "PlayLingo " + t("h_ver_tv").replace("%s", if (old.first == "?") tvName else "$tvName ${old.first}") +
-                    " · " + t("h_ver_new").replace("%s", old.second), "htvapp", t("w_install"), { TvChoice.openInstall(this, type) })
+                    " · " + t("h_ver_new").replace("%s", old.second), "htvapp", t(if (type == TvType.LG) "lg_update" else "w_install"), { TvChoice.openInstall(this, type) })
                 current != null -> row(Theme.OK, "PlayLingo " + t("h_ver_tv").replace("%s", "$tvName $current"), "htvapp")
                 bundled != null -> row(Theme.MUTED, "PlayLingo " + t("h_ver_tv").replace("%s", tvName), "htvapp")
             }
@@ -2291,6 +2291,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.35"
-    const val VERSION_CODE = 132
+    const val VERSION = "verze 0.97.36"
+    const val VERSION_CODE = 133
 }

@@ -363,7 +363,7 @@
     var W = 1920, H = 1080;
     var cteni, text, pres, maxW, w, h, top, stred, puvodni, x;
     s.left = ''; s.top = ''; s.bottom = ''; s.width = ''; s.maxWidth = ''; s.minHeight = ''; s.background = ''; s.borderRadius = '';
-    t.style.fontSize = ''; t.style.color = ''; t.style.fontWeight = ''; t.style.padding = ''; t.style.textShadow = '';
+    t.style.fontSize = ''; t.style.color = ''; t.style.fontWeight = ''; t.style.padding = ''; t.style.textShadow = ''; t.style.textAlign = '';
     if (!v || typeof v !== 'object' || p.style.display === 'none') { return; }
     if (typeof v.original === 'string' && v.original) {
       puvodni = document.createElement('div');
@@ -421,6 +421,13 @@
       top = Math.max(0, text[0] - 0.006 - h);
     } else {
       top = mimoCteni(cteni[0] - 0.006 - h, h, cteni);
+    }
+    // pevné místo (od 1.5.9): překlad menu hry hned vedle menu, řádky pod sebou zarovnané vlevo
+    if (v.poloha === 'misto' && v.misto && v.misto.length === 2) {
+      t.style.textAlign = 'left';
+      s.left = Math.round(Math.max(0, Math.min(W - w, cislo(v.misto[0], 0, 1, 0.3) * W))) + 'px';
+      s.top = Math.round(Math.max(0, Math.min(H - h * H, cislo(v.misto[1], 0, 1, 0.2) * H))) + 'px';
+      return;
     }
     stred = pres && text && text[3] > text[2] ? (text[2] + text[3]) / 2 : 0.5;
     s.left = Math.round(Math.max(0, Math.min(W - w, stred * W - w / 2))) + 'px';

@@ -223,6 +223,8 @@ class SubtitleOverlay(
         textLeft: Float = -1f, textRight: Float = -1f,
         /** Výška řádku originálu jako zlomek výšky obrazu (0 = neznámá). */
         lineHeight: Float = 0f,
+        /** Pevné místo (levý horní roh ve zlomcích obrazu, text vlevo) – překlad menu hry vedle menu (od 0.97.36). */
+        box: Pair<Float, Float>? = null,
     ) {
         isShown = true
         val segments = if (showPrompts) allSegments else allSegments.filter { !it.prompt }
@@ -234,7 +236,7 @@ class SubtitleOverlay(
             val tvOriginal = original?.let { o -> TextLogic.segments(o).joinToString("\n") { s ->
                 (s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + s.body } }
             val look = TvLook.json(layout, opacityPercent, TvLook.textPx(textSize, tvMatched), textColor, bold,
-                textTop, textBottom, textLeft, textRight, tvOriginal, barPad)
+                textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box)
             send(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors), look)
         }
         main.post {
@@ -250,12 +252,13 @@ class SubtitleOverlay(
             val pad = Prefs.BAR_PADS[barPad.coerceIn(0, 3)]
             tv.setPadding((em * 0.8f).toInt(), (em * pad).toInt(), (em * 0.8f).toInt(), (em * (pad + 0.04f)).toInt())
             tv.text = format(segments, original, colors)
+            tv.gravity = if (box != null) Gravity.START or Gravity.CENTER_VERTICAL else Gravity.CENTER
 
             val hasText = textTop >= 0f && textBottom > textTop
             val tTop = if (hasText) textTop else l.read.top
             val tBottom = if (hasText) textBottom else l.read.bottom
             // v režimu "přes titulky" pruh zakryje anglický text, ale nikdy není vyšší než čtvrtina obrazovky
-            tv.minHeight = if (l.cover) (l.coverHeight(tTop, tBottom) * screenH).toInt().coerceAtMost(screenH / 4) else 0
+            tv.minHeight = if (l.cover && box == null) (l.coverHeight(tTop, tBottom) * screenH).toInt().coerceAtMost(screenH / 4) else 0
             // Šířka pruhu podle textu: jen tak široký, aby se vešel překlad a zakryla se angličtina
             // (ne pruh přes celou obrazovku).
             val hasSpan = hasText && textLeft >= 0f && textRight > textLeft
@@ -281,6 +284,15 @@ class SubtitleOverlay(
                 else -> l.barTop(hf)
             }
             lp.width = width
+            if (box != null) {
+                // okno je zarovnané na střed: x = posun od středu, aby levý okraj pruhu byl na box.first
+                val limit = max(0, (screenW - width) / 2)
+                lp.x = ((box.first * screenW + width / 2f) - screenW / 2f).toInt().coerceIn(-limit, limit)
+                lp.y = (box.second * screenH).toInt().coerceIn(0, max(0, screenH - h))
+                tv.visibility = View.VISIBLE
+                try { wm.updateViewLayout(tv, lp) } catch (_: Exception) {}
+                return@post
+            }
             // vodorovně na střed anglického textu (okno je zarovnané na střed, x je posun od středu)
             val centerX = if (l.cover && hasSpan) (textLeft + textRight) / 2 else 0.5f
             val limit = max(0, (screenW - width) / 2)

@@ -22,7 +22,7 @@ internal val KAMERA_S: Map<String, Pair<String, String>> = mapOf(
     "km_use" to ("Použít" to "Použiť"),
     "km_again" to ("Číst znovu" to "Čítať znova"),
     "km_cam_fail" to ("Kameru se nepodařilo spustit. Opiš údaje ručně." to "Kameru sa nepodarilo spustiť. Opíš údaje ručne."),
-    "km_filled" to ("Načteno kamerou. Porovnej údaje s obrazovkou televize a stiskni Nahrát do televize." to "Načítané kamerou. Porovnaj údaje s obrazovkou televízora a stlač Nahrať do televízora."),
+    "km_filled" to ("Načteno kamerou. Porovnej údaje s obrazovkou televize." to "Načítané kamerou. Porovnaj údaje s obrazovkou televízora."),
 )
 
 internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
@@ -44,7 +44,7 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_use" to "Use",
         "km_again" to "Read again",
         "km_cam_fail" to "The camera could not be started. Type the details by hand.",
-        "km_filled" to "Read with the camera. Compare the details with the TV screen and press Install on TV.",
+        "km_filled" to "Read with the camera. Compare the details with the TV screen.",
     ),
     Lang.PL to mapOf(
         "km_scan_ps5ip" to "Odczytaj adres z ekranu PlayStation aparatem",
@@ -64,7 +64,7 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_use" to "Użyj",
         "km_again" to "Odczytaj ponownie",
         "km_cam_fail" to "Nie udało się uruchomić aparatu. Przepisz dane ręcznie.",
-        "km_filled" to "Odczytano aparatem. Porównaj dane z ekranem telewizora i naciśnij Zainstaluj na telewizorze.",
+        "km_filled" to "Odczytano aparatem. Porównaj dane z ekranem telewizora.",
     ),
     Lang.DE to mapOf(
         "km_scan_ps5ip" to "Adresse mit der Kamera vom PlayStation-Bildschirm ablesen",
@@ -84,7 +84,7 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_use" to "Übernehmen",
         "km_again" to "Erneut lesen",
         "km_cam_fail" to "Die Kamera ließ sich nicht starten. Gib die Angaben von Hand ein.",
-        "km_filled" to "Mit der Kamera gelesen. Vergleiche die Angaben mit dem Fernsehbildschirm und drücke Auf Fernseher installieren.",
+        "km_filled" to "Mit der Kamera gelesen. Vergleiche die Angaben mit dem Fernsehbildschirm.",
     ),
     Lang.HU to mapOf(
         "km_scan_ps5ip" to "Cím beolvasása a PlayStation képernyőjéről kamerával",
@@ -104,7 +104,7 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_use" to "Használat",
         "km_again" to "Újraolvasás",
         "km_cam_fail" to "A kamerát nem sikerült elindítani. Írd be kézzel az adatokat.",
-        "km_filled" to "Kamerával beolvasva. Vesd össze az adatokat a tévé képernyőjével, és nyomd meg a Feltöltés a tévére gombot.",
+        "km_filled" to "Kamerával beolvasva. Vesd össze az adatokat a tévé képernyőjével.",
     ),
     Lang.UK to mapOf(
         "km_scan_ps5ip" to "Зчитати адресу з екрана PlayStation камерою",
@@ -124,7 +124,7 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_use" to "Використати",
         "km_again" to "Зчитати знову",
         "km_cam_fail" to "Не вдалося запустити камеру. Введи дані вручну.",
-        "km_filled" to "Зчитано камерою. Порівняй дані з екраном телевізора й натисни «Встановити на телевізор».",
+        "km_filled" to "Зчитано камерою. Порівняй дані з екраном телевізора.",
     ),
     Lang.ES to mapOf(
         "km_scan_ps5ip" to "Leer la dirección de la pantalla de la PlayStation con la cámara",
@@ -144,7 +144,7 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_use" to "Usar",
         "km_again" to "Leer de nuevo",
         "km_cam_fail" to "No se pudo iniciar la cámara. Escribe los datos a mano.",
-        "km_filled" to "Leído con la cámara. Compara los datos con la pantalla del televisor y pulsa Instalar en la tele.",
+        "km_filled" to "Leído con la cámara. Compara los datos con la pantalla del televisor.",
     ),
     Lang.FR to mapOf(
         "km_scan_ps5ip" to "Lire l’adresse sur l’écran de la PlayStation avec l’appareil photo",
@@ -164,7 +164,7 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_use" to "Utiliser",
         "km_again" to "Relire",
         "km_cam_fail" to "Impossible de démarrer l’appareil photo. Saisis les données à la main.",
-        "km_filled" to "Lu avec l’appareil photo. Compare les données avec l’écran du téléviseur et appuie sur Installer sur la TV.",
+        "km_filled" to "Lu avec l’appareil photo. Compare les données avec l’écran du téléviseur.",
     ),
     Lang.IT to mapOf(
         "km_scan_ps5ip" to "Leggi l’indirizzo dallo schermo della PlayStation con la fotocamera",
@@ -184,6 +184,6 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_use" to "Usa",
         "km_again" to "Leggi di nuovo",
         "km_cam_fail" to "Impossibile avviare la fotocamera. Scrivi i dati a mano.",
-        "km_filled" to "Letto con la fotocamera. Confronta i dati con lo schermo del televisore e premi Installa sulla TV.",
+        "km_filled" to "Letto con la fotocamera. Confronta i dati con lo schermo del televisore.",
     ),
 )

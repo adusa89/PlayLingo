@@ -188,7 +188,7 @@ volí v průvodci (krok Televize) a mění v ⚙ Nastavení → Typ televize neb
 na stránce Domů: Android TV (pruh ukazuje toto zařízení, jako dřív), LG (webOS) nebo Samsung
 (Tizen). V telefonu jsou tlačítka „Použít telefon pro televizi LG“ a „… Samsung“. Souhrnný řádek
 na Domů ukazuje, jestli je aplikace z televize připojená; dokud se nikdy nepřipojila, je na Domů
-upozornění s tlačítkem „Nahrát do televize“. Nahrát (i aktualizovat) aplikaci v televizi jde
+upozornění s tlačítkem „Nahrát do TV“ (u starší verze „Aktualizovat v TV“). Nahrát (i aktualizovat) aplikaci v televizi jde
 kdykoli i z ⚙ Nastavení. Kdo měl dřív zapnuté „Posílat titulky do televize LG“, má typ LG.
 
 Pruh v televizi vypadá podle Titulků v PlayLingu (průhlednost, písmo, barva, poloha). Když je
@@ -211,14 +211,14 @@ za krokem a kroky, které pozná sám, odškrtne. Televizi v síti najde sám (a
    v ní tím účtem a zapni **Dev Mode Status**. Televize se restartuje.
 3. Znovu otevři Developer Mode a zapni **Key Server**. Uvidíš adresu televize (IP) a **Passphrase**.
 4. V PlayLingu zvol „Nahrát PlayLingo do televize LG“ (krok Televize v průvodci, ⚙ Nastavení,
-   upozornění na Domů, pomocník v telefonu nebo Instalace), opiš adresu a Passphrase a zvol „Nahrát do televize“. PlayLingo se v televizi
+   upozornění na Domů, pomocník v telefonu nebo Instalace), opiš adresu a Passphrase a zvol „Nahrát do TV“ (u starší verze „Aktualizovat v TV“). PlayLingo se v televizi
    nainstaluje a spustí. Příště už Passphrase není potřeba – stejným tlačítkem televizi
    aktualizuješ. Starší verzi přes novější nikdy nenahraje.
 
    **V telefonu nemusíš nic opisovat:** zvol „Načíst z obrazovky televize kamerou“, povol kameru
    a namiř telefon na obrazovku Developer Mode tak, aby byla vidět adresa i Passphrase. Jakmile je
    PlayLingo přečte dvakrát stejně, ukáže je; zvol „Použít“, porovnej údaje s televizí a zvol
-   „Nahrát do televize“. Pokud upozorní na podobné znaky (0/O, 1/I), zkontroluj hlavně je –
+   „Nahrát do TV“ (u starší verze „Aktualizovat v TV“). Pokud upozorní na podobné znaky (0/O, 1/I), zkontroluj hlavně je –
    špatná Passphrase nic nepokazí, televize ji jen odmítne. Kamera nic nefotí, neukládá ani
    neposílá. Na televizi a boxu (bez kamery) se tlačítko neukazuje.
 

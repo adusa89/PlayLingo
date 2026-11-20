@@ -10,6 +10,10 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
 - Commit popisuje, co se změnilo z pohledu hráče, ne jak je to naprogramované
   (např. „0.45: pokyny hry (Press to Start, Select…) nejsou repliky“).
 - Uživateli odpovídej česky a bez programátorského žargonu.
+- **Nezávislé úkoly souběžně (přání majitele, 20. 11. 2026):** když majitel napíše víc věcí, které na sobě nezávisí
+  (jiné soubory, jiná část aplikace), pusť je paralelně přes subagenty (nástroj Agent, každý s jasným zadáním
+  a seznamem souborů, na které smí sahat) a sám dělej jen jednu. Verzi, commit a vydání dělá jen hlavní sezení,
+  až jsou všechny části hotové a otestované.
 
 ## Kde co je
 
@@ -142,6 +146,12 @@ ukáže i druhý řádek (ukázková anglická věta `pn_ukazka_orig`, `nahled(t
 (zakrývá celou oblast anglických titulků), ostatní polohy jsou úzké. Služba otevírá port pro TV s opakováním
 (`TvSender.start(retry = true)`, každé 2 s) – po aktualizaci ho na okamžik držela obrazovka aplikace (`TvIdle`) a TV jen hledala.
 Neprůhlednost pruhu 0–100 % (`OPACITIES`: 0, 20, 40, 60, 80, 90, 100 na třech místech, od 0.97.30 / TV 1.5.7).
+
+**Menu hry od 0.97.36 (aplikace v TV 1.5.9):** překlad menu už není v pruhu dole – položky menu zleva **pod sebou hned vedle menu**,
+zarovnané vlevo (`MenuView.box` → `SubtitleOverlay.show(box=…)` a `TvLook` poloha `misto` + `misto:[x,y]`; starší TV ho položí jako
+pruh), lišta Nastavení v řádku pod anglickým popisem vpravo. Značka vybrané „» “ (šipku ▸ webOS neuměl – čtvereček). `MenuTracker`:
+položky se během otevřeného menu doplňují (čtečka občas některou vynechá), vybraná = ta jediná, která v čtení chybí (tmavé písmo na
+bílém pruhu se nepřečte), menu se zavře až po 2 čteních bez něj (neblikne); text se posílá jen při změně.
 
 **Menu hry od 0.97.34 (zatím GTA VI, `core/GameMenu.kt`, testy `GameMenuTest`):** základ podle snímků majitele (`zaznamy/hra-…`) –
 menu otevřené zleva (Map / Game / Store / Help / Photo Studio / Settings), horní lišta Nastavení (Control Scheme … Account) a nadpis
@@ -400,9 +410,17 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   zůstat `uses-feature` kamery s `required="false"` – jinak by povolení CAMERA vyloučilo
   televize a boxy bez kamery (ověř `aapt dump badging`: kamera jen `uses-feature-not-required`).
   Texty `km_…` v `core/I18nKamera.kt`. Na skutečné televizi LG čtení ověří jen uživatel.
-  Tlačítko skeneru je v `LgInstallActivity` nad políčky (dokud není adresa, je hlavní).
+  Tlačítko skeneru je v `LgInstallActivity` pod políčkem adresy (dokud není adresa, je hlavní); k čemu kamera
+  je (`km_why`), řekne dialog před žádostí o povolení.
+  **Dva tvary `LgInstallActivity`:** *stručný* (TV spárovaná v `LgVault` a známá adresa) = stav „LG OLED55B7 ·
+  1.5.6 → 1.5.8“, jedno velké tlačítko („Aktualizovat v TV“ při starší verzi podle `TvChoice.outdated`, „Nahrát
+  do TV“ poprvé, „Spustit PlayLingo v TV“ při aktuální), postup, řádek dnů vývojářského režimu a řádek „Jiná TV
+  nebo potíže…“; *příprava* (nespárovaná TV, chyba nahrání, nebo první zjištění neskončí krokem READY, tj. TV /
+  vývojářský režim nejde najít) = karta krok za krokem, adresa, kamera, Passphrase. Příprava se rozbalí
+  natrvalo (`expanded`), ať stránka neskáče. Delší vysvětlení (síť, prodloužení režimu, nahrání z počítače)
+  je v Nápovědě (`hc3_lg`), ne na stránce.
   **Pomocník krok za krokem** (od 0.91, `core/LgSetup.kt` s testy `LgSetupTest`, síť `LgFinder.kt`): karta
-  nahoře v `LgInstallActivity` se každé 3 s (jen když je vidět) sama odškrtává – televize v síti (SSDP
+  v přípravě `LgInstallActivity` se každé 3 s (jen když je vidět) sama odškrtává – televize v síti (SSDP
   `urn:lge-com:service:webos-second-screen:1`, záloha projití /24 na portech 3000/9922; nalezenou adresu
   sama vyplní), vývojářský režim (otevřený port 9922), Key Server (9991; u spárované televize se
   přeskočí), Passphrase (6 znaků 0–9/A–F). Rozepsaný je jen krok na řadě; u vývojářského režimu odkaz
