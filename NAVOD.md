@@ -138,6 +138,7 @@ Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪
 - **Adresa nebo kód z telefonu neplatí** – platí jen pár minut; přihlas se v telefonu znovu a vlož novou adresu.
 - **PlayLingo v telefonu nepustí přihlášení Sony** – zvol v něm „Nejde to? Přihlásit se v prohlížeči“ a prázdnou stránku „redirect“ pak nasdílej do PlayLinga (Sdílet → PlayLingo).
 - **Nejde spárovat** – číslo z PS5 platí jen pár minut, vyžádej si nové. Zkontroluj adresu a účet.
+- **Spárováno, ale po Spustit se nic nepřipojí** – řádek „PS5 · spárováno“ znamená jen, že spárování proběhlo; spojení vzniká až po Spustit. Když ho PS5 odmítne, Domů napíše proč (nepřijatý účet – přepni se na PS5 na ten účet, ať se přihlásí do PSN, nebo spáruj znovu; Remote Play spadl – PS5 úplně vypni a zapni; PS5 nepřijímá spojení – zkontroluj Povolit Remote Play a klidový režim). Řádky „zdroj: … video …“ dole na obrazovce ukazuje Diagnostický režim (⚙ Nastavení → Experimentální → Ladění a hlášení), vypnout jde tamtéž.
 - **„PlayStation neodpovídá“** – je konzole zapnutá (ne vypnutá ze zásuvky) a ve stejné síti?
 - **Ve hře svítí „Aplikace Remote Play je připojena“** – na PS5 zapni Nastavení → Systém → Remote Play → Skrýt stav připojení Remote Play (pod herním i druhým uživatelem), viz bod 3.
 - **Účet na PS5 má přihlašovací kód** – PlayStation ho při spojení odmítne a na stránce PlayStation se objeví políčko pro kód (4 číslice); zadej ho tam.

@@ -63,6 +63,9 @@ class Ps5Link(
         /** Remote Play na PS5 teď používá jiné zařízení (stejný účet připojený jinde) – pro hlášku na Domů. */
         @Volatile var otherDevice = false
             private set
+        /** Proč PS5 odmítla spojení ještě před obrazem (ze záznamu knihovny, [Ps5.refusal]); null = neodmítla. */
+        @Volatile var refusal: Ps5.Refusal? = null
+            private set
         private val endings = ArrayDeque<String>()
 
         /** Posledních pár ukončení ze strany PlayStationu (čas, důvod, jak dlouho spojení vydrželo) pro hlášení. */
@@ -106,6 +109,7 @@ class Ps5Link(
         stopped = false
         endedByConsole = null
         otherDevice = false
+        refusal = null
         asleep = false
         exec.execute { connectWhenAwake() }
     }
@@ -176,6 +180,7 @@ class Ps5Link(
                 reason = null
                 endedByConsole = null
                 otherDevice = false
+                refusal = null
                 needsLoginPin = false
                 connectedAt = SystemClock.uptimeMillis()
                 sessionConnectedAt = connectedAt
@@ -198,6 +203,25 @@ class Ps5Link(
                 if (Ps5.otherDevice(e.reason.value, e.reasonString)) {
                     otherDevice = true
                     log("quit: Remote Play převzalo jiné zařízení (stejný účet připojený jinde)")
+                }
+                // PS5 odmítla spojení ještě před obrazem: skutečný důvod je jen v záznamu knihovny – vytáhnout ho
+                // do záznamu aplikace a na Domů (jen při neúspěchu, čte se konec souboru, žádná práce navíc za běhu)
+                if (heldS < 0) {
+                    val tail = try {
+                        logFile(ctx).takeIf { it.exists() }?.let { f ->
+                            java.io.RandomAccessFile(f, "r").use { raf ->
+                                val from = maxOf(0L, raf.length() - 6000)
+                                raf.seek(from)
+                                val b = ByteArray((raf.length() - from).toInt()); raf.readFully(b); String(b, Charsets.UTF_8)
+                            }
+                        }
+                    } catch (_: Exception) { null } ?: ""
+                    refusal = Ps5.refusal(tail)
+                    // řádky knihovny k odmítnutí (bez klíčů – registrační klíč se do záznamu nepíše celý, i tak přes Redact)
+                    tail.lines().filter { l -> listOf("Application Reason", "Session request", "session request", "RP-Version", "Nonce", "Regist")
+                        .any { it in l } && "RP-Registkey" !in l }.takeLast(4)
+                        .forEach { log("refused: " + it.trim().take(160)) }
+                    log("refusal ${refusal ?: "?"} (host ${host.ip}, spárováno ${host.name})")
                 }
                 if (!stopped) {
                     endedByConsole = reason

@@ -789,6 +789,12 @@ jen podtitul „Spárování · 3 z 6“, ať nejsou dva pruhy nad sebou) a pomo
   telefon na 2,4 GHz se zhasnutým displejem). Výpadek dat se zapíše `PS5|stall`. Služba drží
   `PARTIAL_WAKE_LOCK` a Wi-Fi zámky (i `LOW_LATENCY`), jinak telefon se zhasnutým displejem uspal
   procesor. PERF má navíc paměť aplikace a Wi-Fi (MHz/dBm), `NET|Wi-Fi přešla na …` zapíše změnu pásma.
+- **Odmítnutí spojení před obrazem (od 0.97.31)**: knihovna hlásí jen „Unknown Session Request Error“; skutečný důvod
+  je v jejím záznamu `ps5-spojeni.txt`. `Ps5Link` při ukončení bez spojení přečte konec souboru, `Ps5.refusal` (testy
+  `Ps5Test.refusalFromLibraryLog`) z něj pozná ACCOUNT (Invalid PSN ID / Regist failed), IN_USE, CRASH, VERSION, UNREACHABLE
+  (connect failed) nebo UNKNOWN; řádky knihovny jdou do záznamu jako `PS5|refused: …` a `PS5|refusal …`. Domů pod řádkem
+  konzole ukáže `ps5_ref_<důvod>` (u účtu s tlačítkem Spárovat znovu), UNKNOWN dál anglický text `ls_ended`. Řádek
+  konzole před Spustit je „spárováno“ (`h_con_ready`, dřív „připraveno“ – mátlo, že je spojeno). Spojení se tím nemění.
 - **Převzetí Remote Play jiným zařízením** (`Ps5.otherDevice`: „already in use“, nebo odpojení s takovým
   důvodem) → `Ps5Link.otherDevice`, Domů `ls_other_device`, v záznamu „Remote Play převzalo jiné zařízení“.
 - **Opakované připojování ruší ovladače u konzole.** Proto se pokusy po čtyřech krátkých

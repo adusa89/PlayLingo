@@ -198,4 +198,19 @@ class NetworkProtectionTest {
         assertTrue(Ps5.allowHighRes(Ps5.Net.UNKNOWN))
         assertFalse(Ps5.allowHighRes(Ps5.Net.WIFI_24))
     }
+
+    @Test fun refusalFromLibraryLog() {
+        // řádky, jak je píše chiaki-ng do ps5-spojeni.txt
+        val start = "[I] Starting session request for PS5\n[I] Session request connecting to 192.168.1.20:9295\n"
+        assertEquals(Ps5.Refusal.ACCOUNT, Ps5.refusal(start + "[E] Reported Application Reason: 0x80108b02 (Invalid PSN ID)"))
+        assertEquals(Ps5.Refusal.IN_USE, Ps5.refusal(start + "[E] Reported Application Reason: 0x80108b10 (Remote is already in use)"))
+        assertEquals(Ps5.Refusal.CRASH, Ps5.refusal(start + "[E] Reported Application Reason: 0x80108b15 (Remote Play on Console crashed)"))
+        assertEquals(Ps5.Refusal.VERSION, Ps5.refusal(start + "[E] Server RP-Version is unknown"))
+        assertEquals(Ps5.Refusal.UNREACHABLE, Ps5.refusal(start + "[E] Session request connect failed: Connection Refused"))
+        assertEquals(Ps5.Refusal.UNKNOWN, Ps5.refusal(start + "[E] Failed to receive session request response"))
+        assertNull(Ps5.refusal("[I] nic zajímavého"))
+        // počítá se jen poslední pokus: starší odmítnutí účtu nad novým pokusem nehraje roli
+        assertEquals(Ps5.Refusal.CRASH, Ps5.refusal(start + "[E] Reported Application Reason: 0x80108b02 (Invalid PSN ID)\n" +
+            start + "[E] Reported Application Reason: 0x80108b15 (Remote Play on Console crashed)"))
+    }
 }

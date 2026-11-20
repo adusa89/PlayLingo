@@ -205,6 +205,31 @@ object Ps5 {
         return reason == QUIT_REMOTE_DISCONNECTED && ("in use" in r || "another" in r || "other device" in r)
     }
 
+    /**
+     * Proč PS5 odmítla spojení hned na začátku (před obrazem). Knihovna to hlásí jen jako „Unknown Session
+     * Request Error“; skutečný důvod je v jejím záznamu (`ps5-spojeni.txt`), řádek „Reported Application
+     * Reason: 0x… (…)“ nebo chyba připojení. Od 0.97.31 – Domů pak místo anglické hlášky řekne, co udělat.
+     */
+    enum class Refusal { ACCOUNT, IN_USE, CRASH, VERSION, UNREACHABLE, UNKNOWN }
+
+    /** Z konce záznamu knihovny (posledních pár řádků) → důvod odmítnutí; null = v záznamu není. */
+    fun refusal(logTail: String): Refusal? {
+        val lines = logTail.lines().takeLast(60)
+        // poslední pokus: od posledního „Session request“/připojování dál
+        val start = lines.indexOfLast { "Session request" in it || "Connecting to" in it || "Starting session" in it }
+        val tail = (if (start >= 0) lines.drop(start) else lines).joinToString("\n").lowercase()
+        return when {
+            "invalid psn id" in tail || "regist failed" in tail -> Refusal.ACCOUNT
+            "already in use" in tail -> Refusal.IN_USE
+            "crash" in tail -> Refusal.CRASH
+            "rp-version" in tail || "rp version" in tail -> Refusal.VERSION
+            "connect failed" in tail || "connection refused" in tail -> Refusal.UNREACHABLE
+            "reported application reason" in tail || "failed to receive session request response" in tail ||
+                "failed to parse session request response" in tail || "nonce invalid" in tail -> Refusal.UNKNOWN
+            else -> null
+        }
+    }
+
     /** Výsledek hlídání obrazu za spojení ([watchdog]). */
     enum class Watchdog { OK, DECODER, NETWORK }
 

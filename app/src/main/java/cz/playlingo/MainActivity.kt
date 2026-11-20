@@ -840,7 +840,13 @@ class MainActivity : Activity() {
                 ls.stage == cz.playlingo.core.LinkStatus.Stage.WAIT_IMAGE) card.addView(ui.progress(null), ui.lp(h = ui.dp(8), top = 2))
             // spojení ukončil sám PlayStation: jiné zařízení se stejným účtem, nebo jeho vlastní důvod
             if (!ls.console && console == Console.PLAYSTATION) {
-                if (Ps5Link.otherDevice) card.addView(ui.text(t("ls_other_device"), 14f, Theme.WARN), ui.lp(top = 2))
+                val refusal = Ps5Link.refusal
+                if (Ps5Link.otherDevice || refusal == Ps5.Refusal.IN_USE) card.addView(ui.text(t("ls_other_device"), 14f, Theme.WARN), ui.lp(top = 2))
+                // PS5 odmítla spojení ještě před obrazem: místo anglické hlášky knihovny co s tím (od 0.97.31)
+                else if (refusal != null && refusal != Ps5.Refusal.UNKNOWN) {
+                    card.addView(ui.text(t("ps5_ref_" + refusal.name.lowercase()).replace("%s", accName()), 14f, Theme.WARN), ui.lp(top = 2))
+                    if (refusal == Ps5.Refusal.ACCOUNT) card.addView(tagged(ui.smallButton(t("ps5_ref_repair")) { section = Section.PS5; render() }, "hrepair"), ui.lp(top = 6))
+                }
                 else Ps5Link.endedByConsole?.let { why -> card.addView(ui.text(t("ls_ended").replace("%s", why), 14f, Theme.WARN), ui.lp(top = 2)) }
             }
         } else {
@@ -2277,6 +2283,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.30"
-    const val VERSION_CODE = 127
+    const val VERSION = "verze 0.97.31"
+    const val VERSION_CODE = 128
 }
