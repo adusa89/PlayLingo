@@ -486,13 +486,25 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
   Příprava PS5 (druhý účet, Remote Play, skrytí hlášky, probouzení ze sítě, čtvereček na `pomoc/ps5.md`)
   je od 0.93 až v prvním kroku párování (Připojení konzole), ne u volby konzole – tam byla moc brzo.
-- **Domů**: velký stav + Spustit/Zastavit (při běžící ukázce Ukázková hra), jeden souhrnný řádek
-  „PS5 (jméno) → LG model · připojeno“ (OK = malá nabídka Konzole / Typ televize) a karta upozornění
-  jen na to, co chybí (povolení pruhu, model, spárování, aplikace v televizi, vývojářský režim LG,
-  zkušební doba ≤ 3 dny). U LG/Samsungu je pod souhrnným řádkem tlačítko nahrání/aktualizace aplikace do
-  zvolené televize (`htvinstall`), jakmile se televize jednou ohlásila (do té doby je v upozornění).
-  Jednorázové volby na Domů nepatří.
-- **Nápověda** ukazuje jen část pro zvolený typ televize (LG, Samsung, nebo povolení přes počítač u Android TV).
+- **Domů** (od 0.97): velký stav + Spustit/Zastavit a pod nadpisem přehled v bodech (`statusRows`, tečka
+  zelená/oranžová/šedá; řádek, který potřebuje zásah, má pod sebou tlačítko): konzole + obraz (`LinkStatus`,
+  při ukončení ze strany PS5 důvod, při převzetí jiným zařízením `ls_other_device`), televize (Android TV =
+  povolení pruhu; LG/Samsung = `TvChoice.short`, nenahraná / zastaralá aplikace s tlačítkem nahrání – jinak
+  žádné tlačítko), síť (`h_net_…`), rychlost čtení, jazyk + offline/DeepL (chybějící balíček s tlačítkem),
+  na telefonu šetření baterie (`h_battery`, dotaz `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) a verze (i v televizi).
+  Řádek konzole/televize OK = změna. Samostatný souhrnný řádek ani návody v textu tam už nejsou. Náhled obrazu
+  je jen na stránce Konzole (s popiskem `pv_stale`, když obraz nechodí). „Zpět do hry (HDMI)“ jen na zařízení
+  v televizi (`Prefs.isTv`); telefon jako čtečka má jen Pozastavit a Zastavit. Jednorázové volby na Domů nepatří.
+- **Nápověda** (od 0.97, `help()`, texty `core/I18nHelp.kt`): nahoře „Nápověda pro“ (typ televize, výchozí
+  zvolený), pod tím kapitoly 1–8 jako `settingRow` (OK rozbalí, `helpOpen`): instalace, příprava konzole (druhý
+  účet, Remote Play, `rp_hide`, `ps5_rest` / Xbox), televize (povolení pruhu / pomocník LG / průvodce Samsung),
+  jazyk a DeepL, spárování, hraní, když něco nejde (+ hlášení), volby v Nastavení. ✔/○ podle skutečného stavu
+  jen pro zvolenou televizi. Stránky s návodem (`HelpLinks`): telefon tlačítko, televize čtvereček.
+- **Nahrání do televize** se nabízí jen, když tam aplikace ještě nikdy nebyla nebo je starší (`TvChoice.upToDate`,
+  `outdated`): Domů v přehledu, krok Televize v průvodci jinak ukáže „✔ PlayLingo je v televizi (verze X)“;
+  ⚙ Nastavení → Obecné ho nabízí vždy. Pomocník LG u aktuální verze píše „V televizi je aktuální…“ a tlačítko
+  „Spustit PlayLingo v televizi“; u spárované televize je políčko Passphrase schované pod tlačítkem
+  „Zadat Passphrase znovu“.
 - **Nastavení (⚙)** má záložky (`SettingsTab`) a ukazuje jen obsah vybrané: **Obecné** (konzole, typ
   televize + nahrání, jazyk aplikace, zařízení, zkušební verze; povolení pruhu jen u Android TV),
   **Čtení a překlad** (kvalita čtení, překlad, hra, slovník, statistika, historie), **Demo režim** (vše
@@ -557,6 +569,14 @@ a pomocník LG (5 kroků). Nový postup o víc krocích = přidej `ui.steps`, no
   vypne ovladač a zhasne obraz. Průvodce proto vede na druhý účet.
 - **Obraz 1080p jen pro televize s 3 GB paměti a víc** (`core/Perf.kt`). S 1080p na slabších
   televizích se od 0.29 odpojovaly ovladače; od 0.32 berou zase 720p.
+- **Hlídání obrazu za spojení** (`Ps5.watchdog`, testy `Ps5WatchdogTest`): spojení se naváže znovu po 12 s
+  jen tehdy, když data z konzole chodí, ale nic se nedekóduje; když nechodí nic (Wi-Fi zakolísala), čeká
+  se 45 s – do 0.96 se rušilo už po 12 s a PS5 pak hráči hlásila „ovladač odpojen / účet připojen“ (0.95,
+  telefon na 2,4 GHz se zhasnutým displejem). Výpadek dat se zapíše `PS5|stall`. Služba drží
+  `PARTIAL_WAKE_LOCK` a Wi-Fi zámky (i `LOW_LATENCY`), jinak telefon se zhasnutým displejem uspal
+  procesor. PERF má navíc paměť aplikace a Wi-Fi (MHz/dBm), `NET|Wi-Fi přešla na …` zapíše změnu pásma.
+- **Převzetí Remote Play jiným zařízením** (`Ps5.otherDevice`: „already in use“, nebo odpojení s takovým
+  důvodem) → `Ps5Link.otherDevice`, Domů `ls_other_device`, v záznamu „Remote Play převzalo jiné zařízení“.
 - **Opakované připojování ruší ovladače u konzole.** Proto se pokusy po čtyřech krátkých
   spojeních zastaví (0.32) a další pokus se odkládá aspoň o 15 s (0.37).
 - **Zvětšený výřez pro drobné titulky nekresli do jedné znovupoužívané bitmapy.** Ve 0.53 se

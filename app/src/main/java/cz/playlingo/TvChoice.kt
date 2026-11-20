@@ -91,6 +91,19 @@ object TvChoice {
     }
 
     /**
+     * Verze PlayLinga v televizi, když je stejná nebo novější než přibalená (= není co nahrávat);
+     * null = televize se neohlásila, nebo je v ní starší verze.
+     */
+    fun upToDate(c: Context, type: TvType = Prefs.tvType(c)): String? {
+        val p = type.platform ?: return null
+        val bundled = bundledVersion(c, type) ?: return null
+        val live = TvSender.lastSeen?.announce?.takeIf { it.platform == p }
+        val seen = live ?: Prefs.tvSeen(c, p)?.substringAfterLast(" · ")
+            ?.let { cz.playlingo.core.TvAnnounce(p, it, null, null, null) } ?: return null
+        return if (cz.playlingo.core.TvCheck.of(seen, p, bundled).ok) seen.version else null
+    }
+
+    /**
      * Televize do souhrnného řádku na Domů: „Android TV“, nebo u LG/Samsungu značka, model (když se
      * televize už ohlásila) a stav spojení („LG OLED55B7 · připojeno“). Druhá hodnota = připojeno.
      */

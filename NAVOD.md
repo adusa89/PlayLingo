@@ -61,9 +61,16 @@ Každou volbu jde později změnit v **Nastavení** – ozubené kolo (⚙), kte
 Tam je i povolení, jazyk aplikace, zkušební verze, hlášení chyby a Demo režim. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:
 PlayStation nebo Xbox), Titulky a Nápověda.
 
-Stránka **Domů** ukazuje jen to podstatné: stav překladu, tlačítka Spustit / Zastavit, jeden souhrnný řádek (např. „PS5 (Obývák) → LG OLED55B7 · připojeno“; OK na něm
-změní konzoli nebo televizi) a upozornění jen tehdy, když něco chybí (povolení, jazykový model,
-spárování, aplikace v televizi, končící vývojářský režim LG).
+Stránka **Domů** ukazuje jen to podstatné: stav překladu, tlačítka Spustit / Zastavit a pod stavem přehled
+v bodech – zelená tečka jede, oranžová potřebuje pozornost (a má rovnou tlačítko), šedá je jen informace:
+konzole a jestli přichází obraz, televize (u Android TV povolení pruhu), síť tohoto zařízení, rychlost čtení,
+jazyk a způsob překladu, u telefonu šetření baterie a verze aplikace (i v televizi). OK na řádku konzole nebo
+televize je změní. Náhled obrazu z konzole je na stránce Konzole.
+
+**Nápověda** je postup od začátku v kapitolách (Instalace, Příprava konzole, Televize, Jazyk a kvalita
+překladu, Spárování, Hraní, Když něco nejde, Volby v Nastavení). Kapitola se rozbalí po OK a ukazuje
+jen to, co platí pro tvou televizi a konzoli; ✔ znamená hotovo. Nahoře jde přepnout „Nápověda pro“
+jinou televizi.
 
 ## 4. Spárování PlayStationu (jen jednou)
 
@@ -134,6 +141,13 @@ a přes ně pruh s překladem. Tím si ověříš, že pruh a překlad v televiz
 - **Účet na PS5 má přihlašovací kód** – PlayStation ho při spojení odmítne a na stránce PlayStation se objeví políčko pro kód (4 číslice); zadej ho tam.
 - **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.5, nebo ⚙ Nastavení → Obecné → Povolení) a vyzkoušej bod 6.
 - **Nic se nečte** – zapni ⚙ Nastavení → Ladění a hlášení → Diagnostický režim; uvidíš, co aplikace čte.
+- **Na PS5 pořád naskakuje „ovladač odpojen / účet připojen“** – s druhým účtem se připojuje i jiné zařízení
+  (třeba aplikace PS Remote Play) a PS5 pak spojení přehazuje. Domů to od 0.97 napíše. Druhý účet ať slouží jen PlayLingu.
+- **Telefon jako čtečka: spojení vypadává, když telefon zhasne displej** – na Domů povol „Běh na pozadí“
+  (jinak ho šetření baterie uspí). Od 0.97 drží PlayLingo telefon při překladu vzhůru sám.
+- **Spojení vypadává na Wi-Fi 2,4 GHz** – ve stejném pásmu vysílají ovladače konzole. Připoj konzoli kabelem
+  nebo dej zařízení s PlayLingem na 5 GHz. Když telefon sám přechází na 2,4 GHz, je to router (stejný název sítě
+  pro obě pásma a slabší 5 GHz signál); pomůže samostatný název sítě pro 5 GHz.
 - **Překlad běží, ale titulky nenaskakují** – podívej se na stránku Domů na řádek pod stavem překladu. Ukazuje, jak daleko to došlo: jestli se aplikace s PlayStationem spojila a jestli z něj opravdu přichází obraz. Když hlásí „Spojeno s PlayStationem, ale … nepřišel žádný obraz“, aplikace spojení po chvíli sama obnoví; když to trvá dlouho, překlad zastav, zkontroluj Wi-Fi a spusť ho znovu.
 - **Aplikace minule spadla** – po dalším spuštění to napíše na stránce Domů. Kdyby se to opakovalo, pošli hlášení (další bod).
 - **Hlášení chyby**: Nápověda (nebo ⚙ Nastavení → Ladění a hlášení) → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení. Tlačítkem **Kopírovat** ho dáš do schránky, **Sdílet** ho pošle jako soubor (e-mailem, do chatu…). Na televizi nejjednodušší: tlačítko **Do telefonu** ukáže čtvereček – naskenuj ho telefonem (i iPhonem) na stejné Wi-Fi, stáhni hlášení a pošli ho autorovi chatem nebo e-mailem. Máš-li televizi LG nebo Samsung, je v hlášení i oddíl Televize – co se dělo v aplikaci v televizi.

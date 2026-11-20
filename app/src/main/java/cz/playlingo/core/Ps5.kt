@@ -189,6 +189,47 @@ object Ps5 {
     /** Po spojení, které se rozpadlo, se s dalším pokusem čeká aspoň takhle dlouho. */
     const val AFTER_DROP_MS = 15_000L
 
+    /** Kód důvodu ukončení z chiaki-ng (pořadí ChiakiQuitReason): Remote Play na konzoli už někdo používá. */
+    const val QUIT_RP_IN_USE = 4
+    /** Konzole spojení ukončila (odpojila nás) – mimo jiné, když se stejným účtem připojí jiné zařízení. */
+    const val QUIT_REMOTE_DISCONNECTED = 11
+
+    /**
+     * Ukončil spojení PlayStation proto, že Remote Play převzalo jiné zařízení (např. aplikace PS Remote Play
+     * přihlášená stejným druhým účtem)? Jisté je to u „already in use“; u odpojení ze strany konzole jen,
+     * když to konzole napíše v důvodu.
+     */
+    fun otherDevice(reason: Int, reasonString: String?): Boolean {
+        if (reason == QUIT_RP_IN_USE) return true
+        val r = reasonString?.lowercase() ?: return false
+        return reason == QUIT_REMOTE_DISCONNECTED && ("in use" in r || "another" in r || "other device" in r)
+    }
+
+    /** Výsledek hlídání obrazu za spojení ([watchdog]). */
+    enum class Watchdog { OK, DECODER, NETWORK }
+
+    /** Od kdy se výpadek dat z konzole zapíše do záznamu. */
+    const val NET_STALL_LOG_MS = 8_000L
+    /** Data z konzole chodí, ale nic se nedekóduje: po této době se spojení naváže znovu (dekodér se zasekl). */
+    const val DECODER_STALL_MS = 12_000L
+    /**
+     * Z konzole nepřichází nic (Wi-Fi zakolísala, telefon na 2,4 GHz…): spojení se nechá být, většinou se
+     * samo vzpamatuje za pár sekund. Každé nové spojení PS5 ohlásí („ovladač odpojen / účet připojen“)
+     * a hráči to vadí víc než chvilka bez titulků. Do 0.96 se rušilo už po 12 s.
+     */
+    const val NETWORK_STALL_MS = 45_000L
+
+    /**
+     * Má se spojení navázat znovu? [connectedMs] jak dlouho je spojeno, [noFramesMs] bez dekódovaného
+     * snímku, [noInputMs] bez jakýchkoli dat z konzole.
+     */
+    fun watchdog(connectedMs: Long, noFramesMs: Long, noInputMs: Long): Watchdog = when {
+        connectedMs <= DECODER_STALL_MS -> Watchdog.OK
+        noInputMs >= NETWORK_STALL_MS -> Watchdog.NETWORK
+        noFramesMs >= DECODER_STALL_MS && noInputMs < NET_STALL_LOG_MS -> Watchdog.DECODER
+        else -> Watchdog.OK
+    }
+
     /** Spojení, které vydrží aspoň takhle dlouho, se bere jako v pořádku. */
     const val STABLE_SESSION_MS = 60_000L
 

@@ -154,6 +154,14 @@ class TranslatorService : Service() {
     private var feeder: DemoFeeder? = null
     /** Drží Wi-Fi v plném výkonu, ať video z konzole nevypadává kvůli úspornému režimu. */
     private var wifiLock: android.net.wifi.WifiManager.WifiLock? = null
+    /** Druhý zámek Wi-Fi s nejnižší odezvou (Android 10+, platí jen při rozsvíceném displeji). */
+    private var lowLatencyLock: android.net.wifi.WifiManager.WifiLock? = null
+    /**
+     * Procesor vzhůru i při zhasnutém displeji. Telefon jako čtečka pro LG/Samsung displej zhasíná;
+     * bez zámku ho systém uspal a obraz z PS5 přestal chodit → aplikace spojení rušila a navazovala
+     * znovu (0.95: „klávesnice odpojena / účet připojen“ dokola). Android TV box displej nezhasíná.
+     */
+    private var wakeLock: android.os.PowerManager.WakeLock? = null
     @Volatile private var overlay: SubtitleOverlay? = null
     /** Posílání titulků do televize LG; null = vypnuté (výchozí). */
     @Volatile private var tv: TvSender? = null
@@ -276,7 +284,16 @@ class TranslatorService : Service() {
             @Suppress("DEPRECATION")
             wifiLock = (applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager)
                 .createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "TestPreklad").also { it.acquire() }
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                lowLatencyLock = (applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager)
+                    .createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "TestPreklad:odezva").also { it.acquire() }
+            }
         } catch (e: Throwable) { Log.w(TAG, "wifi lock", e) }
+        try {
+            wakeLock = (getSystemService(Context.POWER_SERVICE) as android.os.PowerManager)
+                .newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "PlayLingo:preklad")
+                .also { it.setReferenceCounted(false); it.acquire() }
+        } catch (e: Throwable) { Log.w(TAG, "wake lock", e) }
         beginRunning()
         startSource(wantDemo)
         return START_NOT_STICKY
@@ -515,13 +532,18 @@ class TranslatorService : Service() {
         val r = reader ?: return
         if (now - lastVideoLog > 5000) {
             lastVideoLog = now
+            checkWifiBand()
             if (ticksLogged < 400) tp("VIDEO|fed=${r.fed}|decoded=${r.decoded}|${r.frameWidth}x${r.frameHeight}|dec=${r.decoderName}|err=${r.lastError}" +
                 (feeder?.let { "|demo sent=${it.sent} raw=${it.raw} err=${it.error}" } ?: ""))
         }
         // jednou za půl minuty souhrn rychlosti (pro hlášení chyby)
         if (now - lastPerfLog > 30_000 && ocrRuns > 0) {
             lastPerfLog = now
-            tp("PERF|čtení=${ocrRuns}|průměr=${ocrMsSum / ocrRuns}ms|poslední=${lastOcrMs}ms|titulků=${shows}|video=${r.frameWidth}x${r.frameHeight}|oblast=${(layout.read.height * 100).toInt()}%")
+            // paměť aplikace: kdyby rostla, je to v hlášení vidět (0.95: telefon hlásil nedostatek paměti a čtení se zpomalovalo)
+            val rt = Runtime.getRuntime()
+            val heapMb = (rt.totalMemory() - rt.freeMemory()) / 1_048_576
+            val nativeMb = android.os.Debug.getNativeHeapAllocatedSize() / 1_048_576
+            tp("PERF|čtení=${ocrRuns}|průměr=${ocrMsSum / ocrRuns}ms|poslední=${lastOcrMs}ms|titulků=${shows}|video=${r.frameWidth}x${r.frameHeight}|oblast=${(layout.read.height * 100).toInt()}%|paměť=${heapMb}+${nativeMb}MB" + (wifiNow()?.let { (f, rssi) -> "|wifi=${f}MHz/${rssi}dBm" } ?: ""))
         }
         if (demo) return
         val st = linkState
@@ -539,10 +561,50 @@ class TranslatorService : Service() {
             lastImageStage = img.stage
         }
         val l = link ?: return
-        if (st == Ps5.Link.CONNECTED && l.connectedForMs > 12_000 && now - r.lastFrameAt > 12_000) {
-            l.restart("no video")
+        // kdy naposledy přišla z konzole nějaká data (počet přijatých snímků se změnil)
+        if (r.fed != lastFedSeen) { lastFedSeen = r.fed; lastFedAt = now }
+        if (st != Ps5.Link.CONNECTED) { lastFedAt = now; stallLogged = false; return }
+        val noFrames = now - r.lastFrameAt
+        // Xbox posílá hotové snímky bez fed – dekódovaný snímek je taky důkaz, že data chodí
+        val noInput = now - maxOf(lastFedAt, r.lastFrameAt)
+        if (noInput > Ps5.NET_STALL_LOG_MS && !stallLogged) {
+            stallLogged = true
+            tp("PS5|stall: z konzole nic nepřichází ${noInput / 1000} s, síť=${NetInfo.kind(this)}")
+        } else if (noInput < Ps5.NET_STALL_LOG_MS && stallLogged) {
+            stallLogged = false
+            tp("PS5|stall: data zase chodí")
+        }
+        when (Ps5.watchdog(l.connectedForMs, noFrames, noInput)) {
+            Ps5.Watchdog.DECODER -> l.restart("no video")
+            Ps5.Watchdog.NETWORK -> l.restart("no data")
+            Ps5.Watchdog.OK -> {}
         }
     }
+
+    // ---- Wi-Fi: pásmo a síla signálu (0.95: telefon sám přešel z 5 GHz na 2,4 GHz a spojení vypadávalo) ----
+    private var lastBand: String? = null
+
+    /** Frekvence (MHz) a síla signálu (dBm) Wi-Fi tohoto zařízení; null = není na Wi-Fi. */
+    private fun wifiNow(): Pair<Int, Int>? = try {
+        @Suppress("DEPRECATION")
+        val i = (applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager).connectionInfo
+        if (i == null || i.frequency <= 0) null else i.frequency to i.rssi
+    } catch (_: Throwable) { null }
+
+    /** Zapíše, když Wi-Fi přejde na jiné pásmo (a s jakým signálem) – podle toho jde poznat, proč. */
+    private fun checkWifiBand() {
+        val (f, rssi) = wifiNow() ?: return
+        val band = if (f >= 4900) "5 GHz" else "2,4 GHz"
+        if (band != lastBand) {
+            tp("NET|Wi-Fi " + (if (lastBand == null) "na" else "přešla na") + " $band ($f MHz, signál $rssi dBm)")
+            lastBand = band
+        }
+    }
+
+    // hlídání obrazu: data z konzole (fed) vs. dekódované snímky
+    private var lastFedSeen = -1L
+    private var lastFedAt = 0L
+    private var stallLogged = false
 
     /**
      * Pruh se neukazuje přes obrazovky této aplikace. Jinak běží vždy, když je spojení s konzolí:
@@ -839,7 +901,7 @@ class TranslatorService : Service() {
         try {
             val r = object : android.content.BroadcastReceiver() {
                 override fun onReceive(c: Context, i: Intent) {
-                    tp("SCREEN|" + when (i.action) { Intent.ACTION_SCREEN_OFF -> "obrazovka zhasla (televize se uspává)"; Intent.ACTION_SCREEN_ON -> "obrazovka rozsvícena"; else -> i.action })
+                    tp("SCREEN|" + when (i.action) { Intent.ACTION_SCREEN_OFF -> if (NetInfo.isHandheld(this@TranslatorService)) "displej telefonu zhasl" else "obrazovka zhasla (televize se uspává)"; Intent.ACTION_SCREEN_ON -> "obrazovka rozsvícena"; else -> i.action })
                 }
             }
             registerReceiver(r, android.content.IntentFilter().apply { addAction(Intent.ACTION_SCREEN_OFF); addAction(Intent.ACTION_SCREEN_ON) })
@@ -875,6 +937,10 @@ class TranslatorService : Service() {
         feeder?.stop(); feeder = null
         try { wifiLock?.let { if (it.isHeld) it.release() } } catch (_: Throwable) {}
         wifiLock = null
+        try { lowLatencyLock?.let { if (it.isHeld) it.release() } } catch (_: Throwable) {}
+        lowLatencyLock = null
+        try { wakeLock?.let { if (it.isHeld) it.release() } } catch (_: Throwable) {}
+        wakeLock = null
         activeReader = null
         reader?.stop(); reader = null
         try { recognizer.close() } catch (_: Exception) {}

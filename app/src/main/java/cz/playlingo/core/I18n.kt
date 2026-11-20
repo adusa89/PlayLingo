@@ -186,14 +186,7 @@ object I18n {
         "h_clear" to ("Smazat historii" to "Vymazať históriu"),
 
         // ---- nápověda ----
-        "help_3" to ("3. Ve hře zapni titulky." to "3. V hre zapni titulky."),
-        "help_6" to ("6. Titulky si aplikace najde sama. Kdyby je nenašla, nastav oblast ručně v Oblastech titulků." to "6. Titulky si aplikácia nájde sama. Keby ich nenašla, nastav oblasť ručne v Oblastiach titulkov."),
-        "help_tips" to ("Rady" to "Rady"),
-        "inst_title" to ("Když aplikace nejde nainstalovat nebo aktualizovat" to "Keď sa aplikácia nedá nainštalovať alebo aktualizovať"),
         "inst_text" to ("1. Když se objeví okno Play Protect, zvol „Další podrobnosti“ → „Přesto nainstalovat“.\n2. Když tam ta možnost není: otevři Google Play → ikona účtu → Play Protect → ozubené kolo → vypni „Kontrolovat aplikace pomocí Play Protect“, nainstaluj a pak kontrolu zase zapni.\n3. Když televize hlásí „instalace z neznámých zdrojů“: Nastavení → Aplikace → Zabezpečení a omezení → Neznámé zdroje → povol aplikaci, ze které instaluješ (Downloader nebo správce souborů).\n4. Když instalace skončí chybou: uvolni místo v televizi, případně starou verzi odinstaluj a nainstaluj znovu." to "1. Keď sa zobrazí okno Play Protect, zvoľ „Ďalšie podrobnosti“ → „Napriek tomu nainštalovať“.\n2. Keď tam tá možnosť nie je: otvor Google Play → ikona účtu → Play Protect → ozubené koleso → vypni „Kontrolovať aplikácie pomocou Play Protect“, nainštaluj a potom kontrolu znova zapni.\n3. Keď televízor hlási „inštalácia z neznámych zdrojov“: Nastavenia → Aplikácie → Zabezpečenie a obmedzenia → Neznáme zdroje → povoľ aplikáciu, z ktorej inštaluješ (Downloader alebo správca súborov).\n4. Keď inštalácia skončí chybou: uvoľni miesto v televízore, prípadne starú verziu odinštaluj a nainštaluj znova."),
-        "help_t2" to ("Když nic nenaskakuje, zapni Diagnostický režim a podívej se, co aplikace čte." to "Keď nič nenaskakuje, zapni Diagnostický režim a pozri sa, čo aplikácia číta."),
-        "help_t3" to ("Pozastavit a zastavit jde i z notifikace." to "Pozastaviť a zastaviť sa dá aj z notifikácie."),
-        "help_t4" to ("Překlad je offline a zdarma. Internet je potřeba jen jednou na stažení jazykového modelu." to "Preklad je offline a zadarmo. Internet treba len raz na stiahnutie jazykového modelu."),
 
         // ---- notifikace ----
         "n_running" to ("PlayLingo běží" to "PlayLingo beží"),
@@ -211,11 +204,11 @@ object I18n {
      * nahrání do televize LG (core/I18nLg.kt), Xbox (core/I18nXbox.kt) a typ televize s průvodcem
      * pro Samsung (core/I18nSamsung.kt) – mají přednost před obecnými se stejným klíčem.
      */
-    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + XBOX_S + SS_S + DEEPL_S + UI_S + ZAZNAM_S + KAMERA_S
+    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + XBOX_S + SS_S + DEEPL_S + UI_S + ZAZNAM_S + KAMERA_S + HELP_S
     private val PX: Map<Lang, Map<String, String>> =
         Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) + (DIAG_X[it] ?: emptyMap()) + (LG_X[it] ?: emptyMap()) +
             (XBOX_X[it] ?: emptyMap()) + (SS_X[it] ?: emptyMap()) + (DEEPL_X[it] ?: emptyMap()) + (UI_X[it] ?: emptyMap()) + (ZAZNAM_X[it] ?: emptyMap()) +
-            (KAMERA_X[it] ?: emptyMap()) }
+            (KAMERA_X[it] ?: emptyMap()) + (HELP_X[it] ?: emptyMap()) }
 
     fun t(lang: Lang, key: String): String {
         val p = PS[key] ?: S[key] ?: return key

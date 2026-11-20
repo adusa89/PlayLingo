@@ -54,6 +54,9 @@ class Ps5Link(
          */
         @Volatile var endedByConsole: String? = null
             private set
+        /** Remote Play na PS5 teď používá jiné zařízení (stejný účet připojený jinde) – pro hlášku na Domů. */
+        @Volatile var otherDevice = false
+            private set
         private val endings = ArrayDeque<String>()
 
         /** Posledních pár ukončení ze strany PlayStationu (čas, důvod, jak dlouho spojení vydrželo) pro hlášení. */
@@ -96,6 +99,7 @@ class Ps5Link(
     override fun start() {
         stopped = false
         endedByConsole = null
+        otherDevice = false
         exec.execute { connect() }
     }
 
@@ -139,6 +143,7 @@ class Ps5Link(
                 state = Ps5.Link.CONNECTED
                 reason = null
                 endedByConsole = null
+                otherDevice = false
                 needsLoginPin = false
                 connectedAt = SystemClock.uptimeMillis()
                 sessionConnectedAt = connectedAt
@@ -158,6 +163,10 @@ class Ps5Link(
                 val heldS = if (sessionConnectedAt > 0) (SystemClock.uptimeMillis() - sessionConnectedAt) / 1000 else -1
                 log("quit ${e.reason} ${e.reasonString ?: ""} | trvalo=${heldS}s | síť=${NetInfo.kind(ctx)} | pokus=${failures + 1}")
                 reason = e.reasonString?.takeIf { it.isNotBlank() } ?: e.reason.toString()
+                if (Ps5.otherDevice(e.reason.value, e.reasonString)) {
+                    otherDevice = true
+                    log("quit: Remote Play převzalo jiné zařízení (stejný účet připojený jinde)")
+                }
                 if (!stopped) {
                     endedByConsole = reason
                     val held = if (sessionConnectedAt > 0) (SystemClock.uptimeMillis() - sessionConnectedAt) / 1000 else -1

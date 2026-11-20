@@ -43,6 +43,9 @@ class LgInstallActivity : Activity() {
     /** Zpráva po čtení kamerou (text, upozornit?) – jen do dalšího spuštění instalace. */
     private var scanNote: Pair<String, Boolean>? = null
 
+    /** U spárované televize je políčko Passphrase schované, dokud hráč nechce zadat jinou. */
+    private var askPass = false
+
     // ---- pomocník krok za krokem (core/LgSetup.kt): co se o televizi právě ví ----
     private var probe = LgSetup.Probe(tvFound = false, devMode = false, keyServer = false, paired = false, passphrase = false)
     /** Televize LG nalezené v síti (pro řádek „Nalezena televize“). */
@@ -123,13 +126,17 @@ class LgInstallActivity : Activity() {
             val done = LgSetup.done(s, p)
             val cur = s == now
             val mark = if (done) "✔ " else if (cur) "➜ " else "○ "
-            addView(ui.text(mark + t(key), 16f, if (done) Theme.OK else if (cur) Theme.TEXT else Theme.MUTED, bold = cur), ui.lp(top = 8))
+            // spárovaná televize: Passphrase se nepíše, klíč už tohle zařízení má
+            val label = if (s == LgSetup.Step.PASSPHRASE && p.paired) t("lg_pass_paired") else t(key)
+            addView(ui.text(mark + label, 16f, if (done) Theme.OK else if (cur) Theme.TEXT else Theme.MUTED, bold = cur), ui.lp(top = 8))
             if (cur) {
                 addView(ui.text(t(key + "_how"), 15f, Theme.TEXT), ui.lp(top = 4))
                 if (s == LgSetup.Step.DEV_MODE) addView(accountLink(), ui.lp(top = 10))
             }
         }
-        if (now == LgSetup.Step.READY) addView(ui.text(t("lg_s_ready"), 16f, Theme.OK, bold = true), ui.lp(top = 10))
+        // v televizi už je stejná nebo novější verze: nic se nenahrává, jen se spustí
+        val current = TvChoice.upToDate(this@LgInstallActivity, cz.playlingo.core.TvType.LG)
+        if (now == LgSetup.Step.READY) addView(ui.text(current?.let { t("lg_s_current").replace("%s", it) } ?: t("lg_s_ready"), 16f, Theme.OK, bold = true), ui.lp(top = 10))
         foundTvs.takeIf { it.isNotEmpty() }?.let { addView(ui.text(t("lg_s_found").replace("%s", it.joinToString(", ")), 14f, Theme.MUTED), ui.lp(top = 8)) }
     }
 
@@ -227,9 +234,11 @@ class LgInstallActivity : Activity() {
         add(ui.text(t("lg_ip"), 16f, Theme.TEXT, bold = true), 20)
         add(field(ip, "lg_ip_hint", "lgip", false) { ip = it.trim() }, 6)
         val paired = runCatching { vault.paired(LgInstall.address(ip)) }.getOrDefault(false)
-        add(ui.text(t("lg_pass"), 16f, Theme.TEXT, bold = true), 16)
-        add(field(pass, "lg_pass_hint", "lgpass", true) { val was = LgSetup.passphraseLooksOk(pass); pass = it; if (was != LgSetup.passphraseLooksOk(it)) render(true) }, 6)
-        if (paired) add(ui.text(t("lg_pass_paired"), 14f, Theme.OK), 6)
+        // spárovaná televize: prázdné políčko by mátlo („mám něco vyplnit?“) – schované, nabídne se až pod tlačítkem
+        if (!paired || askPass) {
+            add(ui.text(t("lg_pass"), 16f, Theme.TEXT, bold = true), 16)
+            add(field(pass, "lg_pass_hint", "lgpass", true) { val was = LgSetup.passphraseLooksOk(pass); pass = it; if (was != LgSetup.passphraseLooksOk(it)) render(true) }, 6)
+        }
 
         if (running) {
             add(ui.text(t("lg_p_" + (phase ?: LgPhase.PACKAGE).name.lowercase()), 17f, Theme.ACCENT, bold = true), 18)
@@ -238,7 +247,10 @@ class LgInstallActivity : Activity() {
             add(ui.progress((ph.ordinal + 1f) / LgPhase.values().size), 8)
             add(tagged(ui.button(t("lg_cancel")) { installer?.cancel() }, "lgcancel"), 10)
         } else {
-            add(tagged(ui.button(t("lg_go"), primary = true) { start(false) }, "lggo"), 18)
+            // aktuální verze v televizi: LgInstaller ji stejně jen spustí – tak to i říct
+            val current = TvChoice.upToDate(this, cz.playlingo.core.TvType.LG)
+            add(tagged(ui.button(t(if (current != null) "lg_launch" else "lg_go"), primary = true) { start(false) }, "lggo"), 18)
+            if (paired && !askPass) add(tagged(ui.button(t("lg_pass_other")) { askPass = true; render() }, "lgpassother"), 8)
             resultText?.let { add(ui.text(it, 17f, if (resultOk) Theme.OK else Theme.WARN, bold = true), 14) }
             error?.let { e ->
                 add(ui.text(t("lg_e_" + e.name.lowercase()) + (errorDetail?.let { "\n($it)" } ?: ""), 16f, Theme.BAD, bold = true), 14)
