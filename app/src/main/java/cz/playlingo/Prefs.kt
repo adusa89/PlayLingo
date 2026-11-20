@@ -21,7 +21,7 @@ object Prefs {
     val TEXT_SIZES = intArrayOf(12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48)
     const val DEFAULT_TEXT_SIZE = 22
     /** Stejné hodnoty nabízí i televize (core/TvSettings, app.js) – měň všude najednou. */
-    val OPACITIES = intArrayOf(60, 80, 90, 100)
+    val OPACITIES = intArrayOf(0, 20, 40, 60, 80, 90, 100)
     val BAR_WIDTHS = intArrayOf(50, 60, 70, 84, 100)
 
     /** Barvy textu titulků: bílá, žlutá, světle zelená, světle modrá. */

@@ -1,0 +1,38 @@
+# Stránky s pomocí (složka pomoc/) jako obyčejný web na GitHub Pages: https://adusa89.github.io/PlayLingo/
+# Otevřou se v každém prohlížeči bez přihlášení a bez aplikace GitHub (odkazy na github.com/…/blob/…
+# telefon s aplikací GitHub otevíral v ní a ta chtěla přihlášení). Vedou na ně čtverečky a tlačítka
+# v aplikaci (core/HelpLinks.kt). Zveřejňuje se jen z větve main; ručně jde spustit v záložce Actions.
+# Pozor: commit s [skip ci] tenhle běh také přeskočí – po úpravě pomoc/ ho pak spusť ručně.
+name: Stránky s pomocí
+
+on:
+  push:
+    branches: [main]
+    paths: ["pomoc/**", ".github/workflows/pomoc.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  stranky:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.nasazeni.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./pomoc
+          destination: ./_site
+      - uses: actions/upload-pages-artifact@v3
+      - id: nasazeni
+        uses: actions/deploy-pages@v4

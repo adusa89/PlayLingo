@@ -84,6 +84,17 @@ object TvChoice {
     } catch (_: Exception) { null }
 
     /**
+     * Verze z uloženého ohlášení: „model · verze“, nebo jen „verze“ (po nahrání do TV, která se od spuštění
+     * aplikace ještě neohlásila – do 0.97.30 se to četlo jako „bez verze“ a Domů hlásilo „LG ? · nová …“);
+     * null = aplikace v televizi před 1.1.0 verzi neposílala (jen model).
+     */
+    internal fun storedVersion(v: String): String? {
+        val last = v.substringAfterLast(" · ").trim()
+        return last.takeIf { VERSION.matches(it) }
+    }
+    private val VERSION = Regex("\\d+(\\.\\d+)+")
+
+    /**
      * V televizi je starší PlayLingo než to, které nese tohle APK → (verze v televizi, nová verze), jinak null.
      * Verzi v televizi bere z posledního ohlášení (i z dřívějška, `Prefs.tvSeen`).
      */
@@ -92,8 +103,7 @@ object TvChoice {
         val bundled = bundledVersion(c, type) ?: return null
         val live = TvSender.lastSeen?.announce?.takeIf { it.platform == p }
         // uloženo „model · verze“; aplikace v televizi před 1.1.0 verzi neposílala → bez verze (= zastaralá)
-        val seen = live ?: Prefs.tvSeen(c, p)
-            ?.let { cz.playlingo.core.TvAnnounce(p, it.takeIf { v -> v.contains(" · ") }?.substringAfterLast(" · "), null, null, null) } ?: return null
+        val seen = live ?: Prefs.tvSeen(c, p)?.let { cz.playlingo.core.TvAnnounce(p, storedVersion(it), null, null, null) } ?: return null
         val check = cz.playlingo.core.TvCheck.of(seen, p, bundled)
         return if (check == cz.playlingo.core.TvCheck.OLDER || check == cz.playlingo.core.TvCheck.NO_VERSION)
             (seen.version ?: "?") to bundled else null
@@ -108,8 +118,7 @@ object TvChoice {
         val bundled = bundledVersion(c, type) ?: return null
         val live = TvSender.lastSeen?.announce?.takeIf { it.platform == p }
         // uloženo „model · verze“; aplikace v televizi před 1.1.0 verzi neposílala → bez verze (= zastaralá)
-        val seen = live ?: Prefs.tvSeen(c, p)
-            ?.let { cz.playlingo.core.TvAnnounce(p, it.takeIf { v -> v.contains(" · ") }?.substringAfterLast(" · "), null, null, null) } ?: return null
+        val seen = live ?: Prefs.tvSeen(c, p)?.let { cz.playlingo.core.TvAnnounce(p, storedVersion(it), null, null, null) } ?: return null
         return if (cz.playlingo.core.TvCheck.of(seen, p, bundled).ok) seen.version else null
     }
 

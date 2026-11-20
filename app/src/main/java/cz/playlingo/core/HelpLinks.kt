@@ -7,7 +7,11 @@ package cz.playlingo.core
  * a aplikace se měnit nemusí. Fungují v jakémkoli telefonu, i v iPhonu (jen webová stránka).
  */
 object HelpLinks {
-    const val BASE = "https://github.com/adusa89/PlayLingo/blob/main/pomoc/"
+    /**
+     * GitHub Pages ze složky `pomoc` (od 0.97.30, `.github/workflows/pomoc.yml`) – obyčejný web bez přihlášení.
+     * Dřív github.com/…/blob/…: telefon s aplikací GitHub ji otevřel v ní a ta chtěla přihlášení.
+     */
+    const val BASE = "https://adusa89.github.io/PlayLingo/"
 
     val LG_ACCOUNT = page("lg", "ucet")
     val PS5_PREP = page("ps5", "ucet")
@@ -16,5 +20,5 @@ object HelpLinks {
     val SAMSUNG = page("samsung")
     val XBOX = page("xbox")
 
-    fun page(name: String, anchor: String? = null) = BASE + name + ".md" + (anchor?.let { "#$it" } ?: "")
+    fun page(name: String, anchor: String? = null) = BASE + name + ".html" + (anchor?.let { "#$it" } ?: "")
 }

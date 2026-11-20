@@ -557,10 +557,14 @@ seznam ukončení ze strany PS5 je v hlášení („PlayStation ukončil spojen�
 
 ## Stránky s pomocí (`pomoc/`)
 
-Čtverečky a tlačítka v aplikaci (`core/HelpLinks.kt`) vedou na `pomoc/*.md` ve větvi `main` na GitHubu,
-ne přímo na stránky LG, Sony, Samsungu: na každé stránce je hlavní odkaz, záložní odkazy a co hledat.
-Když výrobce stránku přesune, oprav odkaz v `pomoc/*.md` (commit `[skip ci]`) – aplikace se měnit nemusí.
-Kotvy jsou `<a id="…">` (např. `lg.md#ucet`, `ps5.md#ucet`). Stránky jsou pro iPhone i Android.
+Čtverečky a tlačítka v aplikaci (`core/HelpLinks.kt`) vedou od 0.97.30 na **GitHub Pages**
+`https://adusa89.github.io/PlayLingo/<stránka>.html` (zdroj `pomoc/*.md`, zveřejňuje `.github/workflows/pomoc.yml`
+jen z `main`, Jekyll s `pomoc/_config.yml`), ne přímo na stránky LG, Sony, Samsungu: na každé stránce je hlavní odkaz,
+záložní odkazy a co hledat. Do 0.97.29 vedly na github.com/…/blob/… – telefon s aplikací GitHub je otevřel v ní a ta chtěla
+přihlášení (majitel 20. 11. 2026). Pages musí v repozitáři zapnout správce (Settings → Pages → Source: GitHub Actions).
+Když výrobce stránku přesune, oprav odkaz v `pomoc/*.md` – aplikace se měnit nemusí. Commit s `[skip ci]` přeskočí
+i zveřejnění stránek: pak spusť „Stránky s pomocí“ ručně v záložce Actions (z `main`).
+Kotvy jsou `<a id="…">` (např. `lg.md#ucet`, `ps5.md#ucet`). Stránky jsou česky s anglickým shrnutím, pro iPhone i Android.
 Odkazy občas ověř: `grep -oh "https://[^) ]*" pomoc/*.md | sort -u` a `curl -L -o /dev/null -w "%{http_code}"`
 (microsoft.com/link vrací robotům 403, v prohlížeči funguje).
 

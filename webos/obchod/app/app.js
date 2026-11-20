@@ -360,7 +360,7 @@
     var W = 1920, H = 1080;
     var cteni, text, pres, maxW, w, h, top, stred, puvodni, x;
     s.left = ''; s.top = ''; s.bottom = ''; s.width = ''; s.maxWidth = ''; s.minHeight = ''; s.background = ''; s.borderRadius = '';
-    t.style.fontSize = ''; t.style.color = ''; t.style.fontWeight = ''; t.style.padding = '';
+    t.style.fontSize = ''; t.style.color = ''; t.style.fontWeight = ''; t.style.padding = ''; t.style.textShadow = '';
     if (!v || typeof v !== 'object' || p.style.display === 'none') { return; }
     if (typeof v.original === 'string' && v.original) {
       puvodni = document.createElement('div');
@@ -369,6 +369,8 @@
       t.appendChild(puvodni);
     }
     s.background = 'rgba(0,0,0,' + (cislo(v.pozadi, 0, 100, 100) / 100) + ')';
+    // průhledný pruh (pod 60 %, od 1.5.7 až 0 %): černý obrys písma, ať je text čitelný i na světlém obrazu
+    if (cislo(v.pozadi, 0, 100, 100) < 60) { t.style.textShadow = '0 0 3px #000000, 0 0 6px #000000, 0 2px 4px #000000'; }
     // zaoblené rohy jako na Android TV (od 1.5.2)
     s.borderRadius = '18px';
     t.style.fontSize = cislo(v.pismo, 16, 120, 50) + 'px';
@@ -480,7 +482,7 @@
   // Všechno nastavení patří PlayLingu na Androidu. Televize dostane zprávou `nastaveni` pár voleb,
   // ukáže je v malé nabídce (OK při hře) a o změnu požádá zprávou `zmen`; Android ji ověří, uloží
   // a pošle zpět nové hodnoty (viz core/TvSettings.kt). Hodnoty jsou stejné jako v telefonu.
-  var PRUHLEDNOSTI = [60, 80, 90, 100];
+  var PRUHLEDNOSTI = [0, 20, 40, 60, 80, 90, 100];
   var VELIKOSTI = [0, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48];
   var POLOHY = ['pres', 'tesne', 'nad', 'nahore'];
   var nastaveni = null;

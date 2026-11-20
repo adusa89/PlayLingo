@@ -104,7 +104,9 @@ class SubtitleOverlay(
                 setTextColor(textColor)
                 gravity = Gravity.CENTER
                 typeface = Typeface.create("sans-serif-medium", if (bold) Typeface.BOLD else Typeface.NORMAL)
-                setShadowLayer(3f, 0f, 1f, Color.BLACK)
+                // průhledný pruh (pod 60 %, od 0.97.29 až 0 %): výraznější stín, ať je text čitelný i na světlém obrazu
+                if (opacityPercent < 60) setShadowLayer(dp(4).toFloat(), 0f, dp(1).toFloat(), Color.BLACK)
+                else setShadowLayer(3f, 0f, 1f, Color.BLACK)
                 setLineSpacing(0f, 1.08f)
                 setPadding(dp(22), dp(7), dp(22), dp(9))
                 // černý podklad s lehce zaoblenými rohy
