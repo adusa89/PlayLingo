@@ -557,8 +557,8 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   Verze: řádek PlayLingo (aktuální zeleně, novější oranžově „· nová X“ s tlačítkem Aktualizovat v řádku a postupem
   stahování pod ním – samostatná karta aktualizace není) a řádek PlayLingo v televizi (chybí / starší oranžově
   s tlačítkem nahrání, aktuální zeleně).
-  Od 0.97.8 řádek Hra: vybraný profil zeleně („Hra · Grand Theft Auto VI“, OK = výběr hry `pickGame`); když
-  `GameGuess` z titulků pozná jinou hru, oranžově název hry s otazníkem s tlačítkem Přepnout. Univerzální profil bez odhadu = řádek není. Na novou verzi se aplikace ptá i po návratu do ní (nejvýš jednou za 5 min). Běh na pozadí (telefon, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) se
+  Od 0.97.9 řádek hry jen s názvem: vybraná hra zeleně („Grand Theft Auto VI“, OK = výběr hry `pickGame`); když
+  `GameGuess` z titulků pozná jinou hru, oranžově s otazníkem („Grand Theft Auto VI?“) a tlačítkem Přepnout. Univerzální profil bez odhadu = řádek není. Na novou verzi se aplikace ptá i po návratu do ní (nejvýš jednou za 5 min). Běh na pozadí (telefon, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) se
   zeptá jednou při prvním Spustit (`ui_jednou`) a dál je jen v ⚙ Nastavení → Obecné, na Domů ne.
   Řádek konzole/televize OK = změna. Samostatný souhrnný řádek ani návody v textu tam už nejsou. Náhled obrazu
   je jen na stránce Konzole (s popiskem `pv_stale`, když obraz nechodí). „Zpět do hry (HDMI)“ jen na zařízení
