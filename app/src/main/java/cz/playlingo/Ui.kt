@@ -57,9 +57,19 @@ class Ui(private val ctx: Context) {
     /** Vybraný prvek se navíc lehce zvětší, takže je jasné, kde ovladač právě stojí. */
     fun pop(v: View) {
         v.setOnFocusChangeListener { view, has ->
-            view.animate().scaleX(if (has) 1.04f else 1f).scaleY(if (has) 1.04f else 1f).setDuration(110).start()
+            val scale = if (has) 1.04f else 1f
+            // Po překreslení obrazovky (nová verze, průběh stahování, změna stavu) dostane stejné tlačítko
+            // výběr znovu – tehdy bez animace, jinak by vybrané tlačítko při každém překreslení „pulzovalo“.
+            if (android.os.SystemClock.uptimeMillis() < quietUntil) { view.animate().cancel(); view.scaleX = scale; view.scaleY = scale }
+            else view.animate().scaleX(scale).scaleY(scale).setDuration(110).start()
         }
     }
+
+    /** Do kdy se výběr po překreslení obnovuje bez animace (viz [pop], [restoringFocus]). */
+    private var quietUntil = 0L
+
+    /** Volá se těsně před obnovením výběru po překreslení obrazovky. */
+    fun restoringFocus() { quietUntil = android.os.SystemClock.uptimeMillis() + 250 }
 
     fun cardBg(): Drawable = rounded(Theme.CARD, 14)
 
