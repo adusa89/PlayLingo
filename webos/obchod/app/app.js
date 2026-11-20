@@ -213,6 +213,62 @@
     if (text === null) { el('pruh').style.display = 'none'; return; }
     el('titulek').textContent = text;
     el('pruh').style.display = 'flex';
+    umistiPruh();
+  }
+
+  // Vzhled pruhu z Androidu (zpráva vzhled, od 1.3.0): průhlednost, poloha, šířka a písmo podle
+  // stránky Titulky. Bez ní zůstává černý pruh dole přes celou šířku jako dřív.
+  var vzhledPruhu = null;
+
+  function cislo(v, min, max, vychozi) {
+    v = Number(v);
+    if (isNaN(v)) { return vychozi; }
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function nastavVzhled(z) {
+    var p = el('pruh'), t = el('titulek');
+    var oblast = (z.oblast && z.oblast.length === 2) ? z.oblast : [0.74, 0.98];
+    vzhledPruhu = {
+      poloha: /^(over|above|top|custom)$/.test(String(z.poloha)) ? String(z.poloha) : 'over',
+      nahore: cislo(oblast[0], 0, 1, 0.74),
+      dole: cislo(oblast[1], 0, 1, 0.98),
+      stred: cislo(z.stred, 0, 1, 0.86)
+    };
+    var sirka = Math.round(1920 * cislo(z.sirka, 0.3, 1, 1));
+    p.style.width = sirka + 'px';
+    p.style.left = Math.round((1920 - sirka) / 2) + 'px';
+    p.style.background = 'rgba(0, 0, 0, ' + (cislo(z.pruhlednost, 0, 100, 100) / 100) + ')';
+    t.style.fontSize = Math.round(50 * cislo(z.meritko, 0.5, 3, 1)) + 'px';
+    t.style.color = barvaJmena(z.barva) || '#FFFFFF';
+    t.style.fontWeight = z.tucne === true ? 'bold' : 'normal';
+    zapis('vzhled: ' + vzhledPruhu.poloha + ', průhlednost ' + cislo(z.pruhlednost, 0, 100, 100) + ' %');
+    umistiPruh();
+  }
+
+  // Zpět na výchozí pruh ze style.css (černý, dole, přes celou šířku).
+  function vychoziVzhled() {
+    var p = el('pruh').style, t = el('titulek').style;
+    p.width = ''; p.left = ''; p.top = ''; p.bottom = ''; p.background = '';
+    t.fontSize = ''; t.color = ''; t.fontWeight = '';
+  }
+
+  // Svislá poloha podle vzhledu (výšku pruhu zná až prohlížeč, proto po vykreslení textu).
+  function umistiPruh() {
+    var p = el('pruh'), v = vzhledPruhu, h, nahoru;
+    if (!v || p.style.display === 'none') { return; }
+    h = p.offsetHeight;
+    if (v.poloha === 'above') {
+      nahoru = v.nahore * 1080 - 8 - h;
+    } else if (v.poloha === 'top') {
+      nahoru = 20;
+    } else if (v.poloha === 'custom') {
+      nahoru = v.stred * 1080 - h / 2;
+    } else {
+      nahoru = (v.nahore + v.dole) / 2 * 1080 - h / 2;
+    }
+    p.style.bottom = 'auto';
+    p.style.top = Math.round(Math.max(0, Math.min(1080 - h, nahoru))) + 'px';
   }
 
   // Barva jména z Androidu – jen zápis #RRGGBB, nic jiného se do stylu nedostane.
@@ -262,6 +318,7 @@
       }
     }
     el('pruh').style.display = 'flex';
+    umistiPruh();
   }
 
   function ukazZpet(ano) {
@@ -290,6 +347,9 @@
     zavri(spojeni);
     spojeni = null;
     hlaseni('');
+    // vzhled z Androidu platí jen pro hru (ukázka a nápověda mají výchozí pruh); po novém připojení přijde znovu
+    vzhledPruhu = null;
+    vychoziVzhled();
     pruh(null);
     P.skryjVstup();
     el('obraz').innerHTML = '';
@@ -390,6 +450,9 @@
       } else if (z.typ === 'skryj') {
         pruh(null);
         zapis('skryj #' + z.id);
+      } else if (z.typ === 'vzhled') {
+        nastavVzhled(z);
+        return;
       } else {
         return;
       }

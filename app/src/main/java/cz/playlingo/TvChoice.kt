@@ -68,6 +68,27 @@ object TvChoice {
 
     fun needsInstall(c: Context, type: TvType = Prefs.tvType(c)): Boolean = type.sends && !seen(c, type)
 
+    /** Verze aplikace pro televizi přibalená v tomto APK (z receiver-manifest.json), null = nejde přečíst. */
+    fun bundledVersion(c: Context, type: TvType): String? {
+        val dir = when (type) { TvType.LG -> "lg"; TvType.SAMSUNG -> "samsung"; TvType.ANDROID -> return null }
+        return try {
+            val m = c.assets.open("$dir/receiver-manifest.json").use { String(it.readBytes(), Charsets.UTF_8) }
+            Regex(""""version"\s*:\s*"([0-9]+\.[0-9]+\.[0-9]+)"""").find(m)?.groupValues?.get(1)
+        } catch (_: Exception) { null }
+    }
+
+    /**
+     * Aplikace v televizi se ohlásila starší verzí, než je přibalená (nebo bez verze) – nové věci
+     * (např. vzhled pruhu od 1.3.0) v ní nefungují, má se nahrát znovu. null = nevíme / je aktuální.
+     */
+    fun outdated(c: Context, type: TvType = Prefs.tvType(c)): String? {
+        if (!type.sends) return null
+        val a = TvSender.lastSeen?.announce?.takeIf { it.platform == type.platform } ?: return null
+        val have = a.version ?: return "?"
+        val want = bundledVersion(c, type) ?: return null
+        return try { if (cz.playlingo.core.LgInstall.compare(have, want) < 0) have else null } catch (_: Exception) { null }
+    }
+
     /**
      * Televize do souhrnného řádku na Domů: „Android TV“, nebo u LG/Samsungu značka, model (když se
      * televize už ohlásila) a stav spojení („LG OLED55B7 · připojeno“). Druhá hodnota = připojeno.

@@ -213,7 +213,13 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   neotevírá ani neposílá a aplikace se chová jako dřív. U LG/Samsungu se čte i tehdy, když je
   vidět aplikace, a nevyžaduje se povolení pruhu.
 - Televize po připojení pošle `pripojeno` a od verze 1.1.0 v něm i `platforma` („webos“/„tizen“)
-  a `verze`. `TvSender` zprávy od televize čte (maskované rámce WebSocketu, `readFrame`) a poslední
+  a `verze`. Od aplikace v televizi 1.3.0 posílá Android po připojení a při každé změně i `vzhled`
+  (`TvSender.styleMessage`/`setStyle`, z `TranslatorService.sendTvStyle`): průhlednost, poloha
+  (over = přes anglické titulky podle oblasti čtení, above, top, custom), šířka, velikost, barva a tučnost
+  písma. `app.js` (`nastavVzhled`, `umistiPruh`) ho použije jen na obrazovce hry. Do 0.85 televize kreslila
+  vždy neprůhledný pruh dole. Starší aplikace v televizi hlásí Domů jako „starší PlayLingo“
+  (`TvChoice.outdated` porovná ohlášenou verzi s `receiver-manifest.json`) s tlačítkem k aktualizaci.
+  `TvSender` zprávy od televize čte (maskované rámce WebSocketu, `readFrame`) a poslední
   ohlášení drží v `TvSender.lastSeen` (`TvAnnounce`); podle něj Domů a průvodce Samsung poznají,
   co v televizi běží.
 - Telefon: pomocník (`PhoneHelperActivity`) má od 0.63 tlačítko „Použít telefon pro televizi LG“

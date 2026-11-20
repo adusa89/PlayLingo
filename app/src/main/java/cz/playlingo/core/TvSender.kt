@@ -35,6 +35,9 @@ import java.util.concurrent.Executors
  * průvodce nahráním do televize a stránka Domů poznají, že je aplikace v televizi nainstalovaná
  * a v jaké verzi ([lastSeen]). Od verze 1.2.0 televize posílá i svůj záznam událostí
  * `{"typ":"zaznam","radky":["…"]}` (po připojení a pak po dávkách) – ukládá ho [TvLog].
+ * Od verze 1.3.0 aplikace v televizi umí i `{"typ":"vzhled",…}` ([styleMessage]): průhlednost, poloha,
+ * šířka, velikost, barva a tučnost písma podle stránky Titulky – posílá se hned po připojení a při každé
+ * změně. Starší aplikace v televizi ji ignoruje (ukazuje dál černý pruh dole).
  * Ostatní zprávy od televize (`hotovo`) se jen přečtou a zahodí.
  * Bez Androidu, aby šlo vyzkoušet v unit testech.
  */
@@ -104,6 +107,22 @@ class TvSender(private val log: (String) -> Unit = {}) {
             }
         fun hideMessage(id: Int) = "{\"typ\":\"skryj\",\"id\":$id}"
 
+        /**
+         * Vzhled pruhu pro televizi. [position] = over (přes anglické titulky), above (nad ně), top, custom;
+         * [readTop]/[readBottom] = kde jsou titulky hry (0..1 výšky obrazu), [center] = střed pruhu u custom,
+         * [width] 0..1, [scale] velikost písma vůči výchozí, [color] #RRGGBB, [opacity] 0..100.
+         */
+        fun styleMessage(opacity: Int, position: String, readTop: Float, readBottom: Float, center: Float,
+                         width: Float, scale: Float, color: String, bold: Boolean): String {
+            fun f(v: Float) = String.format(java.util.Locale.ROOT, "%.3f", v)
+            val pos = position.takeIf { it in setOf("over", "above", "top", "custom") } ?: "over"
+            val col = color.takeIf { it.matches(Regex("#[0-9A-Fa-f]{6}")) } ?: "#FFFFFF"
+            return "{\"typ\":\"vzhled\",\"pruhlednost\":${opacity.coerceIn(0, 100)},\"poloha\":\"$pos\"," +
+                "\"oblast\":[${f(readTop.coerceIn(0f, 1f))},${f(readBottom.coerceIn(0f, 1f))}],\"stred\":${f(center.coerceIn(0f, 1f))}," +
+                "\"sirka\":${f(width.coerceIn(0.3f, 1f))},\"meritko\":${f(scale.coerceIn(0.5f, 3f))}," +
+                "\"barva\":\"$col\",\"tucne\":$bold}"
+        }
+
         /** Text jako řetězec JSON (uvozovky, zpětná lomítka a řídicí znaky se zapíšou bezpečně). */
         fun json(s: String): String {
             val sb = StringBuilder(s.length + 2).append('"')
@@ -153,6 +172,15 @@ class TvSender(private val log: (String) -> Unit = {}) {
     /** Co je právě na obrazovce (null = pruh schovaný) – nově připojená televize to dostane hned. */
     private var shown: String? = null
     private var shownParts: String? = null
+    /** Poslední vzhled pruhu ([styleMessage]) – dostane ho i každá nově připojená televize. */
+    @Volatile private var style: String? = null
+
+    /** Nastaví vzhled pruhu v televizi (pošle se jen při změně). */
+    @Synchronized fun setStyle(message: String) {
+        if (message == style) return
+        style = message
+        broadcast(message)
+    }
 
     val running: Boolean get() = server?.isClosed == false
 
@@ -258,6 +286,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
             }
             c.soTimeout = 0
             write(c, frame(HELLO))
+            style?.let { write(c, frame(it)) }
             // přidání a poslání právě zobrazeného titulku jsou pod stejným zámkem jako show/hide,
             // aby se nová televize o žádnou změnu nepřipravila
             synchronized(this) {

@@ -357,6 +357,7 @@ class TranslatorService : Service() {
         } else {
             tv?.stop(); tv = null; activeTv = null
         }
+        sendTvStyle()
         val sender = tv
         overlay = SubtitleOverlay(
             this, screenW, screenH, layout, Prefs.textSize(this), Prefs.opacity(this),
@@ -669,11 +670,29 @@ class TranslatorService : Service() {
         }
     }
 
+    /**
+     * Vzhled pruhu ze stránky Titulky do televize LG/Samsung (průhlednost, poloha, šířka, písmo).
+     * Bez toho televize kreslila vždy neprůhledný pruh dole – přes anglické titulky (do 0.85).
+     */
+    private fun sendTvStyle() {
+        val t = tv ?: return
+        val pos = when (layout.position) {
+            cz.playlingo.core.ScreenLayout.Position.OVER -> "over"
+            cz.playlingo.core.ScreenLayout.Position.ABOVE -> "above"
+            cz.playlingo.core.ScreenLayout.Position.TOP -> "top"
+            cz.playlingo.core.ScreenLayout.Position.CUSTOM -> "custom"
+        }
+        val color = String.format("#%06X", Prefs.TEXT_COLORS[Prefs.textColorIndex(this)] and 0xFFFFFF)
+        t.setStyle(TvSender.styleMessage(Prefs.opacity(this), pos, layout.read.top, layout.read.bottom, layout.barCenterY,
+            layout.barWidth, Prefs.textSize(this).toFloat() / Prefs.DEFAULT_TEXT_SIZE, color, Prefs.boldText(this)))
+    }
+
     /** Automatika změnila oblast čtení (našla titulky, nebo se vrátila k hledání). */
     private fun zoneChanged() {
         tp("ZONE|" + (autoZone.learned?.let { "learned ${it.top}-${it.bottom}" } ?: "scan"))
         layout = layout.copy(read = autoZone.current)
         overlay?.setLayout(layout)
+        sendTvStyle()
         lastSig = null
         tracker.regionChanged()
     }

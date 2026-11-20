@@ -800,6 +800,9 @@ class MainActivity : Activity() {
         if (!paired && Prefs.console(this) == Console.XBOX) warn(ui.checkRow(false, false, ct("chk_ps5_missing"), t("ok"), t("set_up")) { section = Section.PS5; render() })
         if (TvChoice.needsInstall(this, type)) {
             warn(ui.checkRow(false, false, TvChoice.label(this, type) + ": " + t("tv_st_never"), t("ok"), t("w_install")) { TvChoice.openInstall(this, type) })
+        } else if (TvChoice.outdated(this, type) != null) {
+            // stará aplikace v televizi neumí novinky (vzhled pruhu…) – nabídnout aktualizaci
+            warn(ui.checkRow(false, false, TvChoice.label(this, type) + ": " + t("w_tv_old"), t("ok"), t("w_tv_update")) { TvChoice.openInstall(this, type) })
         } else if (running && type.sends && TranslatorService.tvConnected == 0) note(t("st_tv_wait"))
         // LG: když vývojářský režim brzy vyprší, aplikace z televize zmizí – upozornit
         if (type == TvType.LG) {
@@ -1811,6 +1814,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.85"
-    const val VERSION_CODE = 85
+    const val VERSION = "verze 0.86"
+    const val VERSION_CODE = 86
 }
