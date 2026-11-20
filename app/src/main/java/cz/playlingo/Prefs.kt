@@ -191,8 +191,9 @@ object Prefs {
     fun setBarPad(c: Context, v: Int) = p(c).edit().putInt("bar_pad", v.coerceIn(0, 3)).apply()
 
     /** Budit PlayStation z klidového režimu při Spustit (zapne ho na spárovaném druhém účtu); výchozí ne (od 0.97.18). */
-    fun ps5Wake(c: Context): Boolean = bool(c, "ps5_wake", false)
-    fun setPs5Wake(c: Context, v: Boolean) = setBool(c, "ps5_wake", v)
+    /** Od 0.97.41 nový klíč (dřív `ps5_wake`): po aktualizaci je probouzení u všech vypnuté, zapnout jde znovu v Nastavení. */
+    fun ps5Wake(c: Context): Boolean = bool(c, "ps5_wake2", false)
+    fun setPs5Wake(c: Context, v: Boolean) = setBool(c, "ps5_wake2", v)
     /** Stav (konzole, překlad, hra) vlevo nahoře přes hru na Android TV – výchozí vypnuto (od 0.97.40), stav je na Domů. */
     fun statusOverlay(c: Context): Boolean = bool(c, "stav_pres_hru", false)
     fun setStatusOverlay(c: Context, v: Boolean) = setBool(c, "stav_pres_hru", v)
