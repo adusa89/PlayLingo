@@ -78,14 +78,8 @@ class GameGuess(games: List<GameProfile> = GameProfiles.GAMES) {
 
 object GameProfiles {
 
-    private val RDR2 = OfflinePrep.NAMES
+    private val RDR2 = (OfflinePrep.NAMES + Rdr2.NAMES).distinct()
 
-    private val GTA = listOf(
-        "Los Santos", "San Andreas", "Vice City", "Liberty City", "Blaine County", "Sandy Shores", "Paleto Bay",
-        "Vinewood", "Grove Street", "Michael", "De Santa", "Franklin", "Clinton", "Trevor", "Philips",
-        "Lamar", "Lester", "Amanda", "Tracey", "Jimmy", "Chop", "Wade", "Simeon", "Devin Weston", "Merryweather",
-        "Ballas", "Vagos", "Niko", "Bellic", "Roman", "Tommy Vercetti", "Carl Johnson", "Big Smoke",
-    )
     /**
      * Jména z GTA VI, která jsou zároveň běžná anglická slova nebo jména (modely aut, čtvrti, ulice). Přání majitele:
      * v GTA VI se nepřekládají ani ta – přeložená by nesouhlasila s nápisy v telefonu a na mapě. Patří proto do
@@ -275,15 +269,6 @@ object GameProfiles {
         "Screen Narration", "Navigation Experience", "UI Text Size", "HDR Calibration", "Safe Zone", "Subtitles",
         "Speaker Names", "Closed Captions", "Aim Assist Strength", "Wanted Stars", "Ticker Feed", "Master Volume",
         "Mute Licensed Music", "GPS Voice", "Vehicle Radio", "Vibration & Haptics Strength", "Adaptive Triggers Resistance")
-    private val GTA_CAST = listOf(
-        m("Michael", "De Santa"), m("Franklin"), m("Trevor"), m("Lamar"), m("Lester"), f("Amanda"), f("Tracey"),
-        m("Jimmy"), m("Simeon"), m("Niko"), m("Roman"), m("Tommy Vercetti"), m("Carl Johnson", "CJ"), m("Big Smoke"),
-    )
-    private val RDR2_CAST = listOf(
-        m("Arthur", "Arthur Morgan"), m("Dutch"), m("John Marston"), m("Hosea"), m("Micah"), m("Javier"), m("Charles"),
-        m("Lenny"), m("Bill"), m("Kieran"), m("Uncle"), f("Sadie"), f("Abigail"), f("Mary-Beth"), f("Tilly"),
-        f("Karen"), f("Molly"), f("Susan"), f("Mary"),
-    )
     private val TLOU_CAST = listOf(
         m("Joel"), f("Ellie"), m("Tommy"), f("Tess"), f("Marlene"), f("Sarah"), m("Henry"), m("Sam"), f("Abby"),
         m("Lev"), f("Yara"), f("Dina"), m("Jesse"), m("Owen"), f("Mel"), m("Manny"), m("Isaac"),
@@ -338,12 +323,15 @@ object GameProfiles {
         "Donnie", "Shirley", "Vicki", "Frankie", "Andrea", "Nicole", "Petra", "Valentina", "Manuel", "Benedict",
         "Delights", "Cheetah", "Elegy", "Moreau", "Salton", "Southwind", "Millport", "M7", "Kingfishers", "Final Chapter",
         "The Chamber", "Game", "Map", "Help", "Save", "Store", "Progress", "Brief", "Settings",
-    ) + GTA6_COMMON
+    ) + GTA6_COMMON + Gta5.COMMON + Rdr2.COMMON + AlanWake2.COMMON + ReRequiem.COMMON + Bond007.COMMON
 
     val GAMES: List<GameProfile> = listOf(
-        GameProfile("rdr2", "Red Dead Redemption 2", RDR2, RDR2_CAST),
+        GameProfile("rdr2", "Red Dead Redemption 2", RDR2, Rdr2.CAST, Rdr2.TERMS, Rdr2.HUD, Rdr2.MENU),
         GameProfile("gta6", "Grand Theft Auto VI", GTA6, GTA6_CAST, GTA6_TERMS, GTA6_HUD, GTA6_MENU),
-        GameProfile("gta", "Grand Theft Auto V / IV / San Andreas", GTA, GTA_CAST),
+        GameProfile("gta", "Grand Theft Auto V", Gta5.NAMES.distinct(), Gta5.CAST, Gta5.TERMS, Gta5.HUD, Gta5.MENU),
+        GameProfile("alanwake2", "Alan Wake 2", AlanWake2.NAMES.distinct(), AlanWake2.CAST, hud = AlanWake2.HUD, menu = AlanWake2.MENU),
+        GameProfile("re9", "Resident Evil Requiem", ReRequiem.NAMES.distinct(), ReRequiem.CAST, ReRequiem.TERMS, ReRequiem.HUD, ReRequiem.MENU),
+        GameProfile("bond", "007 First Light", Bond007.NAMES.distinct(), Bond007.CAST),
         GameProfile("tlou", "The Last of Us", TLOU, TLOU_CAST),
         GameProfile("gow", "God of War", GOW, GOW_CAST),
         GameProfile("spiderman", "Spider-Man", SPIDERMAN, SPIDERMAN_CAST),

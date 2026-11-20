@@ -129,6 +129,10 @@ Zatím jen čeština. Bez jmen mluvčích v titulcích hry funguje jen 2. a 3. o
   (u GTA VI v `GTA6_COMMON`) a zároveň v `AMBIGUOUS`, takže je univerzální profil ani odhad hry nebere.
   Slova z menu (Map, Help, Settings…) do jmen nepatří, jen do `menu`. Překlad v závorce za názvem
   záměrně ne – pruh by se roztáhl přes další text.
+- Další profily (od 0.97.11) jsou v `core/GameProfilesMore.kt` po hrách (`Gta5`, `Rdr2` – doplněk k `OfflinePrep.NAMES`,
+  `AlanWake2`, `ReRequiem`, `Bond007`; každá `COMMON`/`NAMES`/`CAST`/`TERMS`/`HUD`/`MENU`). Profil jen pro hry **bez
+  oficiální češtiny** (Cyberpunk 2077, Ghost of Yōtei, Marvel's Wolverine ji mají). Jednopísmenná jména (M, Q) platí
+  jen jako mluvčí (`Cast.mentions` je v textu nehledá). Běžná slova z menu (Use, Open, Fine…) do `menu` nepatří.
 - Ulice ve všech hrách: `Glossary.STREET` (1–3 slova s velkým písmenem + Street/St/Avenue/Drive/Road…)
   nechá název v originále i bez seznamu; testy v `GlossaryTest.streetNamesStayInOriginal`.
 

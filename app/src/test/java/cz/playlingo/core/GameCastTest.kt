@@ -119,4 +119,23 @@ class GameCastTest {
         assertEquals(false, "Cheetah" in GameProfiles.UNIVERSAL.names)
         assertEquals(true, "Port Gellhorn" in GameProfiles.UNIVERSAL.names)
     }
+
+    @Test fun newProfiles() {
+        assertEquals("Grand Theft Auto V", GameProfiles.of("gta").title)
+        assertEquals(Gender.F, GameProfiles.of("alanwake2").cast.genderOf("SAGA"))
+        assertEquals(Gender.F, GameProfiles.of("re9").cast.genderOf("Grace"))
+        assertEquals(Gender.M, GameProfiles.of("rdr2").cast.genderOf("ARTHUR"))
+        assertEquals(Gender.F, GameProfiles.of("bond").cast.genderOf("M"))   // M jako mluvčí ano…
+        // …ale samotné písmeno v textu se za postavu nepovažuje
+        assertEquals("M šel domů.", CzechGender.fix(GameProfiles.of("bond").cast, "M went home.", "M šel domů.", null))
+        // univerzální profil: Arthur zůstává chráněný, běžná slova z nových her ne
+        assertEquals(true, "Arthur" in GameProfiles.UNIVERSAL.names)
+        assertEquals(false, "Grace" in GameProfiles.UNIVERSAL.names)
+        assertEquals(true, "Bright Falls" in GameProfiles.UNIVERSAL.names)
+        // odhad hry pozná Alan Wake 2
+        val g = GameGuess()
+        g.onText("SAGA: The Oh Deer Diner in Bright Falls.")
+        g.onText("We should go back to Cauldron Lake.")
+        assertEquals("alanwake2", g.guess()?.id)
+    }
 }

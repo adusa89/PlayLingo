@@ -814,7 +814,14 @@ class MainActivity : Activity() {
             }
             card.addView(tagged(r, tag), ui.lp(top = if (rows++ == 0) 10 else 0))
             if (action != null && onAction != null) {
-                card.addView(tagged(ui.button(action) { onAction() }.apply { textSize = 15f; setPadding(ui.dp(18), ui.dp(8), ui.dp(18), ui.dp(8)) }, tag + "_fix"),
+                // malé žluté tlačítko (běžné tlačítko má barvu karty a v kartě splývalo s textem)
+                card.addView(tagged(ui.button(action) { onAction() }.apply {
+                    textSize = 15f
+                    setTextColor(Theme.ACCENT_DARK)
+                    typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD)
+                    background = ui.focusBg(Theme.ACCENT, radius = 20)
+                    setPadding(ui.dp(20), ui.dp(8), ui.dp(20), ui.dp(8))
+                }, tag + "_fix"),
                     LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(30); bottomMargin = ui.dp(4) })
             }
         }
@@ -2158,6 +2165,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.10"
-    const val VERSION_CODE = 107
+    const val VERSION = "verze 0.97.11"
+    const val VERSION_CODE = 108
 }

@@ -44,8 +44,9 @@ class Cast(characters: List<GameCharacter>) {
     /** Rod mluvčího podle jména z titulku; null = neznámá postava. */
     fun genderOf(name: String?): Gender? = name?.let { byKey[TextLogic.simplify(it)] }
 
-    private val nameRx: Regex? = if (names.isEmpty()) null else
-        Regex(names.keys.sortedByDescending { it.length }.joinToString("|") { Regex.escape(it) })
+    // jednopísmenná jména (M, Q z bondovek) jen jako mluvčí – v textu by se pletla s čímkoli
+    private val nameRx: Regex? = names.keys.filter { it.length >= 2 }.takeIf { it.isNotEmpty() }?.let { keys ->
+        Regex(keys.sortedByDescending { it.length }.joinToString("|") { Regex.escape(it) }) }
 
     private val vocStart: Regex? = nameRx?.let {
         Regex("^\\s*(?:(?:hey|oh|yo|listen|look|come on|okay|ok|well|damn|man)[,!]?\\s+)?(" + it.pattern + ")\\s*[,!?…]", RegexOption.IGNORE_CASE)
