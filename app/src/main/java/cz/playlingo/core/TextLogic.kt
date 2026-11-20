@@ -253,6 +253,15 @@ object TextLogic {
     /** Od tolika řádků textu v oblasti je to menu nebo jiná plná obrazovka, ne titulek. */
     const val MENU_LINES = 7
 
+    /** Hudební značky, kterými hry označují texty písní (♪ ♫ ♬ ♩ a emoji not). */
+    private val MUSIC = Regex("[\u2669\u266A\u266B\u266C\u266D\u266F]|\uD83C[\uDFB5\uDFB6\uDFBC]")
+
+    /**
+     * Text písně (rádio v autě, hudba ve scéně) – hry ho v titulcích označují notou (♪ … ♪).
+     * Písně se nepřekládají: rušily by a nejsou to repliky (0.93, GTA VI s rádiem).
+     */
+    fun isLyrics(raw: String): Boolean = MUSIC.containsMatchIn(raw)
+
     /** Nápověda k ovládání hry (ne titulek). */
     fun isControlPrompt(raw: String): Boolean = CONTROL_PROMPT.containsMatchIn(clean(raw))
 
@@ -293,7 +302,7 @@ object TextLogic {
                     (centerTolerance != Int.MAX_VALUE && bl < screenCenterX && br > screenCenterX)
                 )
             block.lines
-                .filter { it.height in minLineHeight..maxLineHeight && isUseful(it.text) }
+                .filter { it.height in minLineHeight..maxLineHeight && isUseful(it.text) && !isLyrics(it.text) }
                 .filter { l ->
                     !subtitlesOnly || (
                         !isControlPrompt(l.text) &&

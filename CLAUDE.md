@@ -481,6 +481,8 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   `NetInfo.isHandheld`; samo nic nepřepíná – pomocník v telefonu se dál řídí `Prefs.forceTv`) →
   Konzole → Televize (u LG/Samsungu tlačítko nahrání) → Jazyk překladu → Zobrazení titulků
   (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
+  Příprava PS5 (druhý účet, Remote Play, skrytí hlášky, probouzení ze sítě, čtvereček na `pomoc/ps5.md`)
+  je od 0.93 až v prvním kroku párování (Připojení konzole), ne u volby konzole – tam byla moc brzo.
 - **Domů**: velký stav + Spustit/Zastavit (při běžící ukázce Ukázková hra), jeden souhrnný řádek
   „PS5 (jméno) → LG model · připojeno“ (OK = malá nabídka Konzole / Typ televize) a karta upozornění
   jen na to, co chybí (povolení pruhu, model, spárování, aplikace v televizi, vývojářský režim LG,
@@ -552,6 +554,7 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 - **Pruh se neschovává podle toho, co je na obrazovce** (0.20) – při HDMI to televize nehlásí.
 - **Překládají se jen repliky**, ne menu hry, pokyny k ovládání ani text v jiném jazyce
   (0.33, 0.43, 0.45). Čte se jen spodní třetina obrazu.
+  Ani texty písní označené notou ♪ (`TextLogic.isLyrics`, od 0.93 – rádio v GTA VI).
 - **Přihlášení účtem PlayStation jde jen přes telefon** (QR kód, od 0.19). Přihlášení přímo
   v televizi v přibaleném prohlížeči GeckoView ochrana Sony odmítala a prohlížeč dělal z APK
   176 MB; ve 0.55 bylo obojí odstraněno. Nevracej to. Od 0.57 se v telefonu nic neopisuje

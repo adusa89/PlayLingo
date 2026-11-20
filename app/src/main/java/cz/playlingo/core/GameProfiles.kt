@@ -13,6 +13,12 @@ object GameProfiles {
         "Lamar", "Lester", "Amanda", "Tracey", "Jimmy", "Chop", "Wade", "Simeon", "Devin Weston", "Merryweather",
         "Ballas", "Vagos", "Niko", "Bellic", "Roman", "Tommy Vercetti", "Carl Johnson", "Big Smoke", "Jason", "Lucia",
     )
+    /** GTA VI: postavy a místa (Vice City, Leonida) – zvlášť, ať se neplete se staršími díly. */
+    private val GTA6 = listOf(
+        "Jason", "Duval", "Lucia", "Caminos", "Vice City", "Leonida", "Leonida Keys", "Port Gellhorn", "Ambrosia",
+        "Grassrivers", "Mount Kalaga", "Cal Hampton", "Boobie Ike", "Dre'Quan", "Real Dimez", "Bae-Luxe", "Roxy",
+        "Raul Bautista", "Brian Heder", "Only Raw",
+    )
     private val TLOU = listOf(
         "Joel", "Ellie", "Tommy", "Tess", "Marlene", "Sarah", "Henry", "Sam", "Abby", "Lev", "Yara", "Dina", "Jesse",
         "Owen", "Mel", "Manny", "Isaac", "Jackson", "Seattle", "Boston", "Pittsburgh", "Fireflies", "Seraphites",
@@ -74,7 +80,8 @@ object GameProfiles {
 
     private val GAMES: List<GameProfile> = listOf(
         GameProfile("rdr2", "Red Dead Redemption 2", RDR2),
-        GameProfile("gta", "Grand Theft Auto", GTA),
+        GameProfile("gta6", "Grand Theft Auto VI", GTA6),
+        GameProfile("gta", "Grand Theft Auto V / IV / San Andreas", GTA),
         GameProfile("tlou", "The Last of Us", TLOU),
         GameProfile("gow", "God of War", GOW),
         GameProfile("spiderman", "Spider-Man", SPIDERMAN),

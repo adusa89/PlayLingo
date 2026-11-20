@@ -393,4 +393,14 @@ class SlangForAllLanguagesTest {
         assertEquals("I am trying to help", OfflinePrep.standardize("I am tryna help"))
         assertEquals("what are you doing about it", OfflinePrep.standardize("whatcha doing 'bout it"))
     }
+
+    @Test fun pisneSeNeprekladaji() {
+        assertTrue(TextLogic.isLyrics("♪ I'm on my way, baby ♪"))
+        assertTrue(TextLogic.isLyrics("Driving down the coast ♫"))
+        assertFalse(TextLogic.isLyrics("Lucia: Turn the radio down."))
+        val music = OcrBlock(listOf(OcrLine("♪ Sunshine on the boulevard ♪", 700, 900, 1220, 930)))
+        val talk = OcrBlock(listOf(OcrLine("Jason: Where are we going?", 700, 950, 1220, 980)))
+        val p = TextLogic.assemble(listOf(music, talk), 10, subtitlesOnly = true, screenCenterX = 960, centerTolerance = 120)
+        assertEquals("Jason: Where are we going?", p.text)
+    }
 }

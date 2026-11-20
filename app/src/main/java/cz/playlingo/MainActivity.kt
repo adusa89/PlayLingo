@@ -538,16 +538,7 @@ class MainActivity : Activity() {
                 val cur = Prefs.console(this)
                 option(t("c_ps"), null, cur == Console.PLAYSTATION, "wconps") { setConsole(Console.PLAYSTATION); render(true) }
                 option(t("c_xbox"), null, cur == Console.XBOX, "wconxbox") { setConsole(Console.XBOX); render(true) }
-                // příprava PlayStationu patří na začátek: bez druhého účtu a Remote Play se párování na konci nepovede
-                if (cur == Console.PLAYSTATION) add(ui.card().apply {
-                    addView(ui.text(t("wz_ps_prep"), 15f, Theme.ACCENT))
-                    // hláška „Remote Play je připojena“ by jinak svítila přes hru
-                    addView(ui.text(t("rp_hide"), 15f, Theme.MUTED), ui.lp(top = 10))
-                    // bez tohohle aplikace spící PS5 nevzbudí
-                    addView(ui.text(t("ps5_rest"), 15f, Theme.MUTED), ui.lp(top = 10))
-                }, 14)
-                // celý postup s odkazy na založení účtu Sony (i do iPhonu): čtvereček, v telefonu tlačítko
-                if (cur == Console.PLAYSTATION) add(helpLink(cz.playlingo.core.HelpLinks.PS5_PREP, t("help_ps5")), 10)
+                // příprava PlayStationu (druhý účet, Remote Play…) je až v kroku Připojení konzole, kde se hodí
             }
             W_TV -> {
                 add(ui.text(t("wz_tv_q"), 20f, Theme.TEXT, bold = true), 18)
@@ -965,7 +956,11 @@ class MainActivity : Activity() {
         add(ui.text(t("${key}_title"), 22f, Theme.TEXT, bold = true), 2)
         var nextOk = true
         when (step) {
-            0 -> add(ui.card().apply { addView(ui.text(t("pg_1_text"), 17f, Theme.TEXT)) }, 10)
+            0 -> add(ui.card().apply {
+                addView(ui.text(t("pg_1_text"), 17f, Theme.TEXT))
+                // hláška „Remote Play je připojena“ by jinak svítila přes hru; bez probouzení ze sítě aplikace spící PS5 nevzbudí
+                addView(ui.text(t("rp_hide") + "\n\n" + t("ps5_rest"), 14f, Theme.MUTED), ui.lp(top = 10))
+            }, 10)
             1 -> {
                 add(ui.card().apply { addView(ui.text(t("pg_2_text"), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_ip", draftIp, "pip", number = true).also { IpField.setup(it) }, 10)
@@ -1041,6 +1036,8 @@ class MainActivity : Activity() {
             pairStep = 4; pairMsg = null; render()
         }, "pstuck"), wrapLp())
         add(row, 14)
+        // první krok: celý postup s odkazy na založení účtu Sony (i do iPhonu) – pod tlačítky, ať ta zůstanou vidět
+        if (step == 0) add(helpLink(cz.playlingo.core.HelpLinks.PS5_PREP, t("help_ps5")), 14)
         // účet už je uložený: nabídnout nové přihlášení (jiný účet, nebo když spárování s tímhle nejde)
         if (step == 5 && have && !pairBusy) add(tagged(ui.button(t("ps5_acc_again")) {
             saveDrafts()
@@ -1300,6 +1297,10 @@ class MainActivity : Activity() {
         mode.addView(ui.text(t(if (deepl) "dl_mode_on" else "t_offline"), 19f, Theme.OK, bold = true), ui.lp(top = 4))
         if (deepl) mode.addView(ui.text(t("dl_mode_on_desc"), 15f, Theme.MUTED), ui.lp(top = 4))
         else if (DeeplKey.enabled(this)) mode.addView(ui.text(t("dl_mode_idle"), 15f, Theme.WARN), ui.lp(top = 4))
+        // DeepL je v Experimentálních – odsud k němu vede přímá cesta (hráč ho tu hledá, když je překlad špatný)
+        if (!deepl) mode.addView(tagged(ui.button(t("dl_mode_try")) {
+            section = Section.SETTINGS; settingsTab = SettingsTab.EXPERIMENTAL; render()
+        }, "dltry"), ui.lp(top = 10))
         mode.addView(ui.text(t("chk_model") + " (${lang.label}): " + if (ready) t("ok") else t("t_model_missing"),
             15f, if (ready) Theme.OK else Theme.WARN), ui.lp(top = 8))
         add(mode, 16)
@@ -1315,6 +1316,8 @@ class MainActivity : Activity() {
                 Prefs.setGameId(this, games[i].id); applyToService(); render(true)
             }
         }, "game"), 0)
+        // k čemu to je: jména se nepřeloží ani offline, ani v DeepL (dřív to nebylo z obrazovky poznat)
+        add(ui.text(t("t_game_desc") + " " + t("t_game_deepl"), 14f, Theme.MUTED), 6)
 
         // --- vlastní slovník ---
         content.addView(ui.section(t("t_dict")))
@@ -1886,6 +1889,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.92"
-    const val VERSION_CODE = 92
+    const val VERSION = "verze 0.93"
+    const val VERSION_CODE = 93
 }

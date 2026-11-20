@@ -6,6 +6,8 @@ package cz.playlingo.core
  * Důvody, proč DeepL nepomohl: dl_p_<Deepl.Problem> (malými písmeny).
  */
 internal val DEEPL_S: Map<String, Pair<String, String>> = mapOf(
+    "t_game_deepl" to ("Platí i pro DeepL: bez toho by třeba Vice City přeložil jako „Město neřesti“." to "Platí aj pre DeepL: bez toho by napríklad Vice City preložil ako „Mesto nerestí“."),
+    "dl_mode_try" to ("Lepší překlad přes DeepL – nastavit" to "Lepší preklad cez DeepL – nastaviť"),
     "dl_mode_on" to ("Offline + DeepL přes internet" to "Offline + DeepL cez internet"),
     "dl_mode_on_desc" to ("Překlad se ukáže hned offline a DeepL ho během chvilky vylepší. Bez internetu nebo po vyčerpání limitu zůstane offline. Vypíná se v ⚙ Nastavení → Experimentální." to "Preklad sa ukáže hneď offline a DeepL ho o chvíľu vylepší. Bez internetu alebo po vyčerpaní limitu zostane offline. Vypína sa v ⚙ Nastavenia → Experimentálne."),
     "dl_mode_idle" to ("DeepL je v ⚙ Nastavení → Experimentální zapnutý, ale nepoužívá se: chybí klíč, nebo DeepL tento jazyk neumí. Překládá se jen offline." to "DeepL je v ⚙ Nastavenia → Experimentálne zapnutý, ale nepoužíva sa: chýba kľúč alebo DeepL tento jazyk nevie. Prekladá sa len offline."),
@@ -48,6 +50,8 @@ internal val DEEPL_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "t_game_deepl" to "This applies to DeepL too: otherwise a name like “Vice City” could get translated.",
+        "dl_mode_try" to "Better translation with DeepL – set up",
         "dl_mode_on" to "Offline + DeepL over the internet",
         "dl_mode_on_desc" to "The offline translation shows right away and DeepL improves it a moment later. Without internet or once the limit is used up it stays offline. Turn it off in ⚙ Settings → Experimental.",
         "dl_mode_idle" to "DeepL is on in ⚙ Settings → Experimental but isn’t used: the key is missing or DeepL doesn’t support this language. Translation is offline only.",
@@ -88,6 +92,8 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "The key is on the TV, you can close this page.",
     ),
     Lang.PL to mapOf(
+        "t_game_deepl" to "Dotyczy też DeepL: bez tego np. „Vice City” mogłoby zostać przetłumaczone.",
+        "dl_mode_try" to "Lepsze tłumaczenie przez DeepL – ustaw",
         "dl_mode_on" to "Offline + DeepL przez internet",
         "dl_mode_on_desc" to "Tłumaczenie offline pojawia się od razu, a DeepL po chwili je poprawia. Bez internetu albo po wyczerpaniu limitu zostaje offline. Wyłącza się w ⚙ Ustawienia → Eksperymentalne.",
         "dl_mode_idle" to "DeepL jest włączony w ⚙ Ustawienia → Eksperymentalne, ale nie jest używany: brak klucza albo DeepL nie obsługuje tego języka. Tłumaczenie tylko offline.",
@@ -128,6 +134,8 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "Klucz jest w telewizorze, możesz zamknąć stronę.",
     ),
     Lang.DE to mapOf(
+        "t_game_deepl" to "Gilt auch für DeepL: sonst würde z. B. „Vice City“ übersetzt.",
+        "dl_mode_try" to "Bessere Übersetzung mit DeepL – einrichten",
         "dl_mode_on" to "Offline + DeepL über das Internet",
         "dl_mode_on_desc" to "Die Offline-Übersetzung erscheint sofort, DeepL verbessert sie kurz darauf. Ohne Internet oder nach Ausschöpfen des Limits bleibt es offline. Ausschalten unter ⚙ Einstellungen → Experimentell.",
         "dl_mode_idle" to "DeepL ist unter ⚙ Einstellungen → Experimentell eingeschaltet, wird aber nicht genutzt: Der Schlüssel fehlt oder DeepL kann diese Sprache nicht. Übersetzt wird nur offline.",
@@ -168,6 +176,8 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "Der Schlüssel ist im Fernseher, du kannst die Seite schließen.",
     ),
     Lang.HU to mapOf(
+        "t_game_deepl" to "A DeepL-re is érvényes: enélkül például a „Vice City” is lefordulhatna.",
+        "dl_mode_try" to "Jobb fordítás DeepL-lel – beállítás",
         "dl_mode_on" to "Offline + DeepL interneten át",
         "dl_mode_on_desc" to "Az offline fordítás azonnal megjelenik, a DeepL pedig egy pillanat múlva javít rajta. Internet nélkül vagy a keret elfogyása után offline marad. Kikapcsolás: ⚙ Beállítások → Kísérleti.",
         "dl_mode_idle" to "A DeepL be van kapcsolva a ⚙ Beállítások → Kísérleti részben, de nincs használatban: hiányzik a kulcs, vagy a DeepL nem ismeri ezt a nyelvet. Csak offline fordítás.",
@@ -208,6 +218,8 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "A kulcs a tévében van, bezárhatod az oldalt.",
     ),
     Lang.UK to mapOf(
+        "t_game_deepl" to "Діє й для DeepL: інакше, наприклад, «Vice City» могло б перекластися.",
+        "dl_mode_try" to "Кращий переклад через DeepL – налаштувати",
         "dl_mode_on" to "Офлайн + DeepL через інтернет",
         "dl_mode_on_desc" to "Офлайн-переклад з’являється одразу, а DeepL за мить його покращує. Без інтернету або після вичерпання ліміту лишається офлайн. Вимикається в ⚙ Налаштування → Експериментальне.",
         "dl_mode_idle" to "DeepL увімкнено в ⚙ Налаштування → Експериментальне, але він не використовується: бракує ключа або DeepL не підтримує цю мову. Переклад лише офлайн.",
@@ -248,6 +260,8 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "Ключ у телевізорі, сторінку можна закрити.",
     ),
     Lang.ES to mapOf(
+        "t_game_deepl" to "También vale para DeepL: si no, por ejemplo «Vice City» podría traducirse.",
+        "dl_mode_try" to "Mejor traducción con DeepL: configurar",
         "dl_mode_on" to "Sin conexión + DeepL por internet",
         "dl_mode_on_desc" to "La traducción sin conexión aparece al momento y DeepL la mejora enseguida. Sin internet o al agotar el límite se queda sin conexión. Se desactiva en ⚙ Ajustes → Experimental.",
         "dl_mode_idle" to "DeepL está activado en ⚙ Ajustes → Experimental, pero no se usa: falta la clave o DeepL no admite este idioma. Solo se traduce sin conexión.",
@@ -288,6 +302,8 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "La clave está en la tele, ya puedes cerrar la página.",
     ),
     Lang.FR to mapOf(
+        "t_game_deepl" to "Cela vaut aussi pour DeepL : sinon « Vice City », par exemple, pourrait être traduit.",
+        "dl_mode_try" to "Meilleure traduction avec DeepL – configurer",
         "dl_mode_on" to "Hors ligne + DeepL par internet",
         "dl_mode_on_desc" to "La traduction hors ligne s’affiche tout de suite et DeepL l’améliore un instant après. Sans internet ou une fois la limite atteinte, elle reste hors ligne. Se désactive dans ⚙ Paramètres → Expérimental.",
         "dl_mode_idle" to "DeepL est activé dans ⚙ Paramètres → Expérimental mais n’est pas utilisé : la clé manque ou DeepL ne gère pas cette langue. Traduction hors ligne uniquement.",
@@ -328,6 +344,8 @@ internal val DEEPL_X: Map<Lang, Map<String, String>> = mapOf(
         "dl_w_ok" to "La clé est dans la télé, tu peux fermer la page.",
     ),
     Lang.IT to mapOf(
+        "t_game_deepl" to "Vale anche per DeepL: altrimenti, ad esempio, «Vice City» potrebbe essere tradotto.",
+        "dl_mode_try" to "Traduzione migliore con DeepL – imposta",
         "dl_mode_on" to "Offline + DeepL via internet",
         "dl_mode_on_desc" to "La traduzione offline compare subito e DeepL la migliora poco dopo. Senza internet o finito il limite resta offline. Si disattiva in ⚙ Impostazioni → Sperimentale.",
         "dl_mode_idle" to "DeepL è attivo in ⚙ Impostazioni → Sperimentale ma non viene usato: manca la chiave o DeepL non supporta questa lingua. Traduzione solo offline.",

@@ -27,8 +27,8 @@ Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nah
 
 ## 3. První nastavení (průvodce tě provede)
 
-**Nejdřív připrav PlayStation** (jen jednou, ještě než v aplikaci spustíš průvodce – bez toho
-se párování v posledním kroku nepovede):
+**Připrav PlayStation** (jen jednou; průvodce ti to ukáže v kroku Připojení konzole – bez toho
+se párování nepovede):
 1. Na PS5 zvol Přidat uživatele a založ **druhý účet** PlayStation s jiným e-mailem (zdarma). Proč
    druhý účet, je vysvětlené v bodě 4.
 2. Přepni se na PS5 na toho druhého uživatele a zapni **Nastavení → Systém → Remote Play →
@@ -115,6 +115,8 @@ na další televizi stačí naskenovat čtvereček a klepnout na „Odeslat do t
 4. Každá postava má v pruhu jméno ve své barvě. Když hra nabídne volby odpovědi pod sebou
    (očíslované nebo zarovnané vlevo), ukáže je pruh jako seznam s odrážkami, každou přeloženou
    zvlášť. Menu hry a pokyny k ovládání se dál nepřekládají.
+
+Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪, se nepřekládají.
 
 ## 6. Zkouška bez PlayStationu
 V ⚙ Nastavení na záložce **Demo režim** zvol „Zkouška bez PlayStationu“ (tam je i ukázka pruhu a zkouška překladu). Ukáže se ukázková hra s anglickými titulky
