@@ -136,6 +136,7 @@ Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪
 - **Ve hře svítí „Aplikace Remote Play je připojena“** – na PS5 zapni Nastavení → Systém → Remote Play → Skrýt stav připojení Remote Play (pod herním i druhým uživatelem), viz bod 3.
 - **Účet na PS5 má přihlašovací kód** – PlayStation ho při spojení odmítne a na stránce PlayStation se objeví políčko pro kód (4 číslice); zadej ho tam.
 - **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.5, nebo ⚙ Nastavení → Obecné → Povolení) a v Titulcích nastav vzhled – pruh se při tom ukáže na zkoušku.
+- **Vzhled titulků během hry (Android TV)**: v ⚙ Nastavení → Obecné zvol „Tlačítko vzhledu titulků“ a stiskni tlačítko ovladače, které ve hře nepoužíváš (barevné, Info…). Při hře pak otevře nabídku vzhledu přímo přes obraz; šipky mění hodnoty, Zpět zavře. (V TV LG/Samsung je totéž pod OK při hře nebo v nabídce Vzhled titulků.)
 - **Nic se nečte** – zapni ⚙ Nastavení → Experimentální → Ladění a hlášení → Diagnostický režim; uvidíš, co aplikace čte.
 - **Na PS5 pořád naskakuje „ovladač odpojen / účet připojen“** – s druhým účtem se připojuje i jiné zařízení
   (třeba aplikace PS Remote Play) a PS5 pak spojení přehazuje. Domů to od 0.97 napíše. Druhý účet ať slouží jen PlayLingu.

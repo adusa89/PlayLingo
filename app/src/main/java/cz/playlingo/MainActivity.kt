@@ -1410,6 +1410,30 @@ class MainActivity : Activity() {
         block(t("gp_skip"), game.hud + game.menu)
     }
 
+    /** Zvolení tlačítka rychlé nabídky vzhledu: dialog čeká na stisk tlačítka na ovladači. */
+    private fun learnQuickKey() {
+        try {
+            AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(t("qk_row")).setMessage(t("qk_press"))
+                .setNegativeButton(t("wz_back")) { d, _ -> d.dismiss() }
+                .setNeutralButton(t("off")) { d, _ -> d.dismiss(); Prefs.setQuickKey(this, 0); TitulkyAccessibility.instance?.updateKeyFilter(false); render(true) }
+                .setOnKeyListener { d, code, ev ->
+                    // šipky, OK a Zpět ovládají dialog samotný; ostatní zakázaná tlačítka jen upozorní
+                    if (code in QuickLook.FORBIDDEN) {
+                        val nav = code == android.view.KeyEvent.KEYCODE_BACK || code == android.view.KeyEvent.KEYCODE_DPAD_CENTER ||
+                            code == android.view.KeyEvent.KEYCODE_ENTER || code in 19..22
+                        if (!nav && ev.action == android.view.KeyEvent.ACTION_UP) toast(t("qk_bad"))
+                        return@setOnKeyListener !nav
+                    }
+                    if (ev.action == android.view.KeyEvent.ACTION_UP) {
+                        Prefs.setQuickKey(this, code); TitulkyAccessibility.instance?.updateKeyFilter(true); d.dismiss(); render(true)
+                    }
+                    true
+                }
+                .show()
+        } catch (_: Exception) {}
+    }
+
     /** Otevřené rozbalovací skupiny v Nastavení (klíč skupiny). */
     private val openGroups = HashSet<String>()
 
@@ -1684,6 +1708,11 @@ class MainActivity : Activity() {
             add(tagged(ui.settingRow(t("s_a11y"), onOff(a11yOn), if (a11yOn) Theme.OK else Theme.WARN) {
                 openAccessibility()
             }, "a11y"), 8)
+            // tlačítko ovladače pro rychlou nabídku vzhledu při hře (QuickLook, jen Android TV)
+            val qk = Prefs.quickKey(this)
+            add(tagged(ui.settingRow(t("qk_row"), if (qk == 0) t("qk_none") else QuickLook.keyName(qk), if (qk == 0) Theme.MUTED else Theme.ACCENT) {
+                learnQuickKey()
+            }, "quickkey"), 8)
             val ovOn = Settings.canDrawOverlays(this)
             add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
                 openOverlaySettings()
@@ -1895,7 +1924,7 @@ class MainActivity : Activity() {
         // 8. volby v Nastavení (v Nastavení jsou jen názvy)
         chapters += Triple("hc8", null, {
             ui.card().apply {
-                listOf("s_test" to "s_test_desc", "s_quality" to "q_desc", "t_game" to "t_game_desc",
+                listOf("s_test" to "s_test_desc", "qk_row" to "qk_desc", "s_quality" to "q_desc", "t_game" to "t_game_desc",
                     "t_dict" to "t_dict_desc", "t_mode" to "t_offline_desc", "dl_toggle" to "dl_desc").forEachIndexed { i, (k, d) ->
                     addView(ui.text(t(k), 16f, Theme.TEXT, bold = true), ui.lp(top = if (i == 0) 0 else 14))
                     addView(ui.text(t(d), 15f, Theme.MUTED), ui.lp(top = 4))
@@ -2165,6 +2194,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.15"
-    const val VERSION_CODE = 112
+    const val VERSION = "verze 0.97.16"
+    const val VERSION_CODE = 113
 }

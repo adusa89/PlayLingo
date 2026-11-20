@@ -176,6 +176,10 @@ object Prefs {
     fun setReaderDevice(c: Context, v: Boolean) = setBool(c, "reader_device", v)
 
     // ---- hra a slovník ----
+    /** Tlačítko ovladače pro rychlou nabídku vzhledu na Android TV ([QuickLook]); 0 = nenastaveno. */
+    fun quickKey(c: Context): Int = p(c).getInt("quick_key", 0)
+    fun setQuickKey(c: Context, v: Int) = p(c).edit().putInt("quick_key", v).apply()
+
     fun gameId(c: Context): String = p(c).getString("game", "all") ?: "all"
     fun setGameId(c: Context, v: String) = p(c).edit().putString("game", v).remove("game_guess").apply()
     /** Hra odhadnutá podle titulků (nabídka „Přepnout“ v Nastavení); null = nic. */

@@ -108,6 +108,18 @@ class TranslatorService : Service() {
         /** Poslední obrázek ze hry (zmenšený, barevný) – pro náhled a nastavení oblastí. */
         val snapshot: Bitmap? get() = activeReader?.colorSnapshot
 
+        @Volatile private var self: TranslatorService? = null
+
+        /** Změna vzhledu z rychlé nabídky ovladačem na Android TV ([QuickLook]) – stejně jako z TV LG. */
+        fun quickChange(ch: TvSettings.Change) {
+            android.os.Handler(android.os.Looper.getMainLooper()).post { self?.takeIf { running }?.let { it.applyTvChange(ch); it.quickSample() } }
+        }
+
+        /** Nabídka otevřená / zavřená: ukázková věta v pruhu, když zrovna žádný titulek není. */
+        fun quickPreview(on: Boolean) {
+            android.os.Handler(android.os.Looper.getMainLooper()).post { self?.let { if (on) it.quickSample() else it.quickSampleOff() } }
+        }
+
         /** Snímek obrazovky hry jako JPEG pro záznam v síti (ladění menu a oblastí); null = obraz nechodí. */
         fun stillJpeg(): ByteArray? {
             val b = activeReader?.still() ?: return null
@@ -425,6 +437,19 @@ class TranslatorService : Service() {
     }
 
     /** Změna vzhledu z ovladače televize ([TvSettings]): stejné hodnoty jako v Titulkách v telefonu. */
+    /** Ukázková věta v pruhu (rychlá nabídka vzhledu), jen když není vidět skutečný titulek. */
+    private var sampleShown = false
+    private fun quickSample() {
+        if (!QuickLook.open) return
+        val ov = overlay ?: return
+        if (ov.isShown && !sampleShown) return
+        ov.show(listOf(Segment(null, tx("qk_sample"))), null, -1f, -1f)
+        sampleShown = true
+    }
+    private fun quickSampleOff() {
+        if (sampleShown) { overlay?.hide(); sampleShown = false }
+    }
+
     private fun applyTvChange(ch: TvSettings.Change) {
         when (ch) {
             is TvSettings.Change.Opacity -> Prefs.setOpacity(this, ch.percent)
@@ -771,6 +796,7 @@ class TranslatorService : Service() {
                         ov.show(chosen, original, top, bottom, left, right, lineHeight = lineH)
                     }
                 } else synchronized(showLock) {
+                    sampleShown = false   // skutečný titulek nahradil ukázku rychlé nabídky
                     ov.show(segs, original, top, bottom, left, right, lineHeight = lineH)
                     ++showSeq
                 }
@@ -940,6 +966,7 @@ class TranslatorService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        self = this
         try {
             val cm = getSystemService(android.net.ConnectivityManager::class.java)
             val cb = object : android.net.ConnectivityManager.NetworkCallback() {
@@ -976,6 +1003,8 @@ class TranslatorService : Service() {
 
     override fun onDestroy() {
         tvStatusHandler.removeCallbacks(tvStatusTick)
+        if (self === this) self = null
+        QuickLook.close()
         try { netCallback?.let { getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(it) } } catch (_: Throwable) {}
         netCallback = null
         try { screenReceiver?.let { unregisterReceiver(it) } } catch (_: Throwable) {}

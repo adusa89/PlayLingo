@@ -269,6 +269,13 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   přehled po 8 s / prvním titulku zmizí, oranžový zůstává. Žádné věty („Hledám PlayLingo…“) – jen stavy.
   Úvodní obrazovka: řada HDMI 1–4 a pod ní Vzhled titulků (spustí naposledy použitý vstup a po připojení otevře
   nabídku vzhledu, `chciVzhled`), Ukázka, Nápověda (bod 5 = OK při hře), Jazyk, Ukončit; šipky v `sipka`.
+- **Rychlá nabídka vzhledu na Android TV** (od 0.97.16, `QuickLook.kt`): stejné 4 volby jako OK v TV LG, otevře ji
+  tlačítko zvolené v ⚙ → Obecné („Tlačítko vzhledu titulků“, `Prefs.quickKey`, `learnQuickKey`; OK, šipky, Zpět,
+  Home, hlasitost nejdou – `QuickLook.FORBIDDEN`). Tlačítka chytá `TitulkyAccessibility.onKeyEvent`; filtr tlačítek
+  (`FLAG_REQUEST_FILTER_KEY_EVENTS`) se zapíná jen když je tlačítko nastavené (`updateKeyFilter`) – jinak by systém
+  posílal přes službu každé tlačítko. Změny přes `TranslatorService.quickChange` → `applyTvChange` (jako z TV LG),
+  bez titulku ukázková věta (`quickSample`). Jen když běží překlad a aplikace není vidět. Funguje-li tlačítko při HDMI,
+  záleží na výrobci TV – ověří jen majitel; po aktualizaci může být potřeba vypnout a zapnout službu v Usnadnění.
 - **Domů hlásí starou aplikaci v televizi** (`TvChoice.outdated`: ohlášená verze vs. `receiver-manifest.json`
   v APK, text `w_tv_old`), s tlačítkem k nahrání.
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →
