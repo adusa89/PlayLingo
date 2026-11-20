@@ -39,7 +39,7 @@ internal val LOGIN_S: Map<String, Pair<String, String>> = mapOf(
     "hp_browser_text" to ("Přihlas se v prohlížeči. Na skoro prázdné stránce se slovem „redirect“ zvol Sdílet a vyber PlayLingo." to "Prihlás sa v prehliadači. Na takmer prázdnej stránke so slovom „redirect“ zvoľ Zdieľať a vyber PlayLingo."),
     "hp_is_tv" to ("Tohle je TV nebo box" to "Toto je TV alebo box"),
     "hp_lg_btn" to ("Použít telefon pro TV LG" to "Použiť telefón pre TV LG"),
-    "hp_back" to ("Zpět do režimu telefonu (pomocník pro přihlášení)" to "Späť do režimu telefónu (pomocník na prihlásenie)"),
+    "hp_back" to ("Pomocník pro přihlášení" to "Pomocník na prihlásenie"),
     "hp_acc" to ("Účet PlayStation" to "Účet PlayStation"),
 )
 
@@ -78,7 +78,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser_text" to "Sign in using the browser. On the almost empty page with the word “redirect” choose Share and pick PlayLingo.",
         "hp_is_tv" to "This is a TV or a TV box",
         "hp_lg_btn" to "Use this phone for the LG TV",
-        "hp_back" to "Back to phone mode (sign-in helper)",
+        "hp_back" to "Sign-in helper",
         "hp_acc" to "PlayStation account",
     ),
     Lang.PL to mapOf(
@@ -115,7 +115,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser_text" to "Zaloguj się w przeglądarce. Na prawie pustej stronie ze słowem „redirect” wybierz Udostępnij i wskaż PlayLingo.",
         "hp_is_tv" to "To jest telewizor albo przystawka",
         "hp_lg_btn" to "Użyj telefonu dla telewizora LG",
-        "hp_back" to "Wróć do trybu telefonu (pomocnik logowania)",
+        "hp_back" to "Pomocnik logowania",
         "hp_acc" to "Konto PlayStation",
     ),
     Lang.DE to mapOf(
@@ -152,7 +152,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser_text" to "Melde dich im Browser an. Wähle auf der fast leeren Seite mit dem Wort „redirect“ Teilen und dann PlayLingo.",
         "hp_is_tv" to "Das ist ein Fernseher oder eine TV-Box",
         "hp_lg_btn" to "Handy für den LG-Fernseher verwenden",
-        "hp_back" to "Zurück zum Handy-Modus (Anmeldehilfe)",
+        "hp_back" to "Anmeldehilfe",
         "hp_acc" to "PlayStation-Konto",
     ),
     Lang.HU to mapOf(
@@ -189,7 +189,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser_text" to "Jelentkezz be a böngészőben. A szinte üres, „redirect” szót tartalmazó oldalon válaszd a Megosztás lehetőséget, majd a PlayLingót.",
         "hp_is_tv" to "Ez tévé vagy tévébox",
         "hp_lg_btn" to "Telefon használata az LG tévéhez",
-        "hp_back" to "Vissza telefon módba (bejelentkezési segéd)",
+        "hp_back" to "Bejelentkezési segéd",
         "hp_acc" to "PlayStation-fiók",
     ),
     Lang.UK to mapOf(
@@ -226,7 +226,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser_text" to "Увійди в браузері. На майже порожній сторінці зі словом «redirect» вибери «Поділитися» та PlayLingo.",
         "hp_is_tv" to "Це телевізор або приставка",
         "hp_lg_btn" to "Використати телефон для телевізора LG",
-        "hp_back" to "Назад до режиму телефона (помічник входу)",
+        "hp_back" to "Помічник входу",
         "hp_acc" to "Обліковий запис PlayStation",
     ),
     Lang.ES to mapOf(
@@ -263,7 +263,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser_text" to "Inicia sesión en el navegador. En la página casi vacía con la palabra «redirect», elige Compartir y selecciona PlayLingo.",
         "hp_is_tv" to "Esto es un televisor o un TV box",
         "hp_lg_btn" to "Usar el teléfono para el televisor LG",
-        "hp_back" to "Volver al modo teléfono (ayudante de inicio de sesión)",
+        "hp_back" to "Ayudante de inicio de sesión",
         "hp_acc" to "Cuenta de PlayStation",
     ),
     Lang.FR to mapOf(
@@ -300,7 +300,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser_text" to "Connecte-toi dans le navigateur. Sur la page presque vide avec le mot « redirect », choisis Partager puis PlayLingo.",
         "hp_is_tv" to "Ceci est un téléviseur ou un boîtier TV",
         "hp_lg_btn" to "Utiliser le téléphone pour le téléviseur LG",
-        "hp_back" to "Revenir au mode téléphone (assistant de connexion)",
+        "hp_back" to "Assistant de connexion",
         "hp_acc" to "Compte PlayStation",
     ),
     Lang.IT to mapOf(
@@ -337,7 +337,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_browser_text" to "Accedi nel browser. Nella pagina quasi vuota con la parola «redirect» scegli Condividi e poi PlayLingo.",
         "hp_is_tv" to "Questo è un televisore o un TV box",
         "hp_lg_btn" to "Usa il telefono per il televisore LG",
-        "hp_back" to "Torna alla modalità telefono (assistente di accesso)",
+        "hp_back" to "Assistente di accesso",
         "hp_acc" to "Account PlayStation",
     ),
 )
