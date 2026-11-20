@@ -63,14 +63,15 @@ object DeeplPc {
     /**
      * Překlad částí titulku (anglické texty už upravené pro překladač). Čeká se nejvýš asi
      * [Deepl.WAIT_MS]; null = DeepL teď nepomůže (bez klíče, přestávka po chybě, síť) → offline.
+     * Jména a pojmy ze slovníku hry ([slovnik]) se DeepL neposílají k překladu (jako na Androidu).
      */
-    fun preloz(jazyk: Lang, texty: List<String>): List<String>? {
+    fun preloz(jazyk: Lang, texty: List<String>, slovnik: cz.playlingo.core.Glossary? = null): List<String>? {
         val k = klic() ?: return null
         val cil = Deepl.target(jazyk) ?: return null
         if (texty.isEmpty() || !backoff.allowed(System.currentTimeMillis())) return null
         val b = backoff
         return try {
-            val zdroje = texty.map { Deepl.source(it, null) }
+            val zdroje = texty.map { Deepl.source(it, slovnik?.prepare(it)) }
             val (status, body) = http("POST", Deepl.translateUrl(k), k, Deepl.requestJson(zdroje, cil), 1500, 2500)
             val p = Deepl.problemFor(status)
             val vysledek = if (p == null) Deepl.parseTranslations(body, zdroje.size) else null

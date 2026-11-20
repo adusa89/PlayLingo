@@ -7,10 +7,11 @@ import com.sun.jna.platform.win32.WinUser
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.win32.StdCallLibrary
 import com.sun.jna.win32.W32APIOptions
+import cz.playlingo.core.ScreenLayout
 import cz.playlingo.core.Segment
+import cz.playlingo.core.Zone
 import java.awt.Color
 import java.awt.Font
-import java.awt.FontMetrics
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.GraphicsEnvironment
@@ -161,34 +162,79 @@ fun celaObrazovka(): Obdelnik {
  */
 data class Misto(val stredX: Float, val nahore: Float, val dole: Float, val radek: Float)
 
-/** Kam pruh položit – jako na Android TV (Titulky → Pruh s překladem → Poloha). */
-enum class Poloha(val nazev: String) { PRES("Přes titulky"), NAD("Nad titulky"), DOLE("Dole") }
+/**
+ * Kam pruh položit – jako na Androidu (Titulky → Pruh s překladem → Poloha). [tv] = stejná poloha pro
+ * aplikaci v TV LG/Samsung (`ScreenLayout.Position`, „Dole“ je tam pevné místo).
+ */
+enum class Poloha(val nazev: String, val tv: ScreenLayout.Position) {
+    PRES("Přes titulky", ScreenLayout.Position.OVER),
+    NAD("Nad titulky", ScreenLayout.Position.ABOVE_TEXT),
+    NAHORE("Nahoře", ScreenLayout.Position.TOP),
+    DOLE("Dole", ScreenLayout.Position.CUSTOM);
 
-/** Vzhled pruhu ze stránky Titulky. */
+    companion object {
+        /** Poloha zvolená ovladačem TV → nejbližší poloha na PC. */
+        fun zTv(p: ScreenLayout.Position): Poloha = when (p) {
+            ScreenLayout.Position.OVER -> PRES
+            ScreenLayout.Position.ABOVE_TEXT, ScreenLayout.Position.ABOVE -> NAD
+            ScreenLayout.Position.TOP -> NAHORE
+            ScreenLayout.Position.CUSTOM -> DOLE
+        }
+    }
+}
+
+/** Vzhled pruhu ze stránky Titulky (stejné volby jako na Androidu). */
 data class Vzhled(
-    /** Velikost písma v % automatické velikosti (podle anglického titulku). */
-    val velikost: Int = 100,
-    /** Neprůhlednost pozadí v %. */
-    val pozadi: Int = 85,
+    /** Velikost písma 12–48 (jako sp na Androidu); 0 = podle anglického titulku ve hře. */
+    val pismo: Int = 0,
+    /** Neprůhlednost pozadí v % (0 = bez pozadí, písmo s obrysem). */
+    val pozadi: Int = 90,
     val barva: Color = Color.WHITE,
     val tucne: Boolean = true,
     val poloha: Poloha = Poloha.PRES,
-)
+    /** Okraj nad a pod textem 0–3 (`Prefs.BAR_PADS` na Androidu). */
+    val okraj: Int = 1,
+    /** Anglický originál menším písmem pod překladem. */
+    val original: Boolean = false,
+    /** Pokyny pro hráče (GTA) se ukazují jen s rozsahem „titulky a texty hry“. */
+    val pokyny: Boolean = true,
+) {
+    /** Rozložení pro TV ([cz.playlingo.core.TvLook]): čte se spodní třetina, „Dole“ = pevné místo dole. */
+    fun layout(): ScreenLayout {
+        val l = ScreenLayout(read = Zone(0.05f, 2f / 3f, 0.95f, 1f))
+        return if (poloha == Poloha.DOLE) l.copy(cover = false, hug = false, barCenterY = 0.92f) else l.withPosition(poloha.tv)
+    }
+
+    companion object {
+        /** Okraj nad a pod textem jako násobek písma (stejné hodnoty jako `Prefs.BAR_PADS`). */
+        val OKRAJE = floatArrayOf(0.04f, 0.16f, 0.32f, 0.5f)
+        /** Písmo 22 dá na obrazovce 1080 bodů vysoké 50 px – jako v TV ([cz.playlingo.core.TvLook.SP_TO_PX]). */
+        fun px(pismo: Int, vyskaObrazu: Int): Float = pismo * cz.playlingo.core.TvLook.SP_TO_PX * vyskaObrazu / 1080f
+    }
+}
 
 /**
  * Pruh. [oblast] říká, kde je teď okno hry; volá se pořád dokola, aby pruh jel s oknem.
  *
  * Kam pruh patří, se zadává poměrem v okně hry (0..1) – stejně jako na Android TV leží přes
- * anglický titulek, ze kterého překlad vznikl. Velikost písma se řídí výškou anglického řádku.
+ * anglický titulek, ze kterého překlad vznikl. Velikost písma se řídí výškou anglického řádku,
+ * nebo číslem z Titulků. Překlad menu hry ([ukazMenu]) leží vedle menu, řádky pod sebou zarovnané vlevo.
  */
 class Pruh(private val oblast: () -> Obdelnik?) {
-    private class Obsah(val casti: List<Segment>, val barvy: Map<String, Int>, val misto: Misto)
+    private class Obsah(
+        val casti: List<Segment>, val barvy: Map<String, Int>, val misto: Misto,
+        val original: String? = null,
+        /** Levý horní roh ve zlomcích okna hry – překlad menu (řádky vlevo, bez centrování). */
+        val box: Pair<Float, Float>? = null,
+    )
 
     @Volatile var vzhled = Vzhled()
         set(v) { field = v; SwingUtilities.invokeLater { naposledy = null; obnov() } }
 
     /** Kousek řádku jednou barvou. */
     private class Kus(val text: String, val barva: Color)
+    /** Řádek pruhu: kousky a písmo (pokyn a originál menším). */
+    private class Radka(val kusy: List<Kus>, val pismo: Font)
 
     private val okno = JWindow()
     private val plocha = Plocha()
@@ -208,21 +254,31 @@ class Pruh(private val oblast: () -> Obdelnik?) {
         if (SwingUtilities.isEventDispatchThread()) nastav() else SwingUtilities.invokeAndWait(nastav)
     }
 
-    /** Ukáže překlad tam, kde byl anglický titulek ([misto]). */
-    fun ukaz(casti: List<Segment>, barvy: Map<String, Int>, misto: Misto) {
-        obsah = Obsah(casti, barvy, misto)
+    /** Ukáže překlad tam, kde byl anglický titulek ([misto]); [original] = anglický text (ukáže se jen s volbou Originál). */
+    fun ukaz(casti: List<Segment>, barvy: Map<String, Int>, misto: Misto, original: String? = null) {
+        obsah = Obsah(casti, barvy, misto, original)
+        SwingUtilities.invokeLater { obnov() }
+    }
+
+    /** Překlad menu hry: řádky pod sebou od levého horního rohu [box] (zlomky okna hry). */
+    fun ukazMenu(radky: List<String>, box: Pair<Float, Float>?) {
+        obsah = Obsah(radky.map { Segment(null, it) }, emptyMap(), Misto(0.5f, -1f, -1f, 0f), null, box ?: (0.3f to 0.2f))
         SwingUtilities.invokeLater { obnov() }
     }
 
     /** Zkušební věta na pár vteřin – náhled vzhledu ze stránky Titulky. */
     fun zkouska() {
         ukaz(
-            listOf(Segment("Marek", "Potřebujeme peníze, Jonasi. Ráno vyrážíme do Greyfordu.")),
-            mapOf("Marek" to 0x4FC3F7), Misto(0.5f, 0.84f, 0.9f, 0.05f),
+            listOf(Segment("Marek", "Potřebujeme peníze, Jonasi. Ráno vyrážíme do Greyfordu."), Segment(null, "Stiskni X a nastup", prompt = true)),
+            mapOf("Marek" to 0xFF7FC8F8.toInt()), Misto(0.5f, 0.84f, 0.9f, 0.05f),
+            "MAREK: We need money, Jonas. We ride out to Greyford at dawn.",
         )
         val ted = obsah
         Timer(4000) { if (obsah === ted) schovej() }.apply { isRepeats = false; start() }
     }
+
+    /** Kde pruh právě je (body Swingu); null = schovaný. Jen pro snímky při ladění. */
+    fun obdelnik(): java.awt.Rectangle? = if (okno.isVisible) okno.bounds else null
 
     fun schovej() {
         obsah = null
@@ -246,31 +302,41 @@ class Pruh(private val oblast: () -> Obdelnik?) {
         }
         val v = vzhled
         val m = o.misto
-        // písmo: zhruba jako anglický titulek (výška řádku ze čtení zahrnuje i okraj kolem písmen),
-        // ale aby se dalo číst i na malém displeji handheldu
-        val auto = (if (m.radek > 0f) m.radek * r.h * 0.7f else r.h * 0.035f)
-            .coerceIn(max(16f, r.h * 0.025f), r.h * 0.05f)
-        val px = (auto * v.velikost / 100f).coerceIn(12f, r.h * 0.09f)
-        plocha.pismo = Font("Segoe UI", if (v.tucne) Font.BOLD else Font.PLAIN, px.roundToInt())
+        // písmo: číslo z Titulků (jako sp na Androidu), nebo zhruba jako anglický titulek (výška řádku ze čtení
+        // zahrnuje i okraj kolem písmen), ale aby se dalo číst i na malém displeji handheldu
+        val px = if (v.pismo > 0) Vzhled.px(v.pismo, r.h).coerceIn(10f, r.h * 0.12f)
+            else (if (m.radek > 0f) m.radek * r.h * 0.7f else r.h * 0.035f).coerceIn(max(16f, r.h * 0.025f), r.h * 0.05f)
+        val hlavni = Font("Segoe UI", if (v.tucne) Font.BOLD else Font.PLAIN, px.roundToInt())
+        val male = Font("Segoe UI", Font.PLAIN, (px * 0.78f).roundToInt())
         plocha.pozadi = Color(0, 0, 0, (255 * v.pozadi / 100).coerceIn(0, 255))
-        val fm = plocha.getFontMetrics(plocha.pismo)
-        val okraj = (px * 0.45f).roundToInt()
-        val radky = zalom(o, fm, (r.w * 0.9f).roundToInt() - 2 * okraj, v.barva)
+        plocha.obrys = v.pozadi < 40
+        val bokem = (px * 0.6f).roundToInt()
+        val nahoreDole = (px * Vzhled.OKRAJE[v.okraj.coerceIn(0, 3)]).roundToInt().coerceAtLeast(2)
+        val maxSirka = (r.w * (if (o.box != null) 0.6f else 0.9f)).roundToInt() - 2 * bokem
+        val radky = zalom(o, hlavni, male, maxSirka, v)
+        if (radky.isEmpty()) { okno.isVisible = false; return }
         plocha.radky = radky
-        plocha.okraj = okraj
-        val sirka = (radky.maxOfOrNull { r2 -> r2.sumOf { fm.stringWidth(it.text) } } ?: 0) + 2 * okraj
-        val vyska = radky.size * fm.height + 2 * okraj
-        val znamo = m.nahore >= 0f && m.dole >= 0f
-        val poloha = if (znamo) v.poloha else Poloha.DOLE
-        val stredX = if (poloha == Poloha.DOLE) 0.5f else m.stredX
-        val yf = when (poloha) {
-            Poloha.PRES -> r.y + (m.nahore + m.dole) / 2f * r.h - vyska / 2f
-            Poloha.NAD -> r.y + m.nahore * r.h - vyska - px * 0.3f
-            Poloha.DOLE -> r.y + r.h * 0.97f - vyska
+        plocha.bokem = bokem
+        plocha.nahoreDole = nahoreDole
+        plocha.vlevo = o.box != null
+        val sirka = radky.maxOf { rd -> plocha.getFontMetrics(rd.pismo).let { fm -> rd.kusy.sumOf { fm.stringWidth(it.text) } } } + 2 * bokem
+        val vyska = radky.sumOf { plocha.getFontMetrics(it.pismo).height } + 2 * nahoreDole
+        val box = o.box
+        val (x, y) = if (box != null) {
+            (r.x + box.first * r.w).roundToInt() to (r.y + box.second * r.h).roundToInt()
+        } else {
+            val znamo = m.nahore >= 0f && m.dole >= 0f
+            val poloha = if (znamo || v.poloha == Poloha.NAHORE) v.poloha else Poloha.DOLE
+            val stredX = if (poloha == Poloha.DOLE || poloha == Poloha.NAHORE) 0.5f else m.stredX
+            val yf = when (poloha) {
+                Poloha.PRES -> r.y + (m.nahore + m.dole) / 2f * r.h - vyska / 2f
+                Poloha.NAD -> r.y + m.nahore * r.h - vyska - px * 0.3f
+                Poloha.NAHORE -> r.y + r.h * 0.04f
+                Poloha.DOLE -> r.y + r.h * 0.97f - vyska
+            }
+            (r.x + stredX * r.w - sirka / 2f).roundToInt() to yf.roundToInt()
         }
-        val x = (r.x + stredX * r.w - sirka / 2f).roundToInt().coerceIn(r.x, max(r.x, r.x + r.w - sirka))
-        val y = yf.roundToInt().coerceIn(r.y, max(r.y, r.y + r.h - vyska))
-        okno.setBounds(x, y, sirka, vyska)
+        okno.setBounds(x.coerceIn(r.x, max(r.x, r.x + r.w - sirka)), y.coerceIn(r.y, max(r.y, r.y + r.h - vyska)), sirka, vyska)
         if (!okno.isVisible) okno.isVisible = true
         nastavStyl()
         okno.toFront()
@@ -289,39 +355,49 @@ class Pruh(private val oblast: () -> Obdelnik?) {
         stylNastaven = true
     }
 
-    /** Rozdělí části titulku do řádků, které se vejdou do [max] bodů. Každá část začíná novým řádkem. */
-    private fun zalom(o: Obsah, fm: FontMetrics, max: Int, barva: Color): List<List<Kus>> {
-        val radky = ArrayList<List<Kus>>()
-        for (c in o.casti) {
-            val slova = ArrayList<Kus>()
-            when {
-                c.choice -> slova += Kus("› ", ZLUTA)
-                c.speaker != null -> slova += Kus("${c.speaker}: ", Color(o.barvy[c.speaker] ?: 0xFFD54F))
-            }
-            c.body.split(' ').filter { it.isNotEmpty() }.forEach { slova += Kus("$it ", barva) }
+    /**
+     * Rozdělí části titulku do řádků, které se vejdou do [max] bodů. Každá část začíná novým řádkem;
+     * pokyn pro hráče (GTA) a originál menším šedým písmem.
+     */
+    private fun zalom(o: Obsah, hlavni: Font, male: Font, max: Int, v: Vzhled): List<Radka> {
+        val radky = ArrayList<Radka>()
+        fun pridej(slova: List<Kus>, pismo: Font) {
+            val fm = plocha.getFontMetrics(pismo)
             var radek = ArrayList<Kus>()
             var sirka = 0
             for (s in slova) {
                 val w = fm.stringWidth(s.text)
                 if (radek.isNotEmpty() && sirka + w - fm.charWidth(' ') > max) {
-                    radky += radek
-                    radek = ArrayList()
-                    sirka = 0
+                    radky += Radka(radek, pismo); radek = ArrayList(); sirka = 0
                 }
                 radek += s
                 sirka += w
             }
-            if (radek.isNotEmpty()) radky += radek
+            if (radek.isNotEmpty()) radky += Radka(radek, pismo)
         }
+        fun slova(text: String, barva: Color) = text.split(' ').filter { it.isNotEmpty() }.map { Kus("$it ", barva) }
+        for (c in o.casti) {
+            if (c.prompt && !v.pokyny) continue
+            val zacatek = when {
+                c.choice -> listOf(Kus("› ", ZLUTA))
+                c.speaker != null -> listOf(Kus("${c.speaker}: ", Color((o.barvy[c.speaker] ?: 0xF2C14E) and 0xFFFFFF)))
+                else -> emptyList()
+            }
+            if (c.prompt) pridej(slova(c.body, SEDA), male) else pridej(zacatek + slova(c.body, v.barva), hlavni)
+        }
+        if (v.original) o.original?.let { pridej(slova(it, SEDA), male) }
         // mezera na konci řádku se do šířky nepočítá
-        return radky.map { r -> r.dropLast(1) + Kus(r.last().text.trimEnd(), r.last().barva) }
+        return radky.map { r -> Radka(r.kusy.dropLast(1) + Kus(r.kusy.last().text.trimEnd(), r.kusy.last().barva), r.pismo) }
     }
 
     private inner class Plocha : JComponent() {
-        var pismo = Font("Segoe UI", Font.BOLD, 28)
-        var radky: List<List<Kus>> = emptyList()
-        var okraj = 12
+        var radky: List<Radka> = emptyList()
+        var bokem = 12
+        var nahoreDole = 6
         var pozadi = Color(0, 0, 0, 215)
+        /** Bez pozadí (nebo skoro) – písmo dostane tmavý obrys, ať je čitelné i na světlé scéně. */
+        var obrys = false
+        var vlevo = false
 
         init { isOpaque = false }
 
@@ -330,27 +406,37 @@ class Pruh(private val oblast: () -> Obdelnik?) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
             g2.composite = java.awt.AlphaComposite.Src
+            g2.color = Color(0, 0, 0, 0)
+            g2.fillRect(0, 0, width, height)
             g2.color = pozadi
-            val oblouk = min(okraj * 2, height)
+            val oblouk = min(bokem * 2, height)
             g2.fillRoundRect(0, 0, width, height, oblouk, oblouk)
             g2.composite = java.awt.AlphaComposite.SrcOver
-            g2.font = pismo
-            val fm = g2.fontMetrics
-            var y = okraj + fm.ascent
+            var y = nahoreDole
             for (r in radky) {
-                var x = (width - r.sumOf { fm.stringWidth(it.text) }) / 2
-                for (k in r) {
+                g2.font = r.pismo
+                val fm = g2.fontMetrics
+                y += fm.ascent
+                var x = if (vlevo) bokem else (width - r.kusy.sumOf { fm.stringWidth(it.text) }) / 2
+                val d = max(1, r.pismo.size / 16)
+                for (k in r.kusy) {
+                    if (obrys) {
+                        g2.color = Color(0, 0, 0, 230)
+                        for ((dx, dy) in STIN) g2.drawString(k.text, x + dx * d, y + dy * d)
+                    }
                     g2.color = k.barva
                     g2.drawString(k.text, x, y)
                     x += fm.stringWidth(k.text)
                 }
-                y += fm.height
+                y += fm.descent + fm.leading
             }
         }
     }
 
     private companion object {
         val ZLUTA = Color(0xFFD54F)
+        val SEDA = Color(0xB4BCC4)
+        val STIN = listOf(-1 to 0, 1 to 0, 0 to -1, 0 to 1, 1 to 1, -1 to 1, 1 to -1, -1 to -1)
         const val WS_EX_TOPMOST = 0x00000008
         const val WS_EX_TRANSPARENT = 0x00000020
         const val WS_EX_TOOLWINDOW = 0x00000080

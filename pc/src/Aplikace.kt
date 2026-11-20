@@ -2,6 +2,8 @@
 package cz.playlingo.pc
 
 import cz.playlingo.core.Deepl
+import cz.playlingo.core.GameProfiles
+import cz.playlingo.core.TvSettings
 import cz.playlingo.core.Lang
 import java.awt.BasicStroke
 import java.awt.BorderLayout
@@ -299,6 +301,7 @@ private class Aplikace {
     private val rOkno = StavRadek()
     private val rPs5 = StavRadek()
     private val rPreklad = StavRadek()
+    private val rHra = StavRadek()
     private val rVystup = StavRadek()
     private val rCteni = StavRadek()
     private val rTitulek = StavRadek()
@@ -331,6 +334,28 @@ private class Aplikace {
         hlavniTlacitko.requestFocusInWindow()
         // jen pro snímky při ladění: -Dplaylingo.parovani=1 otevře průvodce spárováním
         if (System.getProperty("playlingo.parovani") == "1") sparovat()
+        // jinak -Dplaylingo.snimek=<složka> uloží po 3 s stránky okna (Domů, Titulky, Nastavení) a zavře ho
+        else System.getProperty("playlingo.snimek")?.let { slozka ->
+            Timer(3000) {
+                java.io.File(slozka).mkdirs()
+                for (s in listOf("Domů", "Titulky", "Nastavení")) {
+                    prepni(s)
+                    okno.contentPane.validate()
+                    val c = okno.contentPane
+                    val img = java.awt.image.BufferedImage(c.width, c.height, java.awt.image.BufferedImage.TYPE_INT_RGB)
+                    c.paint(img.graphics)
+                    javax.imageio.ImageIO.write(img, "png", java.io.File(slozka, "okno-$s.png"))
+                }
+                // zkušební pruh přes celou obrazovku – vyfotí se jen jeho obdélník
+                val zkusebni = Pruh { celaObrazovka() }.apply { vzhled = nast.vzhled().copy(original = true); zkouska() }
+                Timer(1200) {
+                    zkusebni.obdelnik()?.let { b ->
+                        javax.imageio.ImageIO.write(java.awt.Robot().createScreenCapture(b), "png", java.io.File(slozka, "pruh.png"))
+                    }
+                    konec()
+                }.apply { isRepeats = false; start() }
+            }.apply { isRepeats = false; start() }
+        }
     }
 
     private fun svislePosuvne(c: JComponent) = JScrollPane(c).apply {
@@ -411,7 +436,7 @@ private class Aplikace {
     // ---- Domů ----
 
     private fun domu(): JComponent {
-        val karta = Karta().apply { listOf(rOkno, rPs5, rPreklad, rVystup, rCteni, rTitulek).forEach { add(it) } }
+        val karta = Karta().apply { listOf(rOkno, rPs5, rPreklad, rHra, rVystup, rCteni, rTitulek).forEach { add(it) } }
         return stranka(
             velkyStav.vlevo(),
             Box.createVerticalStrut(10),
@@ -505,6 +530,10 @@ private class Aplikace {
             pripravaChyba -> rPreklad.nastav(B.WARN, "Překlad · ${jazyk().label} · chyba přípravy", "Zkusit znovu") { pripravit() }
             else -> rPreklad.nastav(B.WARN, "Překlad · ${jazyk().label} · chybí", "Připravit") { pripravit() }
         }
+
+        // hra (univerzální profil = řádek není, jako na Androidu)
+        if (nast.hra != "all") rHra.nastav(B.OK, "Hra · " + nazevHry(nast.hra) + if (nast.textyHry) "" else " · jen titulky")
+        else rHra.nastav(B.MUTED, "")
 
         // výstup
         val nazevVystupu = Nastaveni.VYSTUPY.firstOrNull { it.first == nast.vystup }?.second ?: "Pruh na PC"
@@ -671,6 +700,11 @@ private class Aplikace {
             chyby = Nastroje.chyby,
             deepl = deeplZapnuty(),
             zaznamy = if (nast.zaznamHry) Nastroje.zaznamy() else null,
+            hra = nast.hra,
+            textyHry = nast.textyHry,
+            vzhled = { pruh.vzhled },
+            zmenaZTv = ::zmenaZTv,
+            stavTv = ::stavProTv,
         )
         ctecka = c
         vlakno = thread(name = "ctecka", isDaemon = true) {
@@ -738,16 +772,63 @@ private class Aplikace {
 
     private fun titulky(): JComponent {
         fun zmenaVzhledu() { pruh.vzhled = nast.vzhled(); radky.forEach { it.obnov() } }
+        val hra = Karta()
+        val profily = GameProfiles.ALL
+        hra.add(volba("Hra", profily.map { nazevHry(it.id) }, { profily.indexOfFirst { p -> p.id == nast.hra }.coerceAtLeast(0) }) {
+            nast.hra = profily[it].id; restart()
+        })
+        hra.add(volba("Rozsah čtení", listOf("Titulky a texty hry", "Jen titulky"), { if (nast.textyHry) 0 else 1 }) {
+            nast.textyHry = it == 0; zmenaVzhledu(); restart()
+        })
         val karta = Karta()
-        karta.add(volba("Velikost písma", Nastaveni.VELIKOSTI.map { "$it %" },
-            { Nastaveni.VELIKOSTI.indexOf(nast.velikost).coerceAtLeast(0) }) { nast.velikost = Nastaveni.VELIKOSTI[it]; zmenaVzhledu() })
+        karta.add(volba("Velikost písma", listOf("Podle titulků") + Nastaveni.PISMA.map { "$it" },
+            { if (nast.pismo == 0) 0 else Nastaveni.PISMA.indexOf(nast.pismo) + 1 }) {
+            nast.pismo = if (it == 0) 0 else Nastaveni.PISMA[it - 1]; zmenaVzhledu()
+        })
         karta.add(volba("Barva textu", Nastaveni.BARVY.map { it.first }, { nast.barva }) { nast.barva = it; zmenaVzhledu() })
         karta.add(volba("Tučné písmo", listOf("Ano", "Ne"), { if (nast.tucne) 0 else 1 }) { nast.tucne = it == 0; zmenaVzhledu() })
-        karta.add(volba("Pozadí pruhu", Nastaveni.POZADI.map { "$it %" },
+        karta.add(volba("Neprůhlednost pozadí", Nastaveni.POZADI.map { "$it %" },
             { Nastaveni.POZADI.indexOf(nast.pozadi).coerceAtLeast(0) }) { nast.pozadi = Nastaveni.POZADI[it]; zmenaVzhledu() })
+        karta.add(volba("Okraj pruhu", (0..3).map { "$it" }, { nast.okraj }) { nast.okraj = it; zmenaVzhledu() })
         karta.add(volba("Poloha", Poloha.values().map { it.nazev }, { nast.poloha.ordinal }) { nast.poloha = Poloha.values()[it]; zmenaVzhledu() })
+        karta.add(volba("Originál pod překladem", listOf("Ne", "Ano"), { if (nast.original) 1 else 0 }) { nast.original = it == 1; zmenaVzhledu() })
         karta.add(Radek("Zkušební pruh", { "" }) { pruh.zkouska() }.also { radky += it })
-        return stranka(popisek("Pruh s překladem", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), karta)
+        return stranka(
+            popisek("Hra", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), hra,
+            Box.createVerticalStrut(20),
+            popisek("Pruh s překladem", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), karta,
+        )
+    }
+
+    private fun nazevHry(id: String) = GameProfiles.of(id).let { if (it.id == "all") "Univerzální" else it.title }
+
+    /** Vzhled změněný ovladačem TV (OK při hře) – uloží se jako z okna PC (`TvLookPrefs.apply` na Androidu). */
+    private fun zmenaZTv(ch: TvSettings.Change) = SwingUtilities.invokeLater {
+        when (ch) {
+            is TvSettings.Change.Opacity -> nast.pozadi = ch.percent
+            is TvSettings.Change.TextSize -> nast.pismo = ch.sp
+            is TvSettings.Change.Position -> nast.poloha = Poloha.zTv(ch.position)
+            is TvSettings.Change.Original -> nast.original = ch.show
+        }
+        pruh.vzhled = nast.vzhled()
+        radky.forEach { it.obnov() }
+    }
+
+    /** Stav pro TV vlevo nahoře – stejné body jako Domů (konzole, překlad, hra). */
+    private fun stavProTv(): List<Pair<String, String>> {
+        val out = ArrayList<Pair<String, String>>()
+        if (nast.zdroj == "chiaki") vybranaKonzole()?.let { k ->
+            out += (if (chiaki?.isAlive == true) "ok" to "${k.jmeno} · hraje se" else "info" to "${k.jmeno} · spárováno")
+        }
+        val s = stav
+        out += when {
+            deeplZapnuty() && s.deeplChyba == Deepl.Problem.BAD_KEY -> "pozor" to "DeepL · neplatný klíč"
+            deeplZapnuty() && s.deeplChyba == Deepl.Problem.QUOTA -> "pozor" to "DeepL · vyčerpaný limit · offline"
+            deeplZapnuty() -> "ok" to "${jazyk().label} · DeepL online + offline"
+            else -> "ok" to "${jazyk().label} · offline"
+        }
+        if (nast.hra != "all") out += "ok" to nazevHry(nast.hra)
+        return out
     }
 
     private fun volba(nazev: String, moznosti: List<String>, aktualni: () -> Int, nastav: (Int) -> Unit): Radek =

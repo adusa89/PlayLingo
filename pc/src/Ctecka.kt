@@ -1,6 +1,18 @@
 package cz.playlingo.pc
 
 import cz.playlingo.core.Deepl
+import cz.playlingo.core.BuiltinPhrases
+import cz.playlingo.core.GameMenu
+import cz.playlingo.core.GameProfiles
+import cz.playlingo.core.Glossary
+import cz.playlingo.core.MatchSize
+import cz.playlingo.core.MenuLine
+import cz.playlingo.core.MenuTracker
+import cz.playlingo.core.NameColor
+import cz.playlingo.core.OfflinePrep
+import cz.playlingo.core.TranslationCache
+import cz.playlingo.core.TvLook
+import cz.playlingo.core.TvSettings
 import cz.playlingo.core.DemoGame
 import cz.playlingo.core.Lang
 import cz.playlingo.core.Natural
@@ -111,6 +123,27 @@ private class Helper(python: String, script: File, model: String, lang: String, 
         return if (r[0] == "OK") r.getOrElse(1) { "" }.takeIf { it.isNotBlank() } else null
     }
 
+    /** Barva písma v obdélníku posledního snímku (celý obraz); null = málo bodů. */
+    fun barva(l: Int, t: Int, r: Int, b: Int): Int? {
+        val p = ask("BARVA", "$l", "$t", "$r", "$b").split('\t')
+        if (p[0] != "OK" || p.size < 4) return null
+        return (0xFF shl 24) or (p[1].toInt() shl 16) or (p[2].toInt() shl 8) or p[3].toInt()
+    }
+
+    class Menu(val lines: List<MenuLine>, val w: Int, val h: Int, val ms: Long)
+
+    /** Horní část posledního snímku pro menu hry ([cz.playlingo.core.GameMenu]). */
+    fun menu(): Menu? {
+        val head = ask("MENU").split('\t')
+        if (head[0] != "OK") return null
+        val n = head[1].toInt()
+        val lines = (0 until n).mapNotNull {
+            val p = (input.readLine() ?: error("pomocník cteni.py skončil")).split('\t', limit = 6)
+            if (p.size < 6) null else MenuLine(p[5], p[0].toInt(), p[1].toInt(), p[2].toInt(), p[3].toInt(), p[4].toInt())
+        }
+        return Menu(lines, head[2].toInt(), head[3].toInt(), head[4].toLong())
+    }
+
     fun stop() { try { process.destroy() } catch (_: Throwable) {} }
 }
 
@@ -169,6 +202,16 @@ class Ctecka(
      * (co se přečetlo a kde, co se vzalo, překlady) a barevnými snímky celé hry (`cteni.py`).
      */
     private val zaznamy: File? = null,
+    /** Profil hry (`core/GameProfiles.kt`): jména, rod postav, pojmy, co přeskočit, barvy, pokyny, menu. */
+    private val hra: String = "all",
+    /** Rozsah čtení: true = titulky a texty hry (pokyny GTA, menu), false = jen titulky. */
+    private val textyHry: Boolean = true,
+    /** Aktuální vzhled pruhu – posílá se i do TV (mění se za běhu). */
+    private val vzhled: () -> Vzhled = { Vzhled() },
+    /** Vzhled změněný ovladačem TV (OK při hře) – uložit jako z okna PC. */
+    private val zmenaZTv: (TvSettings.Change) -> Unit = {},
+    /** Řádky stavu pro TV vlevo nahoře (barva „ok“/„pozor“/„info“, text) – jako Domů. */
+    private val stavTv: () -> List<Pair<String, String>> = { emptyList() },
 ) {
     private var zapisovac: java.io.Writer? = null
     private val casZaznamu = java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
@@ -197,14 +240,18 @@ class Ctecka(
             val model = Nastroje.model(jazyk) ?: error("chybí překladový model pro jazyk $jazyk")
             if (vystup != "pc") {
                 sender = TvSender { log("televize: $it") }
+                // vzhled změněný ovladačem TV (OK při hře): uložit jako z okna PC, nové volby se pošlou zpět
+                sender.onChange = { ch -> hlas("TV: změna vzhledu ${ch.javaClass.simpleName}"); zmenaZTv(ch) }
                 if (!sender.start(port)) error("port pro televizi je obsazený – neběží už jiná čtečka?")
             }
+            nactiPamet()
             val slozka = zaznamy?.let { File(it, "pc-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) }
             if (slozka != null) {
                 slozka.mkdirs()
                 zapisovac = File(slozka, "zaznam.txt").bufferedWriter(Charsets.UTF_8)
                 log("Záznam do ${slozka.path}")
-                zapis("PlayLingo pro PC · jazyk $jazyk · okno „$okno“ · výstup $vystup · DeepL ${if (deepl) "ano" else "ne"}")
+                zapis("PlayLingo pro PC · jazyk $jazyk · okno „$okno“ · výstup $vystup · DeepL ${if (deepl) "ano" else "ne"} · " +
+                    "hra ${profil.id} · ${if (textyHry) "titulky a texty hry" else "jen titulky"}")
                 zapis("CTENI = text ze spodní třetiny obrazu, souřadnice v celém obraze [vlevo,nahoře-vpravo,dole]; snímky celé hry jsou snimek-*.jpg")
             }
             log("Načítám čtení textu a překladač…")
@@ -222,10 +269,54 @@ class Ctecka(
             pruh?.schovej()
             sender?.hide(); sender?.stop()
             helper?.stop()
+            ulozPamet()
             runCatching { zapisovac?.close() }
             zapisovac = null
             if (stav.faze != Stav.Faze.CHYBA) stav = Stav(Stav.Faze.STOJI)
         }
+    }
+
+    // ---- profil hry a slovník (jako `Prefs.glossary` na Androidu, bez vlastního slovníku) ----
+
+    private val lang = Lang.of(jazyk)
+    private val profil = GameProfiles.of(hra)
+    private val slovnik = Glossary(
+        profil.names, profil.termsFor(lang), BuiltinPhrases.forLang(lang), profil.cast,
+    )
+    private val menuSpec = if (textyHry) profil.menuSpec else null
+
+    /** Paměť offline překladů – stejná věta se nepřekládá znovu. Zvlášť pro jazyk a hru (jiná jména). */
+    private val pamet = TranslationCache()
+    private val souborPameti = File(Nastroje.slozka, "pamet-$jazyk-${profil.id}.txt")
+
+    private fun nactiPamet() {
+        runCatching { if (souborPameti.exists()) pamet.load(souborPameti.readText(Charsets.UTF_8)) }
+    }
+
+    private fun ulozPamet() {
+        if (pamet.dirty == 0) return
+        runCatching {
+            souborPameti.parentFile?.mkdirs()
+            val tmp = File(souborPameti.path + ".tmp")
+            tmp.writeText(pamet.dump(), Charsets.UTF_8)
+            if (!tmp.renameTo(souborPameti)) { souborPameti.delete(); tmp.renameTo(souborPameti) }
+        }
+    }
+
+    /**
+     * Offline překlad jako `OfflineTranslator.translate` na Androidu: ručně zadaná věta, jména a pojmy hry
+     * schované za značky (nepřekládají se), slang → spisovná angličtina, u češtiny tykání ([Natural]).
+     */
+    private fun prelozOffline(helper: Helper, text: String): String? {
+        pamet.get(text)?.let { return it }
+        slovnik.sentence(text)?.let { return it }
+        val p = slovnik.prepare(text)
+        var vysledek: String? = null
+        if (p.names.isNotEmpty()) helper.translate(p.protectedText)?.let { vysledek = OfflinePrep.finish(p, it) }
+        val hotovo = (vysledek ?: helper.translate(p.plain) ?: return null).let { if (lang == Lang.CS) Natural.czech(text, it) else it }
+        pamet.put(text, hotovo)
+        if (pamet.dirty >= 20) ulozPamet()
+        return hotovo
     }
 
     private fun smycka(helper: Helper, sender: TvSender?, demo: Boolean) {
@@ -237,22 +328,33 @@ class Ctecka(
         var steadySince = 0L
         var lastError = ""
         var lastTvs = -1
-        // každý mluvčí má svou barvu jména
-        val speakerColors = SpeakerColors()
+        // každý mluvčí má svou barvu jména; postavy z profilu hry jako ve hře (Jason žlutě, Lucia modře)
+        val speakerColors = SpeakerColors(profil.colorsByKey)
+        NameColor.reset()
+        NameColor.profile = profil.colorsByKey
+        val colorAsked = HashMap<String, Long>()
         // kde na snímku byl anglický titulek (poměry v obraze) – podle toho se položí pruh
         var spot = Misto(0.5f, -1f, -1f, 0f)
+        var spotLR = -1f to -1f
         var lastRead = ""
+        // menu hry (GTA VI): čte se horní část obrazu, jen když v pruhu není titulek
+        val menuTracker = menuSpec?.let { MenuTracker(it) }
+        val menuWords = HashMap<String, String>()
+        var menuShown = false
+        var menuKey = ""
+        var menuAt = 0L
+        var statusAt = 0L
 
         // Jako na Androidu od 0.97.2: s DeepL se počká na jeho překlad (nejvýš ~2,5 s) a ukáže se jen
         // jedna varianta; offline jen když DeepL nepomůže. Krátká slova ze slovníčku zůstávají offline.
         fun translateSegments(text: String): List<Segment>? {
-            val parts = TextLogic.segments(text)
+            val parts = TextLogic.segments(text).let { if (profil.prompts) TextLogic.markPrompt(it) else it }
             val bodies = parts.map { TextLogic.normalizeCase(it.body) }
             val quick = bodies.map { QuickWords.lookup(jazyk, it) }
-            val ask = bodies.indices.filter { quick[it] == null }
+            val ask = bodies.indices.filter { quick[it] == null && slovnik.sentence(TextLogic.forTranslator(bodies[it])) == null }
             val online = if (deepl && ask.isNotEmpty()) {
                 val t0 = System.currentTimeMillis()
-                DeeplPc.preloz(Lang.of(jazyk), ask.map { TextLogic.forTranslator(bodies[it]) })?.also {
+                DeeplPc.preloz(lang, ask.map { TextLogic.forTranslator(bodies[it]) }, slovnik)?.also {
                     stav = stav.copy(deeplMs = System.currentTimeMillis() - t0, deeplChyba = null)
                 } ?: run {
                     stav = stav.copy(deeplChyba = DeeplPc.backoff.lastProblem); null
@@ -261,24 +363,108 @@ class Ctecka(
             val result = ArrayList<Segment>()
             parts.forEachIndexed { i, s ->
                 val body = bodies[i]
-                val fromDeepl = online?.getOrNull(ask.indexOf(i))?.let { if (jazyk == "cs") Natural.czech(body, it) else it }
-                val tr = quick[i] ?: fromDeepl ?: helper.translate(TextLogic.forTranslator(body)) ?: return null
-                result.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice))
+                val fromDeepl = online?.getOrNull(ask.indexOf(i))?.let { if (lang == Lang.CS) Natural.czech(body, it) else it }
+                val raw = quick[i] ?: fromDeepl ?: prelozOffline(helper, TextLogic.forTranslator(body)) ?: return null
+                // rod postav (mluvčí, oslovený) – až po paměti překladů, ta je jen podle textu
+                val tr = slovnik.genders(lang, body, raw, s.speaker)
+                result.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice, s.prompt))
             }
             return result
         }
 
+        /** Vzhled pro TV (`TvLook`) – stejné volby jako pruh na PC; [box] = překlad menu vedle menu. */
+        fun look(original: String?, box: Pair<Float, Float>? = null): String {
+            val v = vzhled()
+            val matched = if (v.pismo == 0 && spot.radek > 0f) MatchSize.textPx(spot.radek, TvLook.SCREEN_H) else 0
+            val tvOriginal = original?.takeIf { v.original }?.let { o ->
+                TextLogic.segments(o).joinToString("\n") { s -> (s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + s.body }
+            }
+            return TvLook.json(
+                v.layout(), v.pozadi, TvLook.textPx(if (v.pismo > 0) v.pismo else 22, matched), v.barva.rgb, v.tucne,
+                spot.nahore, spot.dole, spotLR.first, spotLR.second, tvOriginal, v.okraj, box,
+            )
+        }
+
         fun hide() { if (shown) { shown = false; sender?.hide(); pruh?.schovej() } }
+
+        /** Barva jména z obrazu hry: jednou za 3 s pro jméno, které ještě nemá naučenou ([NameColor]). */
+        fun barvaJmena(r: Helper.Read.Frame, text: String) {
+            val now = System.currentTimeMillis()
+            for (line in r.lines) {
+                val name = TextLogic.splitSpeaker(line.text).speaker ?: continue
+                if (!text.contains(name)) continue
+                val key = SpeakerColors.key(name)
+                if (NameColor.learned(name) != null || now - (colorAsked[key] ?: 0L) < 3000) continue
+                colorAsked[key] = now
+                val frac = (name.length + 1).toFloat() / max(1, line.text.length)
+                val nameRight = line.left + ((line.right - line.left) * frac).toInt()
+                val t0 = System.nanoTime()
+                val rgb = helper.barva(r.x0 + line.left, r.y0 + line.top, r.x0 + nameRight, r.y0 + line.bottom)
+                    ?.takeIf { NameColor.isColored(it) }
+                val jmeno = TextLogic.normalizeName(name)
+                NameColor.record(jmeno, rgb, (System.nanoTime() - t0) / 1000)
+                zapis("BARVA $jmeno ${rgb?.let { SpeakerColors.hex(it) } ?: "-"}")
+                NameColor.learned(jmeno)?.let { c -> speakerColors.learn(jmeno, c) }
+                return
+            }
+        }
+
+        /** Menu hry: vrací true, když je menu vidět (pak se titulky nečtou). */
+        fun menu(now: Long): Boolean {
+            val spec = menuSpec ?: return false
+            val mt = menuTracker ?: return false
+            if (now - menuAt < (if (menuShown) 400 else 1500)) return menuShown
+            if (!menuShown && shown) return false
+            menuAt = now
+            val m = helper.menu() ?: return menuShown
+            val (view, changed) = mt.update(GameMenu.read(m.lines, m.w, m.h, spec))
+            if (view == null) {
+                if (menuShown) {
+                    menuShown = false; menuKey = ""
+                    pruh?.schovej(); sender?.hide()
+                    zapis("MENU off")
+                }
+                return false
+            }
+            if (changed || view.key != menuKey) {
+                menuKey = view.key
+                fun preloz(t: String) = menuWords.getOrPut(t) {
+                    translateSegments(t)?.let { TextLogic.joinSegments(it) }?.replace('\n', ' ') ?: t
+                }
+                val items = view.items.map { spec.word(lang, it) ?: preloz(it) }
+                val text = GameMenu.text(view.kind, items, view.selected, view.title?.let { preloz(it) }, view.description?.let { preloz(it) })
+                val radky = text.split('\n')
+                pruh?.ukazMenu(radky, view.box)
+                sender?.show(text, TvSender.partsJson(radky.map { Segment(null, it) }), look(null, view.box))
+                hlas("menu ${view.kind}: ${view.items.joinToString(", ")} · vybraná ${view.selected} (${m.ms} ms)")
+            }
+            // titulky se během menu nečtou – po zavření menu začne čtení od začátku
+            if (!menuShown) { hideAt = 0; tracker.reset() }
+            menuShown = true
+            return true
+        }
 
         while (!konec) {
             val now = System.currentTimeMillis()
-            if (sender != null && sender.connected != lastTvs) {
-                lastTvs = sender.connected
-                log("připojených televizí: $lastTvs")
-                stav = stav.copy(televize = lastTvs)
+            if (sender != null) {
+                if (sender.connected != lastTvs) {
+                    lastTvs = sender.connected
+                    log("připojených televizí: $lastTvs")
+                    stav = stav.copy(televize = lastTvs)
+                }
+                // volby vzhledu pro nabídku OK v TV (posílá se jen změna) a stav vlevo nahoře každé 2 s
+                val v = vzhled()
+                sender.sendSettings(TvSettings.message(v.pozadi, if (v.pismo > 0) v.pismo else 22, v.pismo == 0, v.poloha.tv, v.original))
+                if (now - statusAt > 2000) { statusAt = now; sender.sendStatus(TvSender.statusMessage(stavTv())) }
             }
             val demoText = if (demo) DemoGame.subtitleAt(now - start) else null
-            when (val r = helper.read(force = !tracker.isSettled, demoText = demoText)) {
+            val r = helper.read(force = !tracker.isSettled, demoText = demoText)
+            // menu hry otevřené → jeho překlad vedle menu, titulky se nečtou
+            if (r !is Helper.Read.Error && menu(now)) {
+                Thread.sleep(max(20L, INTERVAL_MS - (System.currentTimeMillis() - now)))
+                continue
+            }
+            when (r) {
                 Helper.Read.Same -> {}
                 is Helper.Read.Error -> {
                     if (r.text != lastError) { lastError = r.text; hlas("obraz není: ${r.text}") }
@@ -297,6 +483,7 @@ class Ctecka(
                         screenCenterX = r.w / 2 - r.x0,
                         centerTolerance = (r.w * 0.14f).toInt(),
                         maxLineHeight = (r.h * 0.085f).toInt(),
+                        screen = profil.screen,
                     )
                     if (zapisovac != null) {
                         val read = r.lines.joinToString(" ; ") { "[${r.x0 + it.left},${r.y0 + it.top}-${r.x0 + it.right},${r.y0 + it.bottom}] ${it.text}" }
@@ -311,6 +498,7 @@ class Ctecka(
                             (r.y0 + picked.bottom).toFloat() / r.h,
                             picked.lineHeight.toFloat() / r.h,
                         )
+                        spotLR = (r.x0 + picked.left).toFloat() / r.w to (r.x0 + picked.right).toFloat() / r.w
                     }
                     if (picked.text.isEmpty() || !TextLogic.looksForeign(picked.text)) {
                         if (picked.text.isEmpty() || !TextLogic.similar(picked.text, steadyText)) { steadyText = picked.text; steadySince = now }
@@ -319,14 +507,17 @@ class Ctecka(
                         if (picked.text.isNotEmpty() && now - steadySince > staleMs) {
                             if (shown) { hideAt = 0; hide(); hlas("schováno (text stojí dlouho – není to titulek)") }
                         } else when (val action = tracker.onOcr(picked.text, slowDevice = r.ms > 500)) {
-                            is SubtitleTracker.Action.Show -> translateSegments(action.text)?.let { segs ->
+                            is SubtitleTracker.Action.Show -> translateSegments(action.text)?.let { all ->
                                 tracker.confirmShown(action.text)
                                 hideAt = 0
                                 shown = true
+                                // pokyny pro hráče (GTA) jen s rozsahem „titulky a texty hry“
+                                val segs = if (textyHry) all else all.filter { !it.prompt }
+                                barvaJmena(r, action.text)
                                 val text = TextLogic.joinSegments(segs)
                                 val colors = speakerColors.colorsFor(segs)
-                                sender?.show(text, TvSender.partsJson(segs, colors))
-                                pruh?.ukaz(segs, colors, spot)
+                                sender?.show(text, TvSender.partsJson(segs, colors), look(action.text))
+                                pruh?.ukaz(segs, colors, spot, action.text.replace('\n', ' '))
                                 val orig = action.text.replace('\n', ' ')
                                 val prel = text.replace('\n', ' ')
                                 stav = stav.copy(original = orig, preklad = prel)

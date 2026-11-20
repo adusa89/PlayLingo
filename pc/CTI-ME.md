@@ -21,13 +21,36 @@ předtím asi minutu sestavuje). Potřebuje Javu 17 (Temurin) a pro Připravit i
   (nenalezeno = tlačítko Vybrat okno), překlad (chybí = tlačítko Připravit – stáhne knihovny
   a model asi 0,6 GB do `%LOCALAPPDATA%\PlayLingoTools`, do systému nic neinstaluje), výstup,
   rychlost čtení a poslední titulek.
-- **Titulky** – vzhled pruhu: velikost písma, barva, tučné, pozadí, poloha (přes titulky / nad
-  titulky / dole) a Zkušební pruh na 4 s. Změny platí hned, i za běhu.
+- **Titulky** – nahoře **Hra** (profil hry z `core/GameProfiles.kt`, výchozí Univerzální) a **Rozsah čtení**
+  (Titulky a texty hry / Jen titulky); pod tím vzhled pruhu se stejnými hodnotami jako na Androidu: velikost
+  písma (Podle titulků nebo 12–48), barva, tučné, neprůhlednost pozadí 0–100 % (pod 40 % má písmo tmavý
+  obrys), okraj pruhu 0–3, poloha (přes titulky / nad titulky / nahoře / dole), originál pod překladem
+  a Zkušební pruh na 4 s. Vzhled platí hned, i za běhu; změna hry nebo rozsahu čtení spustí čtení znovu.
+  Zvolená hra je i na Domů („Hra · Grand Theft Auto VI“; univerzální = řádek není).
 - **⚙ Nastavení** – okno hry (část titulku okna, Vybrat = nabídka oken, kde může běžet hra:
   chiaki / PS Remote Play / Xbox nahoře, skrytá systémová okna ne), ukázková hra
   bez PlayStationu, jazyk překladu, výstup (Pruh na PC / TV LG / Samsung / PC i TV), příprava,
   DeepL (zapnutí, klíč, odkaz na klíče v účtu DeepL) a Záznam (výpis čtení). Změna okna, jazyka,
   výstupu nebo DeepL za běhu čtení sama spustí znovu.
+
+**Profil hry a překlad jako na Androidu (od 21. 11. 2026, `src/Ctecka.kt`):**
+- jména, místa, auta a ulice zůstávají anglicky (`Glossary.prepare` – offline i DeepL), herní pojmy mají
+  pevný překlad, ručně zadané věty (`BuiltinPhrases`), slang se upraví a čeština prochází `Natural.czech`;
+- rod postav (`Glossary.genders` → `CzechGender`: „Lucia šla“), hlášky a menu hry se nečtou
+  (`GameProfile.screen`), v Diablu IV se nečte chat a pozná se mluvčí „Jachal says:“;
+- **paměť překladů** (`TranslationCache`) – stejná věta se nepřekládá znovu; soubor
+  `%LOCALAPPDATA%\PlayLingoTools\pamet-<jazyk>-<hra>.txt`;
+- **barvy jmen** z profilu hry (GTA VI Jason žlutě, Lucia modře) a naučené z obrazu: u nového titulku se
+  jménem `cteni.py` (příkaz `BARVA`) vrátí barvu nejsvětlejších bodů jména, po 2 shodách platí (`NameColor`);
+- **pokyny GTA** („Take your shot“) menším šedým řádkem pod replikou, s „Jen titulky“ se vynechají;
+- **překlad menu GTA VI** (`core/GameMenu.kt`, jen s „Titulky a texty hry“): když v pruhu není titulek,
+  jednou za 1,5 s (v menu za 0,4 s) se přečte horních 60 % obrazu (`cteni.py`, příkaz `MENU`) a překlad
+  menu se ukáže vedle menu, řádky pod sebou; titulky se mezitím nečtou. Na skutečné hře neověřeno.
+
+**Výstup do TV LG / Samsung jako z telefonu:** každý titulek nese vzhled (`TvLook`: písmo, pozadí, barva,
+okraj, poloha, kde byl anglický titulek, originál, u menu místo vedle menu), TV dostává volby pro nabídku
+**OK při hře** (`TvSettings`) – změna z ovladače TV se uloží jako z okna PC – a každé 2 s stav vlevo nahoře
+(konzole, překlad, hra).
 
 **DeepL** (`src/DeeplPc.kt`) jede stejně jako na Androidu od 0.97.2: počká se na překlad DeepL
 (nejvýš ~2,5 s) a ukáže se jen jedna varianta, offline jen když DeepL nepomůže; čeština prochází
@@ -111,12 +134,16 @@ bez předávání ze zařízení.
 
 1. Jednou: `powershell -File pc\priprava.ps1 [-Jazyk cs]`.
 2. Ukázka: `powershell -File pc\spustit.ps1`; hra: `powershell -File pc\spustit.ps1 -Okno chiaki`.
-   `-Vystup pc | tv | oboje` – kam s překladem (výchozí pruh na počítači).
+   `-Vystup pc | tv | oboje` – kam s překladem (výchozí pruh na počítači). Přímo `playlingo-pc.bat`
+   přijme navíc `--hra gta6|gta|rdr2|diablo4|…` a `--jen-titulky`, `--port` jiný než 8787 pro zkoušku vedle
+   běžící čtečky.
 3. Jen s výstupem do TV: na televizi LG spustit PlayLingo a vybrat vstup HDMI. Televize si počítač najde sama.
 
 Pro snímky při ladění okno přijme `-Dplaylingo.stranka=Titulky` a `-Dplaylingo.autostart=1`;
 `-Dplaylingo.parovani=1` otevře průvodce spárováním a s `-Dplaylingo.snimek=<složka>` uloží po 4 s
 všechny jeho kroky jako `parovani-1…4.png` (jen okno průvodce, ne celá obrazovka) a zavře ho.
+Bez `parovani` uloží `-Dplaylingo.snimek=<složka>` stránky okna (`okno-Domů.png`, `okno-Titulky.png`,
+`okno-Nastavení.png`) a zkušební pruh (`pruh.png`, jen jeho obdélník) a aplikaci zavře.
 
 Konzole pustí jen jedno takové spojení najednou: chiaki-ng na počítači a PlayLingo na Androidu
 se u jedné konzole nedají použít současně. Stejně tak smí na portu 8787 v počítači poslouchat jen

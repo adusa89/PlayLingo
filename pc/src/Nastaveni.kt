@@ -44,20 +44,31 @@ class Nastaveni(private val soubor: File = File(Nastroje.slozka, "aplikace.prope
     var ucetId: String get() = text("ucetId", ""); set(v) = nastav("ucetId", v)
     var ucetJmeno: String get() = text("ucetJmeno", ""); set(v) = nastav("ucetJmeno", v)
 
-    var velikost: Int get() = cislo("velikost", 100); set(v) = nastav("velikost", v)
-    var pozadi: Int get() = cislo("pozadi", 90); set(v) = nastav("pozadi", v)
+    /** Velikost písma v pruhu jako na Androidu (12–48, jednotky jako sp na TV); 0 = podle titulků ve hře. */
+    var pismo: Int get() = cislo("pismo", 0).let { if (it == 0 || it in PISMA) it else 0 }; set(v) = nastav("pismo", v)
+    /** Neprůhlednost pozadí pruhu v % (0 = jen písmo se stínem). */
+    var pozadi: Int get() = cislo("pozadi", 90).let { v -> POZADI.minByOrNull { Math.abs(it - v) } ?: 90 }; set(v) = nastav("pozadi", v)
     var barva: Int get() = cislo("barva", 0).coerceIn(0, BARVY.size - 1); set(v) = nastav("barva", v)
     var tucne: Boolean get() = text("tucne", "true") == "true"; set(v) = nastav("tucne", v)
     var poloha: Poloha
         get() = runCatching { Poloha.valueOf(text("poloha", "PRES")) }.getOrDefault(Poloha.PRES)
         set(v) = nastav("poloha", v.name)
+    /** Okraj pruhu nad a pod textem 0–3 (jako na Androidu). */
+    var okraj: Int get() = cislo("okraj", 1).coerceIn(0, 3); set(v) = nastav("okraj", v)
+    /** Anglický originál pod překladem. */
+    var original: Boolean get() = text("original", "false") == "true"; set(v) = nastav("original", v)
 
-    fun vzhled() = Vzhled(velikost, pozadi, Color(BARVY[barva].second), tucne, poloha)
+    /** Profil hry (`core/GameProfiles.kt`); „all“ = univerzální. */
+    var hra: String get() = text("hra", "all"); set(v) = nastav("hra", v)
+    /** Rozsah čtení: true = titulky a texty hry (pokyny GTA, menu), false = jen titulky. */
+    var textyHry: Boolean get() = text("textyHry", "true") == "true"; set(v) = nastav("textyHry", v)
+
+    fun vzhled() = Vzhled(pismo, pozadi, Color(BARVY[barva].second), tucne, poloha, okraj, original, textyHry)
 
     companion object {
-        val VELIKOSTI = listOf(70, 85, 100, 125, 150)
-        /** Stejné hodnoty jako na Android TV (Prefs.OPACITIES). */
-        val POZADI = listOf(60, 80, 90, 100)
+        /** Stejné hodnoty jako na Androidu a v TV (`TvSettings.TEXT_SIZES`, `TvSettings.OPACITIES`). */
+        val PISMA = cz.playlingo.core.TvSettings.TEXT_SIZES
+        val POZADI = cz.playlingo.core.TvSettings.OPACITIES
         /** Stejné barvy jako na Android TV (Prefs.TEXT_COLORS). */
         val BARVY = listOf("Bílá" to 0xFFFFFF, "Žlutá" to 0xFFE066, "Zelená" to 0xA8F0A8, "Modrá" to 0x9FD8FF)
         val ZDROJE = listOf("chiaki" to "chiaki-ng v PlayLingu", "okno" to "Jiný program", "ukazka" to "Ukázková hra")

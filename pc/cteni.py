@@ -11,6 +11,14 @@ Pouští ho čtečka (pc/src/Main.kt) a mluví s ním po řádcích přes standa
          (souřadnice jsou v čteném výřezu; x0, y0 je jeho levý horní roh v celém obraze)
   PRELOZ <tab> anglický text
       -> OK <tab> překlad
+  BARVA <tab> vlevo <tab> nahoře <tab> vpravo <tab> dole      (v celém posledním snímku)
+      -> OK <tab> r <tab> g <tab> b    průměrná barva nejsvětlejších bodů (písmo jména mluvčího)
+      -> NIC                          málo bodů / žádný snímek
+  MENU
+      -> OK <tab> N <tab> šířka <tab> výška <tab> ms  a za tím N řádků:
+         vlevo <tab> nahoře <tab> vpravo <tab> dole <tab> jas <tab> text
+         horních 60 % posledního snímku, zmenšené na nejvýš 960 bodů na šířku (šířka × výška = celý
+         zmenšený snímek); jas = průměrný jas pod řádkem 0–255 (vybraná položka menu má bílý pruh)
 
 Čte se jen spodní třetina obrazu, stejně jako v aplikaci pro Android TV.
 Výběr titulků a rozhodování, co ukázat, tu není – to dělá čtečka stejnou logikou jako Android.
@@ -241,6 +249,29 @@ def velka(text):
     return text
 
 
+def barva_jmena(obraz, obdelnik):
+    """Barva písma jména mluvčího (jako NameColor.fromSamples na Androidu): nejsvětlejší čtvrtina bodů
+    v obdélníku (aspoň jas 110) je písmo, z nich průměrná barva. Bílé/šedé jméno pozná až čtečka."""
+    if obraz is None:
+        return ("NIC",)
+    h, w = obraz.shape[:2]
+    l, t, r, b = obdelnik
+    l, r = max(0, min(l, w - 1)), max(0, min(r, w))
+    t, b = max(0, min(t, h - 1)), max(0, min(b, h))
+    if r - l < 2 or b - t < 2:
+        return ("NIC",)
+    kus = obraz[t:b, l:r].reshape(-1, 3).astype(np.int32)      # BGR
+    jas = (kus[:, 2] * 299 + kus[:, 1] * 587 + kus[:, 0] * 114) // 1000
+    if len(jas) < 8:
+        return ("NIC",)
+    mez = max(int(np.sort(jas)[(len(jas) * 3) // 4]), 110)
+    pismo = kus[jas >= mez]
+    if len(pismo) < 4:
+        return ("NIC",)
+    bb, gg, rr = pismo.mean(axis=0)
+    return ("OK", int(rr), int(gg), int(bb))
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True, help="složka rozbaleného překladového modelu Argos")
@@ -261,10 +292,35 @@ def main():
     ven("PRIPRAVENO")
 
     minule = None
+    posledni = None      # celý poslední snímek (BGR) – pro barvu jména a menu
     for radek in sys.stdin:
         cast = radek.rstrip("\n").split("\t")
         try:
-            if cast[0] == "PRELOZ":
+            if cast[0] == "BARVA":
+                ven(*barva_jmena(posledni, [int(float(c)) for c in cast[1:5]]))
+            elif cast[0] == "MENU":
+                if posledni is None:
+                    ven("OK", 0, 0, 0, 0)
+                    continue
+                t0 = time.time()
+                h, w = posledni.shape[:2]
+                krok = max(1, (w + 959) // 960)
+                mensi = posledni[:int(h * 0.6):krok, ::krok]
+                sedy = mensi.mean(axis=2)
+                vysledek, _ = ocr(np.ascontiguousarray(mensi), use_cls=False)
+                radky = []
+                for ctyruhelnik, text, jistota in (vysledek or []):
+                    if jistota < 0.5:
+                        continue
+                    xs = [b[0] for b in ctyruhelnik]
+                    ys = [b[1] for b in ctyruhelnik]
+                    l, t, r, b = int(min(xs)), int(min(ys)), int(max(xs)), int(max(ys))
+                    jas = int(sedy[max(0, t):max(t + 1, b), max(0, l):max(l + 1, r)].mean())
+                    radky.append((l, t, r, b, jas, text.replace("\t", " ").replace("\n", " ")))
+                ven("OK", len(radky), w // krok, h // krok, int((time.time() - t0) * 1000))
+                for r in radky:
+                    ven(*r)
+            elif cast[0] == "PRELOZ":
                 ven("OK", prekladac.preloz(cast[1] if len(cast) > 1 else "").replace("\t", " ").replace("\n", " "))
             elif cast[0] == "CTI":
                 vynutit = len(cast) > 1 and cast[1] == "1"
@@ -276,6 +332,7 @@ def main():
                     minule = None
                     ven("CHYBA", chyba)
                     continue
+                posledni = obraz
                 if zaznamnik:
                     zaznamnik.mozna(obraz)
                 h, w = obraz.shape[:2]
