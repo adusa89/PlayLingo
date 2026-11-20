@@ -179,11 +179,40 @@ class TvSender(private val log: (String) -> Unit = {}) {
     val connected: Int get() = clients.size
 
     /** Začne čekat na televizi. Vrací false, když port nejde otevřít (už ho drží něco jiného). */
-    @Synchronized fun start(preferredPort: Int = PORT, bind: InetAddress? = null): Boolean {
+    /**
+     * [retry] = když je port zrovna obsazený, zkoušet ho otevřít každé 2 s znovu, dokud se nepovede nebo se nezavolá [stop].
+     * Služba překladu to potřebuje (od 0.97.35): po aktualizaci aplikace si port na okamžik vzala obrazovka aplikace
+     * (TvIdle) a služba ho už nikdy neotevřela – televize pak jen „hledala v síti“, i když telefon překládal.
+     */
+    @Synchronized fun start(preferredPort: Int = PORT, bind: InetAddress? = null, retry: Boolean = false): Boolean {
         if (running) return true
+        wanted = true
         val s = try {
             ServerSocket().apply { reuseAddress = true; bind(InetSocketAddress(bind, preferredPort), 8) }
-        } catch (_: Throwable) { log("tv cannot listen"); return false }
+        } catch (_: Throwable) {
+            log("tv cannot listen" + if (retry) " – port $preferredPort obsazený, zkusím znovu" else "")
+            if (retry && retrier == null) retrier = Thread({
+                while (wanted && !running) {
+                    try { Thread.sleep(2000) } catch (_: InterruptedException) { break }
+                    synchronized(this) { if (wanted && !running && tryOpen(preferredPort, bind)) log("tv port otevřen napodruhé") }
+                }
+                synchronized(this) { retrier = null }
+            }, "tp-tv-retry").apply { isDaemon = true; start() }
+            return false
+        }
+        listen(s)
+        return true
+    }
+
+    /** Chce se poslouchat (start bez stop) – opakované pokusy o port běží jen do [stop]. */
+    @Volatile private var wanted = false
+    private var retrier: Thread? = null
+
+    private fun tryOpen(port: Int, bind: InetAddress?): Boolean = try {
+        listen(ServerSocket().apply { reuseAddress = true; bind(InetSocketAddress(bind, port), 8) }); true
+    } catch (_: Throwable) { false }
+
+    private fun listen(s: ServerSocket) {
         server = s
         port = s.localPort
         val p = Executors.newCachedThreadPool { r -> Thread(r, "tp-tv").apply { isDaemon = true } }
@@ -196,10 +225,11 @@ class TvSender(private val log: (String) -> Unit = {}) {
             }
         }, "tp-tv-accept").apply { isDaemon = true; start() }
         log("tv on port $port")
-        return true
     }
 
     @Synchronized fun stop() {
+        wanted = false
+        retrier?.interrupt()
         val s = server ?: return
         server = null
         try { s.close() } catch (_: Throwable) {}

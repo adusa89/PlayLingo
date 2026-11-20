@@ -993,6 +993,9 @@ class MainActivity : Activity() {
         // náhled je poslední snímek – když obraz zrovna nechodí, je starý (nebo černý); říct proč
         val ls = TranslatorService.linkStatus()
         if (!ls.image) add(ui.text(t("pv_stale") + " " + cz.playlingo.core.LinkStatus.line(Prefs.uiLang(this), ls, Prefs.console(this)), 14f, Theme.WARN), 6)
+        // Android TV: z náhledu rovnou zpět do hry (kolega majitele zůstal v aplikaci a nevěděl jak ven, 20. 11. 2026);
+        // náhled se počítá jen při rozbalené skupině a vidět aplikaci – sbalením nebo odchodem se zastaví
+        if (Prefs.isTv(this)) add(tagged(ui.smallButton(t("b_go_game")) { moveTaskToBack(true) }, "pvgame"), 10)
     }
 
     // ======================= PLAYSTATION =======================
@@ -2288,6 +2291,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.34"
-    const val VERSION_CODE = 131
+    const val VERSION = "verze 0.97.35"
+    const val VERSION_CODE = 132
 }

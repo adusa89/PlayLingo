@@ -117,7 +117,15 @@ class TranslatorService : Service() {
 
         /** Nabídka otevřená / zavřená: ukázková věta v pruhu, když zrovna žádný titulek není. */
         fun quickPreview(on: Boolean) {
-            android.os.Handler(android.os.Looper.getMainLooper()).post { self?.let { if (on) it.quickSample() else it.quickSampleOff() } }
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                self?.let {
+                    if (on) it.quickSample() else it.quickSampleOff()
+                    // s nabídkou i stav připojení vlevo nahoře, zavře se spolu s ní (jako OK v TV LG)
+                    if (!demo && Prefs.tvType(it) == cz.playlingo.core.TvType.ANDROID) {
+                        if (on) StatusPanel.pin(it, TvStatus.rows(it)) else StatusPanel.unpin()
+                    }
+                }
+            }
         }
 
         /** Snímek obrazovky hry jako JPEG pro záznam v síti (ladění menu a oblastí); null = obraz nechodí. */
@@ -371,6 +379,8 @@ class TranslatorService : Service() {
     private val tvStatusTick = object : Runnable {
         override fun run() {
             val s = tv ?: return
+            // port pro TV drží ještě obrazovka aplikace (TvIdle) → uvolnit, služba si ho pak sama otevře (TvSender.start(retry))
+            if (!s.running) try { TvIdle.stop() } catch (_: Throwable) {}
             try { s.sendStatus(TvStatus.message(this@TranslatorService)) } catch (_: Throwable) {}
             tvStatusHandler.postDelayed(this, 2000)
         }
@@ -436,7 +446,7 @@ class TranslatorService : Service() {
                 }
                 // vzhled změněný ovladačem televize: uložit jako z telefonu a načíst znovu
                 it.onChange = { ch -> android.os.Handler(android.os.Looper.getMainLooper()).post { if (running) applyTvChange(ch) } }
-                it.start(); tv = it; activeTv = it
+                it.start(retry = true); tv = it; activeTv = it
             }
         } else {
             tv?.stop(); tv = null; activeTv = null
@@ -501,7 +511,8 @@ class TranslatorService : Service() {
         if (!QuickLook.open) return
         val ov = overlay ?: return
         if (ov.isShown && !sampleShown) return
-        ov.show(listOf(Segment(null, tx("qk_sample"))), null, -1f, -1f)
+        // s volbou „originál“ i druhý řádek, ať je náhled celý (anglická ukázková věta jako originál)
+        ov.show(listOf(Segment(null, tx("qk_sample"))), if (showOriginal) "This is how the subtitle translation will look." else null, -1f, -1f)
         sampleShown = true
     }
     private fun quickSampleOff() {

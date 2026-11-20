@@ -28,6 +28,9 @@ object StatusPanel {
     private var hideAt = 0L
     private var warn = false
 
+    /** Otevřená rychlá nabídka vzhledu: stav je vidět celou dobu a zmizí s ní (jako OK v TV LG, od 0.97.35). */
+    @Volatile private var pinned = false
+
     /** Služba volá každé 2 s (jen Android TV, jen když překlad běží a aplikace není vidět). */
     fun update(c: Context, rows: List<Pair<String, String>>) {
         val sig = rows.joinToString("|") { it.first + it.second }
@@ -35,8 +38,19 @@ object StatusPanel {
             signature = sig
             warn = rows.any { it.first == "pozor" }
             show(c, rows)
-        } else if (view != null && !warn && SystemClock.uptimeMillis() > hideAt) hide()
+        } else if (view != null && !warn && !pinned && SystemClock.uptimeMillis() > hideAt) hide()
     }
+
+    /** Rychlá nabídka otevřená: ukázat stav hned a nechat ho, dokud se nabídka nezavře ([unpin]). */
+    fun pin(c: Context, rows: List<Pair<String, String>>) = main.post {
+        pinned = true
+        signature = rows.joinToString("|") { it.first + it.second }
+        warn = rows.any { it.first == "pozor" }
+        show(c, rows)
+    }
+
+    /** Rychlá nabídka zavřená: stav zmizí s ní (oranžový – něco chybí – zůstane). */
+    fun unpin() = main.post { pinned = false; if (!warn) hide() }
 
     /** Přišel první titulek: zelený přehled už není potřeba. */
     fun onSubtitle() { if (!warn && view != null) main.post { hide() } }

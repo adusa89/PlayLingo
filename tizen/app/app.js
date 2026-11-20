@@ -59,7 +59,8 @@
       pn_ano: 'Zapnuto',
       pn_ne: 'Vypnuto',
       pn_ovladani: '▲▼ volba · ◀▶ změna · Zpět zavře. Ostatní nastavení je v PlayLingu v telefonu.',
-      pn_ukazka: 'Takhle bude vypadat překlad titulků.'
+      pn_ukazka: 'Takhle bude vypadat překlad titulků.',
+      pn_ukazka_orig: 'This is how the subtitle translation will look.'
     },
     en: {
       nadpis: 'Translated game subtitles',
@@ -98,7 +99,8 @@
       pn_ano: 'On',
       pn_ne: 'Off',
       pn_ovladani: '▲▼ choose · ◀▶ change · Back closes. Everything else is in PlayLingo on the phone.',
-      pn_ukazka: 'This is how the translation will look.'
+      pn_ukazka: 'This is how the translation will look.',
+      pn_ukazka_orig: 'This is how the subtitle translation will look.'
     }
   };
 
@@ -271,7 +273,8 @@
     }
     e.style.display = 'block';
     if (stavCasovac) { clearTimeout(stavCasovac); stavCasovac = null; }
-    if (!pozor) { stavCasovac = setTimeout(function () { el('hlaseni').style.display = 'none'; }, 8000); }
+    // při otevřené nabídce vzhledu (OK) zůstává stav vidět, dokud se nabídka nezavře
+    if (!pozor && panelRadek < 0) { stavCasovac = setTimeout(function () { el('hlaseni').style.display = 'none'; }, 8000); }
   }
 
   function stavSkryj() {
@@ -502,7 +505,7 @@
   }
 
   // Poslední vzhled z Androidu upravený podle voleb v nabídce (náhled hned po změně).
-  function nahled() {
+  function nahled(ukazka) {
     var v = {}, k, zdroj = (posledni && posledni.vzhled) || { pozadi: 100, pismo: 50, poloha: 'nad', cteni: [0.74, 0.98], sirka: 0.84 };
     for (k in zdroj) { if (Object.prototype.hasOwnProperty.call(zdroj, k)) { v[k] = zdroj[k]; } }
     if (!nastaveni) { return v; }
@@ -511,6 +514,7 @@
     if (nastaveni.poloha === 'nahore') { v.poloha = 'stred'; v.stred = 0.08; }
     else if (nastaveni.poloha !== 'vlastni') { v.poloha = nastaveni.poloha; }
     if (!nastaveni.original) { delete v.original; }
+    else if (ukazka && !v.original) { v.original = T.pn_ukazka_orig; }
     return v;
   }
 
@@ -551,11 +555,12 @@
     p.appendChild(radek);
     p.style.display = 'block';
     // náhled: skutečný titulek, nebo ukázková věta, když zrovna žádný není
-    if (!posledni || ukazkaVidet || el('pruh').style.display === 'none') {
+    if (!posledni || ukazkaVidet || el('pruh').style.display === 'none' ||
+        (nastaveni.original && !(posledni.vzhled && posledni.vzhled.original))) {
       ukazkaVidet = true;
-      pruhCasti(null, T.pn_ukazka, nahled());
+      pruhCasti(null, T.pn_ukazka, nahled(true));
     } else if (posledni) {
-      pruhCasti(posledni.casti, posledni.text, nahled());
+      pruhCasti(posledni.casti, posledni.text, nahled(false));
     }
   }
 
@@ -564,6 +569,7 @@
     panelRadek = 0;
     zapis('nabídka vzhledu otevřena');
     panelKresli();
+    stavKresli(true);
   }
 
   function panelZavri() {
@@ -571,6 +577,8 @@
     panelRadek = -1;
     el('panel').style.display = 'none';
     if (ukazkaVidet) { ukazkaVidet = false; pruh(null); }
+    // stav zmizí s nabídkou; oranžový (něco chybí) zůstane
+    if (stavPodpis.indexOf('pozor') < 0) { stavSkryj(); }
   }
 
   function dalsi(seznam, hodnota, krok) {
@@ -746,13 +754,13 @@
         if (stavPodpis.indexOf('pozor') < 0) { stavSkryj(); }
         posledni = { casti: z.casti, text: String(z.text || ''), vzhled: z.vzhled };
         ukazkaVidet = false;
-        pruhCasti(z.casti, String(z.text || ''), panelRadek >= 0 ? nahled() : z.vzhled);
+        pruhCasti(z.casti, String(z.text || ''), panelRadek >= 0 ? nahled(false) : z.vzhled);
         // jen délka a počet řádků, ne text titulku
         zapis('ukaž #' + z.id + ': ' + String(z.text || '').length + ' znaků' +
           (z.casti && z.casti.length ? ', ' + z.casti.length + ' částí' : '') + (z.vzhled ? ', vzhled ' + String(z.vzhled.poloha || '?') + ' ' + String(z.vzhled.pozadi) + ' %' : ''));
       } else if (z.typ === 'skryj') {
         posledni = null;
-        if (panelRadek >= 0) { ukazkaVidet = true; pruhCasti(null, T.pn_ukazka, nahled()); } else { pruh(null); }
+        if (panelRadek >= 0) { ukazkaVidet = true; pruhCasti(null, T.pn_ukazka, nahled(true)); } else { pruh(null); }
         zapis('skryj #' + z.id);
       } else {
         return;

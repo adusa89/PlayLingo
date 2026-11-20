@@ -136,6 +136,13 @@ je `SpeakerColors(preset)`; ostatní postavy mají barvu z palety bez těchto. Z
 **Aplikace v TV 1.5.6:** se zapnutým ukazovátkem Magic Remote posílá TV OK jako kliknutí – kliknutí při hře = OK
 (nabídka vzhledu); tlačítko Zpět se při hře neukazuje (rušilo).
 
+**Od 0.97.35 (aplikace v TV 1.5.8):** OK v TV otevře s nabídkou vzhledu i stav vlevo nahoře (nezmizí po 8 s, zavře se s nabídkou;
+oranžový zůstane), stejně rychlá nabídka na Android TV (`StatusPanel.pin`/`unpin` z `quickPreview`). Náhled s volbou „originál“
+ukáže i druhý řádek (ukázková anglická věta `pn_ukazka_orig`, `nahled(true)`). Poloha „přes titulky“ má záměrně vyšší pruh
+(zakrývá celou oblast anglických titulků), ostatní polohy jsou úzké. Služba otevírá port pro TV s opakováním
+(`TvSender.start(retry = true)`, každé 2 s) – po aktualizaci ho na okamžik držela obrazovka aplikace (`TvIdle`) a TV jen hledala.
+Neprůhlednost pruhu 0–100 % (`OPACITIES`: 0, 20, 40, 60, 80, 90, 100 na třech místech, od 0.97.30 / TV 1.5.7).
+
 **Menu hry od 0.97.34 (zatím GTA VI, `core/GameMenu.kt`, testy `GameMenuTest`):** základ podle snímků majitele (`zaznamy/hra-…`) –
 menu otevřené zleva (Map / Game / Store / Help / Photo Studio / Settings), horní lišta Nastavení (Control Scheme … Account) a nadpis
 s popisem vybrané volby vpravo; jednotlivé volby Nastavení záměrně ne. `GameProfile.menuSpec` (`MenuSpec`: položky, záložky, pevné
