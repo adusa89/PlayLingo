@@ -412,6 +412,7 @@ class TranslatorService : Service() {
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
         prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
         coloredSpeaker = Prefs.coloredSpeaker(this)
+        cz.playlingo.core.NameColor.profile = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey
         // změna hry nebo slovníku → dřívější překlady už neplatí
         val sig = Prefs.glossarySignature(this)
         if (sig != Prefs.savedGlossarySignature(this)) {
@@ -469,7 +470,8 @@ class TranslatorService : Service() {
             val name = seg.speaker ?: continue
             if (!text.contains(name)) continue
             val key = cz.playlingo.core.SpeakerColors.key(name)
-            // naučená nebo z profilu → už se nečte; jinak nejvýš jednou za 3 s pro to jméno
+            // naučená → už se nečte (i postavy z profilu se ověří – hra mohla po aktualizaci barvy změnit);
+            // jinak nejvýš jednou za 3 s pro to jméno
             if (cz.playlingo.core.NameColor.learned(name) != null || now - (colorAsked[key] ?: 0L) < 3000) continue
             colorAsked[key] = now
             val frac = (name.length + 1).toFloat() / maxOf(1, line.text.length)

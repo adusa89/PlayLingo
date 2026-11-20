@@ -43,4 +43,17 @@ class NameColorTest {
         assertEquals(true, NameColor.report().contains("2×, průměr 105 µs, nejdéle 120 µs"))
         NameColor.reset()
     }
+
+    @Test fun screenBeatsProfileAndReportsMismatch() {
+        // GTA VI po „aktualizaci“: Jason ve hře zeleně → pruh zeleně, v záznamu neshoda s profilem
+        NameColor.reset()
+        NameColor.profile = GameProfiles.of("gta6").colorsByKey
+        val sc = SpeakerColors(GameProfiles.of("gta6").colorsByKey)
+        assertEquals(SpeakerColors.PALETTE[0], sc.colorOf("Jason"))
+        NameColor.record("Jason", 0x8EDB8A, 50); NameColor.record("Jason", 0x8ADB88, 50)
+        sc.learn("Jason", NameColor.learned("Jason")!!)
+        assertEquals(SpeakerColors.PALETTE[2], sc.colorOf("JASON"))
+        assertEquals(true, NameColor.report().contains("NESHODA: profil #F2C14E, ve hře #8EDB8A"))
+        NameColor.profile = emptyMap(); NameColor.reset()
+    }
 }

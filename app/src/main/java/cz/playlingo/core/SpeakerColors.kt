@@ -37,6 +37,7 @@ class SpeakerColors(
     @Synchronized fun colorOf(name: String): Int {
         val k = key(name)
         if (k.isEmpty()) return PALETTE[0]
+        learnedColors[k]?.let { return it }
         preset[k]?.let { return it }
         known[k]?.let { return it }
         // paleta bez barev, které mají postavy z profilu hry (ať se nepletou)
@@ -53,10 +54,14 @@ class SpeakerColors(
         return color
     }
 
-    /** Barva naučená z obrazu hry – nahradí přidělenou (ne barvu z profilu hry). */
+    /** Barvy naučené z obrazu hry – mají přednost i před profilem (hra po aktualizaci mohla barvy změnit). */
+    private val learnedColors = HashMap<String, Int>()
+
+    /** Barva naučená z obrazu hry (≥ 2 shody) – nahradí přidělenou i barvu z profilu hry. */
     @Synchronized fun learn(name: String, color: Int) {
         val k = key(name)
-        if (k.isEmpty() || preset.containsKey(k)) return
+        if (k.isEmpty()) return
+        learnedColors[k] = color
         known[k] = color
     }
 

@@ -57,12 +57,22 @@ object NameColor {
     @Synchronized fun learned(name: String): Int? =
         seen[SpeakerColors.key(name)]?.entries?.maxByOrNull { it.value }?.takeIf { it.value >= 2 }?.key
 
-    /** Pro záznam: měření a naučené barvy („jason #F2C14E ×12“). */
+    /** Barvy z profilu právě hrané hry – v záznamu se u nich ukáže neshoda s obrazem. */
+    @Volatile var profile: Map<String, Int> = emptyMap()
+
+    /** Pro záznam: měření, naučené barvy („jason #F2C14E ×12“) a neshody s profilem hry (oprava profilu). */
     @Synchronized fun report(): String {
         val avg = if (samples > 0) sumMicros / samples else 0
         val sb = StringBuilder("čtení barvy: $samples×, průměr $avg µs, nejdéle $maxMicros µs\n")
-        for ((k, m) in seen) sb.append(k).append(' ').append(m.entries.sortedByDescending { it.value }
-            .joinToString(", ") { SpeakerColors.hex(it.key) + " ×" + it.value }).append('\n')
+        for ((k, m) in seen) {
+            sb.append(k).append(' ').append(m.entries.sortedByDescending { it.value }
+                .joinToString(", ") { SpeakerColors.hex(it.key) + " ×" + it.value })
+            val p = profile[k]
+            val best = m.entries.maxByOrNull { it.value }?.takeIf { it.value >= 2 }?.key
+            if (p != null && best != null && best != p) sb.append("  ← NESHODA: profil ").append(SpeakerColors.hex(p))
+                .append(", ve hře ").append(SpeakerColors.hex(best))
+            sb.append('\n')
+        }
         return sb.toString().trimEnd()
     }
 
