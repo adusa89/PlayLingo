@@ -397,6 +397,7 @@ class SlangForAllLanguagesTest {
     @Test fun pisneSeNeprekladaji() {
         assertTrue(TextLogic.isLyrics("♪ I'm on my way, baby ♪"))
         assertTrue(TextLogic.isLyrics("Driving down the coast ♫"))
+        assertTrue(TextLogic.isLyrics("🎵 Sunshine on the boulevard 🎶"))
         assertFalse(TextLogic.isLyrics("Lucia: Turn the radio down."))
         val music = OcrBlock(listOf(OcrLine("♪ Sunshine on the boulevard ♪", 700, 900, 1220, 930)))
         val talk = OcrBlock(listOf(OcrLine("Jason: Where are we going?", 700, 950, 1220, 980)))

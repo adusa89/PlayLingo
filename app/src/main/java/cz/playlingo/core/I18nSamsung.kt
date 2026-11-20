@@ -7,6 +7,7 @@ package cz.playlingo.core
  * SS_S = čeština a slovenština, SS_X = ostatní jazyky.
  */
 internal val SS_S: Map<String, Pair<String, String>> = mapOf(
+    "tv_st_never" to ("ještě se nepřipojila" to "ešte sa nepripojila"),
     "ss_overview" to ("4 kroky · potřebuješ počítač · poprvé asi 30–60 minut" to "4 kroky · potrebuješ počítač · prvýkrát asi 30–60 minút"),
     "s_tv_desc" to ("Televize LG a Samsung si obraz hry samy nepřečtou: toto zařízení čte a překládá a televize ukazuje pruh přes hru. V televizi spusť PlayLingo – toto zařízení si v domácí síti najde sama." to "Televízory LG a Samsung si obraz hry samy neprečítajú: toto zariadenie číta a prekladá a televízor ukazuje pruh cez hru. V televízore spusti PlayLingo – toto zariadenie si v domácej sieti nájde sám."),
     "hp_lg_title" to ("Mám TV LG nebo Samsung" to "Mám TV LG alebo Samsung"),
@@ -50,6 +51,7 @@ internal val SS_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val SS_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "tv_st_never" to "not connected yet",
         "ss_overview" to "4 steps · you need a computer · about 30–60 minutes the first time",
         "ss_link" to "Samsung’s guide and download for Tizen Studio:",
         "s_tv_desc" to "LG and Samsung TVs cannot read the game picture themselves: this device reads and translates and the TV shows the bar over the game. Start PlayLingo on the TV – it finds this device in the home network by itself.",
@@ -91,6 +93,7 @@ internal val SS_X: Map<Lang, Map<String, String>> = mapOf(
         "ss_help" to "On a Samsung TV, PlayLingo only works as a screen with the bar; this device does the reading and translating. Samsung only accepts apps signed for that particular TV, so it cannot be installed from here: the guide explains Developer Mode, saves the app file, names the tools to sign and install it, and then checks that the TV connected.",
     ),
     Lang.PL to mapOf(
+        "tv_st_never" to "jeszcze nie połączono",
         "ss_overview" to "4 kroki · potrzebny komputer · za pierwszym razem ok. 30–60 minut",
         "ss_link" to "Instrukcja i pobranie Tizen Studio od Samsunga:",
         "s_tv_desc" to "Telewizory LG i Samsung same nie odczytają obrazu gry: to urządzenie czyta i tłumaczy, a telewizor pokazuje pasek na obrazie gry. Uruchom PlayLingo w telewizorze – samo znajdzie to urządzenie w sieci domowej.",
@@ -132,6 +135,7 @@ internal val SS_X: Map<Lang, Map<String, String>> = mapOf(
         "ss_help" to "Na telewizorze Samsung PlayLingo działa tylko jako ekran z paskiem; czyta i tłumaczy to urządzenie. Samsung przyjmuje tylko aplikacje podpisane dla konkretnego telewizora, dlatego nie da się jej wgrać stąd: przewodnik wyjaśni tryb deweloperski, zapisze plik z aplikacją, poda narzędzia do podpisania i wgrania, a potem sprawdzi, że telewizor się połączył.",
     ),
     Lang.DE to mapOf(
+        "tv_st_never" to "noch nie verbunden",
         "ss_overview" to "4 Schritte · du brauchst einen Computer · beim ersten Mal etwa 30–60 Minuten",
         "ss_link" to "Anleitung und Download von Tizen Studio bei Samsung:",
         "s_tv_desc" to "LG- und Samsung-Fernseher können das Spielbild nicht selbst lesen: Dieses Gerät liest und übersetzt, der Fernseher zeigt die Leiste über dem Spiel. Starte PlayLingo auf dem Fernseher – es findet dieses Gerät im Heimnetz von selbst.",
@@ -173,6 +177,7 @@ internal val SS_X: Map<Lang, Map<String, String>> = mapOf(
         "ss_help" to "Auf einem Samsung-Fernseher ist PlayLingo nur der Bildschirm mit der Leiste; lesen und übersetzen muss dieses Gerät. Samsung nimmt nur Apps an, die für genau diesen Fernseher signiert sind, daher geht die Installation nicht von hier: Der Assistent erklärt den Entwicklermodus, speichert die App-Datei, nennt die Werkzeuge zum Signieren und Installieren und prüft dann, ob sich der Fernseher verbunden hat.",
     ),
     Lang.HU to mapOf(
+        "tv_st_never" to "még nem csatlakozott",
         "ss_overview" to "4 lépés · számítógép kell · először kb. 30–60 perc",
         "ss_link" to "A Samsung útmutatója és a Tizen Studio letöltése:",
         "s_tv_desc" to "Az LG és Samsung tévék maguk nem tudják leolvasni a játék képét: ez az eszköz olvas és fordít, a tévé pedig a játék fölött mutatja a sávot. Indítsd el a PlayLingót a tévén – az otthoni hálózaton magától megtalálja ezt az eszközt.",
@@ -214,6 +219,7 @@ internal val SS_X: Map<Lang, Map<String, String>> = mapOf(
         "ss_help" to "Samsung tévén a PlayLingo csak képernyőként fut a sávval; olvasni és fordítani ennek az eszköznek kell. A Samsung csak az adott tévére aláírt alkalmazást fogad el, ezért innen nem telepíthető: az útmutató elmagyarázza a fejlesztői módot, elmenti az alkalmazás fájlját, megnevezi az aláíráshoz és telepítéshez szükséges eszközöket, majd ellenőrzi, hogy a tévé csatlakozott-e.",
     ),
     Lang.UK to mapOf(
+        "tv_st_never" to "ще не підключався",
         "ss_overview" to "4 кроки · потрібен комп’ютер · уперше приблизно 30–60 хвилин",
         "ss_link" to "Інструкція та завантаження Tizen Studio від Samsung:",
         "s_tv_desc" to "Телевізори LG і Samsung самі не можуть прочитати зображення гри: цей пристрій читає й перекладає, а телевізор показує смугу поверх гри. Запусти PlayLingo на телевізорі – він сам знайде цей пристрій у домашній мережі.",
@@ -255,6 +261,7 @@ internal val SS_X: Map<Lang, Map<String, String>> = mapOf(
         "ss_help" to "На телевізорі Samsung PlayLingo працює лише як екран зі смугою; читає й перекладає цей пристрій. Samsung приймає лише застосунки, підписані для конкретного телевізора, тому встановити його звідси не можна: посібник пояснить режим розробника, збереже файл застосунку, назве інструменти для підпису й установлення, а потім перевірить, що телевізор підключився.",
     ),
     Lang.ES to mapOf(
+        "tv_st_never" to "aún no conectado",
         "ss_overview" to "4 pasos · necesitas un ordenador · la primera vez unos 30–60 minutos",
         "ss_link" to "Guía y descarga de Tizen Studio de Samsung:",
         "s_tv_desc" to "Los televisores LG y Samsung no pueden leer por sí mismos la imagen del juego: este dispositivo lee y traduce, y el televisor muestra la barra sobre el juego. Abre PlayLingo en el televisor: encontrará este dispositivo en la red doméstica por sí solo.",
@@ -296,6 +303,7 @@ internal val SS_X: Map<Lang, Map<String, String>> = mapOf(
         "ss_help" to "En una tele Samsung, PlayLingo solo funciona como pantalla con la barra; leer y traducir lo hace este dispositivo. Samsung solo acepta apps firmadas para esa tele concreta, así que no se puede instalar desde aquí: la guía explica el modo desarrollador, guarda el archivo de la app, nombra las herramientas para firmarla e instalarla y después comprueba que la tele se ha conectado.",
     ),
     Lang.FR to mapOf(
+        "tv_st_never" to "pas encore connecté",
         "ss_overview" to "4 étapes · il faut un ordinateur · la première fois environ 30 à 60 minutes",
         "ss_link" to "Guide et téléchargement de Tizen Studio chez Samsung :",
         "s_tv_desc" to "Les téléviseurs LG et Samsung ne peuvent pas lire eux-mêmes l’image du jeu : cet appareil lit et traduit, et le téléviseur affiche le bandeau par-dessus le jeu. Lance PlayLingo sur le téléviseur – il trouvera cet appareil tout seul sur le réseau domestique.",
@@ -337,6 +345,7 @@ internal val SS_X: Map<Lang, Map<String, String>> = mapOf(
         "ss_help" to "Sur une TV Samsung, PlayLingo n’est que l’écran avec la barre ; la lecture et la traduction se font sur cet appareil. Samsung n’accepte que des apps signées pour cette TV précise, on ne peut donc pas l’installer d’ici : le guide explique le mode développeur, enregistre le fichier de l’app, indique les outils pour la signer et l’installer, puis vérifie que la TV s’est connectée.",
     ),
     Lang.IT to mapOf(
+        "tv_st_never" to "non ancora collegato",
         "ss_overview" to "4 passi · serve un computer · la prima volta circa 30–60 minuti",
         "ss_link" to "Guida e download di Tizen Studio da Samsung:",
         "s_tv_desc" to "I televisori LG e Samsung non riescono a leggere da soli l’immagine del gioco: questo dispositivo legge e traduce, e il televisore mostra la barra sopra il gioco. Avvia PlayLingo sul televisore: troverà da solo questo dispositivo nella rete di casa.",

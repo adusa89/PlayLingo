@@ -421,8 +421,7 @@ class TranslatorService : Service() {
         }
         val sender = tv
         startTvStatus()
-        sender?.sendSettings(TvSettings.message(Prefs.opacity(this), Prefs.textSize(this), Prefs.matchSize(this),
-            Prefs.layout(this).position, Prefs.showOriginal(this)))
+        sender?.sendSettings(TvLookPrefs.message(this))
         overlay = SubtitleOverlay(
             this, screenW, screenH, layout, Prefs.textSize(this), Prefs.opacity(this),
             debug, Prefs.coloredSpeaker(this),
@@ -451,13 +450,7 @@ class TranslatorService : Service() {
     }
 
     private fun applyTvChange(ch: TvSettings.Change) {
-        when (ch) {
-            is TvSettings.Change.Opacity -> Prefs.setOpacity(this, ch.percent)
-            is TvSettings.Change.TextSize -> if (ch.sp == 0) Prefs.setMatchSize(this, true)
-                else { Prefs.setMatchSize(this, false); Prefs.setTextSize(this, ch.sp) }
-            is TvSettings.Change.Position -> Prefs.setLayout(this, Prefs.layout(this).withPosition(ch.position))
-            is TvSettings.Change.Original -> Prefs.setShowOriginal(this, ch.show)
-        }
+        TvLookPrefs.apply(this, ch)
         tp("TVSET|${ch.javaClass.simpleName}")
         reloadSettings()
     }
@@ -993,7 +986,9 @@ class TranslatorService : Service() {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) tp("MEM|systému dochází paměť (úroveň $level)")
+        // jen opravdový nedostatek paměti (ne odchod z aplikace – úrovně 20 a 40), ať záznam nemate
+        if (level == android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW || level == android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL ||
+            level >= android.content.ComponentCallbacks2.TRIM_MEMORY_MODERATE) tp("MEM|systému dochází paměť (úroveň $level)")
     }
 
     override fun onLowMemory() {

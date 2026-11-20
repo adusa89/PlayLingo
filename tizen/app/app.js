@@ -717,6 +717,7 @@
       zapis('spojení se ztratilo, hledám znovu');
       spojeni = null;
       nastaveni = null;
+      chciVzhled = false;   // nabídka by jinak vyskočila nečekaně až po dalším připojení
       stav.android = [];
       panelZavri();
       pruh(null);

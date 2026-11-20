@@ -36,8 +36,16 @@ class CalibrationActivity : Activity() {
         editor.requestFocus()
     }
 
-    override fun onResume() { super.onResume(); UiState.shown(); UiState.previewWanted = true }
-    override fun onPause() { UiState.previewWanted = false; UiState.hidden(); super.onPause() }
+    /** Snímek ze hry se počítá, až když je editor vidět – proto ho sem průběžně doplňovat. */
+    private val refresh = object : Runnable {
+        override fun run() {
+            TranslatorService.snapshot?.let { editor.updateSnapshot(it) }
+            editor.postDelayed(this, 1500)
+        }
+    }
+
+    override fun onResume() { super.onResume(); UiState.shown(); UiState.previewWanted = true; editor.post(refresh) }
+    override fun onPause() { editor.removeCallbacks(refresh); UiState.previewWanted = false; UiState.hidden(); super.onPause() }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         val step = if (event.repeatCount > 2) 0.03f else 0.01f
@@ -71,9 +79,12 @@ class CalibrationActivity : Activity() {
 class ZoneEditorView(
     private val ctx: Context,
     initial: ScreenLayout,
-    private val snapshot: Bitmap?,
+    private var snapshot: Bitmap?,
     private val textSizeSp: Int,
 ) : View(ctx) {
+    /** Novější snímek ze hry (editor se otevřel dřív, než aplikace snímek spočítala). */
+    fun updateSnapshot(b: Bitmap) { if (b !== snapshot) { snapshot = b; invalidate() } }
+
 
     private enum class Mode(val title: String, val help: String) {
         READ_MOVE("cal_read_move", "cal_read_move_h"),

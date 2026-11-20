@@ -1,5 +1,7 @@
 package cz.playlingo
 
+import cz.playlingo.core.TvSettings
+
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -89,8 +91,9 @@ object TvChoice {
         val p = type.platform ?: return null
         val bundled = bundledVersion(c, type) ?: return null
         val live = TvSender.lastSeen?.announce?.takeIf { it.platform == p }
-        val seen = live ?: Prefs.tvSeen(c, p)?.substringAfterLast(" · ")
-            ?.let { cz.playlingo.core.TvAnnounce(p, it, null, null, null) } ?: return null
+        // uloženo „model · verze“; aplikace v televizi před 1.1.0 verzi neposílala → bez verze (= zastaralá)
+        val seen = live ?: Prefs.tvSeen(c, p)
+            ?.let { cz.playlingo.core.TvAnnounce(p, it.takeIf { v -> v.contains(" · ") }?.substringAfterLast(" · "), null, null, null) } ?: return null
         val check = cz.playlingo.core.TvCheck.of(seen, p, bundled)
         return if (check == cz.playlingo.core.TvCheck.OLDER || check == cz.playlingo.core.TvCheck.NO_VERSION)
             (seen.version ?: "?") to bundled else null
@@ -104,8 +107,9 @@ object TvChoice {
         val p = type.platform ?: return null
         val bundled = bundledVersion(c, type) ?: return null
         val live = TvSender.lastSeen?.announce?.takeIf { it.platform == p }
-        val seen = live ?: Prefs.tvSeen(c, p)?.substringAfterLast(" · ")
-            ?.let { cz.playlingo.core.TvAnnounce(p, it, null, null, null) } ?: return null
+        // uloženo „model · verze“; aplikace v televizi před 1.1.0 verzi neposílala → bez verze (= zastaralá)
+        val seen = live ?: Prefs.tvSeen(c, p)
+            ?.let { cz.playlingo.core.TvAnnounce(p, it.takeIf { v -> v.contains(" · ") }?.substringAfterLast(" · "), null, null, null) } ?: return null
         return if (cz.playlingo.core.TvCheck.of(seen, p, bundled).ok) seen.version else null
     }
 
@@ -145,6 +149,22 @@ object TvChoice {
  * Domů pak ukazuje skutečný stav „LG … · připojeno“ ještě před Spustit. Při spuštění překladu se
  * zavře a port převezme služba ([TranslatorService] volá [stop] před vlastním TvSender).
  */
+/** Volby vzhledu z ovladače televize ([TvSettings]) – stejně jako v Titulkách v telefonu. */
+object TvLookPrefs {
+    fun message(c: android.content.Context): String = TvSettings.message(Prefs.opacity(c), Prefs.textSize(c), Prefs.matchSize(c),
+        Prefs.layout(c).position, Prefs.showOriginal(c))
+
+    fun apply(c: android.content.Context, ch: TvSettings.Change) {
+        when (ch) {
+            is TvSettings.Change.Opacity -> Prefs.setOpacity(c, ch.percent)
+            is TvSettings.Change.TextSize -> if (ch.sp == 0) Prefs.setMatchSize(c, true)
+                else { Prefs.setMatchSize(c, false); Prefs.setTextSize(c, ch.sp) }
+            is TvSettings.Change.Position -> Prefs.setLayout(c, Prefs.layout(c).withPosition(ch.position))
+            is TvSettings.Change.Original -> Prefs.setShowOriginal(c, ch.show)
+        }
+    }
+}
+
 object TvIdle {
     @Volatile private var sender: TvSender? = null
 
@@ -155,10 +175,14 @@ object TvIdle {
         if (TranslatorService.running || !Prefs.tvSend(c)) { stop(); return }
         if (sender?.running != true) {
             val s = TvSender { }
+            // „Vzhled titulků“ z televize i bez spuštěného překladu: uložit jako z telefonu a poslat zpět
+            val app = c.applicationContext
+            s.onChange = { ch -> android.os.Handler(android.os.Looper.getMainLooper()).post { TvLookPrefs.apply(app, ch); ensure(app) } }
             sender = if (s.start()) s else null
         }
-        // stav pro televizi (překlad neběží, konzole, jazyk, hra) – posílá se jen změna
+        // stav pro televizi (překlad neběží, konzole, jazyk, hra) a volby vzhledu – posílá se jen změna
         sender?.sendStatus(TvStatus.message(c))
+        sender?.sendSettings(TvLookPrefs.message(c))
     }
 
     @Synchronized fun stop() { sender?.stop(); sender = null }

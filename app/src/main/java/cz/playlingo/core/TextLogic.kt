@@ -254,7 +254,7 @@ object TextLogic {
     const val MENU_LINES = 7
 
     /** Hudební značky, kterými hry označují texty písní (♪ ♫ ♬ ♩ a emoji not). */
-    private val MUSIC = Regex("[\u2669\u266A\u266B\u266C\u266D\u266F]|\uD83C[\uDFB5\uDFB6\uDFBC]")
+    private val MUSIC = Regex("[\u2669\u266A\u266B\u266C\u266D\u266F\\x{1F3B5}\\x{1F3B6}\\x{1F3BC}]")
 
     /**
      * Text písně (rádio v autě, hudba ve scéně) – hry ho v titulcích označují notou (♪ … ♪).
