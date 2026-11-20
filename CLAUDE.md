@@ -120,9 +120,12 @@ náhoda, opakované selhání po změně kódu ne.
 
 ## Nová verze
 
-- Při každé změně aplikace zvyš v `app/build.gradle.kts` obojí: `versionCode` (54 → 55)
-  i `versionName` ("0.54" → "0.55"), a stejná čísla v `BuildInfo` na konci `MainActivity.kt`.
-  Název commitu začíná číslem verze: `0.55: …`.
+- Při každé změně aplikace zvyš v `app/build.gradle.kts` obojí: `versionCode` (o 1, např. 97 → 98)
+  i `versionName`, a stejná čísla v `BuildInfo` na konci `MainActivity.kt`.
+  **Číslování od 0.97 (přání majitele, nechce se dostat k 1.0):** po 0.97 jde 0.97.1, 0.97.2, 0.97.3…
+  (`versionName` = "0.97.N", `versionCode` dál roste o 1: 98, 99, 100…). Aktualizace se řídí jen
+  `versionCode` (`UpdateCheck.parse`), název je jen k zobrazení – tečky navíc nevadí.
+  Název commitu začíná číslem verze: `0.97.1: …`.
 - Vydání pod číslem verze (`v0.55`) vznikne jen jednou a už se nepřepisuje. Push na `main`
   bez zvýšení čísla by tedy nechal pod starým číslem starý soubor.
 - Vydání `latest` z `main` se nabídne všem uživatelům jako aktualizace (aplikace čte
