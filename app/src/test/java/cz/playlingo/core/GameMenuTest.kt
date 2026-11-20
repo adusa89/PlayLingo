@@ -70,6 +70,12 @@ class GameMenuTest {
         assertEquals(0.25f, t.update(read(0.28f, "Game", "Store", "Help")).view!!.box!!.second, 0.001f)
     }
 
+    @Test fun rowStepFromMenuItems() {
+        // položky po 18 px na snímku 540 px; chybějící (dvojnásobný rozdíl) rozestup nezkreslí
+        assertEquals(18f / h, GameMenu.rowStep(listOf(135, 153, 189, 207), h), 0.0001f)
+        assertEquals(0f, GameMenu.rowStep(listOf(135), h), 0f)
+    }
+
     @Test fun selectedNeedsClearlyBrighterRow() {
         assertEquals(-1, GameMenu.selected(listOf(60, 70, 80)))
         assertEquals(1, GameMenu.selected(listOf(60, 200, 70)))

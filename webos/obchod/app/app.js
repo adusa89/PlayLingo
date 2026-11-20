@@ -363,7 +363,7 @@
     var W = 1920, H = 1080;
     var cteni, text, pres, maxW, w, h, top, stred, puvodni, x;
     s.left = ''; s.top = ''; s.bottom = ''; s.width = ''; s.maxWidth = ''; s.minHeight = ''; s.background = ''; s.borderRadius = '';
-    t.style.fontSize = ''; t.style.color = ''; t.style.fontWeight = ''; t.style.padding = ''; t.style.textShadow = ''; t.style.textAlign = '';
+    t.style.fontSize = ''; t.style.color = ''; t.style.fontWeight = ''; t.style.padding = ''; t.style.textShadow = ''; t.style.textAlign = ''; t.style.lineHeight = '';
     if (!v || typeof v !== 'object' || p.style.display === 'none') { return; }
     if (typeof v.original === 'string' && v.original) {
       puvodni = document.createElement('div');
@@ -423,10 +423,19 @@
       top = mimoCteni(cteni[0] - 0.006 - h, h, cteni);
     }
     // pevné místo (od 1.5.9): překlad menu hry hned vedle menu, řádky pod sebou zarovnané vlevo
-    if (v.poloha === 'misto' && v.misto && v.misto.length === 2) {
+    if (v.poloha === 'misto' && v.misto && v.misto.length >= 2) {
       t.style.textAlign = 'left';
+      // řádek proti řádku (od 1.5.10): výška řádku = rozestup položek menu ve hře, písmo se jí přizpůsobí
+      x = v.misto.length >= 3 ? cislo(v.misto[2], 0, 0.2, 0) * H : 0;
+      if (x > 0) {
+        t.style.lineHeight = Math.round(x) + 'px';
+        t.style.fontSize = Math.min(cislo(v.pismo, 16, 120, 50), Math.round(x * 0.62)) + 'px';
+        t.style.padding = '0 0.6em';
+        w = Math.ceil(p.getBoundingClientRect ? p.getBoundingClientRect().width : p.offsetWidth) || w;
+        h = (p.offsetHeight || 150) / H;
+      }
       s.left = Math.round(Math.max(0, Math.min(W - w, cislo(v.misto[0], 0, 1, 0.3) * W))) + 'px';
-      s.top = Math.round(Math.max(0, Math.min(H - h * H, cislo(v.misto[1], 0, 1, 0.2) * H))) + 'px';
+      s.top = Math.round(Math.max(0, Math.min(H - h * H, cislo(v.misto[1], 0, 1, 0.2) * H - x * 0.25))) + 'px';
       return;
     }
     stred = pres && text && text[3] > text[2] ? (text[2] + text[3]) / 2 : 0.5;

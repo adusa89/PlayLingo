@@ -225,6 +225,8 @@ class SubtitleOverlay(
         lineHeight: Float = 0f,
         /** Pevné místo (levý horní roh ve zlomcích obrazu, text vlevo) – překlad menu hry vedle menu (od 0.97.36). */
         box: Pair<Float, Float>? = null,
+        /** Rozestup řádků menu ve hře (zlomek výšky) – každý řádek překladu ve výšce své položky (od 0.97.40). */
+        step: Float = 0f,
     ) {
         isShown = true
         val segments = if (showPrompts) allSegments else allSegments.filter { !it.prompt }
@@ -236,7 +238,7 @@ class SubtitleOverlay(
             val tvOriginal = original?.let { o -> TextLogic.segments(o).joinToString("\n") { s ->
                 (s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + s.body } }
             val look = TvLook.json(layout, opacityPercent, TvLook.textPx(textSize, tvMatched), textColor, bold,
-                textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box)
+                textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box, step)
             send(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors), look)
         }
         main.post {
@@ -285,10 +287,20 @@ class SubtitleOverlay(
             }
             lp.width = width
             if (box != null) {
+                // řádek proti řádku: výška řádku = rozestup položek ve hře, písmo se jí přizpůsobí
+                val rowPx = step * screenH
+                if (rowPx > 0f && android.os.Build.VERSION.SDK_INT >= 28) {
+                    tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, minOf(tv.textSize, rowPx * 0.62f))
+                    tv.lineHeight = rowPx.toInt()
+                    tv.setPadding(tv.paddingLeft, 0, tv.paddingRight, 0)
+                    tv.measure(View.MeasureSpec.makeMeasureSpec(maxWidth, View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+                    lp.width = tv.measuredWidth.coerceIn(dp(80), screenW)
+                }
                 // okno je zarovnané na střed: x = posun od středu, aby levý okraj pruhu byl na box.first
-                val limit = max(0, (screenW - width) / 2)
-                lp.x = ((box.first * screenW + width / 2f) - screenW / 2f).toInt().coerceIn(-limit, limit)
-                lp.y = (box.second * screenH).toInt().coerceIn(0, max(0, screenH - h))
+                val limit = max(0, (screenW - lp.width) / 2)
+                lp.x = ((box.first * screenW + lp.width / 2f) - screenW / 2f).toInt().coerceIn(-limit, limit)
+                // řádek proti položce: horní okraj textu položky ≈ horní čtvrtina řádku
+                lp.y = (box.second * screenH - (if (rowPx > 0f) rowPx * 0.25f else 0f)).toInt().coerceIn(0, max(0, screenH - tv.measuredHeight))
                 tv.visibility = View.VISIBLE
                 try { wm.updateViewLayout(tv, lp) } catch (_: Exception) {}
                 return@post

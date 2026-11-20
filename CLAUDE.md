@@ -147,6 +147,11 @@ ukáže i druhý řádek (ukázková anglická věta `pn_ukazka_orig`, `nahled(t
 (`TvSender.start(retry = true)`, každé 2 s) – po aktualizaci ho na okamžik držela obrazovka aplikace (`TvIdle`) a TV jen hledala.
 Neprůhlednost pruhu 0–100 % (`OPACITIES`: 0, 20, 40, 60, 80, 90, 100 na třech místech, od 0.97.30 / TV 1.5.7).
 
+**Od 0.97.39 (aplikace v TV 1.5.10):** menu zleva řádek proti řádku – `MenuView.step` (rozestup položek ve hře, nejmenší rozdíl
+sousedních, `GameMenu.rowStep`) → výška řádku překladu = rozestup, písmo nejvýš 62 % řádku (Android `lineHeight` od API 28,
+TV `misto:[x,y,rozestup]`). V menu se čte každých 0,4 s, zavře se až po 4 čteních bez něj (`MenuTracker.MISSES`), `MENU|off|…`
+v záznamu ukáže, co se přečetlo.
+
 **Menu hry od 0.97.36 (aplikace v TV 1.5.9):** překlad menu už není v pruhu dole – položky menu zleva **pod sebou hned vedle menu**,
 zarovnané vlevo (`MenuView.box` → `SubtitleOverlay.show(box=…)` a `TvLook` poloha `misto` + `misto:[x,y]`; starší TV ho položí jako
 pruh), lišta Nastavení v řádku pod anglickým popisem vpravo. Značka vybrané „» “ (šipku ▸ webOS neuměl – čtvereček). `MenuTracker`:

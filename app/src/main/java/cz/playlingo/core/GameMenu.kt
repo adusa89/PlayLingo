@@ -38,6 +38,8 @@ data class MenuLine(val text: String, val left: Int, val top: Int, val right: In
 data class MenuView(
     val kind: String, val items: List<String>, val selected: Int, val title: String? = null, val description: String? = null,
     val tops: List<Int> = emptyList(), val box: Pair<Float, Float>? = null,
+    /** Rozestup řádků menu ve hře (zlomek výšky obrazu; 0 = neznámý) – překlad řádek proti řádku (od 0.97.40). */
+    val step: Float = 0f,
 ) {
     /** Jen na porovnání, jestli se menu změnilo (jiná vybraná položka, jiný popis). */
     val key: String get() = kind + "|" + items.joinToString("|") + "#" + selected + "#" + (title ?: "") + "#" + (description ?: "")
@@ -66,7 +68,7 @@ object GameMenu {
         val x = maxOf(found.maxOf { it.second.right }.toFloat() / w + 0.03f, 0.3f)
         val y = found.first().second.top.toFloat() / h
         return MenuView("pause", found.map { it.first }, selected(found.map { it.second.bright }),
-            tops = found.map { it.second.top }, box = x.coerceAtMost(0.6f) to y)
+            tops = found.map { it.second.top }, box = x.coerceAtMost(0.6f) to y, step = rowStep(found.map { it.second.top }, h))
     }
 
     /** Nastavení: záložky v horní liště a nadpis + popis vybrané volby vpravo. */
@@ -115,6 +117,15 @@ object GameMenu {
         return if (out.size > 1) out.map { it.first to -1 } else out
     }
 
+    /**
+     * Rozestup položek pod sebou: nejmenší rozdíl sousedních přečtených položek (chybějící položka by rozdíl
+     * zdvojnásobila). 0 = neznámý (méně než 2 položky).
+     */
+    internal fun rowStep(tops: List<Int>, h: Int): Float {
+        val d = tops.sorted().zipWithNext { a, b -> b - a }.filter { it > 0 }
+        return if (d.isEmpty() || h <= 0) 0f else d.minOrNull()!!.toFloat() / h
+    }
+
     /** Vybraná = výrazně nejsvětlejší (bílý pruh); jinak −1. */
     internal fun selected(bright: List<Int>): Int {
         if (bright.size < 2 || bright.any { it < 0 }) return -1
@@ -157,10 +168,11 @@ class MenuTracker(private val spec: MenuSpec) {
     private val tops = LinkedHashMap<String, Int>()
     private var misses = 0
     private var last: MenuView? = null
+    private var prevStep = 0f
 
     data class Result(val view: MenuView?, val changed: Boolean)
 
-    fun reset() { kind = null; tops.clear(); misses = 0; last = null }
+    fun reset() { kind = null; tops.clear(); misses = 0; last = null; prevStep = 0f }
 
     fun update(read: MenuView?): Result {
         if (read == null) {
@@ -169,7 +181,7 @@ class MenuTracker(private val spec: MenuSpec) {
             reset(); return Result(null, true)
         }
         misses = 0
-        if (read.kind != kind) { kind = read.kind; tops.clear() }
+        if (read.kind != kind) { kind = read.kind; tops.clear(); prevStep = 0f }
         read.items.forEachIndexed { i, item -> tops[item] = read.tops.getOrElse(i) { tops[item] ?: 0 } }
         // pořadí položek: menu zleva podle výšky, lišta podle pořadí v profilu hry (zleva doprava)
         val order = if (read.kind == "pause") spec.pause else spec.tabs
@@ -188,7 +200,10 @@ class MenuTracker(private val spec: MenuSpec) {
             read.box == null -> prev
             else -> prev.first to minOf(prev.second, read.box.second)
         }
-        val v = read.copy(items = items, selected = sel, tops = items.map { tops[it] ?: 0 }, box = box)
+        // rozestup řádků: nejmenší známý (spolehlivější, když čtení nějakou položku vynechá)
+        val step = listOf(prevStep, read.step).filter { it > 0f }.minOrNull() ?: 0f
+        prevStep = step
+        val v = read.copy(items = items, selected = sel, tops = items.map { tops[it] ?: 0 }, box = box, step = step)
         val changed = v.key != last?.key
         last = v
         return Result(v, changed)

@@ -783,7 +783,8 @@ class TranslatorService : Service() {
             val text = cz.playlingo.core.GameMenu.text(view.kind, items, view.selected, title, desc)
             synchronized(showLock) {
                 // vedle menu, řádky pod sebou (od 0.97.36)
-                ov.show(text.split('\n').map { Segment(null, it) }, null, -1f, -1f, box = view.box)
+                ov.show(text.split('\n').map { Segment(null, it) }, null, -1f, -1f, box = view.box,
+                    step = if (view.kind == "pause" && view.title == null) view.step else 0f)
                 ++showSeq
             }
             tp("MENU|${view.kind}|${view.items.joinToString(",")}|vybraná=${view.selected}|popis=${view.title ?: "-"}")
