@@ -42,12 +42,15 @@ data class Zone(val left: Float, val top: Float, val right: Float, val bottom: F
  *
  * [cover] = true (výchozí): černý pruh se položí PŘÍMO PŘES anglické titulky.
  * [cover] = false: pruh je jinde – barCenterY < 0 znamená "těsně nad modrým rámečkem".
+ * [hug] (s barCenterY < 0): pruh těsně nad právě nalezený anglický titulek, ne nad celou oblast
+ * čtení – posouvá se s titulkem (volba „Těsně nad anglickým titulkem“).
  */
 data class ScreenLayout(
     val read: Zone = DEFAULT_READ,
     val barCenterY: Float = AUTO,
     val barWidth: Float = 0.84f,
     val cover: Boolean = true,
+    val hug: Boolean = false,
 ) {
     val isAuto: Boolean get() = barCenterY < 0f
 
@@ -90,29 +93,32 @@ data class ScreenLayout(
     }
 
     /** Přednastavené polohy pruhu s překladem. */
-    enum class Position { OVER, ABOVE, TOP, CUSTOM }
+    enum class Position { OVER, ABOVE_TEXT, ABOVE, TOP, CUSTOM }
 
     val position: Position
         get() = when {
             cover -> Position.OVER
+            isAuto && hug -> Position.ABOVE_TEXT
             isAuto -> Position.ABOVE
             barCenterY <= TOP_CENTER + 0.01f -> Position.TOP
             else -> Position.CUSTOM
         }
 
     fun withPosition(p: Position): ScreenLayout = when (p) {
-        Position.OVER -> copy(cover = true, barCenterY = AUTO)
-        Position.ABOVE -> copy(cover = false, barCenterY = AUTO)
-        Position.TOP -> copy(cover = false, barCenterY = TOP_CENTER)
+        Position.OVER -> copy(cover = true, barCenterY = AUTO, hug = false)
+        Position.ABOVE_TEXT -> copy(cover = false, barCenterY = AUTO, hug = true)
+        Position.ABOVE -> copy(cover = false, barCenterY = AUTO, hug = false)
+        Position.TOP -> copy(cover = false, barCenterY = TOP_CENTER, hug = false)
         Position.CUSTOM -> this
     }
 
     fun withBarWidth(w: Float) = copy(barWidth = w.coerceIn(0.3f, 1f))
-    fun withBarCenter(y: Float) = copy(barCenterY = y.coerceIn(0.02f, 0.98f))
+    fun withBarCenter(y: Float) = copy(barCenterY = y.coerceIn(0.02f, 0.98f), hug = false)
 
     /** Uložení do jednoho řádku textu. */
     fun serialize(): String =
-        listOf(read.left, read.top, read.right, read.bottom, barCenterY, barWidth, if (cover) 1f else 0f).joinToString(",")
+        // 7. číslo: 1 = přes titulky, 2 = těsně nad titulkem (starší verze ho čtou jako „přes titulky“), 0 = jinak
+        listOf(read.left, read.top, read.right, read.bottom, barCenterY, barWidth, if (cover) 1f else if (hug) 2f else 0f).joinToString(",")
 
     companion object {
         const val AUTO = -1f
@@ -126,8 +132,9 @@ data class ScreenLayout(
             if ((v.size != 6 && v.size != 7) || v.any { it.isNaN() || it.isInfinite() }) return ScreenLayout()
             val read = Zone(v[0], v[1], v[2], v[3]).normalized()
             val center = if (v[4] < 0f) AUTO else v[4].coerceIn(0.02f, 0.98f)
-            val cover = if (v.size == 7) v[6] >= 0.5f else true
-            return ScreenLayout(read, center, v[5].coerceIn(0.3f, 1f), cover)
+            val cover = if (v.size == 7) v[6] >= 0.5f && v[6] < 1.5f else true
+            val hug = v.size == 7 && v[6] >= 1.5f && center < 0f
+            return ScreenLayout(read, center, v[5].coerceIn(0.3f, 1f), cover, hug)
         }
     }
 }

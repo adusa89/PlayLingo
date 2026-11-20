@@ -233,6 +233,8 @@ class SubtitleOverlay(
             val hf = h.toFloat() / screenH
             val top = when {
                 l.cover -> l.coverTop(tTop, tBottom, hf)
+                // volba „těsně nad anglickým titulkem“: pruh jde s titulkem, ne nad celou oblast čtení
+                l.hug && l.isAuto && hasText -> (tTop - 0.006f - hf).coerceAtLeast(0f)
                 // automatika ještě hledá (čte se celá obrazovka) → pruh těsně nad nalezený text
                 l.isAuto && hasText && l.read.height > 0.6f -> (tTop - 0.006f - hf).coerceAtLeast(0f)
                 else -> l.barTop(hf)

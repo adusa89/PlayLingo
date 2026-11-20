@@ -56,6 +56,7 @@ class MainActivity : Activity() {
         private const val REQ_NOTIF = 1002
         private const val REQ_PS5_SCAN = 1003
         private const val REQ_PS5_CAMERA = 1004
+        private const val REQ_PS5_IP_SCAN = 1005
         // kroky průvodce prvním spuštěním (pořadí = pořadí v menu průvodce; zkouška jím prochází naslepo)
         private const val W_DEVICE = 0
         private const val W_CONSOLE = 1
@@ -869,29 +870,35 @@ class MainActivity : Activity() {
      */
     private fun loginPinWanted() = Ps5Link.needsLoginPin || draftLogin.isNotEmpty() || Prefs.ps5LoginPin(this).isNotEmpty()
 
-    private fun scanPs5Code() {
+    /** Hledání PlayStationu v síti nic nenašlo → nabídnout načtení adresy kamerou. */
+    private var ps5NotFound = false
+    /** Na co se čeká po povolení kamery: adresa (true) nebo číslo pro spárování. */
+    private var scanIpPending = false
+
+    private fun scanPs5Code(ip: Boolean = false) {
         saveDrafts()
         if (checkSelfPermission(android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            @Suppress("DEPRECATION") startActivityForResult(Intent(this, LgScanActivity::class.java).putExtra(LgScanActivity.EXTRA_MODE, LgScanActivity.MODE_PS5), REQ_PS5_SCAN)
-        } else requestPermissions(arrayOf(android.Manifest.permission.CAMERA), REQ_PS5_CAMERA)
+            @Suppress("DEPRECATION") startActivityForResult(Intent(this, LgScanActivity::class.java)
+                .putExtra(LgScanActivity.EXTRA_MODE, if (ip) LgScanActivity.MODE_PS5_IP else LgScanActivity.MODE_PS5), if (ip) REQ_PS5_IP_SCAN else REQ_PS5_SCAN)
+        } else { scanIpPending = ip; requestPermissions(arrayOf(android.Manifest.permission.CAMERA), REQ_PS5_CAMERA) }
     }
 
     @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         @Suppress("DEPRECATION") super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode != REQ_PS5_CAMERA) return
-        if (grantResults.firstOrNull() == android.content.pm.PackageManager.PERMISSION_GRANTED) scanPs5Code()
+        if (grantResults.firstOrNull() == android.content.pm.PackageManager.PERMISSION_GRANTED) scanPs5Code(scanIpPending)
         else toast(t("km_denied"))
     }
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         @Suppress("DEPRECATION") super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != REQ_PS5_SCAN) return
+        if (requestCode != REQ_PS5_SCAN && requestCode != REQ_PS5_IP_SCAN) return
         val code = data?.getStringExtra(LgScanActivity.EXTRA_CODE)
         if (resultCode == RESULT_OK && code != null) {
             saveDrafts()
-            draftPin = code
+            if (requestCode == REQ_PS5_IP_SCAN) { draftIp = code; Prefs.setPs5Ip(this, code); pairMsg = null } else draftPin = code
             // políčko s číslem ještě drží starý text – nepřepsat jím přečtené číslo
             skipDraftSave = true
             try { render(true) } finally { skipDraftSave = false }
@@ -953,6 +960,8 @@ class MainActivity : Activity() {
                 add(ui.card().apply { addView(ui.text(t("pg_2_text"), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_ip", draftIp, "pip", number = true).also { IpField.setup(it) }, 10)
                 add(tagged(ui.button(t("ps5_find")) { findPs5() }, "pfind"), 8)
+                // adresu aplikace většinou najde sama; kamera jen když hledání neuspělo (telefon s kamerou)
+                if (ps5NotFound && LgScanActivity.available(this)) add(tagged(ui.button(t("km_scan_ps5ip")) { scanPs5Code(true) }, "pscanip"), 8)
             }
             2 -> {
                 // telefon: velký QR kód s adresou stránky, kterou televize vystavuje v domácí síti
@@ -1141,8 +1150,8 @@ class MainActivity : Activity() {
             val first = list.firstOrNull()
             if (first != null) {
                 Prefs.setPs5Ip(this, first.ip)
-                pairNote(t("ps5_found") + " " + list.joinToString { it.name + " (" + it.ip + ")" }, Theme.OK) { draftIp = first.ip }
-            } else pairNote(t("ps5_notfound"), Theme.WARN)
+                pairNote(t("ps5_found") + " " + list.joinToString { it.name + " (" + it.ip + ")" }, Theme.OK) { draftIp = first.ip; ps5NotFound = false }
+            } else pairNote(t("ps5_notfound"), Theme.WARN) { ps5NotFound = true }
         }, "tp-find").start()
     }
 
@@ -1864,6 +1873,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.87"
-    const val VERSION_CODE = 87
+    const val VERSION = "verze 0.88"
+    const val VERSION_CODE = 88
 }

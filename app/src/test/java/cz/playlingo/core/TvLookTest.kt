@@ -37,6 +37,18 @@ class TvLookTest {
         assertEquals(120, TvLook.textPx(80, 0))
     }
 
+    @Test fun tesneNadTitulkem() {
+        val l = ScreenLayout().withPosition(ScreenLayout.Position.ABOVE_TEXT)
+        assertEquals(ScreenLayout.Position.ABOVE_TEXT, l.position)
+        val j = TvLook.json(l, 100, 50, white, false, 0.85f, 0.9f, -1f, -1f, null)
+        assertTrue(j, j.contains("\"poloha\":\"tesne\""))
+        // uloží se a načte zpět; jiné polohy volbu zruší
+        assertEquals(ScreenLayout.Position.ABOVE_TEXT, ScreenLayout.parse(l.serialize()).position)
+        assertEquals(ScreenLayout.Position.ABOVE, ScreenLayout.parse(l.withPosition(ScreenLayout.Position.ABOVE).serialize()).position)
+        assertEquals(ScreenLayout.Position.OVER, ScreenLayout.parse(ScreenLayout().serialize()).position)
+        assertEquals(ScreenLayout.Position.CUSTOM, l.withBarCenter(0.5f).position)
+    }
+
     @Test fun zpravaUkazSVzhledem() {
         val m = TvSender.showMessage(3, "Ahoj", null, "{\"pozadi\":50}")
         assertEquals("{\"typ\":\"ukaz\",\"id\":3,\"text\":\"Ahoj\",\"vzhled\":{\"pozadi\":50}}", m)

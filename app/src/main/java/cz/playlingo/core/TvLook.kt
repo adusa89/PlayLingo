@@ -12,7 +12,7 @@ import java.util.Locale
  * jako `SubtitleOverlay` (přes titulky / nad oblast čtení / pevné místo).
  *
  * Pole: `pozadi` průhlednost pozadí 0–100 (100 = černé), `pismo` velikost písma v px na obrazovce
- * 1080 řádků, `barva` #RRGGBB, `tucne`, `poloha` „pres“ / „nad“ / „stred“ (+ `stred` = svislý střed
+ * 1080 řádků, `barva` #RRGGBB, `tucne`, `poloha` „pres“ / „tesne“ / „nad“ / „stred“ (+ `stred` = svislý střed
  * pruhu), `sirka` největší šířka pruhu, `cteni` [horní, dolní] hrana oblasti čtení, `text` [nahoře,
  * dole, vlevo, vpravo] anglického titulku (jen když se našel), `original` anglický text (jen se
  * zapnutým „Ukazovat i originál“).
@@ -36,7 +36,8 @@ object TvLook {
         sb.append(",\"pismo\":").append(textPx.coerceIn(16, 120))
         sb.append(",\"barva\":\"").append(SpeakerColors.hex(color)).append('"')
         if (bold) sb.append(",\"tucne\":true")
-        val pos = when { layout.cover -> "pres"; layout.isAuto -> "nad"; else -> "stred" }
+        // „tesne“ = těsně nad nalezený titulek; starší aplikace v televizi ho neznají a položí pruh jako „nad“
+        val pos = when { layout.cover -> "pres"; layout.isAuto && layout.hug -> "tesne"; layout.isAuto -> "nad"; else -> "stred" }
         sb.append(",\"poloha\":\"").append(pos).append('"')
         if (pos == "stred") sb.append(",\"stred\":").append(f(layout.barCenterY))
         sb.append(",\"sirka\":").append(f(layout.barWidth))

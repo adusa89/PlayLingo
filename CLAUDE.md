@@ -206,6 +206,10 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   `SubtitleOverlay.show` ze stejných hodnot jako pruh na Android TV; televize (`vzhledPruhu` v `app.js`)
   pruh položí stejnými pravidly jako `ScreenLayout`. Do té doby televize kreslila pruh pořád stejně
   (černý, dole) bez ohledu na Nastavení. Písmo: sp × 50/22 = px na obrazovce 1080.
+- **Poloha „Těsně nad anglickým titulkem“** (od 0.88, `ScreenLayout.hug`, `Position.ABOVE_TEXT`, v televizi
+  `poloha: "tesne"`, aplikace v televizi 1.3.1): pruh jde těsně nad nalezený anglický řádek. „Nad oblastí
+  čtení“ (`ABOVE`) stojí na místě nad celou oblastí. V uloženém rozložení je to 7. číslo = 2 (starší verze
+  ho čtou jako „přes titulky“).
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →
   `TvType`). Kdo ho nezvolil, řídí se starým klíčem `tv_send` (zapnuto = LG), takže dřívější
   uživatelé LG o nic nepřijdou; `setTvType` klíč `tv_send` drží v souladu. `Prefs.tvSend` = typ
@@ -258,7 +262,9 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   Tlačítko skeneru je v `LgInstallActivity` nad políčky (dokud není adresa, je hlavní).
   Od 0.86 umí `LgScanActivity` s `EXTRA_MODE = MODE_PS5` přečíst i osmimístné číslo pro spárování
   z obrazovky PS5 (`core/Ps5CodeScan.kt`, testy `Ps5CodeScanTest`); tlačítko „Načíst číslo…“ je
-  v posledním kroku párování v MainActivity (jen telefon s kamerou).
+  v posledním kroku párování v MainActivity (jen telefon s kamerou). `MODE_PS5_IP` čte adresu PS5
+  z Nastavení → Síť → Stav připojení (`Ps5CodeScan.ip`: adresa u „IPv4“, jinak jediná domácí adresa
+  nekončící .1/.254); tlačítko je v kroku hledání PS5 jen po neúspěšném hledání (`ps5NotFound`).
 - Políčka pro adresu (PS5 i LG) nastavuje `IpField`: klávesnice pro adresy a čárka/mezera → tečka
   (česká číselná klávesnice má místo tečky čárku).
 - `webos/obchod/app/app.js`, `style.css` a `index.html` jsou **společné s aplikací pro Samsung**

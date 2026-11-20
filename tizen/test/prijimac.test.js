@@ -161,6 +161,9 @@ function zkus(platforma, verze, dalsi) {
       // výška pruhu 150 px nad oblast čtení (0,74 × 1080 = 799) → nahoře 643 px, ne dole
       assert.strictEqual(tv.prvky.pruh.style.top, Math.round((0.74 - 0.006 - 150 / 1080) * 1080) + 'px');
       assert.strictEqual(tv.prvky.pruh.style.bottom, 'auto');
+      // „tesne“: pruh těsně nad anglický titulek (0,85 × 1080), ne nad celou oblast čtení
+      ws.onmessage({ data: JSON.stringify({ typ: 'ukaz', id: 9, text: 'Jo.', vzhled: { pozadi: 100, pismo: 50, poloha: 'tesne', cteni: [0.74, 0.98], text: [0.85, 0.9] } }) });
+      assert.strictEqual(tv.prvky.pruh.style.top, Math.round((0.85 - 0.006 - 150 / 1080) * 1080) + 'px');
       ws.onmessage({ data: JSON.stringify({ typ: 'ukaz', id: 2, text: 'Mira: Ahoj\n• Ano', casti: [
         { jmeno: 'Mira', barva: '#F2C14E', text: 'Ahoj' }, { volba: true, text: 'Ano' }, { jmeno: 'X', barva: 'red;x', text: 'B' }] }) });
       var radky = tv.prvky.titulek.children;
@@ -179,7 +182,7 @@ function zkus(platforma, verze, dalsi) {
       var radky1 = [].concat.apply([], zaznam1.map(function (z) { return z.radky; }));
       assert.ok(radky1.some(function (r) { return r.indexOf('start PlayLingo ' + platforma + ' ' + verze) >= 0; }), 'záznam má start s verzí');
       assert.ok(radky1.some(function (r) { return r.indexOf('připojeno k ws://192.168.1.20:8787') >= 0; }), 'záznam má připojení');
-      pockej(function () { return tv.odeslano.filter(function (z) { return z.typ === 'hotovo'; }).length === 3; }, function () {
+      pockej(function () { return tv.odeslano.filter(function (z) { return z.typ === 'hotovo'; }).length === 4; }, function () {
         // spojení spadne → televize se připojí znovu a pošle jen nové řádky, bez textu titulků
         var pred = tv.odeslano.length;
         ws.onclose();

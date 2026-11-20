@@ -5,6 +5,9 @@ package cz.playlingo.core
  * tlačítko v LgInstallActivity). KAMERA_S = čeština a slovenština, KAMERA_X = ostatní jazyky.
  */
 internal val KAMERA_S: Map<String, Pair<String, String>> = mapOf(
+    "km_scan_ps5ip" to ("Načíst adresu z obrazovky PlayStationu kamerou" to "Načítať adresu z obrazovky PlayStationu kamerou"),
+    "km_aim_ps5ip" to ("Na PlayStationu otevři Nastavení → Síť → Stav připojení a namiř telefon na obrazovku, aby byla vidět Adresa IPv4." to "Na PlayStatione otvor Nastavenia → Sieť → Stav pripojenia a nasmeruj telefón na obrazovku, aby bola vidieť Adresa IPv4."),
+    "km_found_ps5ip" to ("Adresa PlayStationu: %s" to "Adresa PlayStationu: %s"),
     "km_scan_ps5" to ("Načíst číslo z obrazovky PlayStationu kamerou" to "Načítať číslo z obrazovky PlayStationu kamerou"),
     "km_aim_ps5" to ("Namiř telefon na obrazovku PlayStationu s osmimístným číslem (Nastavení → Systém → Remote Play → Propojit zařízení)." to "Nasmeruj telefón na obrazovku PlayStationu s osemmiestnym číslom (Nastavenia → Systém → Remote Play → Prepojiť zariadenie)."),
     "km_found_code" to ("Číslo z PlayStationu: %s" to "Číslo z PlayStationu: %s"),
@@ -24,6 +27,9 @@ internal val KAMERA_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "km_scan_ps5ip" to "Read the address from the PlayStation screen with the camera",
+        "km_aim_ps5ip" to "On the PlayStation open Settings → Network → View Connection Status and point the phone at the screen so the IPv4 Address is visible.",
+        "km_found_ps5ip" to "PlayStation address: %s",
         "km_scan_ps5" to "Read the number from the PlayStation screen with the camera",
         "km_aim_ps5" to "Point the phone at the PlayStation screen showing the 8-digit number (Settings → System → Remote Play → Link Device).",
         "km_found_code" to "Number from the PlayStation: %s",
@@ -41,6 +47,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Read with the camera. Compare the details with the TV screen and press Install on TV.",
     ),
     Lang.PL to mapOf(
+        "km_scan_ps5ip" to "Odczytaj adres z ekranu PlayStation aparatem",
+        "km_aim_ps5ip" to "Na PlayStation otwórz Ustawienia → Sieć → Wyświetl stan połączenia i skieruj telefon na ekran tak, aby widać było adres IPv4.",
+        "km_found_ps5ip" to "Adres PlayStation: %s",
         "km_scan_ps5" to "Odczytaj numer z ekranu PlayStation aparatem",
         "km_aim_ps5" to "Skieruj telefon na ekran PlayStation z ośmiocyfrowym numerem (Ustawienia → System → Remote Play → Połącz urządzenie).",
         "km_found_code" to "Numer z PlayStation: %s",
@@ -58,6 +67,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Odczytano aparatem. Porównaj dane z ekranem telewizora i naciśnij Zainstaluj na telewizorze.",
     ),
     Lang.DE to mapOf(
+        "km_scan_ps5ip" to "Adresse mit der Kamera vom PlayStation-Bildschirm ablesen",
+        "km_aim_ps5ip" to "Öffne auf der PlayStation Einstellungen → Netzwerk → Verbindungsstatus anzeigen und richte das Telefon auf den Bildschirm, sodass die IPv4-Adresse zu sehen ist.",
+        "km_found_ps5ip" to "Adresse der PlayStation: %s",
         "km_scan_ps5" to "Nummer mit der Kamera vom PlayStation-Bildschirm ablesen",
         "km_aim_ps5" to "Richte das Telefon auf den PlayStation-Bildschirm mit der achtstelligen Nummer (Einstellungen → System → Remote Play → Gerät verbinden).",
         "km_found_code" to "Nummer von der PlayStation: %s",
@@ -75,6 +87,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Mit der Kamera gelesen. Vergleiche die Angaben mit dem Fernsehbildschirm und drücke Auf Fernseher installieren.",
     ),
     Lang.HU to mapOf(
+        "km_scan_ps5ip" to "Cím beolvasása a PlayStation képernyőjéről kamerával",
+        "km_aim_ps5ip" to "A PlayStationön nyisd meg a Beállítások → Hálózat → Kapcsolat állapotának megtekintése menüt, és fordítsd a telefont a képernyő felé, hogy az IPv4-cím látszódjon.",
+        "km_found_ps5ip" to "A PlayStation címe: %s",
         "km_scan_ps5" to "Szám beolvasása a PlayStation képernyőjéről kamerával",
         "km_aim_ps5" to "Fordítsd a telefont a PlayStation képernyője felé, ahol a nyolcjegyű szám látszik (Beállítások → Rendszer → Remote Play → Eszköz összekapcsolása).",
         "km_found_code" to "Szám a PlayStationről: %s",
@@ -92,6 +107,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Kamerával beolvasva. Vesd össze az adatokat a tévé képernyőjével, és nyomd meg a Feltöltés a tévére gombot.",
     ),
     Lang.UK to mapOf(
+        "km_scan_ps5ip" to "Зчитати адресу з екрана PlayStation камерою",
+        "km_aim_ps5ip" to "На PlayStation відкрий Налаштування → Мережа → Переглянути стан з’єднання й наведи телефон на екран, щоб було видно адресу IPv4.",
+        "km_found_ps5ip" to "Адреса PlayStation: %s",
         "km_scan_ps5" to "Зчитати номер з екрана PlayStation камерою",
         "km_aim_ps5" to "Наведи телефон на екран PlayStation з восьмизначним номером (Налаштування → Система → Remote Play → Під’єднати пристрій).",
         "km_found_code" to "Номер із PlayStation: %s",
@@ -109,6 +127,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Зчитано камерою. Порівняй дані з екраном телевізора й натисни «Встановити на телевізор».",
     ),
     Lang.ES to mapOf(
+        "km_scan_ps5ip" to "Leer la dirección de la pantalla de la PlayStation con la cámara",
+        "km_aim_ps5ip" to "En la PlayStation abre Ajustes → Red → Ver estado de la conexión y apunta el teléfono a la pantalla de modo que se vea la dirección IPv4.",
+        "km_found_ps5ip" to "Dirección de la PlayStation: %s",
         "km_scan_ps5" to "Leer el número de la pantalla de la PlayStation con la cámara",
         "km_aim_ps5" to "Apunta el teléfono a la pantalla de la PlayStation con el número de 8 cifras (Ajustes → Sistema → Remote Play → Vincular dispositivo).",
         "km_found_code" to "Número de la PlayStation: %s",
@@ -126,6 +147,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Leído con la cámara. Compara los datos con la pantalla del televisor y pulsa Instalar en la tele.",
     ),
     Lang.FR to mapOf(
+        "km_scan_ps5ip" to "Lire l’adresse sur l’écran de la PlayStation avec l’appareil photo",
+        "km_aim_ps5ip" to "Sur la PlayStation, ouvre Paramètres → Réseau → Afficher l’état de la connexion et dirige le téléphone vers l’écran pour que l’adresse IPv4 soit visible.",
+        "km_found_ps5ip" to "Adresse de la PlayStation : %s",
         "km_scan_ps5" to "Lire le numéro sur l’écran de la PlayStation avec l’appareil photo",
         "km_aim_ps5" to "Dirige le téléphone vers l’écran de la PlayStation qui affiche le numéro à 8 chiffres (Paramètres → Système → Remote Play → Associer un appareil).",
         "km_found_code" to "Numéro de la PlayStation : %s",
@@ -143,6 +167,9 @@ internal val KAMERA_X: Map<Lang, Map<String, String>> = mapOf(
         "km_filled" to "Lu avec l’appareil photo. Compare les données avec l’écran du téléviseur et appuie sur Installer sur la TV.",
     ),
     Lang.IT to mapOf(
+        "km_scan_ps5ip" to "Leggi l’indirizzo dallo schermo della PlayStation con la fotocamera",
+        "km_aim_ps5ip" to "Sulla PlayStation apri Impostazioni → Rete → Visualizza stato connessione e punta il telefono verso lo schermo in modo che si veda l’indirizzo IPv4.",
+        "km_found_ps5ip" to "Indirizzo della PlayStation: %s",
         "km_scan_ps5" to "Leggi il numero dallo schermo della PlayStation con la fotocamera",
         "km_aim_ps5" to "Punta il telefono verso lo schermo della PlayStation con il numero di 8 cifre (Impostazioni → Sistema → Riproduzione remota → Collega dispositivo).",
         "km_found_code" to "Numero dalla PlayStation: %s",

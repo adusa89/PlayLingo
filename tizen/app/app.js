@@ -241,7 +241,7 @@
   }
 
   // Vzhled a poloha pruhu podle Nastavení v PlayLingu na Androidu (pole vzhled, viz core/TvLook.kt):
-  // průhlednost, písmo, barva a poloha přes titulky / nad titulky / na pevném místě.
+  // průhlednost, písmo, barva a poloha přes titulky / těsně nad titulkem / nad oblastí čtení / na pevném místě.
   // Bez pole vzhled (starší PlayLingo) zůstane pruh jako dřív – černý, dole přes celou šířku.
   function vzhledPruhu(v) {
     var p = el('pruh'), t = el('titulek'), s = p.style;
@@ -289,6 +289,9 @@
     if (pres) {
       top = text ? (text[0] + text[1]) / 2 - h / 2 : (cteni[0] + cteni[1]) / 2 - h / 2;
       top = Math.max(0, Math.min(Math.max(0, 1 - h), top));
+    } else if (v.poloha === 'tesne' && text) {
+      // těsně nad nalezený anglický titulek (posouvá se s ním)
+      top = Math.max(0, text[0] - 0.006 - h);
     } else if (v.poloha === 'stred') {
       top = mimoCteni(cislo(v.stred, 0, 1, 0.08) - h / 2, h, cteni);
     } else if (text && cteni[1] - cteni[0] > 0.6) {

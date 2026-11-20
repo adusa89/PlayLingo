@@ -45,7 +45,8 @@ import cz.playlingo.core.Ps5CodeVote
  * core/LgScan.kt; údaj platí, až když ho ML Kit přečte dvakrát stejně (LgScanVote).
  * Výsledek (adresa, Passphrase) vrací průvodci LgInstallActivity k potvrzení.
  * V režimu [MODE_PS5] čte místo toho osmimístné číslo pro spárování z obrazovky PlayStationu
- * (core/Ps5CodeScan.kt) a vrací ho stránce párování v MainActivity.
+ * (core/Ps5CodeScan.kt) a vrací ho stránce párování v MainActivity; v režimu [MODE_PS5_IP] adresu
+ * konzole z obrazovky Nastavení → Síť → Stav připojení (když ji aplikace v síti sama nenašla).
  */
 class LgScanActivity : Activity() {
     private lateinit var ui: Ui
@@ -55,7 +56,10 @@ class LgScanActivity : Activity() {
     private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
     private val vote = LgScanVote()
     private var found = LgScanResult()
-    private val ps5 by lazy { intent?.getStringExtra(EXTRA_MODE) == MODE_PS5 }
+    private val mode by lazy { intent?.getStringExtra(EXTRA_MODE) }
+    /** Režim PlayStation: číslo pro spárování, nebo (MODE_PS5_IP) adresa konzole. */
+    private val ps5 by lazy { mode == MODE_PS5 || mode == MODE_PS5_IP }
+    private val ps5ip by lazy { mode == MODE_PS5_IP }
     private val codeVote = Ps5CodeVote()
     private var code: String? = null
     private var finished = false
@@ -82,7 +86,7 @@ class LgScanActivity : Activity() {
             setBackgroundColor(0xE6000000.toInt())
             setPadding(ui.dp(20), ui.dp(16), ui.dp(20), ui.dp(20))
         }
-        panel.addView(ui.text(t(if (ps5) "km_aim_ps5" else "km_aim"), 15f, Theme.MUTED))
+        panel.addView(ui.text(t(if (ps5ip) "km_aim_ps5ip" else if (ps5) "km_aim_ps5" else "km_aim"), 15f, Theme.MUTED))
         status = ui.text("", 18f, Theme.TEXT, bold = true)
         panel.addView(status, ui.lp(top = 10))
         buttons = ui.vbox()
@@ -195,7 +199,7 @@ class LgScanActivity : Activity() {
                 if (reader !== r) { r.close(); return@addOnSuccessListener }
                 // řádky v pořadí čtení; text se nikam nevypisuje
                 val lines = text.textBlocks.flatMap { b -> b.lines.map { it.text } }
-                if (ps5) onCode(Ps5CodeScan.parse(lines)) else onRead(LgScan.parse(lines))
+                if (ps5) onCode(if (ps5ip) Ps5CodeScan.ip(lines) else Ps5CodeScan.parse(lines)) else onRead(LgScan.parse(lines))
             }
             .addOnFailureListener { img.close(); busy = false; if (reader !== r) r.close() }
     }
@@ -221,7 +225,8 @@ class LgScanActivity : Activity() {
 
     private fun showFound() {
         if (ps5) {
-            status.text = t("km_found_code").replace("%s", code?.let { it.substring(0, 4) + " " + it.substring(4) } ?: t("km_none"))
+            status.text = if (ps5ip) t("km_found_ps5ip").replace("%s", code ?: t("km_none"))
+                else t("km_found_code").replace("%s", code?.let { it.substring(0, 4) + " " + it.substring(4) } ?: t("km_none"))
             status.setTextColor(Theme.TEXT)
             buttons.removeAllViews()
             if (code != null) buttons.addView(ui.button(t("km_use"), primary = true) { deliver() }, ui.lp(top = 8))
@@ -310,6 +315,7 @@ class LgScanActivity : Activity() {
         const val EXTRA_CODE = "code"
         const val EXTRA_MODE = "mode"
         const val MODE_PS5 = "ps5"
+        const val MODE_PS5_IP = "ps5ip"
 
         /** Tlačítko jen tam, kde to dává smysl: zařízení s kamerou, které není televize ani box. */
         fun available(c: Context): Boolean = try {
