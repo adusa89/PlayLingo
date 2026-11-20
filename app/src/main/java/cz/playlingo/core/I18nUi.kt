@@ -25,7 +25,6 @@ internal val UI_S: Map<String, Pair<String, String>> = mapOf(
     "sum_q" to ("Co chceš změnit?" to "Čo chceš zmeniť?"),
     "sum_nopair" to ("nespárováno" to "nespárované"),
     "w_install" to ("Nahrát do TV" to "Nahrať do TV"),
-    "s_setup" to ("Konzole a TV" to "Konzola a TV"),
     "s_diag" to ("Ladění a hlášení" to "Ladenie a hlásenia"),
     "st_general" to ("Obecné" to "Všeobecné"),
     "st_read" to ("Čtení a překlad" to "Čítanie a preklad"),
@@ -106,7 +105,6 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "sum_q" to "What do you want to change?",
         "sum_nopair" to "not paired",
         "w_install" to "Install on the TV",
-        "s_setup" to "Console and TV",
         "s_diag" to "Debugging and reports",
     ),
     Lang.PL to mapOf(
@@ -157,7 +155,6 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "sum_q" to "Co chcesz zmienić?",
         "sum_nopair" to "niesparowane",
         "w_install" to "Wgraj na telewizor",
-        "s_setup" to "Konsola i telewizor",
         "s_diag" to "Debugowanie i zgłoszenia",
     ),
     Lang.DE to mapOf(
@@ -208,7 +205,6 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "sum_q" to "Was möchtest du ändern?",
         "sum_nopair" to "nicht gekoppelt",
         "w_install" to "Auf den Fernseher laden",
-        "s_setup" to "Konsole und Fernseher",
         "s_diag" to "Fehlersuche und Berichte",
     ),
     Lang.HU to mapOf(
@@ -259,7 +255,6 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "sum_q" to "Mit szeretnél módosítani?",
         "sum_nopair" to "nincs párosítva",
         "w_install" to "Feltöltés a tévére",
-        "s_setup" to "Konzol és tévé",
         "s_diag" to "Hibakeresés és jelentések",
     ),
     Lang.UK to mapOf(
@@ -310,7 +305,6 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "sum_q" to "Що хочеш змінити?",
         "sum_nopair" to "не в парі",
         "w_install" to "Встановити на телевізор",
-        "s_setup" to "Консоль і телевізор",
         "s_diag" to "Налагодження і звіти",
     ),
     Lang.ES to mapOf(
@@ -361,7 +355,6 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "sum_q" to "¿Qué quieres cambiar?",
         "sum_nopair" to "sin vincular",
         "w_install" to "Instalar en el televisor",
-        "s_setup" to "Consola y televisor",
         "s_diag" to "Depuración e informes",
     ),
     Lang.FR to mapOf(
@@ -412,7 +405,6 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "sum_q" to "Que veux-tu modifier ?",
         "sum_nopair" to "non associé",
         "w_install" to "Installer sur le téléviseur",
-        "s_setup" to "Console et téléviseur",
         "s_diag" to "Débogage et rapports",
     ),
     Lang.IT to mapOf(
@@ -463,7 +455,6 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "sum_q" to "Cosa vuoi cambiare?",
         "sum_nopair" to "non associata",
         "w_install" to "Installa sul televisore",
-        "s_setup" to "Console e televisore",
         "s_diag" to "Debug e segnalazioni",
     ),
 )

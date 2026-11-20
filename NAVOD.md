@@ -58,7 +58,7 @@ Máš-li víc televizí LG nebo Samsung, pamatuje si PlayLingo vzhled titulků a
 a přepne je samo podle televize, ke které se připojí (v Titulkách je nahoře vidět, pro kterou).
 
 Každou volbu jde později změnit v **Nastavení** – ozubené kolo (⚙), které je vidět pořád (v telefonu vpravo nahoře, na televizi dole v levém sloupci). Nastavení má záložky Obecné, Čtení a překlad a Experimentální (v ní i Ladění a hlášení); co která volba dělá, je v Instalaci v kapitole „Volby v Nastavení“.
-Tam je i povolení, jazyk aplikace, a v části Experimentální zkušební verze a hlášení chyby. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:
+Tam je i povolení, jazyk aplikace, a v části Experimentální zkušební verze, DeepL a hlášení chyby. Hra (profil hry) je v Titulkách. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:
 PlayStation nebo Xbox), Titulky a Instalace.
 
 Stránka **Domů** ukazuje jen to podstatné: stav překladu, tlačítka Spustit / Zastavit a pod stavem přehled
@@ -148,7 +148,7 @@ Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪
 - **Překlad běží, ale titulky nenaskakují** – podívej se na stránku Domů na řádek pod stavem překladu. Ukazuje, jak daleko to došlo: jestli se aplikace s PlayStationem spojila a jestli z něj opravdu přichází obraz. Když hlásí „Spojeno s PlayStationem, ale … nepřišel žádný obraz“, aplikace spojení po chvíli sama obnoví; když to trvá dlouho, překlad zastav, zkontroluj Wi-Fi a spusť ho znovu.
 - **Aplikace minule spadla** – po dalším spuštění to napíše na stránce Domů. Kdyby se to opakovalo, pošli hlášení (další bod).
 - **Hlášení chyby**: Instalace → Když něco nejde (nebo ⚙ Nastavení → Experimentální → Ladění a hlášení) → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení. Tlačítkem **Kopírovat** ho dáš do schránky, **Sdílet** ho pošle jako soubor (e-mailem, do chatu…). Na televizi nejjednodušší: tlačítko **Do telefonu** ukáže čtvereček – naskenuj ho telefonem (i iPhonem) na stejné Wi-Fi, stáhni hlášení a pošli ho autorovi chatem nebo e-mailem. Máš-li televizi LG nebo Samsung, je v hlášení i oddíl Televize – co se dělo v aplikaci v televizi.
-- **Záznam pro vývojáře v domácí síti**: ⚙ Nastavení → záložka Experimentální → „Zpřístupnit záznam v domácí síti“ → ZAP. Pod řádkem se ukáže adresa (např. `http://192.168.1.23:8789/zaznam?k=ab3k7m`), přes kterou si vývojář na počítači ve stejné síti stáhne celé hlášení (bez hesel, klíčů a čísla účtu). Po 2 hodinách se to samo vypne; jde to vypnout i hned.
+- **Záznam pro vývojáře v domácí síti**: ⚙ Nastavení → záložka Experimentální → Ladění a hlášení → „Zpřístupnit záznam v domácí síti“ → ZAP. Pod řádkem se ukáže adresa (např. `http://192.168.1.23:8789/zaznam?k=ab3k7m`), přes kterou si vývojář na počítači ve stejné síti stáhne celé hlášení (bez hesel, klíčů a čísla účtu). Po 2 hodinách se to samo vypne; jde to vypnout i hned.
 
 ## 7b. Xbox (Series X|S / One)
 PlayLingo umí číst titulky i z Xboxu. Hra jde do televize dál kabelem HDMI; PlayLingo si z Xboxu

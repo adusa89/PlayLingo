@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
- * Záznam pro vývojáře v domácí síti (Nastavení → Experimentální → „Zpřístupnit záznam v domácí síti“, výchozí
+ * Záznam pro vývojáře v domácí síti (Nastavení → Experimentální → Ladění a hlášení → „Zpřístupnit záznam v domácí síti“, výchozí
  * vypnuto, samo se vypne po [DURATION_MS]). Zařízení pak na portu [PORT] vydá celé hlášení o stavu
  * (stejné jako obrazovka hlášení + záznam událostí, záznam z televize a pády), vždy přes [Redact]:
  *  - `GET /zaznam?k=KÓD` → text,

@@ -22,7 +22,7 @@ import cz.playlingo.core.LogShare
 import java.io.File
 
 /**
- * Záznam pro vývojáře v domácí síti (Nastavení → Experimentální → „Zpřístupnit záznam v domácí síti“, výchozí
+ * Záznam pro vývojáře v domácí síti (Nastavení → Experimentální → Ladění a hlášení → „Zpřístupnit záznam v domácí síti“, výchozí
  * vypnuto). Zapnuté = na portu [LogShare.PORT] běží [LogServer] s krátkým kódem; adresu i kód
  * ukáže řádek v Nastavení a obrazovka hlášení. Po [LogShare.DURATION_MS] se samo vypne (i když
  * mezitím aplikace spadla a znovu se spustila – konec platnosti je uložený).

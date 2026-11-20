@@ -437,7 +437,7 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
 Když je potřeba vidět, co se na zařízení majitele děje (Android i aplikace v televizi LG/Samsung):
 
 1. Majitel na zařízení s Androidem zapne Nastavení → úplně dole Experimentální → **„Zpřístupnit záznam v domácí síti“**
-   (vlastní blok pod DeepL, `logShareRow()` volané z `experimentalSection()`; výchozí vypnuto, samo se vypne po 2 hodinách) a řekne adresu,
+   (od 0.97.15 ve skupině Ladění a hlášení, `logShareRow()` volané ze `settingsDiag()`; výchozí vypnuto, samo se vypne po 2 hodinách) a řekne adresu,
    která se ukáže pod řádkem (i nahoře na obrazovce hlášení), např. `http://192.168.1.23:8789/zaznam?k=ab3k7m`.
 2. Claude ji stáhne: `.\ci\stahni-zaznam.ps1 http://192.168.1.23:8789/zaznam?k=ab3k7m`
    (nebo `… 192.168.1.23 ab3k7m`, s `-Json` po oddílech). Uloží se do `zaznamy\zaznam-<čas>.txt`
@@ -529,6 +529,20 @@ Aplikace pro televizi LG (`webos/obchod`) a Samsung (`tizen/app`, týž `app.js`
 česky a anglicky přímo v `app.js` a tlačítko Jazyk na úvodní obrazovce; do obchodu LG se podává
 s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nemá zmiňovat Samsung).
 
+## Kontrola před každým vydáním (přání majitele, 20. 11. 2026)
+
+Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo zkontrolováno a co ne:
+
+1. **Obě zařízení**: stejné APK běží na Android TV i v telefonu (čtečka pro LG/Samsung). Co se změnilo na jednom,
+   zkontroluj na druhém (`Prefs.isTv`, `Prefs.tvType`, `NetInfo.isHandheld`), a u LG/Samsungu i aplikaci v televizi.
+2. **Výkon**: nic drahého v `render()`, tickeru MainActivity, `TvStatus`, ve čtení snímku (`TranslatorService.tick`,
+   `StreamReader`) – žádné dešifrování klíčů, čtení souborů, překreslování celé stránky bez potřeby, nic navíc
+   při každém snímku. Aplikace bývá otevřená celou hru (telefon).
+3. **Vzhled**: krátké stavové řádky, rozbalovací skupiny, žádné vysvětlující věty mezi řádky, žádné tykání, „TV“.
+4. **Texty** ve všech 10 jazycích, nepoužívané smazané (`AllLanguagesTest`), Nápověda a `NAVOD.md` podle nových cest.
+5. **Testy**: `gradlew -p ci/mistni-kontrola test`, při změně `core` i `gradlew -p pc installDist`, při změně
+   aplikace v televizi `node tizen/test/prijimac.test.js` a kopie do `tizen/app`.
+
 ## Zásady vzhledu (přání majitele, platí pro všechny obrazovky)
 
 - **Stránky jsou věcné, hezké, bez balastu.** Domů ukazuje jen stav v krátkých bodech s tečkou (zelená = jede,
@@ -603,6 +617,12 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   vždy je k dispozici v Instalaci (kapitola 3). Pomocník LG u aktuální verze píše „V televizi je aktuální…“ a tlačítko
   „Spustit PlayLingo v televizi“; u spárované televize je políčko Passphrase schované pod tlačítkem
   „Zadat Passphrase znovu“.
+- **Nastavení (⚙)** (od 0.97.15): každá záložka jen řádky `settingRow` a rozbalovací skupiny `group(id, název)`
+  (`openGroups`), žádné nadpisy sekcí ani popisné věty. Čtení a překlad: Kvalita čtení, Režim překladu, Jazykový
+  model, skupiny Statistika (s Historií) a úplně dole Vlastní slovník. Experimentální: Zkušební verze, skupina
+  DeepL (celá `DeeplSection`), skupina Ladění a hlášení (diagnostika, hlášení, záznam v síti). Hra je v Titulkách
+  (skupina `gameGroup`). Náhled obrazu na stránce Konzole je skupina – snímek se počítá jen, když je rozbalená.
+  Starší popis níž platí jen zčásti:
 - **Nastavení (⚙)** má záložky (`SettingsTab`) a ukazuje jen obsah vybrané: **Obecné** (konzole, typ
   televize + nahrání, jazyk aplikace, zařízení; povolení pruhu jen u Android TV),
   **Čtení a překlad** (kvalita čtení, překlad, hra, slovník, statistika, historie), **Experimentální**

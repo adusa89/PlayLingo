@@ -157,7 +157,7 @@ class MainActivity : Activity() {
                     lastGuess != Prefs.gameGuess(this@MainActivity)))
             // náhled obrazu z PlayStationu se obnovuje každé 3 s (ne když uživatel zrovna píše)
             // (jen na stránce Konzole – Domů náhled nemá a překreslovat ho každé 3 s bylo zbytečné)
-            val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 && section == Section.PS5
+            val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 && section == Section.PS5 && "preview" in openGroups
             if ((changed || preview) && !typing && !pairBusy) render(keepFocus = true)
             main.postDelayed(this, 1000)
         }
@@ -490,7 +490,7 @@ class MainActivity : Activity() {
         // aplikace v televizi LG/Samsung se může připojit i před Spustit (skutečný stav na Domů)
         TvIdle.ensure(this)
         // barevný náhled hry jen pro stránku Konzole (jinde by se zbytečně počítal každé 1,5 s)
-        UiState.previewWanted = wizard < 0 && section == Section.PS5
+        UiState.previewWanted = wizard < 0 && section == Section.PS5 && "preview" in openGroups
         // pevná hlavička jen v Nastavení (nadpis a záložky), jinde schovaná a obsah s běžným odsazením
         pinned.removeAllViews()
         val pin = wizard < 0 && section == Section.SETTINGS
@@ -982,8 +982,7 @@ class MainActivity : Activity() {
 
     /** Náhled: co aplikace z PlayStationu právě vidí (důkaz, že spojení funguje). */
     private fun preview() {
-        val snap = TranslatorService.snapshot ?: return
-        content.addView(ui.section(ct("ps5_preview")))
+        val snap = TranslatorService.snapshot ?: run { add(ui.progress(null), 8); return }
         val w = ui.dp(420)
         val h = w * snap.height / maxOf(1, snap.width)
         content.addView(ImageView(this).apply {
@@ -999,7 +998,8 @@ class MainActivity : Activity() {
 
     private fun ps5() {
         ps5Form()
-        if (TranslatorService.running && !TranslatorService.demo) preview()
+        // náhled obrazu jen po rozbalení – jinak se snímek z konzole vůbec nepočítá (od 0.97.15)
+        if (TranslatorService.running && !TranslatorService.demo && group("preview", ct("ps5_preview"), 18)) preview()
     }
 
     private fun input(hintKey: String, value: String, tagName: String, number: Boolean) = EditText(this).apply {
@@ -1373,10 +1373,9 @@ class MainActivity : Activity() {
      * Hra (Nastavení → Čtení a překlad): profil hry, nabídka hry odhadnuté z titulků (nic se nepřepíná samo)
      * a rozbalovací seznam toho, co profil zná – postavy s rodem, jména a místa, pojmy, přeskakované nápisy.
      */
-    private fun gameSection() {
-        content.addView(ui.section(t("t_game")))
+    private fun gameGroup() {
         val game = GameProfiles.of(Prefs.gameId(this))
-        add(tagged(ui.settingRow(t("gp_profile"), gameTitle(game)) { pickGame() }, "game"), 0)
+        add(tagged(ui.settingRow(t("gp_profile"), gameTitle(game)) { pickGame() }, "game"), 8)
         Prefs.gameGuess(this)?.let { id ->
             val g = GameProfiles.of(id)
             add(tagged(ui.settingRow(g.title + "?", t("gp_switch") + " ›", Theme.WARN) {
@@ -1411,6 +1410,22 @@ class MainActivity : Activity() {
         block(t("gp_skip"), game.hud + game.menu)
     }
 
+    /** Otevřené rozbalovací skupiny v Nastavení (klíč skupiny). */
+    private val openGroups = HashSet<String>()
+
+    /**
+     * Rozbalovací skupina po vzoru Titulků a Nápovědy: řádek s ▼/▲, obsah jen když je otevřená.
+     * Vrací true, když je otevřená (volající pak přidá obsah).
+     */
+    private fun group(id: String, title: String, top: Int = 8): Boolean {
+        val open = id in openGroups
+        add(tagged(ui.settingRow(title, if (open) "▲" else "▼") {
+            if (!openGroups.remove(id)) openGroups.add(id)
+            render(true)
+        }, "grp_$id"), top)
+        return open
+    }
+
     /** Titulky: otevřená skupina (-1 = žádná). */
     private var lookOpen = -1
 
@@ -1425,6 +1440,8 @@ class MainActivity : Activity() {
             "lk_text" to { lookText() },
             "lk_bar" to { lookBar() },
             "m_zones" to { lookZones() },
+            // hra (profil, odhad z titulků, postavy a jména) patří k titulkům, ne do Nastavení (od 0.97.15)
+            "t_game" to { gameGroup() },
         )
         groups.forEachIndexed { i, (key, build) ->
             val open = lookOpen == i
@@ -1531,28 +1548,32 @@ class MainActivity : Activity() {
     private fun translate() {
         val lang = Prefs.lang(this)
         val ready = OfflineTranslator.isReady(lang)
-        val mode = ui.card()
-        mode.addView(ui.text(t("t_mode"), 14f, Theme.MUTED))
-        // pokus DeepL zapnutý v Experimentálních: tady to musí být vidět, jinak by „jen offline“ mátlo
-        val deepl = DeeplTranslator.activeKey(this) != null
-        mode.addView(ui.text(t(if (deepl) "dl_mode_on" else "t_offline"), 19f, Theme.OK, bold = true), ui.lp(top = 4))
-        if (deepl) mode.addView(ui.text(t("dl_mode_on_desc"), 15f, Theme.MUTED), ui.lp(top = 4))
-        else if (DeeplKey.enabled(this)) mode.addView(ui.text(t("dl_mode_idle"), 15f, Theme.WARN), ui.lp(top = 4))
-        // DeepL je v Experimentálních – odsud k němu vede přímá cesta (hráč ho tu hledá, když je překlad špatný)
-        if (!deepl) mode.addView(tagged(ui.button(t("dl_mode_try")) {
-            section = Section.SETTINGS; settingsTab = SettingsTab.EXPERIMENTAL; render()
-        }, "dltry"), ui.lp(top = 10))
-        mode.addView(ui.text(t("chk_model") + " (${lang.label}): " + if (ready) t("ok") else t("t_model_missing"),
-            15f, if (ready) Theme.OK else Theme.WARN), ui.lp(top = 8))
-        add(mode, 16)
+        // překlad: DeepL online + offline / jen offline; DeepL se nastavuje v Experimentální
+        val deepl = DeeplTranslator.active(this)
+        val idle = !deepl && DeeplKey.enabled(this)
+        add(tagged(ui.settingRow(t("t_mode"), t(if (deepl) "dl_mode_on" else if (idle) "dl_mode_idle" else "h_offline"),
+            if (idle) Theme.WARN else Theme.ACCENT) {
+            section = Section.SETTINGS; settingsTab = SettingsTab.EXPERIMENTAL; openGroups.add("deepl"); render()
+        }, "tmode"), 8)
+        // jazykový balíček pro offline překlad: chybí → OK ho stáhne
+        add(tagged(ui.settingRow(t("chk_model") + " · " + lang.label, if (ready) t("ok") else t("download"),
+            if (ready) Theme.OK else Theme.WARN) { if (!ready) downloadModel() }, "dl"), 8)
 
-        if (!ready) add(tagged(ui.button(t("download")) { downloadModel() }, "dl"), 12)
+        // statistika a historie
+        if (group("stats", t("t_stats"), 18)) {
+            val s = TranslatorService.statsFor(this)
+            add(ui.settingRow(t("t_lines"), s.lines.toString(), Theme.TEXT) {}, 8)
+            add(ui.settingRow(t("t_hits"), s.cacheHits.toString(), Theme.TEXT) {}, 8)
+            add(tagged(ui.settingRow(t("m_history"), "›") { section = Section.HISTORY; render() }, "hist"), 8)
+            add(tagged(ui.settingRow(t("t_reset_stats"), "↺", Theme.MUTED) {
+                s.reset(); Prefs.setStats(this, s); toast(t("t_cleared")); render(true)
+            }, "rstats"), 8)
+            add(tagged(ui.settingRow(t("t_clear_memory"), "↺", Theme.MUTED) { clearMemory() }, "clrmem"), 8)
+        }
 
-        gameSection()
-
-        // --- vlastní slovník ---
-        content.addView(ui.section(t("t_dict")))
+        // vlastní slovník – málo používaný, proto schovaný úplně dole
         val dict = Prefs.userDict(this, lang)
+        if (!group("dict", t("t_dict") + if (dict.isNotEmpty()) " · ${dict.size}" else "")) return
         fun field(hintKey: String, value: String, tagName: String) = EditText(this).apply {
             setText(value)
             hint = t(hintKey)
@@ -1568,40 +1589,20 @@ class MainActivity : Activity() {
         }
         val en = field("t_dict_en", draftEn, "dicten")
         val tr = field("t_dict_tr", draftTr, "dicttr")
-        add(en, 0); add(tr, 8)
-        add(tagged(ui.button(t("t_dict_add")) {
+        add(en, 8); add(tr, 8)
+        add(tagged(ui.settingRow(t("t_dict_add"), "+") {
             val k = en.text.toString().trim(); val v = tr.text.toString().trim()
             if (k.length >= 2 && v.isNotEmpty()) {
                 dict[k] = v; Prefs.setUserDict(this, lang, dict)
                 draftEn = ""; draftTr = ""; applyToService()
             } else { draftEn = k; draftTr = v }
             render(true)
-        }, "dictadd"), 10)
-        if (dict.isNotEmpty()) add(ui.text(t("t_dict_del"), 13f, Theme.MUTED), 12)
+        }, "dictadd"), 8)
         dict.entries.toList().forEachIndexed { i, e ->
             add(tagged(ui.settingRow(e.key, e.value + "   ✕", Theme.TEXT) {
                 dict.remove(e.key); Prefs.setUserDict(this, lang, dict); applyToService(); render(true)
-            }, "dict$i"), 6)
+            }, "dict$i"), 8)
         }
-
-        val s = TranslatorService.statsFor(this)
-        content.addView(ui.section(t("t_stats")))
-        val card = ui.card()
-        fun stat(label: String, value: String) = card.addView(ui.hbox().apply {
-            setPadding(0, ui.dp(4), 0, ui.dp(4))
-            addView(ui.text(label, 16f, Theme.MUTED), LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-            addView(ui.text(value, 16f, Theme.TEXT, bold = true))
-        })
-        stat(t("t_lines"), s.lines.toString())
-        stat(t("t_hits"), s.cacheHits.toString())
-        add(card, 0)
-        val row2 = row()
-        row2.addView(tagged(ui.button(t("t_reset_stats")) {
-            s.reset(); Prefs.setStats(this, s); toast(t("t_cleared")); render(true)
-        }, "rstats"))
-        row2.addView(tagged(ui.button(t("t_clear_memory")) { clearMemory() }, "clrmem"), wrapLp())
-        add(row2, 12)
-        add(tagged(ui.button(t("m_history")) { section = Section.HISTORY; render() }, "hist"), 12)
     }
 
     // ======================= NASTAVENÍ =======================
@@ -1651,8 +1652,7 @@ class MainActivity : Activity() {
 
     /** Obecné: konzole, televize (+ nahrání), jazyk aplikace, zařízení, zkušební verze, povolení (jen Android TV). */
     private fun settingsGeneral() {
-        content.addView(ui.section(t("s_setup")))
-        consoleRow("sconsole", 0)
+        consoleRow("sconsole", 8)
         // Typ televize (Android TV / LG / Samsung) – stejná nabídka jako ze souhrnného řádku na Domů.
         val type = Prefs.tvType(this)
         add(tagged(ui.settingRow(t("tv_type"), TvChoice.label(this, type)) {
@@ -1676,15 +1676,14 @@ class MainActivity : Activity() {
             add(tagged(ui.settingRow(t("h_battery_fix"), onOff(bg), if (bg) Theme.OK else Theme.WARN) { askBatteryUnrestricted() }, "battery"), 8)
         }
         // telefon, na kterém běží celá aplikace: cesta zpět k pomocníkovi pro přihlášení
-        if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 8)
+        if (NetInfo.isHandheld(this)) add(tagged(ui.settingRow(t("hp_back"), "›") { backToPhoneHelper() }, "tophone"), 8)
 
         // povolení pruhu potřebuje jen Android TV (u LG/Samsungu ukazuje titulky televize)
         if (type == TvType.ANDROID) {
-            content.addView(ui.section(t("s_perm")))
             val a11yOn = TitulkyAccessibility.instance != null
             add(tagged(ui.settingRow(t("s_a11y"), onOff(a11yOn), if (a11yOn) Theme.OK else Theme.WARN) {
                 openAccessibility()
-            }, "a11y"), 0)
+            }, "a11y"), 8)
             val ovOn = Settings.canDrawOverlays(this)
             add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
                 openOverlaySettings()
@@ -1704,31 +1703,25 @@ class MainActivity : Activity() {
                 if (TranslatorService.running) { stopService(Intent(this, TranslatorService::class.java)); toast(t("q_restart")) }
                 render(true)
             }
-        }, "quality"), 0)
+        }, "quality"), 8)
     }
-
-    /**
-     * Demo režim: všechno na vyzkoušení bez konzole na jednom místě (ukázková hra, ukázka pruhu,
-     * zkouška překladu) – po správném nastavení to hráč nepotřebuje, proto to není na Domů ani v Titulcích.
-     */
-    /** Rozbalená skupina Ladění a hlášení v části Experimentální. */
-    private var diagOpen = false
 
     /** Ladění a hlášení (rozbalovací skupina v Experimentální): diagnostický režim a hlášení o stavu. */
     private fun settingsDiag() {
-        add(tagged(ui.settingRow(t("s_diag"), if (diagOpen) "▲" else "▼") { diagOpen = !diagOpen; render(true) }, "diag"), 18)
-        if (!diagOpen) return
+        if (!group("diag", t("s_diag"))) return
         add(tagged(ui.settingRow(t("s_debug"), onOff(Prefs.debug(this))) {
             Prefs.setDebug(this, !Prefs.debug(this)); applyToService(); render(true)
         }, "debug"), 8)
         add(tagged(ui.settingRow(t("rep_btn"), "›") { makeReport() }, "sreport"), 8)
+        // záznam v domácí síti je taky ladění (od 0.97.15 tady, dřív samostatně v Experimentální)
+        logShareRow()
     }
 
     /**
      * „Zpřístupnit záznam v domácí síti“ pro vývojáře (výchozí vypnuto, samo se vypne), viz NetLogShare.
      * Vlastní blok v části Experimentální pod DeepL.
      */
-    private fun logShareRow() = add(NetLogShare.row(this, ui) { render(true) }, 18)
+    private fun logShareRow() = add(NetLogShare.row(this, ui) { render(true) }, 8)
 
     // ======================= EXPERIMENTÁLNÍ (pokus DeepL, výchozí vypnuto) =======================
 
@@ -1740,9 +1733,11 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("s_test"), onOff(Prefs.testChannel(this))) {
             Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
         }, "testch"), 8)
-        val d = deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }) { url, text -> qrRow(url, text) }.also { deeplUi = it }
-        d.build(content)
-        logShareRow()
+        // DeepL ve skupině (popisy a klíč jsou dlouhé – vidět jen po rozbalení)
+        if (group("deepl", t("dl_toggle") + " · " + t(if (DeeplTranslator.active(this)) "on" else "off"))) {
+            val d = deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }) { url, text -> qrRow(url, text) }.also { deeplUi = it }
+            d.build(content)
+        } else deeplUi?.stopPage()
         settingsDiag()
     }
 
@@ -2170,6 +2165,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.14"
-    const val VERSION_CODE = 111
+    const val VERSION = "verze 0.97.15"
+    const val VERSION_CODE = 112
 }

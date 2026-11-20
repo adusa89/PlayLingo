@@ -14,7 +14,7 @@ internal val GAME_S: Map<String, Pair<String, String>> = mapOf(
     "gp_chars" to ("Postavy (♀ žena, ♂ muž)" to "Postavy (♀ žena, ♂ muž)"),
     "gp_names" to ("Jména a místa – nepřekládají se" to "Mená a miesta – neprekladajú sa"),
     "gp_terms" to ("Pojmy hry – pevný překlad" to "Pojmy hry – pevný preklad"),
-    "gp_skip" to ("Nápisy hry – nečtou se" to "Nápisy hry – nečítajú sa"),
+    "gp_skip" to ("Nápisy přes obrazovku · přeskočí se" to "Nápisy cez obrazovku · preskočia sa"),
 )
 
 internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
@@ -28,7 +28,7 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_chars" to "Characters (♀ female, ♂ male)",
         "gp_names" to "Names and places – not translated",
         "gp_terms" to "Game terms – fixed translation",
-        "gp_skip" to "Game texts – not read",
+        "gp_skip" to "Full-screen texts · skipped",
     ),
     Lang.PL to mapOf(
         "gp_profile" to "Profil gry",
@@ -40,7 +40,7 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_chars" to "Postacie (♀ kobieta, ♂ mężczyzna)",
         "gp_names" to "Imiona i miejsca – nie są tłumaczone",
         "gp_terms" to "Pojęcia gry – stałe tłumaczenie",
-        "gp_skip" to "Napisy gry – nie są czytane",
+        "gp_skip" to "Napisy na cały ekran · pomijane",
     ),
     Lang.DE to mapOf(
         "gp_profile" to "Spielprofil",
@@ -52,7 +52,7 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_chars" to "Figuren (♀ weiblich, ♂ männlich)",
         "gp_names" to "Namen und Orte – werden nicht übersetzt",
         "gp_terms" to "Spielbegriffe – feste Übersetzung",
-        "gp_skip" to "Spieltexte – werden nicht gelesen",
+        "gp_skip" to "Bildschirmtexte · übersprungen",
     ),
     Lang.HU to mapOf(
         "gp_profile" to "Játékprofil",
@@ -64,7 +64,7 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_chars" to "Szereplők (♀ nő, ♂ férfi)",
         "gp_names" to "Nevek és helyek – nem fordítjuk",
         "gp_terms" to "Játékkifejezések – rögzített fordítás",
-        "gp_skip" to "Játékfeliratok – nem olvassuk",
+        "gp_skip" to "Teljes képernyős feliratok · kihagyva",
     ),
     Lang.UK to mapOf(
         "gp_profile" to "Профіль гри",
@@ -76,7 +76,7 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_chars" to "Персонажі (♀ жінка, ♂ чоловік)",
         "gp_names" to "Імена й місця – не перекладаються",
         "gp_terms" to "Терміни гри – сталий переклад",
-        "gp_skip" to "Написи гри – не читаються",
+        "gp_skip" to "Написи на весь екран · пропускаються",
     ),
     Lang.ES to mapOf(
         "gp_profile" to "Perfil del juego",
@@ -88,7 +88,7 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_chars" to "Personajes (♀ mujer, ♂ hombre)",
         "gp_names" to "Nombres y lugares – no se traducen",
         "gp_terms" to "Términos del juego – traducción fija",
-        "gp_skip" to "Textos del juego – no se leen",
+        "gp_skip" to "Textos a pantalla completa · se omiten",
     ),
     Lang.FR to mapOf(
         "gp_profile" to "Profil du jeu",
@@ -100,7 +100,7 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_chars" to "Personnages (♀ femme, ♂ homme)",
         "gp_names" to "Noms et lieux – non traduits",
         "gp_terms" to "Termes du jeu – traduction fixe",
-        "gp_skip" to "Textes du jeu – non lus",
+        "gp_skip" to "Textes plein écran · ignorés",
     ),
     Lang.IT to mapOf(
         "gp_profile" to "Profilo del gioco",
@@ -112,6 +112,6 @@ internal val GAME_X: Map<Lang, Map<String, String>> = mapOf(
         "gp_chars" to "Personaggi (♀ donna, ♂ uomo)",
         "gp_names" to "Nomi e luoghi – non tradotti",
         "gp_terms" to "Termini del gioco – traduzione fissa",
-        "gp_skip" to "Testi del gioco – non letti",
+        "gp_skip" to "Scritte a schermo intero · saltate",
     ),
 )

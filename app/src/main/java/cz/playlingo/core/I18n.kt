@@ -141,7 +141,6 @@ object I18n {
 
         // ---- překlad ----
         "t_mode" to ("Režim překladu" to "Režim prekladu"),
-        "t_offline" to ("Offline – zdarma, bez internetu" to "Offline – zadarmo, bez internetu"),
         "t_offline_desc" to ("Překládá se přímo v televizi, nic se neplatí a nic se neodesílá. Jména postav a míst zůstávají v originále a westernový slang se před překladem převede do spisovné angličtiny." to
             "Prekladá sa priamo v televízore, nič sa neplatí a nič sa neodosiela. Mená postáv a miest zostávajú v origináli a westernový slang sa pred prekladom prevedie do spisovnej angličtiny."),
         "t_model_missing" to ("chybí – stáhni ho (jen jednou, cca 30 MB)" to "chýba – stiahni ho (len raz, cca 30 MB)"),
@@ -153,7 +152,6 @@ object I18n {
         "t_cleared" to ("Hotovo." to "Hotovo."),
 
         // ---- nastavení ----
-        "s_perm" to ("Povolení" to "Povolenia"),
         "s_a11y" to ("Zobrazení přes Usnadnění (doporučeno pro Google TV a Chromecast)" to "Zobrazenie cez Zjednodušenie ovládania (odporúčané pre Google TV a Chromecast)"),
         "s_overlay" to ("Zobrazení přes jiné aplikace" to "Zobrazenie cez iné aplikácie"),
         "s_behavior" to ("Chování" to "Správanie"),
