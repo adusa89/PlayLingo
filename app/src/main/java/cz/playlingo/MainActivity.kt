@@ -1807,6 +1807,11 @@ class MainActivity : Activity() {
             add(tagged(ui.settingRow(t("qk_row"), if (qk == 0) t("qk_none") else QuickLook.keyName(qk), if (qk == 0) Theme.MUTED else Theme.ACCENT) {
                 learnQuickKey()
             }, "quickkey"), 8)
+            // stav vlevo nahoře přes hru (StatusPanel) – výchozí vypnuto
+            add(tagged(ui.settingRow(t("so_row"), onOff(Prefs.statusOverlay(this))) {
+                if (Prefs.statusOverlay(this)) { Prefs.setStatusOverlay(this, false); render(true) }
+                else confirmOn(t("so_row"), t("so_desc")) { Prefs.setStatusOverlay(this, true); render(true) }
+            }, "statusov"), 8)
             val ovOn = Settings.canDrawOverlays(this)
             add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
                 openOverlaySettings()
@@ -2022,7 +2027,7 @@ class MainActivity : Activity() {
         // 8. volby v Nastavení (v Nastavení jsou jen názvy)
         chapters += Triple("hc8", null, {
             ui.card().apply {
-                listOf("s_test" to "s_test_desc", "ps_wake_row" to "ps_wake_desc", "qk_row" to "qk_desc", "s_quality" to "q_desc", "t_game" to "t_game_desc",
+                listOf("s_test" to "s_test_desc", "ps_wake_row" to "ps_wake_desc", "qk_row" to "qk_desc", "so_row" to "so_desc", "s_quality" to "q_desc", "t_game" to "t_game_desc",
                     "t_dict" to "t_dict_desc", "t_mode" to "t_offline_desc").forEachIndexed { i, (k, d) ->
                     addView(ui.text(t(k), 16f, Theme.TEXT, bold = true), ui.lp(top = if (i == 0) 0 else 14))
                     addView(ui.text(t(d), 15f, Theme.MUTED), ui.lp(top = 4))
@@ -2292,6 +2297,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.39"
-    const val VERSION_CODE = 136
+    const val VERSION = "verze 0.97.40"
+    const val VERSION_CODE = 137
 }

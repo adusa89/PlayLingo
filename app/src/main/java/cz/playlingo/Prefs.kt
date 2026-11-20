@@ -193,6 +193,9 @@ object Prefs {
     /** Budit PlayStation z klidového režimu při Spustit (zapne ho na spárovaném druhém účtu); výchozí ne (od 0.97.18). */
     fun ps5Wake(c: Context): Boolean = bool(c, "ps5_wake", false)
     fun setPs5Wake(c: Context, v: Boolean) = setBool(c, "ps5_wake", v)
+    /** Stav (konzole, překlad, hra) vlevo nahoře přes hru na Android TV – výchozí vypnuto (od 0.97.40), stav je na Domů. */
+    fun statusOverlay(c: Context): Boolean = bool(c, "stav_pres_hru", false)
+    fun setStatusOverlay(c: Context, v: Boolean) = setBool(c, "stav_pres_hru", v)
 
     /** Tlačítko ovladače pro rychlou nabídku vzhledu na Android TV ([QuickLook]); 0 = nenastaveno. */
     fun quickKey(c: Context): Int = p(c).getInt("quick_key", 0)

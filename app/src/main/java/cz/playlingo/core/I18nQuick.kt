@@ -6,6 +6,9 @@ package cz.playlingo.core
  */
 internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
     "qk_row" to ("Tlačítko vzhledu titulků" to "Tlačidlo vzhľadu titulkov"),
+    // stav vlevo nahoře přes hru (StatusPanel)
+    "so_row" to ("Stav přes hru" to "Stav cez hru"),
+    "so_desc" to ("Jen Android TV: vlevo nahoře přes obraz hry krátký stav – konzole, překlad, hra. Ukáže se při každé změně a s nabídkou vzhledu, zelený po chvíli zmizí, oranžový zůstává, dokud se to nespraví. Vypnuto: stav je jen na Domů v aplikaci." to "Len Android TV: vľavo hore cez obraz hry krátky stav – konzola, preklad, hra. Ukáže sa pri každej zmene a s ponukou vzhľadu, zelený po chvíli zmizne, oranžový zostáva, kým sa to neopraví. Vypnuté: stav je len na Domov v aplikácii."),
     // probouzení PlayStationu (Ps5Link.connectWhenAwake)
     "ps_wake_row" to ("Probouzet PlayStation" to "Prebúdzať PlayStation"),
     "ps_wake_desc" to ("PlayStation se zapne z klidového režimu na účtu, se kterým je PlayLingo spárované (druhý účet), ne na výběru účtu. Vypnuto: PlayStation se zapíná ovladačem na vlastním účtu a PlayLingo se připojí samo." to "PlayStation sa zapne z kľudového režimu na účte, s ktorým je PlayLingo spárované (druhý účet), nie na výbere účtu. Vypnuté: PlayStation sa zapína ovládačom na vlastnom účte a PlayLingo sa pripojí samo."),
@@ -22,6 +25,8 @@ internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "so_row" to "Status over the game",
+        "so_desc" to "Android TV only: a short status in the top left over the game picture – console, translation, game. It appears on every change and with the look menu; green disappears after a while, orange stays until fixed. Off: the status is only on Home in the app.",
         "ps_wake_row" to "Wake the PlayStation",
         "ps_wake_desc" to "PlayLingo wakes the PlayStation from rest mode, but on the account it is paired with (the second account) – switch to your account on the console afterwards. Off: turn the PlayStation on with the controller on your account and PlayLingo connects by itself.",
         "h_con_sleep" to "in rest mode",
@@ -36,6 +41,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "This is how the translation will look.",
     ),
     Lang.PL to mapOf(
+        "so_row" to "Stan na obrazie gry",
+        "so_desc" to "Tylko Android TV: krótki stan w lewym górnym rogu na obrazie gry – konsola, tłumaczenie, gra. Pojawia się przy każdej zmianie i z menu wyglądu; zielony po chwili znika, pomarańczowy zostaje do naprawy. Wyłączone: stan jest tylko na stronie Start w aplikacji.",
         "ps_wake_row" to "Wybudzaj PlayStation",
         "ps_wake_desc" to "PlayLingo wybudzi PlayStation z trybu spoczynku, ale na koncie, z którym jest sparowane (drugie konto) – na swoje konto przełączysz się potem na konsoli. Wyłączone: włącz PlayStation kontrolerem na swoim koncie, a PlayLingo połączy się samo.",
         "h_con_sleep" to "w trybie spoczynku",
@@ -50,6 +57,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Tak będzie wyglądać tłumaczenie napisów.",
     ),
     Lang.DE to mapOf(
+        "so_row" to "Status über dem Spiel",
+        "so_desc" to "Nur Android TV: kurzer Status oben links über dem Spielbild – Konsole, Übersetzung, Spiel. Erscheint bei jeder Änderung und mit dem Aussehen-Menü; grün verschwindet nach kurzer Zeit, orange bleibt, bis es behoben ist. Aus: Der Status steht nur unter Start in der App.",
         "ps_wake_row" to "PlayStation aufwecken",
         "ps_wake_desc" to "PlayLingo weckt die PlayStation aus dem Ruhemodus, aber mit dem gekoppelten Konto (zweites Konto) – zu deinem Konto wechselst du dann an der Konsole. Aus: Schalte die PlayStation mit dem Controller auf deinem Konto ein, PlayLingo verbindet sich von selbst.",
         "h_con_sleep" to "im Ruhemodus",
@@ -64,6 +73,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "So wird die Übersetzung aussehen.",
     ),
     Lang.HU to mapOf(
+        "so_row" to "Állapot a játék felett",
+        "so_desc" to "Csak Android TV: rövid állapot bal felül a játék képe felett – konzol, fordítás, játék. Minden változáskor és a megjelenés menüvel jelenik meg; a zöld egy idő után eltűnik, a narancs megmarad, amíg nincs javítva. Kikapcsolva: az állapot csak a Kezdőlapon látszik az alkalmazásban.",
         "ps_wake_row" to "PlayStation felébresztése",
         "ps_wake_desc" to "A PlayLingo felébreszti a PlayStationt nyugalmi módból, de a párosított fiókkal (második fiók) – a saját fiókodra a konzolon válthatsz. Kikapcsolva: kapcsold be a PlayStationt a kontrollerrel a saját fiókodon, a PlayLingo magától csatlakozik.",
         "h_con_sleep" to "nyugalmi módban",
@@ -78,6 +89,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Így fog kinézni a felirat fordítása.",
     ),
     Lang.UK to mapOf(
+        "so_row" to "Стан поверх гри",
+        "so_desc" to "Лише Android TV: короткий стан угорі ліворуч поверх зображення гри – консоль, переклад, гра. З’являється при кожній зміні та з меню вигляду; зелений за мить зникає, помаранчевий лишається, доки не виправлено. Вимкнено: стан лише на Головній у застосунку.",
         "ps_wake_row" to "Пробуджувати PlayStation",
         "ps_wake_desc" to "PlayLingo пробудить PlayStation з режиму спокою, але на спареному обліковому записі (другий запис) – на свій запис перемкнешся потім на консолі. Вимкнено: увімкни PlayStation контролером на своєму записі, і PlayLingo підключиться саме.",
         "h_con_sleep" to "у режимі спокою",
@@ -92,6 +105,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Ось так виглядатиме переклад субтитрів.",
     ),
     Lang.ES to mapOf(
+        "so_row" to "Estado sobre el juego",
+        "so_desc" to "Solo Android TV: un estado breve arriba a la izquierda sobre la imagen del juego – consola, traducción, juego. Aparece con cada cambio y con el menú de aspecto; el verde desaparece al rato, el naranja se queda hasta que se arregle. Desactivado: el estado solo está en Inicio en la app.",
         "ps_wake_row" to "Despertar la PlayStation",
         "ps_wake_desc" to "PlayLingo despierta la PlayStation del modo de reposo, pero con la cuenta vinculada (la segunda cuenta); luego cambia a tu cuenta en la consola. Desactivado: enciende la PlayStation con el mando en tu cuenta y PlayLingo se conecta solo.",
         "h_con_sleep" to "en reposo",
@@ -106,6 +121,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Así se verá la traducción de los subtítulos.",
     ),
     Lang.FR to mapOf(
+        "so_row" to "État par-dessus le jeu",
+        "so_desc" to "Android TV uniquement : un court état en haut à gauche sur l’image du jeu – console, traduction, jeu. Il apparaît à chaque changement et avec le menu d’apparence ; le vert disparaît après un moment, l’orange reste jusqu’à correction. Désactivé : l’état n’est que sur Accueil dans l’app.",
         "ps_wake_row" to "Réveiller la PlayStation",
         "ps_wake_desc" to "PlayLingo sort la PlayStation du mode repos, mais sur le compte associé (le second compte) – passe ensuite à ton compte sur la console. Désactivé : allume la PlayStation avec la manette sur ton compte et PlayLingo se connecte tout seul.",
         "h_con_sleep" to "en veille",
@@ -120,6 +137,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Voici à quoi ressemblera la traduction.",
     ),
     Lang.IT to mapOf(
+        "so_row" to "Stato sopra il gioco",
+        "so_desc" to "Solo Android TV: un breve stato in alto a sinistra sull’immagine del gioco – console, traduzione, gioco. Appare a ogni cambiamento e con il menu dell’aspetto; il verde sparisce dopo poco, l’arancione resta finché non si risolve. Disattivato: lo stato è solo nella Home dell’app.",
         "ps_wake_row" to "Risveglia la PlayStation",
         "ps_wake_desc" to "PlayLingo risveglia la PlayStation dalla modalità riposo, ma sull’account associato (il secondo account) – poi passa al tuo account sulla console. Disattivato: accendi la PlayStation con il controller sul tuo account e PlayLingo si collega da solo.",
         "h_con_sleep" to "in riposo",

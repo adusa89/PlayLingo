@@ -352,6 +352,8 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
 - **Stav přes hru i na Android TV** (od 0.97.23, `StatusPanel.kt`): stejné body jako v TV LG (`TvStatus.rows`) vlevo nahoře
   přes obraz, tlačítko rychlé nabídky v rámečku. Služba každé 2 s (`panelTick`, jen typ TV Android TV, ne v ukázce ani když
   je aplikace vidět); ukáže se při změně, zelený zmizí po 8 s / s prvním titulkem, oranžový zůstává.
+  **Od 0.97.40 výchozí vypnuto** (přání majitele – stav stačí na Domů): volba ⚙ → Obecné „Stav přes hru“ (`Prefs.statusOverlay`,
+  klíč `stav_pres_hru`, texty `so_row`/`so_desc` v `I18nQuick.kt`); bez ní se panel neukáže ani s rychlou nabídkou vzhledu.
 - **Od 0.97.22 (aplikace v televizi 1.5.4):** okraj pruhu nad a pod textem 0–3 (`Prefs.barPad`, `BAR_PADS`, klíč `bar_pad`
   v `TvProfiles.KEYS`, Titulky → Pruh s překladem; do TV pole `okraj` v `TvLook`). Ve stavu v TV je OK jako tlačítko
   v rámečku (`klavesa`), ne šedá tečka. Po nahrání do TV LG se hned uloží nová verze (`TvSender.lastSeen`,

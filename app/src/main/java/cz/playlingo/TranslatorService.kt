@@ -121,7 +121,7 @@ class TranslatorService : Service() {
                 self?.let {
                     if (on) it.quickSample() else it.quickSampleOff()
                     // s nabídkou i stav připojení vlevo nahoře, zavře se spolu s ní (jako OK v TV LG)
-                    if (!demo && Prefs.tvType(it) == cz.playlingo.core.TvType.ANDROID) {
+                    if (!demo && Prefs.tvType(it) == cz.playlingo.core.TvType.ANDROID && Prefs.statusOverlay(it)) {
                         if (on) StatusPanel.pin(it, TvStatus.rows(it)) else StatusPanel.unpin()
                     }
                 }
@@ -399,7 +399,8 @@ class TranslatorService : Service() {
         override fun run() {
             if (!running) return
             try {
-                if (demo || UiState.visible) StatusPanel.hide()
+                // výchozí vypnuto (přání majitele): stav stačí na Domů, přes hru jen se zapnutou volbou
+                if (demo || UiState.visible || !Prefs.statusOverlay(this@TranslatorService)) StatusPanel.hide()
                 else StatusPanel.update(this@TranslatorService, TvStatus.rows(this@TranslatorService))
             } catch (_: Throwable) {}
             tvStatusHandler.postDelayed(this, 2000)
