@@ -664,6 +664,7 @@ private class Aplikace {
             zmena = { s -> stav = s; SwingUtilities.invokeLater { obnovDomu() } },
             chyby = Nastroje.chyby,
             deepl = deeplZapnuty(),
+            zaznamy = if (nast.zaznamHry) Nastroje.zaznamy() else null,
         )
         ctecka = c
         vlakno = thread(name = "ctecka", isDaemon = true) {
@@ -823,6 +824,13 @@ private class Aplikace {
             zaznamOtevreny[0] = !zaznamOtevreny[0]; zaznamPosuv.isVisible = zaznamOtevreny[0]; r.obnov(); zaznamKarta.revalidate()
         })
         zaznamKarta.add(zaznamPosuv)
+        zaznamKarta.add(volba("Záznam hry do složky", listOf("Ne", "Ano"), { if (nast.zaznamHry) 1 else 0 }) {
+            nast.zaznamHry = it == 1; restart()
+        })
+        zaznamKarta.add(Radek("Složka záznamů", { "" }) {
+            val f = Nastroje.zaznamy().apply { mkdirs() }
+            runCatching { java.awt.Desktop.getDesktop().open(f) }
+        }.also { radky += it })
         return stranka(
             popisek("Hra", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), zdroj,
             Box.createVerticalStrut(20),

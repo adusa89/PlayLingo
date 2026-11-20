@@ -15,6 +15,10 @@ Pouští ho čtečka (pc/src/Main.kt) a mluví s ním po řádcích přes standa
 Čte se jen spodní třetina obrazu, stejně jako v aplikaci pro Android TV.
 Výběr titulků a rozhodování, co ukázat, tu není – to dělá čtečka stejnou logikou jako Android.
 
+Záznam pro ladění (--zaznam SLOZKA): celý obraz hry barevně a v plném rozlišení se uloží jako
+snimek-HHMMSS-mmm.jpg, nejvýš jednou za --zaznam-s sekund a jen když se obraz od minule změnil.
+Text se z něj nečte (čtení by zdržovalo titulky) – přečte se až potom při rozboru.
+
 Zdroj obrazu:
   --okno NAZEV    okno, jehož titulek obsahuje NAZEV (např. chiaki, kde běží obraz z PlayStationu)
   (bez --okno)    ukázka: text ze čtečky se nakreslí na umělý „herní“ obrázek
@@ -161,6 +165,50 @@ class Ukazka:
         return np.asarray(im)[:, :, ::-1], None
 
 
+# ---- záznam pro ladění -----------------------------------------------------
+
+class Zaznamnik:
+    """Ukládá celé snímky hry do složky záznamu (v pozadí, čtení titulků nečeká)."""
+
+    def __init__(self, slozka, interval):
+        import os
+        import threading
+        os.makedirs(slozka, exist_ok=True)
+        self.slozka = slozka
+        self.interval = max(0.5, interval)
+        self.posledni = 0.0
+        self.otisk = None
+        self.zamek = threading.Lock()
+        self.threading = threading
+
+    def mozna(self, obraz):
+        ted = time.time()
+        if ted - self.posledni < self.interval:
+            return
+        h, w = obraz.shape[:2]
+        vh, vw = (h // 16) * 16, (w // 16) * 16
+        otisk = obraz[:vh, :vw].mean(axis=2).reshape(vh // 16, 16, vw // 16, 16).mean(axis=(1, 3))
+        if self.otisk is not None and self.otisk.shape == otisk.shape and np.abs(otisk - self.otisk).max() < 6:
+            return
+        if not self.zamek.acquire(blocking=False):
+            return      # předchozí snímek se ještě ukládá
+        self.posledni = ted
+        self.otisk = otisk
+        jmeno = time.strftime("snimek-%H%M%S-", time.localtime(ted)) + "%03d.jpg" % int((ted % 1) * 1000)
+        kopie = np.ascontiguousarray(obraz[:, :, ::-1])      # BGR → RGB
+
+        def uloz():
+            try:
+                from PIL import Image
+                Image.fromarray(kopie).save(self.slozka + "/" + jmeno, quality=85)
+            except Exception as e:
+                sys.stderr.write("záznam: %r\n" % e)
+            finally:
+                self.zamek.release()
+
+        self.threading.Thread(target=uloz, daemon=True).start()
+
+
 # ---- překlad ------------------------------------------------------------------
 
 class Prekladac:
@@ -198,6 +246,8 @@ def main():
     p.add_argument("--model", required=True, help="složka rozbaleného překladového modelu Argos")
     p.add_argument("--jazyk", default="cs")
     p.add_argument("--okno", default="", help="část titulku okna s obrazem hry; bez toho běží ukázka")
+    p.add_argument("--zaznam", default="", help="složka pro snímky hry (ladění); bez toho se nic neukládá")
+    p.add_argument("--zaznam-s", type=float, default=2.0, help="nejkratší odstup snímků záznamu v sekundách")
     a = p.parse_args()
 
     from rapidocr_onnxruntime import RapidOCR
@@ -205,6 +255,7 @@ def main():
     ocr = RapidOCR(det_limit_side_len=1280, det_limit_type="max")
     prekladac = Prekladac(a.model, a.jazyk)
     zdroj = Okno(a.okno) if a.okno else Ukazka()
+    zaznamnik = Zaznamnik(a.zaznam, a.zaznam_s) if a.zaznam else None
     ocr(np.zeros((120, 640, 3), dtype=np.uint8), use_cls=False)      # první čtení trvá déle – ať to není až ve hře
     prekladac.preloz("Hello.")
     ven("PRIPRAVENO")
@@ -225,6 +276,8 @@ def main():
                     minule = None
                     ven("CHYBA", chyba)
                     continue
+                if zaznamnik:
+                    zaznamnik.mozna(obraz)
                 h, w = obraz.shape[:2]
                 y0 = int(h * OBLAST_OD)
                 vyrez = obraz[y0:h]

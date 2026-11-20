@@ -76,6 +76,22 @@ zakryté jiným oknem, ale nesmí být minimalizované.
   `%LOCALAPPDATA%\PlayLingoTools\cteni-chyby.txt`.
 - `PlayLingo.cmd` + `aplikace.ps1` – spuštění okna; `priprava.ps1` – příprava (z okna s `-BezSestaveni`).
 
+## Záznam hry pro ladění
+
+⚙ Nastavení → Ladění → **Záznam hry do složky · Ano** (z příkazové řádky `--zaznam`). Každé spuštění
+čtení pak dostane vlastní složku `zaznamy\pc-<čas>\` v repozitáři (v `.gitignore`), řádek „Složka
+záznamů“ ji otevře:
+
+- `zaznam.txt` – vše ze Záznamu v okně a k tomu řádky `CTENI`: co čtečka přečetla ve spodní třetině,
+  kde to leželo v celém obraze (`[vlevo,nahoře-vpravo,dole]`) a co z toho vzala jako titulek
+  (stejný přečtený text za sebou jen jednou). Čas na milisekundy.
+- `snimek-HHMMSS-mmm.jpg` – celý obraz hry barevně v plném rozlišení, nejvýš jednou za 2 s a jen
+  když se obraz změnil (`cteni.py`, ukládá v pozadí, čtení titulků nečeká). Text z celé obrazovky se
+  za hry nečte – ze snímků se přečte až při rozboru (tentýž RapidOCR z `%LOCALAPPDATA%\PlayLingoTools\venv`).
+
+Podle toho se ladí profily her (např. repliky nad postavami v Diablu IV) – Claude čte složku přímo,
+bez předávání ze zařízení.
+
 ## Příkazová řádka (ladění)
 
 1. Jednou: `powershell -File pc\priprava.ps1 [-Jazyk cs]`.

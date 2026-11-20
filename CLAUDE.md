@@ -144,6 +144,8 @@ Zatím jen čeština. Bez jmen mluvčích v titulcích hry funguje jen 2. a 3. o
 (`SubtitleHistory`, originál → překlad) a „co aplikace četla v oblasti titulků“ (`core/ScreenReads.kt`: surový
 text z OCR a co se z něj vzalo). Během hraní na PC: `.\ci\sbirej-hru.ps1 <adresa ze zařízení>` ukládá snímky
 (jen změněné) a záznam do `zaznamy\hra-<čas>\`. Podle toho se ladí `hud`, `menu`, jména a pojmy – ne odhadem.
+Jednodušší cesta je PlayLingo pro PC (`pc/`, hra v chiaki-ng) se zapnutým ⚙ → Ladění → Záznam hry do složky:
+barevné snímky celé hry a `zaznam.txt` s přečteným textem a polohou jdou rovnou do `zaznamy\pc-<čas>\` (viz `pc/CTI-ME.md`).
 
 Zkouška na Android TV navíc nechá přeložit typické herní repliky (`core/TranslationProbe.kt`)
 a uloží je do `preklad.txt` ve větvích s výsledky – podle něj se ladí přirozenost překladu.

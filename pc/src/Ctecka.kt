@@ -43,6 +43,9 @@ object Nastroje {
     val priprava = File(pc, "priprava.ps1")
     val chyby = File(slozka, "cteni-chyby.txt")
 
+    /** Záznamy pro ladění: `zaznamy\pc-<čas>\` v repozitáři (v .gitignore). */
+    fun zaznamy(): File = File(pc.absoluteFile.parentFile ?: pc.absoluteFile, "zaznamy")
+
     fun model(jazyk: String): File? =
         File(slozka, "modely/en_$jazyk").listFiles()?.firstOrNull { it.isDirectory }
 
@@ -51,7 +54,7 @@ object Nastroje {
 }
 
 /** Spojení s pomocníkem `cteni.py` (viz popis řádků tam). */
-private class Helper(python: String, script: File, model: String, lang: String, window: String, errors: File?) {
+private class Helper(python: String, script: File, model: String, lang: String, window: String, errors: File?, record: File?) {
     sealed class Read {
         object Same : Read()
         data class Error(val text: String) : Read()
@@ -65,6 +68,7 @@ private class Helper(python: String, script: File, model: String, lang: String, 
     init {
         val cmd = mutableListOf(python, script.absolutePath, "--model", model, "--jazyk", lang)
         if (window.isNotEmpty()) { cmd += "--okno"; cmd += window }
+        if (record != null) { cmd += "--zaznam"; cmd += record.absolutePath }
         val pb = ProcessBuilder(cmd)
         if (errors != null) {
             errors.parentFile?.mkdirs()
@@ -160,7 +164,23 @@ class Ctecka(
     private val chyby: File? = null,
     /** Překládat přes DeepL (klíč v [DeeplPc]); offline zůstává jako záloha. */
     private val deepl: Boolean = false,
+    /**
+     * Záznam pro ladění: každé spuštění čtení dostane vlastní složku `pc-<čas>` s `zaznam.txt`
+     * (co se přečetlo a kde, co se vzalo, překlady) a barevnými snímky celé hry (`cteni.py`).
+     */
+    private val zaznamy: File? = null,
 ) {
+    private var zapisovac: java.io.Writer? = null
+    private val casZaznamu = java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
+
+    /** Řádek do `zaznam.txt` (když záznam běží). */
+    private fun zapis(m: String) {
+        val w = zapisovac ?: return
+        runCatching { w.write("${java.time.LocalTime.now().format(casZaznamu)} $m\n"); w.flush() }
+    }
+
+    private fun hlas(m: String) { log(m); zapis(m) }
+
     @Volatile private var konec = false
     private var stav = Stav(Stav.Faze.NACITANI)
         set(v) { if (v != field) { field = v; zmena(v) } }
@@ -179,21 +199,31 @@ class Ctecka(
                 sender = TvSender { log("televize: $it") }
                 if (!sender.start(port)) error("port pro televizi je obsazený – neběží už jiná čtečka?")
             }
+            val slozka = zaznamy?.let { File(it, "pc-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))) }
+            if (slozka != null) {
+                slozka.mkdirs()
+                zapisovac = File(slozka, "zaznam.txt").bufferedWriter(Charsets.UTF_8)
+                log("Záznam do ${slozka.path}")
+                zapis("PlayLingo pro PC · jazyk $jazyk · okno „$okno“ · výstup $vystup · DeepL ${if (deepl) "ano" else "ne"}")
+                zapis("CTENI = text ze spodní třetiny obrazu, souřadnice v celém obraze [vlevo,nahoře-vpravo,dole]; snímky celé hry jsou snimek-*.jpg")
+            }
             log("Načítám čtení textu a překladač…")
-            helper = Helper(python, pomocnik, model.path, jazyk, okno, chyby)
+            helper = Helper(python, pomocnik, model.path, jazyk, okno, chyby, slozka)
             if (konec) return
-            log((if (demo) "Běží ukázka (bez PlayStationu)." else "Čtu okno „$okno“.") +
+            hlas((if (demo) "Běží ukázka (bez PlayStationu)." else "Čtu okno „$okno“.") +
                 (if (deepl) " Překlad DeepL online + offline." else " Překlad offline."))
             stav = Stav(Stav.Faze.BEZI)
             smycka(helper, sender, demo)
             stav = Stav(Stav.Faze.STOJI)
         } catch (e: Throwable) {
-            log("Chyba: ${e.message}")
+            hlas("Chyba: ${e.message}")
             stav = Stav(Stav.Faze.CHYBA, chyba = e.message ?: e.toString())
         } finally {
             pruh?.schovej()
             sender?.hide(); sender?.stop()
             helper?.stop()
+            runCatching { zapisovac?.close() }
+            zapisovac = null
             if (stav.faze != Stav.Faze.CHYBA) stav = Stav(Stav.Faze.STOJI)
         }
     }
@@ -211,6 +241,7 @@ class Ctecka(
         val speakerColors = SpeakerColors()
         // kde na snímku byl anglický titulek (poměry v obraze) – podle toho se položí pruh
         var spot = Misto(0.5f, -1f, -1f, 0f)
+        var lastRead = ""
 
         // Jako na Androidu od 0.97.2: s DeepL se počká na jeho překlad (nejvýš ~2,5 s) a ukáže se jen
         // jedna varianta; offline jen když DeepL nepomůže. Krátká slova ze slovníčku zůstávají offline.
@@ -250,12 +281,12 @@ class Ctecka(
             when (val r = helper.read(force = !tracker.isSettled, demoText = demoText)) {
                 Helper.Read.Same -> {}
                 is Helper.Read.Error -> {
-                    if (r.text != lastError) { lastError = r.text; log("obraz není: ${r.text}") }
+                    if (r.text != lastError) { lastError = r.text; hlas("obraz není: ${r.text}") }
                     stav = stav.copy(faze = Stav.Faze.BEZ_OKNA, chyba = r.text)
                     hideAt = 0; hide(); tracker.reset()
                 }
                 is Helper.Read.Frame -> {
-                    if (lastError.isNotEmpty()) { lastError = ""; log("obraz je zpět (${r.w}×${r.h})") }
+                    if (lastError.isNotEmpty()) { lastError = ""; hlas("obraz je zpět (${r.w}×${r.h})") }
                     stav = stav.copy(faze = Stav.Faze.BEZI, chyba = "", ms = r.ms)
                     // Stejné hranice jako v aplikaci pro Android TV (TranslatorService.process).
                     val foreign = TextLogic.looksForeign(r.lines.joinToString("\n") { it.text })
@@ -267,6 +298,12 @@ class Ctecka(
                         centerTolerance = (r.w * 0.14f).toInt(),
                         maxLineHeight = (r.h * 0.085f).toInt(),
                     )
+                    if (zapisovac != null) {
+                        val read = r.lines.joinToString(" ; ") { "[${r.x0 + it.left},${r.y0 + it.top}-${r.x0 + it.right},${r.y0 + it.bottom}] ${it.text}" }
+                        val line = "CTENI ${r.ms} ms ${r.w}×${r.h} | " + read.ifEmpty { "–" } +
+                            " | vzato: " + picked.text.replace('\n', ' ').ifEmpty { "–" }
+                        if (read != lastRead) { lastRead = read; zapis(line) }
+                    }
                     if (picked.top >= 0 && picked.left >= 0 && r.w > 0 && r.h > 0) {
                         spot = Misto(
                             (r.x0 + (picked.left + picked.right) / 2f) / r.w,
@@ -280,7 +317,7 @@ class Ctecka(
                         // volby odpovědí smí stát déle – hráč se rozhoduje
                         val staleMs = if (TextLogic.hasChoices(picked.text)) TextLogic.CHOICES_STALE_MS else STALE_MS
                         if (picked.text.isNotEmpty() && now - steadySince > staleMs) {
-                            if (shown) { hideAt = 0; hide(); log("schováno (text stojí dlouho – není to titulek)") }
+                            if (shown) { hideAt = 0; hide(); hlas("schováno (text stojí dlouho – není to titulek)") }
                         } else when (val action = tracker.onOcr(picked.text, slowDevice = r.ms > 500)) {
                             is SubtitleTracker.Action.Show -> translateSegments(action.text)?.let { segs ->
                                 tracker.confirmShown(action.text)
@@ -293,7 +330,7 @@ class Ctecka(
                                 val orig = action.text.replace('\n', ' ')
                                 val prel = text.replace('\n', ' ')
                                 stav = stav.copy(original = orig, preklad = prel)
-                                log("${r.ms} ms  $orig  →  $prel")
+                                hlas("${r.ms} ms  $orig  →  $prel")
                             }
                             SubtitleTracker.Action.Hide -> hideAt = now + HOLD_MS
                             SubtitleTracker.Action.None ->

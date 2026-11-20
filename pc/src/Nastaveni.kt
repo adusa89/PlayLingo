@@ -38,6 +38,8 @@ class Nastaveni(private val soubor: File = File(Nastroje.slozka, "aplikace.prope
     var vystup: String get() = text("vystup", "pc"); set(v) = nastav("vystup", v)
     /** Překlad přes DeepL (klíč je zvlášť a zašifrovaný, viz DeeplPc). */
     var deepl: Boolean get() = text("deepl", "false") == "true"; set(v) = nastav("deepl", v)
+    /** Záznam hry pro ladění (snímky + co se četlo) do `zaznamy\pc-<čas>\`. */
+    var zaznamHry: Boolean get() = text("zaznamHry", "false") == "true"; set(v) = nastav("zaznamHry", v)
 
     var velikost: Int get() = cislo("velikost", 100); set(v) = nastav("velikost", v)
     var pozadi: Int get() = cislo("pozadi", 90); set(v) = nastav("pozadi", v)

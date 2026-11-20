@@ -20,7 +20,7 @@ fun main(args: Array<String>) {
     // kam s překladem: pruh na obrazovce počítače (pc), do televize LG/Samsung (tv), nebo obojí
     val output = arg("--vystup", "pc")
     if (output !in listOf("pc", "tv", "oboje")) {
-        println("Použití: [--python CESTA] [--pomocnik cteni.py] [--okno NÁZEV_OKNA] [--jazyk cs] [--vystup pc|tv|oboje] [--port 8787] [--deepl] [--deepl-klic SOUBOR]")
+        println("Použití: [--python CESTA] [--pomocnik cteni.py] [--okno NÁZEV_OKNA] [--jazyk cs] [--vystup pc|tv|oboje] [--port 8787] [--deepl] [--deepl-klic SOUBOR] [--zaznam]")
         return
     }
     fun log(m: String) = println("${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))} $m")
@@ -46,6 +46,7 @@ fun main(args: Array<String>) {
         python = arg("--python", Nastroje.python.path),
         pomocnik = File(arg("--pomocnik", Nastroje.pomocnik.path)),
         deepl = "--deepl" in args && DeeplPc.ma(),
+        zaznamy = if ("--zaznam" in args) Nastroje.zaznamy() else null,
     )
     Runtime.getRuntime().addShutdownHook(Thread { reader.zastav() })
     reader.bez()
