@@ -262,7 +262,7 @@ class MainActivity : Activity() {
         // poslaný „z telefonu“ posune průvodce na krok s číslem z PS5.
         if (i?.getBooleanExtra("logintest", false) == true && applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
             Prefs.setWizardDone(this, true); wizard = -1
-            Prefs.setPs5Host(this, null); Prefs.setPsnId(this, ""); draftPsn = ""
+            Prefs.setPs5Host(this, null); Prefs.setPsnAccount(this, "", ""); draftPsn = ""
             section = Section.PS5; pairStep = 2; render()
             val s = loginServer
             Thread({
@@ -477,8 +477,9 @@ class MainActivity : Activity() {
         val focusedTag = if (keepFocus) currentFocus?.tag else null
         if (!skipDraftSave) saveDrafts()
         syncLoginPage()
-        // stránka pro vložení klíče DeepL z telefonu běží jen, dokud je vidět (Nastavení nebo krok Kvalita překladu)
-        if (if (wizard >= 0) wizard != W_TRANSLATE else section != Section.SETTINGS) deeplUi?.stopPage()
+        // stránka pro vložení klíče DeepL z telefonu běží jen, dokud je vidět (Titulky s otevřenou skupinou Kvalita
+        // překladu, nebo krok průvodce Lepší překlad)
+        if (if (wizard >= 0) wizard != W_TRANSLATE else section != Section.LOOK || lookOpen != LOOK_DEEPL) deeplUi?.stopPage()
         lastRunning = TranslatorService.running
         lastPaused = TranslatorService.paused
         lastLink = TranslatorService.linkState
@@ -523,10 +524,7 @@ class MainActivity : Activity() {
      * Názvy kroků průvodce: zařízení, konzole, televize, jazyk překladu, povolení pruhu, spárování
      * konzole, hotovo (indexy W_…). Jednorázové volby jdou později změnit v Nastavení.
      */
-    private val wizardSteps = listOf("wz_dev", "c_console", "wz_tv", "wz_s2", "wz_tr", "wz_s1", "wz_s3", "wz_s4")
-
-    /** Krok Kvalita překladu: zvolil hráč DeepL? (DeepL se zapne, jakmile je uložený klíč.) */
-    private var wizardDeepl: Boolean? = null
+    private val wizardSteps = listOf("wz_dev", "c_console", "wz_tv", "wz_s2", "wz_tr_step", "wz_s1", "wz_s3", "wz_s4")
 
     /** Volba v průvodci: řádek s názvem a popisem; vybraná je zlatá a s fajfkou. */
     private fun option(title: String, desc: String?, selected: Boolean, tag: String, onPick: () -> Unit) {
@@ -628,27 +626,15 @@ class MainActivity : Activity() {
                     nextLabel = t("wz_skip_step")
                 }
             }
-            // kvalita překladu: offline je zdarma, ale slabý; DeepL je mnohem lepší (vlastní klíč zdarma)
+            // Lepší překlad (od 0.97.28 bez volby DeepL / jen offline): rovnou jedna věta proč, cesta ke klíči
+            // (televize: čtverečky, telefon: tlačítka a políčko) a „Čekám na klíč z telefonu…“. Bez klíče je hlavní
+            // tlačítko „Přeskočit – zůstat u offline překladu“, po přijetí klíče „✔ DeepL je nastavený“ a Pokračovat.
             W_TRANSLATE -> {
-                add(ui.text(t("wz_tr_desc"), 17f, Theme.MUTED), 12)
-                val deepl = wizardDeepl ?: DeeplKey.enabled(this)
-                option(t("wz_tr_deepl"), t("wz_tr_deepl_d"), deepl, "wtrdeepl") {
-                    wizardDeepl = true
-                    if (DeeplKey.has(this)) { DeeplKey.setEnabled(this, true); applyToService() }
-                    render(true)
-                }
-                option(t("wz_tr_offline"), t("wz_tr_offline_d"), !deepl, "wtroffline") {
-                    wizardDeepl = false
-                    if (DeeplKey.enabled(this)) { DeeplKey.setEnabled(this, false); applyToService() }
-                    render(true)
-                }
-                if (deepl) {
-                    // klíč uložený z telefonu nebo políčka → DeepL rovnou zapnout
-                    if (DeeplKey.has(this) && !DeeplKey.enabled(this)) { DeeplKey.setEnabled(this, true); applyToService() }
-                    val d = deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }) { url, text -> qrRow(url, text) }.also { deeplUi = it }
-                    d.build(content)
-                    if (!DeeplKey.has(this)) nextLabel = t("wz_skip_step")
-                }
+                add(ui.text(t("wz_tr_why"), 17f, Theme.MUTED), 12)
+                // klíč uložený z telefonu nebo políčka → DeepL rovnou zapnout
+                if (DeeplKey.has(this) && !DeeplKey.enabled(this)) { DeeplKey.setEnabled(this, true); applyToService() }
+                deeplSection().build(content, wizard = true)
+                if (!DeeplKey.has(this)) nextLabel = t("wz_tr_skip")
             }
             // titulky jdou do televize LG / Samsung → povolení pruhu na tomto zařízení není potřeba
             W_PERM -> if (Prefs.tvSend(this)) add(ui.text(t("s_tv_desc"), 17f, Theme.MUTED), 12) else {
@@ -663,7 +649,6 @@ class MainActivity : Activity() {
             W_PAIR -> {
                 add(ui.text(ct("wz_ps5"), 17f, Theme.MUTED), 12)
                 ps5Form()
-                if (!Prefs.consoleReady(this)) nextLabel = t("wz_skip_step")
             }
             else -> {
                 add(ui.text(t("wz_done"), 17f, Theme.MUTED), 12)
@@ -676,19 +661,30 @@ class MainActivity : Activity() {
             }
         }
 
-        val row = row()
         val pairing = wizard == W_PAIR && !Prefs.consoleReady(this)
-        row.addView(tagged(ui.button(nextLabel, primary = !pairing) {
-            if (wizard < wizardSteps.size - 1) { wizard++; render() }
-            else {
-                val paired = Prefs.consoleReady(this)
-                finishWizard()
-                if (paired) startFlow()
-            }
-        }, "wnext"))
-        if (wizard > 0) row.addView(tagged(ui.button(t("wz_back")) { wizard--; render() }, "wback"), wrapLp())
-        row.addView(tagged(ui.button(t(if (wizard == wizardSteps.size - 1) "wz_finish" else "wz_skip")) { finishWizard() }, "wskip"), wrapLp())
-        add(row, 28)
+        if (pairing) {
+            // Připojení konzole: jen jedna řada tlačítek – ta spárování (Pokračovat / Zpět, u Xboxu Přihlásit)
+            // a pod ní malé „Spárovat později“ (přeskočí na Hotovo). U Xboxu, který vlastní Zpět nemá, i malé Zpět.
+            val later = row()
+            if (Prefs.console(this) == Console.XBOX) later.addView(tagged(ui.smallButton(t("wz_back")) { wizard--; render() }, "wback"))
+            later.addView(tagged(ui.smallButton(t("wz_pair_later")) { wizard = wizardSteps.size - 1; render() }, "wlater"),
+                if (later.childCount > 0) wrapLp() else ui.lp())
+            add(later, 20)
+        } else {
+            val row = row()
+            row.addView(tagged(ui.button(nextLabel, primary = true) {
+                if (wizard < wizardSteps.size - 1) { wizard++; render() }
+                else {
+                    val paired = Prefs.consoleReady(this)
+                    finishWizard()
+                    if (paired) startFlow()
+                }
+            }, "wnext"))
+            if (wizard > 0) row.addView(tagged(ui.button(t("wz_back")) { wizard--; render() }, "wback"), wrapLp())
+            // Lepší překlad: jen Přeskočit/Pokračovat a Zpět (průvodce se tu nepřeskakuje celý)
+            if (wizard != W_TRANSLATE) row.addView(tagged(ui.button(t(if (wizard == wizardSteps.size - 1) "wz_finish" else "wz_skip")) { finishWizard() }, "wskip"), wrapLp())
+            add(row, 28)
+        }
         if (NetInfo.isHandheld(this)) add(tagged(ui.button(t("hp_back")) { backToPhoneHelper() }, "tophone"), 16)
 
         val target = focusedTag?.let { window.decorView.findViewWithTag<View>(it) }
@@ -874,7 +870,7 @@ class MainActivity : Activity() {
         // překlad: jazyk, offline / DeepL, chybějící balíček
         val tl = Prefs.lang(this)
         if (!modelOk) row(Theme.WARN, t("w_model").replace("%s", tl.label), "hmodel", t("download"), { downloadModel() })
-        else row(Theme.OK, tl.label + " · " + t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline"), "hmodel")
+        else row(Theme.OK, tl.label + " · " + t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline"), "hmodel", onClick = { openQuality() })
         // hra: vybraný profil zeleně; titulky ukazují na jinou hru → oranžově s Přepnout (GameGuess, nic se nepřepíná samo).
         // S univerzálním profilem a bez odhadu řádek není.
         val game = GameProfiles.of(Prefs.gameId(this))
@@ -1089,32 +1085,32 @@ class MainActivity : Activity() {
             if (loginPinWanted()) add(input("ps5_login", draftLogin, "plogin", number = true), 12)
             add(tagged(ui.button(t("ps5_forget")) {
                 if (TranslatorService.running && !TranslatorService.demo) stopService(Intent(this, TranslatorService::class.java))
-                Prefs.setPs5Host(this, null); pairMsg = null; render(true)
+                Prefs.setPs5Host(this, null); pairStep = 0; pairMsg = null; render(true)
             }, "pforget"), 12)
             return
         }
         if (draftIp.isEmpty()) draftIp = Prefs.ps5Ip(this)
         if (draftPsn.isEmpty()) draftPsn = Prefs.psnId(this)
 
-        // ---- průvodce spárováním: šest malých kroků, na každé obrazovce jedna věc ----
-        // Kroky (index → pořadí na obrazovce): 0 zapnout PS5, 1 najít PS5, 2–3 přihlášení účtem (4 = záloha
-        // opsáním kódu), 6 příprava na PS5 (druhý účet, Remote Play, skrytí hlášky – předposlední, těsně před
-        // kódem, protože se dělá ve stejném menu PS5), 5 kód z PS5 a spárování. Indexy 0–5 zůstaly kvůli zkoušce.
-        val step = pairStep.coerceIn(0, 6)
+        // ---- průvodce spárováním: šest malých kroků, na každé obrazovce jedna věc (pořadí od 0.97.28) ----
+        // Index → pořadí na obrazovce: 0 zapnout PS5 (1), 1 najít PS5 (2), 7 účet pro PlayLingo (3), 2–4 přihlášení
+        // tím účtem (4; 4 = záloha opsáním kódu), 6 nastavení na PS5 pod tím uživatelem (5), 5 kód z PS5 (6).
+        // Účet se volí PŘED nastavením na PS5 a jeho jméno je vidět až do konce: PS5 spáruje jen, když osmimístné
+        // číslo vyvolá stejný uživatel, jakým se aplikace přihlásila (jinak CE-110032-7). Indexy 0–6 drží zkouška.
+        val step = pairStep.coerceIn(0, 7)
+        if (step != 5) pairFailed = false
         val have = Ps5.parseAccountId(draftPsn) != null
-        val key = when (step) { 0 -> "pg_0"; 1 -> "pg_2"; 2 -> "pa_1"; 3 -> "pa_2"; 4 -> "pa_3"; 6 -> "pg_1"; else -> "pg_4" }
-        val pos = when (step) { 0 -> 1; 1 -> 2; 2 -> 3; 3, 4 -> 4; 6 -> 5; else -> 6 }
-        // kolikátý krok spárování to je (pruh rozdělený na dílky)
-        add(ui.steps(pos, 6, steps(pos, 6)), 16)
+        val name = accName()
+        val key = when (step) { 0 -> "pg_0"; 1 -> "pg_2"; 2 -> "pa_1"; 3 -> "pa_2"; 4 -> "pa_3"; 6 -> "pg_1"; 7 -> "pg_acc"; else -> "pg_4" }
+        val pos = when (step) { 0 -> 1; 1 -> 2; 7 -> 3; 2, 3, 4 -> 4; 6 -> 5; else -> 6 }
+        // kolikátý krok spárování: v průvodci jen malý podtitul (nahoře už je „Krok 7 z 8“), jinde pruh na dílky
+        if (wizard == W_PAIR) add(tagged(ui.text(t("pg_sub").replace("%1", pos.toString()).replace("%2", "6"), 14f, Theme.MUTED), "psub"), 10)
+        else add(ui.steps(pos, 6, steps(pos, 6)), 16)
         add(ui.text(t("${key}_title"), 22f, Theme.TEXT, bold = true), 2)
         var nextOk = true
+        var nextLabel = t("wz_next")
         when (step) {
             0 -> add(ui.card().apply { addView(ui.text(t("pg_0_text"), 17f, Theme.TEXT)) }, 10)
-            // předposlední krok: všechno, co se dělá na PS5 v Nastavení → Systém → Remote Play
-            6 -> add(ui.card().apply {
-                // očíslovaný postup na PS5 (druhý účet, Remote Play, skrytí hlášky) – vše v jednom menu
-                addView(ui.text(t("pg_1_text"), 17f, Theme.TEXT))
-            }, 10)
             1 -> {
                 add(ui.card().apply { addView(ui.text(t("pg_2_text"), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_ip", draftIp, "pip", number = true).also { IpField.setup(it) }, 10)
@@ -1122,10 +1118,23 @@ class MainActivity : Activity() {
                 // adresu aplikace většinou najde sama; kamera jen když hledání neuspělo (telefon s kamerou)
                 if (ps5NotFound && LgScanActivity.available(this)) add(tagged(ui.button(t("km_scan_ps5ip")) { scanPs5Code(true) }, "pscanip"), 8)
             }
+            // účet pro PlayLingo: druhý účet, na kterém se nehraje. Uložený se nikdy nepoužije potichu.
+            7 -> {
+                add(ui.card().apply { addView(ui.text(t("pg_acc_text"), 17f, Theme.TEXT)) }, 10)
+                if (have) nextLabel = t("pg_acc_use").replace("%s", name)
+                else {
+                    // účty ověřené v tomhle telefonu (PlayLingo v telefonu jako čtečka) – se jmény, k výběru
+                    Prefs.phoneAccounts(this).forEachIndexed { i, a ->
+                        add(tagged(ui.button(t("pg_acc_use").replace("%s", a.name.ifEmpty { t("pg_acc_unknown") })) {
+                            saveDrafts(); useAccount(a.id, a.name); pairStep = 6; pairMsg = null; render()
+                        }, "pacc$i"), if (i == 0) 12 else 8)
+                    }
+                    nextLabel = t("pg_acc_login")
+                }
+            }
             2 -> {
                 // telefon: velký QR kód s adresou stránky, kterou televize vystavuje v domácí síti
                 // (když se ji vystavit nepodařilo, vede kód rovnou na přihlášení Sony)
-                if (have) add(ui.text(t("ps5_acc_done"), 17f, Theme.OK, bold = true), 10)
                 val pageUrl = loginPageUrl()
                 add(qrRow(pageUrl ?: PsnAuth.LOGIN_URL, t("pa_1_text")), 10)
                 // adresa i slovy – pro přihlášení z počítače (stránka funguje v každém prohlížeči
@@ -1141,10 +1150,7 @@ class MainActivity : Activity() {
                 }
                 else add(ui.text(t("pa_nolan"), 15f, Theme.WARN), 6)
             }
-            3 -> {
-                add(ui.card().apply { addView(ui.text(t("acc2"), 16f, Theme.ACCENT)) }, 10)
-                add(ui.card().apply { addView(ui.text(t("pa_2_text"), 17f, Theme.TEXT)) }, 10)
-            }
+            3 -> add(ui.card().apply { addView(ui.text(t("pa_2_text"), 17f, Theme.TEXT)) }, 10)
             4 -> {
                 // záloha, když se stránka z televize v telefonu neotevře (jiná Wi-Fi, mobilní data):
                 // čtvereček rovnou na přihlášení Sony a kód opsaný z adresy prázdné stránky „redirect“
@@ -1161,9 +1167,14 @@ class MainActivity : Activity() {
                 add(input("ph_code", draftAuth, "pauth", number = false), 8)
                 nextOk = false
             }
+            // předposlední krok: na PS5 přepnout na uživatele s tímhle jménem a v Nastavení → Systém → Remote Play
+            6 -> {
+                accountLine(name, other = true)
+                add(ui.card().apply { addView(ui.text(t("pg_1_text").replace("%s", name), 17f, Theme.TEXT)) }, 10)
+            }
             else -> {
-                if (have) add(ui.text(t("ps5_acc_done"), 15f, Theme.OK, bold = true), 8)
-                add(ui.card().apply { addView(ui.text(t("pg_4_text"), 17f, Theme.TEXT)) }, 10)
+                accountLine(name, other = !pairFailed)
+                add(ui.card().apply { addView(ui.text(t("pg_4_text").replace("%s", name), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_pin", draftPin, "ppin", number = true), 10)
                 // telefon s kamerou: osmimístné číslo přečíst z obrazovky PlayStationu
                 if (LgScanActivity.available(this)) add(tagged(ui.button(t("km_scan_ps5")) { scanPs5Code() }, "pscan"), 8)
@@ -1176,34 +1187,63 @@ class MainActivity : Activity() {
         if (pairBusy) add(ui.progress(null), 8)
         val row = row()
         when {
-            nextOk -> row.addView(tagged(ui.button(t("wz_next"), primary = true) { pairNext() }, "pnext"))
+            nextOk -> row.addView(tagged(ui.button(nextLabel, primary = true) { pairNext() }, "pnext"))
             step == 4 -> row.addView(tagged(ui.button(t(if (pairBusy) "ps5_acc_wait" else "ph_check"), primary = true) { if (!pairBusy) checkPhoneCode() }, "pnext"))
-            else -> row.addView(tagged(ui.button(t(if (pairBusy) "ps5_pairing" else "ps5_pair"), primary = true) { if (!pairBusy) pairPs5() }, "pnext"))
+            else -> row.addView(tagged(ui.button(t(if (pairBusy) "ps5_pairing" else if (pairFailed) "pg_retry" else "ps5_pair"), primary = true) { if (!pairBusy) pairPs5() }, "pnext"))
         }
+        // jiný účet: v kroku 3 místo uloženého, po chybě spárování hned vedle „Zkusit znovu“
+        if ((step == 7 && have) || (step == 5 && pairFailed && !pairBusy)) row.addView(tagged(ui.button(t("pg_acc_other")) { otherAccount(step) }, "pother"), wrapLp())
         if (step > 0) row.addView(tagged(ui.button(t("wz_back")) {
             saveDrafts()
-            // z kroku s číslem z PS5 zpět rovnou před přihlášení, když už je účet ověřený
-            pairStep = when {
-                step == 5 -> 6                    // z kódu zpět na přípravu PS5
-                step == 6 -> if (have) 1 else 3   // z přípravy zpět před přihlášení (účet už je)
+            pairStep = when (step) {
+                5 -> 6        // z kódu zpět na nastavení PS5
+                6 -> 7        // z nastavení PS5 zpět na volbu účtu (přihlášení se neopakuje)
+                7 -> 1        // z volby účtu zpět na hledání PS5
+                2 -> 7        // z přihlášení zpět na volbu účtu
                 else -> step - 1
             }
             pairMsg = null; render()
         }, "pback"), wrapLp())
+        // první krok spárování v průvodci: Zpět vede na předchozí krok průvodce (jedna řada tlačítek)
+        else if (wizard == W_PAIR) row.addView(tagged(ui.button(t("wz_back")) { wizard--; render() }, "pback"), wrapLp())
         // stránka z televize se v telefonu neotevřela → rovnou na záložní krok se čtverečkem na Sony
         if (step == 2) row.addView(tagged(ui.button(t("pa_stuck")) {
             saveDrafts()
             pairStep = 4; pairMsg = null; render()
         }, "pstuck"), wrapLp())
         add(row, 14)
-        // první krok: celý postup s odkazy na založení účtu Sony (i do iPhonu) – pod tlačítky, ať ta zůstanou vidět
-        if (step == 6) add(helpLink(cz.playlingo.core.HelpLinks.PS5_PREP, t("help_ps5")), 14)
-        // účet už je uložený: nabídnout nové přihlášení (jiný účet, nebo když spárování s tímhle nejde)
-        if (step == 5 && have && !pairBusy) add(tagged(ui.button(t("ps5_acc_again")) {
-            saveDrafts()
-            draftPsn = ""; draftAuth = ""; Prefs.setPsnId(this, "")
-            pairStep = 2; pairMsg = null; render()
-        }, "pagain"), 10)
+        // krok s účtem: jak založit druhý účet (i do iPhonu) – pod tlačítky, ať ta zůstanou vidět
+        if (step == 7) add(helpLink(cz.playlingo.core.HelpLinks.PS5_PREP, t("help_ps5")), 14)
+    }
+
+    /** Spárování se nepovedlo – nabídnout „Zkusit znovu“ a „Přihlásit jiný účet“ (CE-110032-7). */
+    private var pairFailed = false
+
+    /** Jméno ověřeného účtu PlayStation (Online ID); u účtů uložených před 0.97.28 neznámé. */
+    private fun accName(): String = Prefs.psnName(this).ifEmpty { t("pg_acc_unknown") }
+
+    /** Ověřený účet: uložit číslo i jméno najednou (jméno se ukazuje v dalších krocích a v hlášce o spárování). */
+    private fun useAccount(id: String, name: String) {
+        Prefs.setPsnAccount(this, id, PhoneLogin.cleanName(name))
+        draftPsn = id; draftAuth = ""
+    }
+
+    /** Řádek „Ověřený účet: JMÉNO“ v krocích 5 a 6, s malým tlačítkem „Přihlásit jiný účet“. */
+    private fun accountLine(name: String, other: Boolean) {
+        val line = row()
+        line.addView(ui.text("✔ " + t("pg_acc_done").replace("%s", name), 16f, Theme.OK, bold = true).apply { gravity = Gravity.CENTER_VERTICAL })
+        if (other && !pairBusy) line.addView(tagged(ui.smallButton(t("pg_acc_other")) { otherAccount(pairStep) }, "pother"), wrapLp())
+        add(line, 10)
+    }
+
+    /** Zapomene ověřený účet i jméno a vrátí na volbu účtu (z ní, když v telefonu žádný uložený není, rovnou na přihlášení). */
+    private fun otherAccount(from: Int) {
+        saveDrafts()
+        draftPsn = ""; draftAuth = ""; draftPin = ""
+        Prefs.setPsnAccount(this, "", "")
+        pairFailed = false
+        pairStep = if (from == 7 && Prefs.phoneAccounts(this).isEmpty()) 2 else 7
+        pairMsg = null; render()
     }
 
     /** Zpráva u párování; [change] upraví rozepsané údaje (až po uložení toho, co je v políčkách). */
@@ -1222,13 +1262,15 @@ class MainActivity : Activity() {
     private fun pairNext() {
         saveDrafts()
         val have = Ps5.parseAccountId(draftPsn) != null
-        when (pairStep.coerceIn(0, 6)) {
+        when (pairStep.coerceIn(0, 7)) {
             0 -> { pairStep = 1; pairMsg = null; render(); if (draftIp.isEmpty()) findPs5() }
             1 -> {
                 if (!Ps5.validHost(draftIp)) { pairNote(t("ps5_bad_ip"), Theme.BAD); return }
                 Prefs.setPs5Ip(this, draftIp)
-                pairStep = if (have) 6 else 2; pairMsg = null; render()
+                pairStep = 7; pairMsg = null; render()
             }
+            // účet pro PlayLingo: uložený potvrzený tlačítkem „Použít účet JMÉNO“, jinak přihlášení
+            7 -> { pairStep = if (have) 6 else 2; pairMsg = null; render() }
             2 -> { pairStep = if (have) 6 else 3; pairMsg = null; render() }
             3 -> { pairStep = 4; pairMsg = null; render() }
             6 -> { pairStep = 5; pairMsg = null; render() }
@@ -1238,7 +1280,7 @@ class MainActivity : Activity() {
     /** Stránka pro telefon běží jen po dobu, kdy průvodce ukazuje kroky přihlášení účtem (2 až 4). */
     private fun syncLoginPage() {
         val pairing = Prefs.console(this) == Console.PLAYSTATION && Prefs.ps5Host(this) == null && (wizard == W_PAIR || (wizard < 0 && section == Section.PS5))
-        val want = pairing && pairStep.coerceIn(0, 6) in 2..4
+        val want = pairing && pairStep.coerceIn(0, 7) in 2..4
         if (want && loginServer == null) {
             loginServer = LoginServer(
                 lang = { Prefs.uiLang(this) },
@@ -1263,10 +1305,12 @@ class MainActivity : Activity() {
         return PhoneLogin.pageUrl(PhoneLogin.Target(ip, s.port, s.key))
     }
 
-    /** Telefon poslal ověřený účet (ze stránky nebo z PlayLinga v telefonu) → rovnou na číslo z PS5. */
+    /**
+     * Telefon poslal ověřený účet (ze stránky nebo z PlayLinga v telefonu) → nastavení na PS5 pod tímhle
+     * uživatelem (jméno je pak vidět v řádku „Ověřený účet: JMÉNO“ až do spárování).
+     */
     private fun accountFromPhone(a: PhoneLogin.Account) {
-        Prefs.setPsnId(this, a.id)
-        pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = a.id; draftAuth = ""; pairStep = 6 }
+        pairNote(null, Theme.OK) { useAccount(a.id, a.name); pairStep = 6 }
     }
 
     /** Čtvereček (QR kód) s adresou a vedle něj text; na úzké obrazovce je text pod čtverečkem. */
@@ -1303,11 +1347,10 @@ class MainActivity : Activity() {
         if (code == null) { pairNote(t("ph_bad"), Theme.BAD); return }
         pairNote(t("ps5_acc_wait"), busy = true)
         Thread({
-            val id = PsnAuth.accountIdForCode(code)
-            if (id != null) {
-                Prefs.setPsnId(this, id)
-                pairNote(t("ps5_acc_ok"), Theme.OK) { draftPsn = id; draftAuth = ""; pairStep = 6 }
-            } else pairNote(t("ph_bad"), Theme.BAD)
+            // číslo účtu i jméno (Online ID z odpovědi Sony o účtu)
+            val acc = PsnAuth.accountForCode(code)
+            if (acc != null) pairNote(null, Theme.OK) { useAccount(acc.id, acc.name); pairStep = 6 }
+            else pairNote(t("ph_bad"), Theme.BAD)
         }, "tp-code").start()
     }
 
@@ -1333,14 +1376,19 @@ class MainActivity : Activity() {
         if (pin == null) { pairNote(t("ps5_bad_pin"), Theme.BAD); return }
         Prefs.setPs5Ip(this, ip)
         val account = Ps5.parseAccountId(draftPsn)
-        if (account == null) { pairStep = 2; pairNote(t("pg_need_acc"), Theme.BAD); return }
+        if (account == null) { pairStep = 7; pairNote(t("pg_need_acc"), Theme.BAD); return }
+        val name = accName()
         pairNote(t("ps5_pairing"), busy = true)
         Thread({
             Ps5Pairing.pair(ip, account, pin) { h: Ps5Host? ->
                 if (h != null) {
                     Prefs.setPs5Host(this, h)
-                    pairNote(t("ps5_ok"), Theme.OK) { draftPin = ""; pairStep = 0 }
-                } else pairNote(t("ps5_fail") + (Ps5Pairing.lastError?.let { "\n($it)" } ?: ""), Theme.BAD)
+                    pairNote(t("ps5_ok").replace("%s", name), Theme.OK) { draftPin = ""; pairStep = 0; pairFailed = false }
+                } else {
+                    // nejčastější příčina: číslo vyvolal na PS5 jiný uživatel než účet v aplikaci (CE-110032-7)
+                    val why = t("ps5_fail") + "\n" + t("ps5_fail_user").replace("%s", name) + (Ps5Pairing.lastError?.let { "\n($it)" } ?: "")
+                    pairNote(why, Theme.BAD) { pairFailed = true; draftPin = "" }
+                }
             }
         }, "tp-pair").start()
     }
@@ -1460,8 +1508,9 @@ class MainActivity : Activity() {
         return open
     }
 
-    /** Titulky: otevřená skupina (-1 = žádná). */
+    /** Titulky: otevřená skupina (-1 = žádná, [LOOK_DEEPL] = Kvalita překladu). */
     private var lookOpen = -1
+    private val LOOK_DEEPL = 100
 
     /**
      * Stránka Titulky (od 0.97.1) po vzoru Nápovědy: rozbalovací skupiny Jazyk a písmo / Pruh s překladem /
@@ -1470,6 +1519,12 @@ class MainActivity : Activity() {
      */
     private fun subtitlesPage() {
         langRow("lang", 16)
+        // Kvalita překladu (DeepL) hned pod jazykem překladu (od 0.97.28, dřív Nastavení → Experimentální)
+        val dlOpen = lookOpen == LOOK_DEEPL
+        add(tagged(ui.settingRow(t("wz_tr"), t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline") + if (dlOpen) "  ▲" else "  ▼") {
+            lookOpen = if (dlOpen) -1 else LOOK_DEEPL; render(true)
+        }, "lkdl"), 8)
+        if (dlOpen) deeplSection().build(content)
         val groups = listOf<Pair<String, () -> Unit>>(
             "lk_text" to { lookText() },
             "lk_bar" to { lookBar() },
@@ -1588,12 +1643,12 @@ class MainActivity : Activity() {
     private fun translate() {
         val lang = Prefs.lang(this)
         val ready = OfflineTranslator.isReady(lang)
-        // překlad: DeepL online + offline / jen offline; DeepL se nastavuje v Experimentální
+        // překlad: DeepL online + offline / jen offline; DeepL se nastavuje v Titulkách → Kvalita překladu
         val deepl = DeeplTranslator.active(this)
         val idle = !deepl && DeeplKey.enabled(this)
         add(tagged(ui.settingRow(t("t_mode"), t(if (deepl) "dl_mode_on" else if (idle) "dl_mode_idle" else "h_offline"),
             if (idle) Theme.WARN else Theme.ACCENT) {
-            section = Section.SETTINGS; settingsTab = SettingsTab.EXPERIMENTAL; openGroups.add("deepl"); render()
+            openQuality()
         }, "tmode"), 8)
         // jazykový balíček pro offline překlad: chybí → OK ho stáhne
         add(tagged(ui.settingRow(t("chk_model") + " · " + lang.label, if (ready) t("ok") else t("download"),
@@ -1775,9 +1830,17 @@ class MainActivity : Activity() {
      */
     private fun logShareRow() = add(NetLogShare.row(this, ui) { render(true) }, 8)
 
-    // ======================= EXPERIMENTÁLNÍ (pokus DeepL, výchozí vypnuto) =======================
+    // ======================= EXPERIMENTÁLNÍ =======================
 
+    /** DeepL (Titulky → Kvalita překladu a krok průvodce Lepší překlad) – jedna instance, ať drží rozepsaný klíč. */
     private var deeplUi: DeeplSection? = null
+    private fun deeplSection(): DeeplSection =
+        deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }).also { deeplUi = it }
+
+    /** Titulky → Kvalita překladu s otevřenou skupinou (z řádku jazyka na Domů, Nastavení i Nápovědy). */
+    private fun openQuality() {
+        wizard = -1; section = Section.LOOK; lookOpen = LOOK_DEEPL; render()
+    }
 
     /** Až na konci Nastavení, ať se nezmění nic nad tím (zkouška se tam prokliká naslepo). */
     private fun experimentalSection() {
@@ -1785,11 +1848,7 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("s_test"), onOff(Prefs.testChannel(this))) {
             Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
         }, "testch"), 8)
-        // DeepL ve skupině (popisy a klíč jsou dlouhé – vidět jen po rozbalení)
-        if (group("deepl", t("dl_toggle") + " · " + t(if (DeeplTranslator.active(this)) "on" else "off"))) {
-            val d = deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }) { url, text -> qrRow(url, text) }.also { deeplUi = it }
-            d.build(content)
-        } else deeplUi?.stopPage()
+        // DeepL je od 0.97.28 v Titulkách → Kvalita překladu (už ne pokus)
         settingsDiag()
     }
 
@@ -1926,7 +1985,7 @@ class MainActivity : Activity() {
         // 4. jazyk a kvalita překladu
         chapters += Triple("hc4", OfflineTranslator.isReady(Prefs.lang(this)), {
             body("hc4_text").apply {
-                button(t("m_settings") + " → " + t("dl_section"), "hdeepl") { settingsTab = SettingsTab.EXPERIMENTAL; section = Section.SETTINGS; render() }
+                button(t("m_look") + " → " + t("wz_tr"), "hdeepl") { openQuality() }
             }
         })
         // 5. spárování konzole
@@ -1948,7 +2007,7 @@ class MainActivity : Activity() {
         chapters += Triple("hc8", null, {
             ui.card().apply {
                 listOf("s_test" to "s_test_desc", "ps_wake_row" to "ps_wake_desc", "qk_row" to "qk_desc", "s_quality" to "q_desc", "t_game" to "t_game_desc",
-                    "t_dict" to "t_dict_desc", "t_mode" to "t_offline_desc", "dl_toggle" to "dl_desc").forEachIndexed { i, (k, d) ->
+                    "t_dict" to "t_dict_desc", "t_mode" to "t_offline_desc").forEachIndexed { i, (k, d) ->
                     addView(ui.text(t(k), 16f, Theme.TEXT, bold = true), ui.lp(top = if (i == 0) 0 else 14))
                     addView(ui.text(t(d), 15f, Theme.MUTED), ui.lp(top = 4))
                 }
@@ -2217,6 +2276,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.27"
-    const val VERSION_CODE = 124
+    const val VERSION = "verze 0.97.28"
+    const val VERSION_CODE = 125
 }

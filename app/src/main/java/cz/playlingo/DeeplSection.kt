@@ -7,9 +7,11 @@ import android.os.SystemClock
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import cz.playlingo.core.Deepl
 import cz.playlingo.core.DeeplPage
@@ -17,7 +19,7 @@ import cz.playlingo.core.LoginServer
 import cz.playlingo.core.PhoneLogin
 
 /**
- * Nastavení → Experimentální: pokus „Lepší překlad přes internet (DeepL)“ (výchozí vypnuto).
+ * Titulky → Kvalita překladu (od 0.97.28, dřív Nastavení → Experimentální) a krok průvodce „Lepší překlad (DeepL)“.
  * Zapnutí, klíč hráče (políčko, nebo vložení z telefonu přes stránku z televize – stejný server
  * jako přihlášení, viz [LoginServer.forPage]), ověření klíče a měření tohoto běhu.
  * Stránka pro telefon běží jen, dokud je na obrazovce její čtvereček.
@@ -27,11 +29,8 @@ class DeeplSection(
     private val ui: Ui,
     private val applyToService: () -> Unit,
     private val rerender: () -> Unit,
-    private val qrRow: (String, String) -> View,
 ) {
     private var draft = ""
-    /** Rozbalený postup „Jak získat klíč“; null = podle zařízení. */
-    private var howto: Boolean? = null
     private var busy = false
     private var msg: String? = null
     private var msgColor = Theme.MUTED
@@ -45,21 +44,27 @@ class DeeplSection(
     private fun t(k: String) = a.tx(k)
 
 
-    fun build(content: LinearLayout) {
+    /**
+     * [wizard] = krok průvodce „Lepší překlad (DeepL)“: bez přepínače, soukromí a měření (to je v Titulkách →
+     * Kvalita překladu), jen cesta ke klíči a po jeho přijetí „✔ DeepL je nastavený“.
+     */
+    fun build(content: LinearLayout, wizard: Boolean = false) {
         fun add(v: View, top: Int) = content.addView(v, ui.lp(top = top))
         val has = DeeplKey.has(a)
         val on = has && DeeplKey.enabled(a)
-        content.addView(ui.section(t("dl_section")))
-        add(ui.settingRow(t("dl_toggle"), t(if (on) "on" else "off")) {
-            if (!has) note(t("dl_need_key"), Theme.WARN)
-            else { DeeplKey.setEnabled(a, !on); applyToService() }
-            rerender()
-        }.apply { tag = "deepl" }, 0)
-        add(ui.text(t("dl_privacy"), 14f, Theme.WARN), 6)
+        if (!wizard) {
+            add(ui.settingRow(t("dl_toggle"), t(if (on) "on" else "off")) {
+                if (!has) note(t("dl_need_key"), Theme.WARN)
+                else { DeeplKey.setEnabled(a, !on); applyToService() }
+                rerender()
+            }.apply { tag = "deepl" }, 6)
+            add(ui.text(t("dl_privacy"), 14f, Theme.WARN), 6)
+        }
 
         // klíč: uložený (jen začátek a konec) a výsledek posledního ověření
         val key = if (has) DeeplKey.get(a) else null
-        add(ui.text(if (key != null) t("dl_key_saved").replace("%s", Deepl.masked(key)) else t("dl_key_none"), 15f, Theme.TEXT), 10)
+        if (wizard && key != null) add(ui.text("✔ " + t("wz_tr_ok"), 18f, Theme.OK, bold = true).apply { tag = "dlok" }, 14)
+        else if (!wizard) add(ui.text(if (key != null) t("dl_key_saved").replace("%s", Deepl.masked(key)) else t("dl_key_none"), 15f, Theme.TEXT), 10)
         var shown: String? = null
         if (has) {
             val p = DeeplKey.lastProblem(a)
@@ -71,7 +76,7 @@ class DeeplSection(
         // DeepL za běhu: proč se teď nepoužívá a měření
         val b = DeeplTranslator.backoff
         val left = b.minutesLeft(SystemClock.uptimeMillis())
-        b.lastProblem?.takeIf { on }?.let { p ->
+        if (!wizard) b.lastProblem?.takeIf { on }?.let { p ->
             add(ui.text(problem(p) + " " + when {
                 left < 0 -> t("dl_paused_key")
                 left > 0 -> t("dl_paused").replace("%s", left.toString())
@@ -79,26 +84,16 @@ class DeeplSection(
             }, 14f, Theme.WARN), 4)
         }
         val s = DeeplTranslator.stats
-        if (s.requests + s.cached + s.failed > 0) add(ui.text(t("dl_stats")
+        if (!wizard && s.requests + s.cached + s.failed > 0) add(ui.text(t("dl_stats")
             .replace("%1\$s", s.requests.toString()).replace("%2\$s", s.avgMs.toString())
             .replace("%3\$s", s.improved.toString()).replace("%4\$s", s.late.toString())
             .replace("%5\$s", s.same.toString()).replace("%6\$s", s.chars.toString()), 14f, Theme.MUTED), 6)
         // výsledek ověření, jen když neříká totéž co řádek nad ním
         msg?.takeIf { it != shown }?.let { add(ui.text(it, 15f, msgColor), 8) }
 
-        // televize bez klíče: rovnou čtvereček pro telefon – dlouhý klíč se ovladačem psát nedá. Telefon otevře
-        // stránku s odkazem na DeepL, hráč tam klíč zkopíruje a vloží – všechno jen v telefonu.
-        if (Prefs.isTv(a) && !has && !manual && page == null) openPage(redraw = false)
-        val url = pageUrl()
-        if (url != null) {
-            // vložení klíče z telefonu: čtvereček se stránkou z televize
-            add(qrRow(url, t("dl_qr_text")), 10)
-            add(ui.text(url, 14f, Theme.MUTED), 6)
-            add(ui.button(t("dl_qr_close")) { manual = true; stopPage(); rerender() }.apply { tag = "dlqrclose" }, 10)
-            return
-        }
-        // funkční uložený klíč: zadávání schované, jen Změnit / Ověřit / Odebrat
+        // funkční uložený klíč: zadávání schované, jen Změnit / Ověřit / Odebrat (v průvodci nic – stačí Pokračovat)
         if (key != null && DeeplKey.lastProblem(a) == null && !changing) {
+            if (wizard) return
             val row0 = row()
             row0.addView(ui.button(t("dl_change")) { changing = true; rerender() }.apply { tag = "dlchange" })
             row0.addView(ui.button(t("dl_key_check")) { if (!busy) verify(key, fromField = false) }.apply { tag = "dlcheck" }, gap())
@@ -108,24 +103,49 @@ class DeeplSection(
             add(row0, 10)
             return
         }
-        // postup, jak klíč získat, se čtverečkem na stránku DeepL (telefonem se otevře snáz)
-        // (v telefonu je postup rozbalený hned, dokud klíč není)
-        val open = howto ?: (!Prefs.isTv(a) && !has)
-        add(ui.button(t("dl_howto_btn") + if (open) "  ▲" else "  ▼") { howto = !open; rerender() }.apply { tag = "dlhowto" }, 10)
-        if (open) {
-            add(qrRow(Deepl.SIGNUP_URL, t("dl_howto")), 10)
-            add(ui.text(Deepl.SIGNUP_URL, 14f, Theme.MUTED), 6)
-            add(ui.button(t("dl_open")) {
-                try { a.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(Deepl.SIGNUP_URL))) }
-                catch (_: Exception) { note(t("dl_qr_nolan"), Theme.WARN); rerender() }
-            }.apply { tag = "dlopen" }, 8)
-            // kdo už účet má: rovnou stránka s klíči
-            add(ui.text(t("dl_keys_hint"), 15f, Theme.TEXT), 14)
-            add(ui.text(Deepl.KEYS_URL, 14f, Theme.MUTED), 4)
-            add(ui.button(t("dl_keys_open")) {
-                try { a.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(Deepl.KEYS_URL))) }
-                catch (_: Exception) { note(t("dl_qr_nolan"), Theme.WARN); rerender() }
-            }.apply { tag = "dlkeys" }, 8)
+        if (keySteps(content)) return
+        if (key != null && !wizard) {
+            val row2 = row()
+            row2.addView(ui.button(t("dl_key_check")) { if (!busy) verify(key, fromField = false) }.apply { tag = "dlcheck" })
+            row2.addView(ui.button(t("dl_key_remove")) {
+                DeeplKey.remove(a); msg = null; applyToService(); rerender()
+            }.apply { tag = "dlremove" }, gap())
+            add(row2, 8)
+        }
+    }
+
+    /**
+     * Cesta ke klíči ve třech krocích (od 0.97.28): 1. účet DeepL API (plán Developer, zdarma), 2. stránka s klíči
+     * (u klíče ikona kopírování), 3. vložit klíč. Televize: tři čtverečky vedle sebe – první dva vedou rovnou na DeepL,
+     * třetí na stránku z televize, kam se klíč vloží (dlouhý klíč se ovladačem psát nedá). Telefon: tlačítka a políčko.
+     * Vrací true, když se čeká na klíč z telefonu (ruční políčko se pak neukazuje).
+     */
+    private fun keySteps(content: LinearLayout): Boolean {
+        fun add(v: View, top: Int) = content.addView(v, ui.lp(top = top))
+        if (Prefs.isTv(a)) {
+            if (!manual && page == null) openPage(redraw = false)
+            val url = pageUrl()
+            val qrs = ui.hbox().apply { gravity = Gravity.TOP }
+            qrs.addView(qrCard(Deepl.SIGNUP_URL, t("dl_s1")), cell(0))
+            qrs.addView(qrCard(Deepl.KEYS_URL, t("dl_s2")), cell(1))
+            if (url != null) qrs.addView(qrCard(url, t("dl_s3")), cell(2))
+            add(qrs, 12)
+            add(ui.text(t("dl_howto"), 14f, Theme.MUTED), 8)
+            if (url != null) {
+                add(ui.text("⏳ " + t("dl_wait"), 16f, Theme.ACCENT, bold = true).apply { tag = "dlwait" }, 10)
+                add(ui.text(url, 13f, Theme.MUTED), 4)
+                add(ui.button(t("dl_manual")) { manual = true; stopPage(); rerender() }.apply { tag = "dlqrclose" }, 10)
+                return true
+            }
+        } else {
+            // telefon / tablet: DeepL se otevře v prohlížeči, klíč se tam zkopíruje a vloží do políčka níž
+            add(ui.text(t("dl_s1"), 16f, Theme.TEXT, bold = true), 12)
+            add(ui.button(t("dl_open")) { open(Deepl.SIGNUP_URL) }.apply { tag = "dlopen" }, 6)
+            add(ui.text(t("dl_howto"), 14f, Theme.MUTED), 6)
+            add(ui.text(t("dl_s2"), 16f, Theme.TEXT, bold = true), 14)
+            add(ui.button(t("dl_keys_open")) { open(Deepl.KEYS_URL) }.apply { tag = "dlkeys" }, 6)
+            add(ui.text(t("dl_keys_hint"), 14f, Theme.MUTED), 6)
+            add(ui.text(t("dl_s3_here"), 16f, Theme.TEXT, bold = true), 14)
         }
         add(EditText(a).apply {
             setText(draft)
@@ -144,19 +164,31 @@ class DeeplSection(
                 override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
                 override fun afterTextChanged(e: Editable?) { draft = e?.toString() ?: "" }
             })
-        }, 10)
+        }, 8)
         val row = row()
         row.addView(ui.button(t(if (busy) "dl_checking" else "dl_key_save"), primary = true) { if (!busy) saveTyped() }.apply { tag = "dlsave" })
-        row.addView(ui.button(t("dl_key_phone")) { manual = false; openPage() }.apply { tag = "dlphone" }, gap())
+        // televize: zpět ke čtverečku pro telefon
+        if (Prefs.isTv(a)) row.addView(ui.button(t("dl_key_phone")) { manual = false; openPage() }.apply { tag = "dlphone" }, gap())
         add(row, 10)
-        if (key != null) {
-            val row2 = row()
-            row2.addView(ui.button(t("dl_key_check")) { if (!busy) verify(key, fromField = false) }.apply { tag = "dlcheck" })
-            row2.addView(ui.button(t("dl_key_remove")) {
-                DeeplKey.remove(a); msg = null; applyToService(); rerender()
-            }.apply { tag = "dlremove" }, gap())
-            add(row2, 8)
+        return false
+    }
+
+    /** Čtvereček s popiskem pod ním (tři vedle sebe na televizi). */
+    private fun qrCard(url: String, label: String): View = ui.vbox().apply {
+        QrImage.bitmap(url)?.let { qr ->
+            addView(ImageView(a).apply {
+                setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE)
+                setPadding(ui.dp(6), ui.dp(6), ui.dp(6), ui.dp(6))
+            }, LinearLayout.LayoutParams(ui.dp(150), ui.dp(150)))
         }
+        addView(ui.text(label, 15f, Theme.TEXT), ui.lp(top = 8))
+    }
+
+    private fun cell(i: Int) = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { if (i > 0) leftMargin = ui.dp(16) }
+
+    private fun open(url: String) {
+        try { a.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) }
+        catch (_: Exception) { note(t("dl_qr_nolan"), Theme.WARN); rerender() }
     }
 
     /** Na úzké obrazovce (telefon na výšku) tlačítka pod sebou. */
@@ -198,7 +230,12 @@ class DeeplSection(
     /** Uloží klíč podle výsledku ověření (odmítnutý se neukládá) a vrátí text pro hráče. */
     private fun store(key: String, r: DeeplTranslator.Check): String {
         if (r.problem == Deepl.Problem.BAD_KEY) { if (DeeplKey.get(a) == key) DeeplKey.saveCheck(a, r); return problem(r.problem) }
-        if (DeeplKey.get(a) != key) DeeplKey.save(a, key)
+        if (DeeplKey.get(a) != key) {
+            // první klíč: DeepL rovnou zapnout (o to hráč klíč vkládal); vypnout jde v Titulkách → Kvalita překladu
+            val first = !DeeplKey.has(a)
+            DeeplKey.save(a, key)
+            if (first) DeeplKey.setEnabled(a, true)
+        }
         DeeplKey.saveCheck(a, r)
         return r.usage?.let { usage(it) } ?: problem(r.problem ?: Deepl.Problem.BAD_REPLY)
     }
@@ -240,7 +277,7 @@ class DeeplSection(
         if (redraw) rerender()
     }
 
-    /** Stránka pro telefon jen, dokud je vidět její čtvereček (volá se i při odchodu z Nastavení). */
+    /** Stránka pro telefon jen, dokud je vidět její čtvereček (volá se i při odchodu z Titulků a kroku průvodce). */
     fun stopPage() {
         page?.stop(); page = null
     }

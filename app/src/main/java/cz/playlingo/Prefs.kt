@@ -138,6 +138,11 @@ object Prefs {
     fun setPs5Ip(c: Context, v: String) = p(c).edit().putString("ps5_ip", v).apply()
     fun psnId(c: Context): String = p(c).getString("psn_id", "") ?: ""
     fun setPsnId(c: Context, v: String) = p(c).edit().putString("psn_id", v).apply()
+    /** Jméno účtu PlayStation (Online ID) k uloženému číslu účtu; prázdné = neznámé (účty uložené před 0.97.28). */
+    fun psnName(c: Context): String = p(c).getString("psn_name", "") ?: ""
+    /** Uloží ověřený účet (číslo + jméno) najednou; prázdné hodnoty = účet zapomenout. */
+    fun setPsnAccount(c: Context, id: String, name: String) =
+        p(c).edit().putString("psn_id", id).putString("psn_name", name).apply()
 
     /** S obrazem 1080p spojení na tomto zařízení nedrželo → automatika bere 720p. */
     fun highResFailed(c: Context) = bool(c, "high_res_failed", false)

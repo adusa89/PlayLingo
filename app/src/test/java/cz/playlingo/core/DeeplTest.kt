@@ -181,9 +181,15 @@ class DeeplTest {
         val ask = DeeplPage.page(Lang.CS, DeeplPage.State.ASK, "/p/abcdefgh")
         assertTrue(ask.contains("action=\"/p/abcdefgh\""))
         assertTrue(ask.contains("name=\"key\""))
-        // DeepL se otevírá obyčejným odkazem na nové kartě (iPhone i Android), postup je na stránce
-        assertTrue(ask.contains("target=\"_blank\" rel=\"noopener\" href=\"${Deepl.SIGNUP_URL}\""))
-        assertTrue(ask.contains("Copy key"))
+        // DeepL se otevírá obyčejným odkazem na nové kartě (iPhone i Android) ve třech krocích:
+        // 1. registrace (plán Developer), 2. stránka s klíči (ikona kopírování), 3. vložit klíč
+        assertTrue(ask.contains("target=\"_blank\" rel=\"noopener\" href=\"${PhoneLogin.esc(Deepl.SIGNUP_URL)}\""))
+        assertTrue(ask.contains("href=\"${Deepl.KEYS_URL}\""))
+        assertTrue(Deepl.SIGNUP_URL.contains("productId=api-developer"))
+        assertTrue(ask.indexOf(I18n.t(Lang.CS, "dl_s1")) in 0 until ask.indexOf(I18n.t(Lang.CS, "dl_s2")))
+        assertTrue(ask.indexOf(I18n.t(Lang.CS, "dl_s2")) < ask.indexOf(I18n.t(Lang.CS, "dl_s3_here")))
+        assertTrue(ask.contains("API Keys &amp; Limits"))
+        assertFalse(ask.contains("kartu nechce"))
         assertTrue(ask.contains(I18n.t(Lang.CS, "dl_privacy")))
         val done = DeeplPage.page(Lang.EN, DeeplPage.State.DONE, "/p/x", "<b>")
         assertTrue(done.contains("&lt;b&gt;"))

@@ -13,8 +13,11 @@ package cz.playlingo.core
 object Deepl {
     const val FREE_HOST = "api-free.deepl.com"
     const val PRO_HOST = "api.deepl.com"
-    /** Stránka DeepL pro vývojáře (horní menu „Developers“), kde se zakládá „Free API Key“. */
-    const val SIGNUP_URL = "https://www.deepl.com/pro-api"
+    /**
+     * Registrace DeepL API rovnou s plánem „Developer“ (zdarma, 1 000 000 znaků celkem; ověřeno 20. 11. 2026 –
+     * odkaz „Free API Key“ v menu Developers na deepl.com/pro-api). Jazyk stránky si DeepL doplní sám.
+     */
+    const val SIGNUP_URL = "https://www.deepl.com/signup?cta=checkout&is_api=true&productId=api-developer"
     /** Stránka s klíči v účtu DeepL – přímo, bez hledání v menu (na mobilu se tam jinak špatně trefuje). */
     const val KEYS_URL = "https://www.deepl.com/your-account/keys"
     /** Odpověď, která přijde později, se už do pruhu nedává (hráč mezitím čte), jen se zapamatuje. */
@@ -301,16 +304,19 @@ object DeeplPage {
             else -> {
                 if (state == State.BAD_SHAPE) sb.append("<p class=\"bad\">").append(t("dl_e_shape")).append("</p>")
                 if (state == State.REJECTED) sb.append("<p class=\"bad\">").append(detail?.let { PhoneLogin.esc(it) } ?: t("dl_p_bad_key")).append("</p>")
-                // postup: DeepL na nové kartě (obyčejný odkaz – funguje i v Safari na iPhonu), pak vložit
-                // klíč ručně (schránku stránka z domácí sítě bez zabezpečení přečíst nesmí)
-                sb.append("<div class=\"card\"><p>").append(t("dl_howto").replace("\n", "<br>")).append("</p>")
-                    .append("<a class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(Deepl.SIGNUP_URL).append("\">")
+                // postup ve třech krocích: 1. registrace a 2. stránka s klíči na nové kartě (obyčejný odkaz – funguje
+                // i v Safari na iPhonu), 3. vložit klíč ručně (schránku stránka z domácí sítě bez zabezpečení číst nesmí)
+                sb.append("<div class=\"card\"><p><b>").append(t("dl_s1")).append("</b></p>")
+                    .append("<a class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(PhoneLogin.esc(Deepl.SIGNUP_URL)).append("\">")
                     .append(t("dl_open")).append("</a>")
-                    .append("<p>").append(t("dl_keys_hint")).append("</p>")
-                    .append("<a class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(Deepl.KEYS_URL).append("\">")
-                    .append(t("dl_keys_open")).append("</a></div>")
+                    .append("<p class=\"muted\">").append(t("dl_howto")).append("</p></div>")
+                    .append("<div class=\"card\"><p><b>").append(t("dl_s2")).append("</b></p>")
+                    .append("<a class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(PhoneLogin.esc(Deepl.KEYS_URL)).append("\">")
+                    .append(t("dl_keys_open")).append("</a>")
+                    .append("<p class=\"muted\">").append(t("dl_keys_hint")).append("</p></div>")
+                    .append("<p><b>").append(t("dl_s3_here")).append("</b></p>")
                     .append("<form method=\"post\" action=\"").append(PhoneLogin.esc(path)).append("\">")
-                    .append("<input name=\"key\" autocomplete=\"off\" autocapitalize=\"off\" autocorrect=\"off\" spellcheck=\"false\" placeholder=\"xxxxxxxx-xxxx-…:fx\">")
+                    .append("<input name=\"key\" autocomplete=\"off\" autocapitalize=\"off\" autocorrect=\"off\" spellcheck=\"false\" placeholder=\"xxxxxxxx-xxxx-…\">")
                     .append("<button type=\"submit\">").append(t("dl_w_send")).append("</button></form>")
                     .append("<p class=\"muted\">").append(t("dl_privacy")).append("</p>")
             }

@@ -40,7 +40,7 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `ConsoleLink.kt` – společné rozhraní zdroje obrazu (PlayStation `Ps5Link`, Xbox `XboxLink`)
   - `XboxAccount.kt`, `XboxLink.kt`, `XboxForm.kt` – Xbox: přihlášení účtem Microsoft, spojení
     přes vzdálené hraní (WebRTC) a stránka konzole pro Xbox (viz Xbox)
-  - `DeeplTranslator.kt`, `DeeplSection.kt` – pokus DeepL (viz Pokus: DeepL)
+  - `DeeplTranslator.kt`, `DeeplSection.kt` – DeepL (viz DeepL – Kvalita překladu)
   - `NetLogShare.kt` – záznam pro vývojáře v domácí síti, Kopírovat/Sdílet hlášení (viz Záznam ze zařízení)
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
   knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
@@ -122,6 +122,13 @@ všechny hry, profil hry ho jen vylepšuje. Volba „rozsah čtení“ i u vybra
 rod, pojmy a co v titulcích přeskočit, jiná místa obrazovky se nečtou; **Titulky a texty hry** = navíc oblasti, které
 zná profil (GTA VI: prompty pro hráče pod titulky; Diablo IV: úkol, menu, tooltipy – `navrhy/preklad-menu.md`).
 Texty hry se nemíchají s replikami v pruhu. Bez profilu (univerzální) jen titulky.
+
+**Barva jména z obrazu (od 0.97.28, `core/NameColor.kt`):** po titulku se jménem služba (`askNameColor`) pošle čtečce
+obrazu žádost s obdélníkem jména; čtečka ji vyřídí jen u nejbližšího snímku (`StreamReader.requestColor` – barvy se jinak
+nekopírují ani nečtou), vezme nejsvětlejší body a jejich barvu (bílá/šedá = nic). Naučená barva (≥ 2 shody, nejbližší
+z palety) se dá pruhu (`SubtitleOverlay.learnColor`; profil hry má přednost). Měření a naučené barvy: řádky `COLOR|…|us=`
+a oddíl hlášení „barvy jmen ze hry“ → přepsat do `GameProfile.colors`. Jedno jméno se čte nejvýš jednou za 3 s a po naučení
+už ne.
 
 **Barvy jmen z profilu hry (od 0.97.27):** `GameProfile.colors` (jméno → barva jako v titulcích hry; GTA VI Jason
 žlutě, Lucia modře; GTA V Michael modře, Franklin zeleně, Trevor oranžově) platí i pro přezdívky (`colorsByKey`) a dostane
@@ -239,11 +246,26 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   ze stránky televize. Přihlášení Sony běží v něm, kód si vezme sám, číslo účtu pošle televizi
   (`LoginClient`) a zapamatuje si ho (`Prefs.phoneAccounts`; jen číslo a jméno, žádné heslo).
   Účet posílá jen na adresy domácí sítě. Záloha: přihlášení v prohlížeči a Sdílet → PlayLingo.
-- Ruční opsání kódu (krok 5 průvodce) zůstává jako poslední záloha a od 0.66 je úplné samo
+  Před otevřením přihlášení Sony smaže cookies a úložiště WebView (`openLogin`, od 0.97.28) – hráč vždy píše e-mail
+  a heslo a vědomě volí účet (jinak Sony potichu vzala naposledy přihlášený, často herní účet → CE-110032-7).
+- **Jméno účtu a žádný účet potichu (od 0.97.28).** Ověřený účet se ukládá s jménem (Online ID):
+  `Prefs.setPsnAccount(id, name)` / `Prefs.psnName` ze všech cest – stránka z televize (`Account.name`), pomocník
+  v telefonu, ruční opsání kódu (`PsnAuth.accountForCode` → `/userinfo`, `PhoneLogin.nameFromUserInfo`).
+  `PhoneHelperActivity.useForTv` už nebere první účet z telefonu – účty z `Prefs.phoneAccounts` nabídne krok
+  „Účet pro PlayLingo“ se jmény. Účet bez jména (uložený před 0.97.28) = „(jméno neznámé)“.
+- Ruční opsání kódu (index 4, na obrazovce krok 4 spárování) zůstává jako poslední záloha a od 0.66 je úplné samo
   o sobě: má vlastní čtvereček, který vede rovnou na přihlášení Sony (jako před 0.57), a z kroku
   se čtverečkem na něj vede tlačítko „Stránka se neotevřela“. Je pro případ, že se stránka
   z televize v telefonu neotevře (telefon na jiné Wi-Fi nebo na mobilních datech). Tuhle cestu
-  neodstraňuj. Pořadí a počet kroků průvodce se nezměnily.
+  neodstraňuj.
+- **Pořadí spárování PS5 od 0.97.28** (`ps5Form`, `pairNext`, Zpět): index → krok na obrazovce: 0 zapni PS5 (1),
+  1 najdi PS5 (2), **7 Účet pro PlayLingo (3)** – „Použít účet JMÉNO“ / „Přihlásit jiný účet“ / účty z telefonu
+  se jmény, čtvereček `HelpLinks.PS5_PREP`; 2–4 přihlášení tím účtem (4); 6 na PS5 přepnout na JMÉNO a Remote Play
+  (5, `pg_1_text` s `%s`); 5 kód z PS5 (6, `pg_4_text`). V krocích 5 a 6 řádek „✔ Ověřený účet: JMÉNO“ s malým
+  „Přihlásit jiný účet“ (`otherAccount`: zapomene účet i jméno, zpět na krok 3). Chyba párování: `ps5_fail` +
+  `ps5_fail_user` (CE-110032-7, jméno), hlavní tlačítko „Zkusit znovu“ (`pairFailed`) a vedle „Přihlásit jiný účet“.
+  Úspěch: `ps5_ok` se jménem. Účet se volí PŘED nastavením na PS5, protože PS5 spáruje jen, když číslo vyvolá
+  stejný uživatel, jakým se aplikace přihlásila. Indexy 0–6 a `pairstep=2` drží zkouška.
 - Zkouška v emulátoru umí ověřit jen stránku a posílání účtu, ne přihlášení u Sony. Jestli Sony
   pustí přihlášení uvnitř pomocníka na skutečném telefonu, umí ověřit jen uživatel.
 
@@ -439,23 +461,38 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   spojení a čtení z obrazu ze skutečného Xboxu **umí ověřit jen uživatel**. Převzato podle PlayCaption
   (AGPL-3.0; ten podle xbox-xcloud-player, MIT, a XStreaming, AGPL-3.0) – hlavičky souborů zachovej.
 
-## Pokus: DeepL (experimentální, výchozí vypnuto)
+## DeepL – Kvalita překladu (od 0.97.28 v ostrém provozu, výchozí vypnuto do vložení klíče)
 
-- Nastavení (⚙) → úplně dole část **Experimentální** (`DeeplSection.kt`, volá ji jediná funkce
-  `experimentalSection()` v `MainActivity`): volba „Lepší překlad přes internet (DeepL)“, klíč,
-  postup „Jak získat klíč“, ověření a měření tohoto běhu. Vypnuté = služba se chová přesně jako dřív
-  (žádný dotaz do internetu), zkouška v emulátoru se tím nemění. Pod DeepL je v téže části ještě
-  blok „Zpřístupnit záznam v domácí síti“ (viz Záznam ze zařízení).
+- **Kde:** Titulky → rozbalovací skupina **Kvalita překladu** hned pod jazykem překladu (`subtitlesPage`, `lookOpen ==
+  LOOK_DEEPL`, tag `lkdl`) s celou `DeeplSection` (zapnout/vypnout, soukromí, klíč, ověření, zbývající znaky, měření,
+  odebrat) a krok průvodce **Lepší překlad (DeepL)** (`W_TRANSLATE`, `build(content, wizard = true)`). Do 0.97.27 byl
+  DeepL pokus v ⚙ Nastavení → Experimentální – tam už není (zůstala Zkušební verze a Ladění a hlášení se záznamem
+  v síti). Řádek jazyka na Domů, řádek Režim překladu (⚙ → Čtení a překlad) a Nápověda kap. 4 vedou do Titulků
+  s otevřenou skupinou (`openQuality()`). Jedna instance `deeplSection()` (drží rozepsaný klíč).
+- **Cesta ke klíči ve třech krocích** (`keySteps`): televize = **tři čtverečky vedle sebe** – 1. registrace
+  (`Deepl.SIGNUP_URL`, rovnou plán Developer), 2. stránka s klíči (`KEYS_URL`, ikona kopírování), 3. stránka z televize
+  pro vložení (`DeeplPage`) + „⏳ Čekám na klíč z telefonu…“ a „Napsat klíč ručně“ (`manual`). Telefon / tablet (ne
+  `Prefs.isTv`) = tlačítka Otevřít DeepL / Otevřít stránku s klíčem a políčko. Stránka pro telefon má stejné 3 kroky.
+  První uložený klíč DeepL rovnou zapne (`store`). Průvodce: bez klíče hlavní tlačítko „Přeskočit – zůstat u offline
+  překladu“ (`wnext`) a Zpět (bez Přeskočit průvodce), s klíčem „✔ DeepL je nastavený“ a Pokračovat.
+- **DeepL API (ověřeno na deepl.com 20. 11. 2026):** registrace API = plán **Developer** („Test out the API for free“,
+  1 000 000 znaků **celkem, bez měsíčního obnovení**, pak Growth); stránka s klíči = záložka „API Keys & Limits“, celý
+  klíč se nezobrazuje, kopíruje se ikonou. Jestli registrace chce platební kartu, se z webu ověřit nedalo (texty proto
+  jen „kdyby chtěl kartu, plán nic nestojí“). Klíč Developer nemusí končit `:fx` – texty to netvrdí; `Deepl.host` podle
+  `:fx` dál volí api-free / api. Odkazy jsou přímo v APK (ne přes `pomoc/`) – když je DeepL přesune, oprav
+  `SIGNUP_URL` / `KEYS_URL` i `pomoc/deepl.md`.
+- Vypnuté = služba se chová přesně jako dřív (žádný dotaz do internetu), zkouška v emulátoru se tím nemění.
 - **Klíč patří jen hráči.** V repozitáři, testech, APK ani CI žádný klíč není a nesmí být (ani náš
   „sdílený“). Ukládá se zašifrovaný přes Android Keystore (`DeeplKey`, stejný postup jako `LgVault`),
   nikam se nevypisuje; `Redact` maže tvar klíče DeepL (UUID s `:fx`) a `DiagReport.secrets` i uložený
   klíč. Majitel má pro ruční zkoušku klíč mimo repozitář v `%USERPROFILE%\.playlingo\deepl.txt` –
   nikam ho nekopíruj ani nevypisuj; jen pár ručních dotazů, žádné opakované zkoušení.
 - Vložení klíče z telefonu: stejný server jako přihlášení (`LoginServer.forPage` + `LoginServer.Custom`,
-  jednorázový klíč ve čtverečku), stránka `DeeplPage` v `core/Deepl.kt` (postup, odkaz na DeepL na nové
-  kartě, políčko pro vložení – schránku stránka číst nesmí). Běží jen, dokud je vidět její čtvereček.
-  Na televizi bez klíče se od 0.95 čtvereček ukáže sám (v Nastavení i v kroku Kvalita překladu) – dlouhý klíč
-  se ovladačem psát nedá; ruční políčko je až po „Zavřít“ (`DeeplSection.manual`).
+  jednorázový klíč ve čtverečku), stránka `DeeplPage` v `core/Deepl.kt` (kroky 1–3, odkazy na DeepL na nové
+  kartě, políčko pro vložení – schránku stránka číst nesmí). Běží jen, dokud je vidět její čtvereček: v Titulkách
+  s otevřenou skupinou Kvalita překladu nebo v kroku průvodce (podmínka `deeplUi?.stopPage()` v `render()`).
+  Na televizi bez klíče se čtvereček ukáže sám – dlouhý klíč se ovladačem psát nedá; ruční políčko je až po
+  „Napsat klíč ručně“ (`DeeplSection.manual`).
 - Se zapnutým DeepL ukazuje i karta „Režim překladu“ (Nastavení → Čtení a překlad) „Offline + DeepL“
   (`dl_mode_on`), zapnutý bez klíče `dl_mode_idle` – dřív tam stálo jen „Offline“ a mátlo to.
 - **Od 0.97.2 se ukazuje vždy jen jedna varianta** (`deeplThenShow`): počká se na DeepL (nejvýš
@@ -471,8 +508,9 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   429, síť) → offline a přestávka (`DeeplBackoff`). Rozhodování, čtení odpovědí a přestávky jsou
   v `core/Deepl.kt` s testy (`DeeplTest`). Měření v logu: `TP_TEST` řádky `DEEPL|ms=…|swap=yes/no/late/stale/cache|chars=…`
   (bez textu a klíče); souhrn v Nastavení a v hlášení o stavu.
-- Limit znaků se nebere napevno: ukazuje se to, co vrátí `/v2/usage` (účet majitele má 1 000 000).
-- Texty `dl_…` jsou v `core/I18nDeepl.kt` (`DEEPL_S`, `DEEPL_X`).
+- Limit znaků se nebere napevno: ukazuje se to, co vrátí `/v2/usage` (účet majitele má 1 000 000 – plán Developer).
+  Texty neříkají „tento měsíc“ (`dl_usage`, `dl_p_quota`) – u plánu Developer se limit neobnovuje.
+- Texty `dl_…` a `wz_tr_…` jsou v `core/I18nDeepl.kt` (`DEEPL_S`, `DEEPL_X`); kroky `dl_s1`–`dl_s3`, `dl_s3_here`.
 
 ## Záznam ze zařízení (pro Claude na PC majitele)
 
@@ -557,7 +595,7 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
   (např. `xb_st_failed`, `xb_ls_image`) a bere se přes `Console.key()` / `ct()` v MainActivity.
 - typ televize (`tv_…`, společné `s_tv_desc`, `st_tv_…`, `hp_lg_title`/`hp_lg_text`) a průvodce
   Samsung (`ss_…`): `core/I18nSamsung.kt` (`SS_S`, `SS_X`).
-- texty pokusu DeepL (`dl_…`; důvody `dl_p_<Deepl.Problem>`): `core/I18nDeepl.kt` (`DEEPL_S`, `DEEPL_X`).
+- texty DeepL (`dl_…`, krok průvodce `wz_tr_…`; důvody `dl_p_<Deepl.Problem>`): `core/I18nDeepl.kt` (`DEEPL_S`, `DEEPL_X`).
 - texty rozložení od přestavby (průvodce `wz_dev…`, `dev_…`, souhrnný řádek a upozornění na Domů
   `sum_…`, `w_…`, části Nastavení `s_setup`, `s_diag`): `core/I18nUi.kt` (`UI_S`, `UI_X`).
 - záznam pro vývojáře, oddíl Televize a Kopírovat/Sdílet v hlášení (`zz_…`): `core/I18nZaznam.kt`
@@ -619,8 +657,13 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   telefon/tablet jako čtečka pro LG/Samsung, `Prefs.readerDevice`; výchozí podle
   `NetInfo.isHandheld`; samo nic nepřepíná – pomocník v telefonu se dál řídí `Prefs.forceTv`) →
   Konzole → Televize (u LG/Samsungu tlačítko nahrání) → Jazyk překladu → Kvalita překladu (od 0.94,
-  `W_TRANSLATE`: DeepL s celou `DeeplSection`, nebo jen offline; DeepL se zapne, jakmile je klíč) → Zobrazení titulků
-  (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
+  `W_TRANSLATE`, od 0.97.28 „Lepší překlad (DeepL)“ bez volby DeepL / offline – rovnou věta proč, čtverečky a čekání na
+  klíč, viz DeepL) → Zobrazení titulků (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
+  **Připojení konzole (od 0.97.28):** nahoře jen „Krok 7 z 8“, spárování místo druhého pruhu malý podtitul
+  „Spárování · 3 z 6“ (`pg_sub`, tag `psub`; mimo průvodce dál pruh `ui.steps`). Jedna řada tlačítek – ta ze spárování
+  (`pnext`, `pback`; v kroku 1 spárování vede Zpět na předchozí krok průvodce) a pod ní malé „Spárovat později“
+  (`wlater`, skočí na Hotovo); u Xboxu (`XboxForm`) navíc malé Zpět. Vnější Pokračovat/Zpět/Přeskočit průvodce
+  se ukáže, až je konzole spárovaná. Krok Konzole nezmiňuje Remote Play.
   Příprava PS5 (druhý účet, Remote Play, skrytí hlášky, probouzení ze sítě, čtvereček na `pomoc/ps5.md`)
   je od 0.93 až v prvním kroku párování (Připojení konzole), ne u volby konzole – tam byla moc brzo.
 - **Domů** (od 0.97): velký stav + Spustit/Zastavit a pod nadpisem přehled v bodech (`statusRows`, tečka
@@ -660,9 +703,9 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   „Spustit PlayLingo v televizi“; u spárované televize je políčko Passphrase schované pod tlačítkem
   „Zadat Passphrase znovu“.
 - **Nastavení (⚙)** (od 0.97.15): každá záložka jen řádky `settingRow` a rozbalovací skupiny `group(id, název)`
-  (`openGroups`), žádné nadpisy sekcí ani popisné věty. Čtení a překlad: Kvalita čtení, Režim překladu, Jazykový
-  model, skupiny Statistika (s Historií) a úplně dole Vlastní slovník. Experimentální: Zkušební verze, skupina
-  DeepL (celá `DeeplSection`), skupina Ladění a hlášení (diagnostika, hlášení, záznam v síti). Hra je v Titulkách
+  (`openGroups`), žádné nadpisy sekcí ani popisné věty. Čtení a překlad: Kvalita čtení, Režim překladu (OK → Titulky →
+  Kvalita překladu), Jazykový model, skupiny Statistika (s Historií) a úplně dole Vlastní slovník. Experimentální:
+  Zkušební verze a skupina Ladění a hlášení (diagnostika, hlášení, záznam v síti); DeepL je od 0.97.28 v Titulkách. Hra je v Titulkách
   (skupina `gameGroup`). Náhled obrazu na stránce Konzole je skupina – snímek se počítá jen, když je rozbalená.
   Starší popis níž platí jen zčásti:
 - **Nastavení (⚙)** má záložky (`SettingsTab`) a ukazuje jen obsah vybrané: **Obecné** (konzole, typ
@@ -682,8 +725,8 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
 „Krok 3 z 8“ (text `steps_of`) s pruhem na dílky. Používá se: stahování aktualizace (Domů i pomocník
 v telefonu, procenta po 2 %; instalace = běhající pruh), stahování jazykového balíčku (ML Kit procenta neříká –
 `OfflineTranslator.isDownloading`), připojování ke konzoli a čekání na obraz na Domů, hledání/párování PS5
-(`pairBusy`), přihlášení Xboxu, nahrávání do LG (podle `LgPhase`), kroky průvodce, spárování PS5 (6 kroků)
-a pomocník LG (5 kroků). Nový postup o víc krocích = přidej `ui.steps`, nové čekání = `ui.progress`.
+(`pairBusy`), přihlášení Xboxu, nahrávání do LG (podle `LgPhase`), kroky průvodce, spárování PS5 (6 kroků; v průvodci
+jen podtitul „Spárování · 3 z 6“, ať nejsou dva pruhy nad sebou) a pomocník LG (5 kroků). Nový postup o víc krocích = přidej `ui.steps`, nové čekání = `ui.progress`.
 
 ## Na co zkouška spoléhá (neměnit jen tak)
 
@@ -701,7 +744,7 @@ a pomocník LG (5 kroků). Nový postup o víc krocích = přidej `ui.steps`, no
 - Zkouška přihlášení přes telefon (řádky `LOGIN|`, `HELPER|`, snímky `12n`–`12p`) se do výsledku
   nepočítá. V `result.txt` má být `ucet_z_telefonu` aspoň 1 (stránka z televize přijala účet)
   a `pomocnik` aspoň 1 (pomocník přijal odkaz ze stránky televize); na snímku `12n` má být
-  „Účet ověřen“ a na `12o` „Televize čeká na účet“.
+  „Ověřený účet: Zkouška“ (krok nastavení na PS5) a na `12o` „Televize čeká na účet“.
 - Kroky průvodce spárováním se mají vejít na obrazovku i s tlačítky (snímky `12j`–`12l`).
   Podrobný postup proto patří na stránku pro telefon, v televizi jen krátce.
 - Zkouška aktualizace (řádky `UPD|`, snímky `15a`–`15d`) se do výsledku nepočítá. `updtest`
