@@ -47,22 +47,36 @@ private interface U32 : StdCallLibrary {
     }
 }
 
-/** Okno s hrou podle části titulku – stejné hledání jako v `cteni.py` (první viditelné shora). */
+/**
+ * Okno s hrou podle části titulku – stejné hledání jako v `cteni.py` (první viditelné shora).
+ * „pid:1234“ = největší viditelné okno procesu 1234 (chiaki-ng spuštěný PlayLingem).
+ */
 class OknoHry(nazev: String) {
     private val hledat = nazev.lowercase()
+    private val procesu = hledat.removePrefix("pid:").toIntOrNull()?.takeIf { hledat.startsWith("pid:") }
     private val mojePid = ProcessHandle.current().pid().toInt()
     private var hwnd: WinDef.HWND? = null
 
     private fun najdi(): WinDef.HWND? {
         var nalezeno: WinDef.HWND? = null
+        var nejvetsi = 0
         User32.INSTANCE.EnumWindows({ h, _ ->
             if (User32.INSTANCE.IsWindowVisible(h)) {
+                val pid = IntByReference()
+                User32.INSTANCE.GetWindowThreadProcessId(h, pid)
+                if (procesu != null) {
+                    if (pid.value == procesu) {
+                        val r = WinDef.RECT()
+                        User32.INSTANCE.GetWindowRect(h, r)
+                        val plocha = (r.right - r.left) * (r.bottom - r.top)
+                        if (plocha > nejvetsi) { nejvetsi = plocha; nalezeno = h }
+                    }
+                    return@EnumWindows true
+                }
                 val n = User32.INSTANCE.GetWindowTextLength(h)
                 if (n > 0) {
                     val buf = CharArray(n + 1)
                     User32.INSTANCE.GetWindowText(h, buf, n + 1)
-                    val pid = IntByReference()
-                    User32.INSTANCE.GetWindowThreadProcessId(h, pid)
                     if (pid.value != mojePid && Native.toString(buf).lowercase().contains(hledat)) {
                         nalezeno = h
                         return@EnumWindows false
@@ -88,14 +102,35 @@ class OknoHry(nazev: String) {
     }
 }
 
-/** Titulky viditelných oken (kromě vlastních) – nabídka „Vybrat okno“. */
+private interface Dwm : StdCallLibrary {
+    fun DwmGetWindowAttribute(hwnd: WinDef.HWND, attr: Int, value: IntByReference, size: Int): Int
+
+    companion object {
+        val I: Dwm = Native.load("dwmapi", Dwm::class.java)
+    }
+}
+
+/** Programy pro hraní na dálku – ve výběru okna jsou nahoře. */
+private val HERNI = listOf("chiaki", "PS Remote Play", "Xbox")
+
+/**
+ * Titulky oken, ve kterých může běžet hra – nabídka „Vybrat okno“. Bez vlastních oken, bez
+ * skrytých systémových (Nastavení, Vstupní funkce…, ty Windows jen „zahalí“), bez nástrojových
+ * a malých oken; programy pro hraní na dálku první.
+ */
 fun otevrenaOkna(): List<String> {
     val moje = ProcessHandle.current().pid().toInt()
     val vysledek = LinkedHashSet<String>()
     User32.INSTANCE.EnumWindows({ h, _ ->
         if (User32.INSTANCE.IsWindowVisible(h)) {
             val n = User32.INSTANCE.GetWindowTextLength(h)
-            if (n > 0) {
+            val styl = User32.INSTANCE.GetWindowLong(h, WinUser.GWL_EXSTYLE)
+            val zahalene = IntByReference()
+            runCatching { Dwm.I.DwmGetWindowAttribute(h, 14 /* DWMWA_CLOAKED */, zahalene, 4) }
+            val r = WinDef.RECT()
+            User32.INSTANCE.GetWindowRect(h, r)
+            if (n > 0 && zahalene.value == 0 && styl and 0x80 /* WS_EX_TOOLWINDOW */ == 0 &&
+                r.right - r.left >= 320 && r.bottom - r.top >= 180) {
                 val buf = CharArray(n + 1)
                 User32.INSTANCE.GetWindowText(h, buf, n + 1)
                 val pid = IntByReference()
@@ -106,7 +141,7 @@ fun otevrenaOkna(): List<String> {
         }
         true
     }, null)
-    return vysledek.toList()
+    return vysledek.sortedBy { t -> if (HERNI.any { t.contains(it, ignoreCase = true) }) 0 else 1 }
 }
 
 /** Zvětšení hlavní obrazovky ve Windows (1.0 = 100 %, 2.0 = 200 %), jak ho používá Swing. */

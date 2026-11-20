@@ -20,10 +20,21 @@ fun main(args: Array<String>) {
     // kam s překladem: pruh na obrazovce počítače (pc), do televize LG/Samsung (tv), nebo obojí
     val output = arg("--vystup", "pc")
     if (output !in listOf("pc", "tv", "oboje")) {
-        println("Použití: [--python CESTA] [--pomocnik cteni.py] [--okno NÁZEV_OKNA] [--jazyk cs] [--vystup pc|tv|oboje] [--port 8787]")
+        println("Použití: [--python CESTA] [--pomocnik cteni.py] [--okno NÁZEV_OKNA] [--jazyk cs] [--vystup pc|tv|oboje] [--port 8787] [--deepl] [--deepl-klic SOUBOR]")
         return
     }
     fun log(m: String) = println("${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))} $m")
+    // jen hledání PS5 v síti a spárované konzole z chiaki-ng (ladění Hrát)
+    if ("--hledej-ps5" in args) {
+        log("chiaki-ng: ${Chiaki.exe() ?: "chybí"}; spárované: ${Chiaki.konzole().joinToString { it.jmeno + if (it.probuzeni != null) " (probuzení ok)" else "" }.ifEmpty { "žádné" }}")
+        Chiaki.hledej(3000).ifEmpty { log("PS5 v síti nenalezena."); emptyList() }
+            .forEach { log("PS5 ${it.jmeno} · ${it.adresa} · " + if (it.pripravena) "zapnutá" else if (it.klid) "klidový režim" else "?") }
+        return
+    }
+    // klíč DeepL ze souboru (uloží se zašifrovaný jako z okna aplikace); obsah se nikam nevypisuje
+    arg("--deepl-klic").takeIf { it.isNotEmpty() }?.let { f ->
+        log(if (DeeplPc.uloz(File(f).readText())) "Klíč DeepL uložen." else "V souboru není klíč DeepL.")
+    }
 
     val bar = if (output == "tv") null else {
         val game = if (window.isEmpty()) null else OknoHry(window)
@@ -34,6 +45,7 @@ fun main(args: Array<String>) {
         port = arg("--port", "8787").toInt(),
         python = arg("--python", Nastroje.python.path),
         pomocnik = File(arg("--pomocnik", Nastroje.pomocnik.path)),
+        deepl = "--deepl" in args && DeeplPc.ma(),
     )
     Runtime.getRuntime().addShutdownHook(Thread { reader.zastav() })
     reader.bez()

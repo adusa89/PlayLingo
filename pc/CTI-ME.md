@@ -14,22 +14,49 @@ z okna. Druhý účet ani přihlášení přes telefon tu nejsou potřeba. Zatí
 **Dvojklik na `pc\PlayLingo.cmd`** otevře okno aplikace (při prvním spuštění a po změně kódu se
 předtím asi minutu sestavuje). Potřebuje Javu 17 (Temurin) a pro Připravit i Python 3.10+.
 
-- **Domů** – velký stav (Připraveno / Načítání… / Běží / Čeká na okno hry / Chybí příprava),
-  Spustit / Zastavit a řádky „Popis · hodnota“ s tečkou jako v aplikaci pro TV: okno hry
+- **Domů** – velký stav (Připraveno / Hledání PS5… / Probouzení PS5… / Spouštění hry… / Běží /
+  Čeká na okno hry / Chybí příprava), Hrát (u chiaki-ng) nebo Spustit / Zastavit a řádky
+  „Popis · hodnota“ s tečkou jako v aplikaci pro TV: chiaki-ng (chybí = Stáhnout), PS5 (nespárováno
+  = Spárovat, zapnutá / klidový režim / nenalezena = Hledat), u jiného programu okno hry
   (nenalezeno = tlačítko Vybrat okno), překlad (chybí = tlačítko Připravit – stáhne knihovny
   a model asi 0,6 GB do `%LOCALAPPDATA%\PlayLingoTools`, do systému nic neinstaluje), výstup,
   rychlost čtení a poslední titulek.
 - **Titulky** – vzhled pruhu: velikost písma, barva, tučné, pozadí, poloha (přes titulky / nad
   titulky / dole) a Zkušební pruh na 4 s. Změny platí hned, i za běhu.
-- **⚙ Nastavení** – okno hry (část titulku okna, Vybrat = nabídka otevřených oken), ukázková hra
-  bez PlayStationu, jazyk překladu, výstup (Pruh na PC / TV LG / Samsung / PC i TV), příprava
-  a Záznam (výpis čtení). Změna okna, jazyka nebo výstupu za běhu čtení sama spustí znovu.
+- **⚙ Nastavení** – okno hry (část titulku okna, Vybrat = nabídka oken, kde může běžet hra:
+  chiaki / PS Remote Play / Xbox nahoře, skrytá systémová okna ne), ukázková hra
+  bez PlayStationu, jazyk překladu, výstup (Pruh na PC / TV LG / Samsung / PC i TV), příprava,
+  DeepL (zapnutí, klíč, odkaz na klíče v účtu DeepL) a Záznam (výpis čtení). Změna okna, jazyka,
+  výstupu nebo DeepL za běhu čtení sama spustí znovu.
+
+**DeepL** (`src/DeeplPc.kt`) jede stejně jako na Androidu od 0.97.2: počká se na překlad DeepL
+(nejvýš ~2,5 s) a ukáže se jen jedna varianta, offline jen když DeepL nepomůže; čeština prochází
+`Natural.czech`. Požadavek, odpověď, chyby a přestávky jsou z `core/Deepl.kt`. Klíč je zašifrovaný
+přes Windows (DPAPI) v `%LOCALAPPDATA%\PlayLingoTools\deepl.bin` a nikam se nevypisuje. Z příkazové
+řádky: `--deepl-klic SOUBOR` klíč uloží, `--deepl` zapne překlad přes DeepL.
 
 Nastavení se ukládá do `%LOCALAPPDATA%\PlayLingoTools\aplikace.properties`.
 
-Skutečná hra: v chiaki-ng se připojit k PS5 (hlavní účet), v PlayLingu Spustit. Okno chiaki-ng
-může být přes celou obrazovku (ne výhradní režim celé obrazovky) nebo zakryté jiným oknem, ale
-nesmí být minimalizované.
+**Hraní přes chiaki-ng v PlayLingu** (Nastavení → Hra běží v → chiaki-ng v PlayLingu, výchozí;
+`src/Chiaki.kt`): hráč nemusí obsluhovat druhý program.
+
+1. Domů → „chiaki-ng · chybí“ → **Stáhnout**: přenosná verze z posledního vydání
+   `streetpea/chiaki-ng` (x64 nebo ARM, ~120 MB) do `%LOCALAPPDATA%\PlayLingoTools\chiaki-ng`,
+   nic se neinstaluje. Nainstalovaný chiaki-ng (Program Files) se najde taky.
+2. „PS5 · nespárováno“ → **Spárovat**: otevře se chiaki-ng, v něm se jednou spáruje s PS5
+   (hlavní účet). chiaki-ng si to uloží do registru (`HKCU\Software\Chiaki\Chiaki\registered_hosts`),
+   PlayLingo odtud bere jméno konzole a číslo pro probuzení.
+3. **Hrát**: PlayLingo najde PS5 v síti (zpráva z `core/Ps5.kt`), z klidového režimu ji probudí
+   (zpráva WAKEUP jako v `chiaki-ng/lib/src/discovery.c`), spustí
+   `chiaki stream <konzole> <adresa> --fullscreen --exit-app-on-stream-exit` a čte okno toho procesu
+   (`pid:<číslo>` v `OknoHry` i `cteni.py`). Konec hry v chiaki-ng = konec čtení; Zastavit zavře obojí.
+   Výpis chiaki-ng je v `%LOCALAPPDATA%\PlayLingoTools\chiaki-vystup.txt`.
+
+Ladění: `playlingo-pc.bat --hledej-ps5` vypíše chiaki-ng, spárované konzole a PS5 v síti.
+
+**Hra v jiném programu** (Hra běží v → Jiný program, např. oficiální PS Remote Play): čte se okno
+podle části titulku. Okno může být přes celou obrazovku (ne výhradní režim celé obrazovky) nebo
+zakryté jiným oknem, ale nesmí být minimalizované.
 
 ## Z čeho se skládá
 

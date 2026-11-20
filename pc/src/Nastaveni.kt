@@ -23,11 +23,21 @@ class Nastaveni(private val soubor: File = File(Nastroje.slozka, "aplikace.prope
 
     /** Část titulku okna s hrou. */
     var okno: String get() = text("okno", "chiaki"); set(v) = nastav("okno", v)
-    /** Ukázková hra místo okna (zkouška bez PlayStationu). */
-    var ukazka: Boolean get() = text("ukazka", "false") == "true"; set(v) = nastav("ukazka", v)
+    /**
+     * Odkud je obraz hry: chiaki (PlayLingo samo spustí hru v chiaki-ng), okno (hra běží v jiném
+     * programu, čte se okno podle [okno]), ukazka (ukázková hra bez PlayStationu).
+     */
+    var zdroj: String
+        get() = p.getProperty("zdroj") ?: if (text("ukazka", "false") == "true") "ukazka" else "chiaki"
+        set(v) = nastav("zdroj", v)
+    val ukazka: Boolean get() = zdroj == "ukazka"
+    /** Jméno spárované konzole v chiaki-ng (prázdné = první). */
+    var konzole: String get() = text("konzole", ""); set(v) = nastav("konzole", v)
     var jazyk: String get() = text("jazyk", "cs"); set(v) = nastav("jazyk", v)
     /** pc | tv | oboje */
     var vystup: String get() = text("vystup", "pc"); set(v) = nastav("vystup", v)
+    /** Překlad přes DeepL (klíč je zvlášť a zašifrovaný, viz DeeplPc). */
+    var deepl: Boolean get() = text("deepl", "false") == "true"; set(v) = nastav("deepl", v)
 
     var velikost: Int get() = cislo("velikost", 100); set(v) = nastav("velikost", v)
     var pozadi: Int get() = cislo("pozadi", 90); set(v) = nastav("pozadi", v)
@@ -45,6 +55,7 @@ class Nastaveni(private val soubor: File = File(Nastroje.slozka, "aplikace.prope
         val POZADI = listOf(60, 80, 90, 100)
         /** Stejné barvy jako na Android TV (Prefs.TEXT_COLORS). */
         val BARVY = listOf("Bílá" to 0xFFFFFF, "Žlutá" to 0xFFE066, "Zelená" to 0xA8F0A8, "Modrá" to 0x9FD8FF)
+        val ZDROJE = listOf("chiaki" to "chiaki-ng v PlayLingu", "okno" to "Jiný program", "ukazka" to "Ukázková hra")
         val VYSTUPY = listOf("pc" to "Pruh na PC", "tv" to "TV LG / Samsung", "oboje" to "PC i TV")
     }
 }

@@ -1,6 +1,7 @@
 @file:JvmName("AplikaceKt")
 package cz.playlingo.pc
 
+import cz.playlingo.core.Deepl
 import cz.playlingo.core.Lang
 import java.awt.BasicStroke
 import java.awt.BorderLayout
@@ -272,6 +273,17 @@ private class Aplikace {
     @Volatile private var priprava: Process? = null
     private var pripravaChyba = false
     private var oknoNalezeno = false
+
+    // chiaki-ng (zdroj „chiaki“): hra spuštěná PlayLingem
+    @Volatile private var chiaki: Process? = null
+    /** Co se právě chystá před hrou („Hledání PS5…“, „Probouzení PS5…“, „Spouštění hry…“). */
+    @Volatile private var krok: String? = null
+    /** Stahování chiaki-ng v % (null = nestahuje se). */
+    @Volatile private var stahovani: Int? = null
+    @Volatile private var konzoleSeznam: List<Chiaki.Konzole> = emptyList()
+    @Volatile private var ps5: Chiaki.Nalez? = null
+    @Volatile private var ps5Hledano = false
+    private var tiku = 0
     private val zaznam = JTextArea().apply {
         isEditable = false; background = B.CARD; foreground = B.MUTED
         font = Font("Consolas", Font.PLAIN, 13); border = EmptyBorder(10, 12, 10, 12); lineWrap = true
@@ -285,6 +297,7 @@ private class Aplikace {
         border = null; maximumSize = Dimension(360, 6); preferredSize = Dimension(360, 6); alignmentX = Component.LEFT_ALIGNMENT
     }
     private val rOkno = StavRadek()
+    private val rPs5 = StavRadek()
     private val rPreklad = StavRadek()
     private val rVystup = StavRadek()
     private val rCteni = StavRadek()
@@ -309,6 +322,8 @@ private class Aplikace {
         okno.setLocationRelativeTo(null)
         obnovDomu()
         Timer(1000) { hlidejOkno() }.start()
+        // ověřit uložený klíč DeepL (zbytek znaků do Nastavení), bez čekání
+        if (DeeplPc.ma()) thread(isDaemon = true) { DeeplPc.over(); SwingUtilities.invokeLater { radky.forEach { it.obnov() } } }
         // jen pro snímky při ladění: -Dplaylingo.stranka=Titulky, -Dplaylingo.autostart=1 (jako Spustit)
         System.getProperty("playlingo.stranka")?.let { prepni(it) }
         if (System.getProperty("playlingo.autostart") == "1" && Nastroje.pripraveno(nast.jazyk)) spustit()
@@ -394,7 +409,7 @@ private class Aplikace {
     // ---- Domů ----
 
     private fun domu(): JComponent {
-        val karta = Karta().apply { listOf(rOkno, rPreklad, rVystup, rCteni, rTitulek).forEach { add(it) } }
+        val karta = Karta().apply { listOf(rOkno, rPs5, rPreklad, rVystup, rCteni, rTitulek).forEach { add(it) } }
         return stranka(
             velkyStav.vlevo(),
             Box.createVerticalStrut(10),
@@ -413,10 +428,17 @@ private class Aplikace {
     private fun obnovDomu() {
         val s = stav
         val bezi = vlakno?.isAlive == true
+        val hraje = chiaki?.isAlive == true
+        val k = krok
         val pripravuje = priprava?.isAlive == true
         val pripraveno = Nastroje.pripraveno(nast.jazyk)
+        val sChiaki = nast.zdroj == "chiaki"
+        val exe = if (sChiaki) Chiaki.exe() else null
+        val konzole = vybranaKonzole()
         velkyStav.text = when {
             pripravuje -> "Příprava…"
+            k != null -> k
+            stahovani != null -> "Stahování chiaki-ng…"
             !pripraveno -> "Chybí příprava"
             !bezi -> if (s.faze == Stav.Faze.CHYBA) "Chyba" else "Připraveno"
             s.faze == Stav.Faze.NACITANI -> "Načítání…"
@@ -428,19 +450,56 @@ private class Aplikace {
             "Chybí příprava", "Čeká na okno hry", "Chyba" -> B.WARN
             else -> B.TEXT
         }
-        postup.isVisible = pripravuje || (bezi && s.faze == Stav.Faze.NACITANI)
-        hlavniTlacitko.text = if (bezi) "Zastavit" else "Spustit"
-        hlavniTlacitko.isEnabled = !pripravuje && (bezi || pripraveno)
+        postup.isVisible = pripravuje || k != null || stahovani != null || (bezi && s.faze == Stav.Faze.NACITANI)
+        postup.isIndeterminate = stahovani == null
+        stahovani?.let { postup.value = it }
+        val zaneprazdneno = bezi || hraje || k != null
+        hlavniTlacitko.text = when {
+            zaneprazdneno -> "Zastavit"
+            sChiaki -> "Hrát"
+            else -> "Spustit"
+        }
+        hlavniTlacitko.isEnabled = !pripravuje && (zaneprazdneno ||
+            (pripraveno && (!sChiaki || (exe != null && konzole != null && stahovani == null))))
 
-        // okno hry
-        if (nast.ukazka) rOkno.nastav(B.MUTED, "Zdroj · ukázková hra")
-        else if (bezi && s.faze == Stav.Faze.BEZI || oknoNalezeno) rOkno.nastav(B.OK, "Okno hry · ${nast.okno} · nalezeno")
-        else rOkno.nastav(B.WARN, "Okno hry · ${nast.okno} · nenalezeno", "Vybrat okno") { vyberOkno(rOkno) }
+        // zdroj obrazu
+        when (nast.zdroj) {
+            "ukazka" -> { rOkno.nastav(B.MUTED, "Zdroj · ukázková hra"); rPs5.nastav(B.MUTED, "") }
+            "okno" -> {
+                rPs5.nastav(B.MUTED, "")
+                if (bezi && s.faze == Stav.Faze.BEZI || oknoNalezeno) rOkno.nastav(B.OK, "Okno hry · ${nast.okno} · nalezeno")
+                else rOkno.nastav(B.WARN, "Okno hry · ${nast.okno} · nenalezeno", "Vybrat okno") { vyberOkno(rOkno) }
+            }
+            else -> {
+                when {
+                    stahovani != null -> rOkno.nastav(B.MUTED, "chiaki-ng · stahování ${stahovani} %")
+                    exe == null -> rOkno.nastav(B.WARN, "chiaki-ng · chybí", "Stáhnout") { stahnoutChiaki() }
+                    hraje -> rOkno.nastav(B.OK, "chiaki-ng · hraje se")
+                    else -> rOkno.nastav(B.OK, "chiaki-ng · připraveno")
+                }
+                val n = ps5
+                when {
+                    exe == null -> rPs5.nastav(B.MUTED, "")
+                    konzole == null -> rPs5.nastav(B.WARN, "PS5 · nespárováno", "Spárovat") { sparovat() }
+                    n?.pripravena == true -> rPs5.nastav(B.OK, "PS5 · ${konzole.jmeno} · zapnutá")
+                    n?.klid == true -> rPs5.nastav(B.MUTED, "PS5 · ${konzole.jmeno} · klidový režim")
+                    ps5Hledano -> rPs5.nastav(B.WARN, "PS5 · ${konzole.jmeno} · nenalezena", "Hledat") { hledatPs5() }
+                    else -> rPs5.nastav(B.MUTED, "PS5 · ${konzole.jmeno} · hledání")
+                }
+            }
+        }
 
         // překlad
+        val rezim = if (deeplZapnuty()) "DeepL online + offline" else "offline"
         when {
             pripravuje -> rPreklad.nastav(B.MUTED, "Překlad · ${jazyk().label} · stahování")
-            pripraveno -> rPreklad.nastav(B.OK, "Překlad · ${jazyk().label} · offline")
+            pripraveno && deeplZapnuty() && s.deeplChyba == Deepl.Problem.BAD_KEY ->
+                rPreklad.nastav(B.WARN, "DeepL · neplatný klíč", "Zadat klíč") { zadatKlic() }
+            pripraveno && deeplZapnuty() && s.deeplChyba == Deepl.Problem.QUOTA ->
+                rPreklad.nastav(B.WARN, "DeepL · vyčerpaný limit · offline")
+            pripraveno && deeplZapnuty() && s.deeplChyba != null ->
+                rPreklad.nastav(B.MUTED, "Překlad · ${jazyk().label} · DeepL nedostupný · offline")
+            pripraveno -> rPreklad.nastav(B.OK, "Překlad · ${jazyk().label} · $rezim")
             pripravaChyba -> rPreklad.nastav(B.WARN, "Překlad · ${jazyk().label} · chyba přípravy", "Zkusit znovu") { pripravit() }
             else -> rPreklad.nastav(B.WARN, "Překlad · ${jazyk().label} · chybí", "Připravit") { pripravit() }
         }
@@ -455,7 +514,9 @@ private class Aplikace {
         }
 
         // čtení a poslední titulek
-        if (bezi && s.ms > 0) rCteni.nastav(B.MUTED, "Čtení · ${s.ms} ms") else rCteni.nastav(B.MUTED, "")
+        if (bezi && s.ms > 0) {
+            rCteni.nastav(B.MUTED, "Čtení · ${s.ms} ms" + if (deeplZapnuty() && s.deeplMs > 0) " · DeepL ${s.deeplMs} ms" else "")
+        } else rCteni.nastav(B.MUTED, "")
         when {
             s.faze == Stav.Faze.CHYBA && s.chyba.isNotEmpty() -> rTitulek.nastav(B.WARN, "Chyba · ${s.chyba}")
             s.preklad.isNotEmpty() -> rTitulek.nastav(B.MUTED, "Titulek · ${s.preklad}")
@@ -466,25 +527,143 @@ private class Aplikace {
 
     /** Je okno hry otevřené? Hlídá se i před Spustit, ať Domů hned ukáže, jestli ho aplikace vidí. */
     private fun hlidejOkno() {
-        oknoNalezeno = !nast.ukazka && hra.oblast() != null
+        oknoNalezeno = nast.zdroj == "okno" && hra.oblast() != null
+        // u chiaki-ng: spárované konzole hned, PS5 v síti každých 10 s (jen když se nehraje)
+        if (nast.zdroj == "chiaki" && tiku++ % 10 == 0 && chiaki?.isAlive != true && krok == null) hledatPs5()
         obnovDomu()
     }
 
     private fun spustitNeboZastavit() {
-        if (vlakno?.isAlive == true) zastavit() else spustit()
+        when {
+            vlakno?.isAlive == true || chiaki?.isAlive == true || krok != null -> zastavit()
+            nast.zdroj == "chiaki" -> hrat()
+            else -> spustit()
+        }
     }
 
-    private fun spustit() {
+    // ---- chiaki-ng ----
+
+    private fun vybranaKonzole(): Chiaki.Konzole? =
+        konzoleSeznam.firstOrNull { it.jmeno == nast.konzole } ?: konzoleSeznam.firstOrNull()
+
+    private fun najdiPs5(k: Chiaki.Konzole): Chiaki.Nalez? {
+        val nalezene = Chiaki.hledej()
+        return nalezene.firstOrNull { it.jmeno.equals(k.jmeno, ignoreCase = true) } ?: nalezene.singleOrNull()
+    }
+
+    @Volatile private var hledaSe = false
+
+    private fun hledatPs5() {
+        if (hledaSe) return
+        hledaSe = true
+        thread(isDaemon = true) {
+            try {
+                konzoleSeznam = Chiaki.konzole()
+                ps5 = vybranaKonzole()?.let { najdiPs5(it) }
+                ps5Hledano = true
+            } finally { hledaSe = false }
+            SwingUtilities.invokeLater { obnovDomu(); radky.forEach { it.obnov() } }
+        }
+    }
+
+    private fun stahnoutChiaki() {
+        if (stahovani != null) return
+        stahovani = 0
+        obnovDomu()
+        thread(isDaemon = true) {
+            val chyba = Chiaki.stahni({ p -> stahovani = p; SwingUtilities.invokeLater { obnovDomu() } }, ::zapis)
+            stahovani = null
+            zapis(chyba?.let { "chiaki-ng: $it" } ?: "chiaki-ng připraven.")
+            if (chyba != null) stav = Stav(Stav.Faze.CHYBA, chyba = "chiaki-ng · $chyba")
+            SwingUtilities.invokeLater { obnovDomu(); radky.forEach { it.obnov() } }
+            hledatPs5()
+        }
+    }
+
+    /** Spárování s PS5 se dělá v samotném chiaki-ng (jednou); po jeho zavření se konzole načte. */
+    private fun sparovat() {
+        val exe = Chiaki.exe() ?: return stahnoutChiaki()
+        val p = runCatching { Chiaki.otevri(exe) }.getOrElse { zapis("chiaki-ng se nespustil: ${it.message}"); return }
+        zapis("chiaki-ng otevřen ke spárování.")
+        thread(isDaemon = true) { p.waitFor(); hledatPs5() }
+    }
+
+    private fun selhalo(proc: String) {
+        zapis(proc)
+        stav = Stav(Stav.Faze.CHYBA, chyba = proc)
+    }
+
+    /** Hrát: najít PS5, případně probudit, spustit hru v chiaki-ng přes celou obrazovku a číst titulky. */
+    private fun hrat() {
+        val exe = Chiaki.exe() ?: return
+        val k = vybranaKonzole() ?: return
+        krok = "Hledání PS5…"
+        stav = Stav(Stav.Faze.STOJI)
+        obnovDomu()
+        thread(name = "hrat", isDaemon = true) {
+            fun ui() = SwingUtilities.invokeLater { obnovDomu() }
+            try {
+                var n = najdiPs5(k) ?: return@thread selhalo("PS5 · nenalezena v síti")
+                if (!n.pripravena) {
+                    val cislo = k.probuzeni ?: return@thread selhalo("PS5 · klidový režim · zapni ji ovladačem")
+                    krok = "Probouzení PS5…"; ui()
+                    Chiaki.probud(n.adresa, cislo)
+                    for (i in 1..20) {
+                        if (krok == null) return@thread
+                        Thread.sleep(1500)
+                        n = najdiPs5(k) ?: n
+                        if (n.pripravena) break
+                        if (i % 4 == 0) Chiaki.probud(n.adresa, cislo)
+                    }
+                    if (!n.pripravena) return@thread selhalo("PS5 · neprobudila se")
+                }
+                if (krok == null) return@thread
+                ps5 = n
+                krok = "Spouštění hry…"; ui()
+                val p = Chiaki.hraj(exe, k.jmeno, n.adresa)
+                chiaki = p
+                zapis("chiaki-ng: ${k.jmeno} (${n.adresa})")
+                val oknoChiaki = OknoHry("pid:${p.pid()}")
+                for (i in 1..60) {
+                    if (oknoChiaki.oblast() != null || !p.isAlive || krok == null) break
+                    Thread.sleep(500)
+                }
+                if (!p.isAlive) {
+                    // poslední řádky výpisu chiaki-ng do Záznamu (bez klíčů – ty chiaki-ng nevypisuje)
+                    runCatching { java.io.File(Nastroje.slozka, "chiaki-vystup.txt").readLines().takeLast(5).forEach { zapis("chiaki-ng: $it") } }
+                    return@thread selhalo("chiaki-ng · spojení s PS5 se nepovedlo")
+                }
+                if (krok == null) { p.destroy(); return@thread }
+                hra = oknoChiaki
+                krok = null
+                SwingUtilities.invokeLater { spustit("pid:${p.pid()}") }
+                p.waitFor()
+                zapis("Hraní skončilo.")
+                ctecka?.zastav()
+            } finally {
+                krok = null
+                chiaki = null
+                ui()
+            }
+        }
+    }
+
+    private fun spustit(oknoHry: String? = null) {
         if (vlakno?.isAlive == true) return
         stav = Stav(Stav.Faze.NACITANI)
         val c = Ctecka(
             jazyk = nast.jazyk,
-            okno = if (nast.ukazka) "" else nast.okno,
+            okno = when {
+                nast.ukazka -> ""
+                oknoHry != null -> oknoHry
+                else -> nast.okno
+            },
             vystup = nast.vystup,
             pruh = if (nast.vystup == "tv") null else pruh,
             log = ::zapis,
             zmena = { s -> stav = s; SwingUtilities.invokeLater { obnovDomu() } },
             chyby = Nastroje.chyby,
+            deepl = deeplZapnuty(),
         )
         ctecka = c
         vlakno = thread(name = "ctecka", isDaemon = true) {
@@ -495,7 +674,9 @@ private class Aplikace {
     }
 
     private fun zastavit() {
+        krok = null
         ctecka?.zastav()
+        chiaki?.destroy()
         thread(isDaemon = true) {
             vlakno?.join(3000)
             SwingUtilities.invokeLater { obnovDomu() }
@@ -505,10 +686,12 @@ private class Aplikace {
     /** Po změně okna, jazyka nebo výstupu se běžící čtení spustí znovu s novým nastavením. */
     private fun restart() {
         if (vlakno?.isAlive != true) { obnovDomu(); return }
+        // hra v chiaki-ng běží dál, jen čtení se rozjede znovu nad jejím oknem
+        val hraOkno = chiaki?.takeIf { it.isAlive }?.let { "pid:${it.pid()}" }
         ctecka?.zastav()
         thread(isDaemon = true) {
             vlakno?.join(5000)
-            SwingUtilities.invokeLater { spustit() }
+            SwingUtilities.invokeLater { spustit(hraOkno) }
         }
     }
 
@@ -576,7 +759,7 @@ private class Aplikace {
         // název okna se uloží chvilku po psaní (ne po každém písmenu restart čtení)
         val ulozit = Timer(900) {
             val t = pole.text.trim()
-            if (t.isNotEmpty() && t != nast.okno) { nast.okno = t; hra = OknoHry(t); restart() }
+            if (t.isNotEmpty() && t != nast.okno) { nast.okno = t; if (chiaki?.isAlive != true) hra = OknoHry(t); restart() }
         }.apply { isRepeats = false }
         pole.document.addDocumentListener(object : DocumentListener {
             override fun insertUpdate(e: DocumentEvent) = ulozit.restart()
@@ -593,8 +776,22 @@ private class Aplikace {
             add(Tlacitko("Vybrat") { vyberOkno(this) })
         }
         val zdroj = Karta().apply {
+            add(volba("Hra běží v", Nastaveni.ZDROJE.map { it.second },
+                { Nastaveni.ZDROJE.indexOfFirst { z -> z.first == nast.zdroj }.coerceAtLeast(0) }) {
+                if (vlakno?.isAlive == true || chiaki?.isAlive == true) zastavit()
+                nast.zdroj = Nastaveni.ZDROJE[it].first
+                if (nast.zdroj == "chiaki") hledatPs5() else hra = OknoHry(nast.okno)
+            })
+            add(Radek("Konzole", { vybranaKonzole()?.jmeno ?: "nespárováno" }) { r ->
+                val jmena = konzoleSeznam.map { it.jmeno }
+                if (jmena.isEmpty()) sparovat()
+                else vyber(r, jmena, jmena.indexOf(vybranaKonzole()?.jmeno)) { nast.konzole = jmena[it]; ps5 = null; hledatPs5(); r.obnov() }
+            }.also { radky += it })
+            add(Radek("Spárovat v chiaki-ng", { "" }) { sparovat() }.also { radky += it })
+            add(Radek("chiaki-ng", { if (stahovani != null) "stahování" else if (Chiaki.exe() != null) "připraveno" else "chybí" }) {
+                if (Chiaki.exe() == null) stahnoutChiaki() else Chiaki.exe()?.parentFile?.let { runCatching { java.awt.Desktop.getDesktop().open(it) } }
+            }.also { radky += it })
             add(oknoRadek)
-            add(volba("Ukázková hra", listOf("Ne", "Ano"), { if (nast.ukazka) 1 else 0 }) { nast.ukazka = it == 1; restart() })
         }
         val preklad = Karta().apply {
             add(volba("Jazyk překladu", Lang.targets.map { it.label }, { Lang.targets.indexOf(jazyk()) }) {
@@ -605,6 +802,16 @@ private class Aplikace {
                 nast.vystup = Nastaveni.VYSTUPY[it].first; restart()
             })
             add(Radek("Příprava", { if (Nastroje.pripraveno(nast.jazyk)) "hotová" else "chybí" }) { pripravit() }.also { radky += it })
+        }
+        val deeplKarta = Karta().apply {
+            add(volba("DeepL online", listOf("Ne", "Ano"), { if (nast.deepl) 1 else 0 }) {
+                nast.deepl = it == 1
+                if (nast.deepl && !DeeplPc.ma()) zadatKlic() else restart()
+            })
+            add(Radek("Klíč DeepL", { popisKlice() }) { zadatKlic() }.also { radky += it })
+            add(Radek("Klíč na webu DeepL", { "" }) {
+                runCatching { java.awt.Desktop.getDesktop().browse(java.net.URI(Deepl.KEYS_URL)) }
+            }.also { radky += it })
         }
         val zaznamOtevreny = booleanArrayOf(false)
         val zaznamPosuv = JScrollPane(zaznam).apply {
@@ -621,11 +828,48 @@ private class Aplikace {
             Box.createVerticalStrut(20),
             popisek("Překlad", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), preklad,
             Box.createVerticalStrut(20),
+            popisek("DeepL", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), deeplKarta,
+            Box.createVerticalStrut(20),
             popisek("Ladění", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), zaznamKarta,
         )
     }
 
     private var poleOkna: JTextField? = null
+
+    // ---- DeepL ----
+
+    private fun deeplZapnuty() = nast.deepl && DeeplPc.ma() && Deepl.target(jazyk()) != null
+
+    /** „1a2b…:fx · zbývá 950 000 znaků“ – klíč jen zkráceně. */
+    private fun popisKlice(): String {
+        val k = DeeplPc.klic() ?: return "chybí"
+        val u = DeeplPc.vyuziti ?: return Deepl.masked(k)
+        return Deepl.masked(k) + " · zbývá " + String.format("%,d", u.left).replace(',', ' ') + " znaků"
+    }
+
+    private fun zadatKlic() {
+        val vlozeno = javax.swing.JOptionPane.showInputDialog(okno, "Klíč DeepL (prázdné = smazat)", "PlayLingo",
+            javax.swing.JOptionPane.PLAIN_MESSAGE) ?: run { radky.forEach { it.obnov() }; obnovDomu(); return }
+        if (!DeeplPc.uloz(vlozeno)) {
+            javax.swing.JOptionPane.showMessageDialog(okno, "Tohle klíč DeepL není.", "PlayLingo", javax.swing.JOptionPane.PLAIN_MESSAGE)
+            return
+        }
+        if (DeeplPc.ma()) nast.deepl = true
+        radky.forEach { it.obnov() }
+        restart()
+        thread(isDaemon = true) {
+            val p = DeeplPc.over()
+            zapis(when (p) {
+                null -> "DeepL: klíč ověřen."
+                Deepl.Problem.BAD_KEY -> "DeepL: klíč neplatí."
+                Deepl.Problem.QUOTA -> "DeepL: vyčerpaný limit."
+                Deepl.Problem.NETWORK -> "DeepL: bez spojení."
+                else -> "DeepL: chyba ověření ($p)."
+            })
+            if (p != null) stav = stav.copy(deeplChyba = p)
+            SwingUtilities.invokeLater { radky.forEach { it.obnov() }; obnovDomu() }
+        }
+    }
 
     /** Nabídka otevřených oken; z titulku se vezme krátké slovo, které vydrží i změnu titulku. */
     private fun vyberOkno(kde: Component) {
@@ -635,7 +879,7 @@ private class Aplikace {
             val t = okna[i]
             val kratce = listOf("chiaki", "PS Remote Play", "Xbox").firstOrNull { t.contains(it, ignoreCase = true) } ?: t
             nast.okno = kratce
-            nast.ukazka = false
+            nast.zdroj = "okno"
             hra = OknoHry(kratce)
             poleOkna?.text = kratce
             radky.forEach { it.obnov() }
@@ -645,6 +889,7 @@ private class Aplikace {
 
     private fun konec() {
         ctecka?.zastav()
+        chiaki?.destroy()
         priprava?.destroy()
         okno.isVisible = false
         thread {
@@ -668,6 +913,15 @@ fun main() {
         UIManager.put("ProgressBar.foreground", B.ACCENT)
         UIManager.put("ProgressBar.background", B.CARD2)
         UIManager.put("Button.disabledText", B.MUTED)
+        UIManager.put("OptionPane.background", B.CARD)
+        UIManager.put("Panel.background", B.CARD)
+        UIManager.put("OptionPane.messageForeground", B.TEXT)
+        UIManager.put("OptionPane.messageFont", Font("Segoe UI", Font.PLAIN, 16))
+        UIManager.put("TextField.background", B.CARD2)
+        UIManager.put("TextField.foreground", B.TEXT)
+        UIManager.put("TextField.caretForeground", B.TEXT)
+        UIManager.put("Button.background", B.CARD2)
+        UIManager.put("Button.foreground", B.TEXT)
         Aplikace()
     }
 }

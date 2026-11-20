@@ -1,6 +1,9 @@
 package cz.playlingo.pc
 
+import cz.playlingo.core.Deepl
 import cz.playlingo.core.DemoGame
+import cz.playlingo.core.Lang
+import cz.playlingo.core.Natural
 import cz.playlingo.core.OcrBlock
 import cz.playlingo.core.OcrLine
 import cz.playlingo.core.Picked
@@ -134,6 +137,10 @@ data class Stav(
     val original: String = "",
     val preklad: String = "",
     val chyba: String = "",
+    /** Jak dlouho odpovídal DeepL naposledy (0 = zatím ne). */
+    val deeplMs: Long = 0,
+    /** Proč DeepL naposledy nepomohl (null = v pořádku). */
+    val deeplChyba: Deepl.Problem? = null,
 ) {
     enum class Faze { STOJI, NACITANI, BEZI, BEZ_OKNA, CHYBA }
 }
@@ -151,6 +158,8 @@ class Ctecka(
     private val python: String = Nastroje.python.path,
     private val pomocnik: File = Nastroje.pomocnik,
     private val chyby: File? = null,
+    /** Překládat přes DeepL (klíč v [DeeplPc]); offline zůstává jako záloha. */
+    private val deepl: Boolean = false,
 ) {
     @Volatile private var konec = false
     private var stav = Stav(Stav.Faze.NACITANI)
@@ -173,7 +182,8 @@ class Ctecka(
             log("Načítám čtení textu a překladač…")
             helper = Helper(python, pomocnik, model.path, jazyk, okno, chyby)
             if (konec) return
-            log(if (demo) "Běží ukázka (bez PlayStationu)." else "Čtu okno „$okno“.")
+            log((if (demo) "Běží ukázka (bez PlayStationu)." else "Čtu okno „$okno“.") +
+                (if (deepl) " Překlad DeepL online + offline." else " Překlad offline."))
             stav = Stav(Stav.Faze.BEZI)
             smycka(helper, sender, demo)
             stav = Stav(Stav.Faze.STOJI)
@@ -202,11 +212,26 @@ class Ctecka(
         // kde na snímku byl anglický titulek (poměry v obraze) – podle toho se položí pruh
         var spot = Misto(0.5f, -1f, -1f, 0f)
 
+        // Jako na Androidu od 0.97.2: s DeepL se počká na jeho překlad (nejvýš ~2,5 s) a ukáže se jen
+        // jedna varianta; offline jen když DeepL nepomůže. Krátká slova ze slovníčku zůstávají offline.
         fun translateSegments(text: String): List<Segment>? {
+            val parts = TextLogic.segments(text)
+            val bodies = parts.map { TextLogic.normalizeCase(it.body) }
+            val quick = bodies.map { QuickWords.lookup(jazyk, it) }
+            val ask = bodies.indices.filter { quick[it] == null }
+            val online = if (deepl && ask.isNotEmpty()) {
+                val t0 = System.currentTimeMillis()
+                DeeplPc.preloz(Lang.of(jazyk), ask.map { TextLogic.forTranslator(bodies[it]) })?.also {
+                    stav = stav.copy(deeplMs = System.currentTimeMillis() - t0, deeplChyba = null)
+                } ?: run {
+                    stav = stav.copy(deeplChyba = DeeplPc.backoff.lastProblem); null
+                }
+            } else null
             val result = ArrayList<Segment>()
-            for (s in TextLogic.segments(text)) {
-                val body = TextLogic.normalizeCase(s.body)
-                val tr = QuickWords.lookup(jazyk, body) ?: helper.translate(TextLogic.forTranslator(body)) ?: return null
+            parts.forEachIndexed { i, s ->
+                val body = bodies[i]
+                val fromDeepl = online?.getOrNull(ask.indexOf(i))?.let { if (jazyk == "cs") Natural.czech(body, it) else it }
+                val tr = quick[i] ?: fromDeepl ?: helper.translate(TextLogic.forTranslator(body)) ?: return null
                 result.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice))
             }
             return result

@@ -58,6 +58,24 @@ class Okno:
     def _najdi(self):
         nalezeno = []
         typ = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+        # „pid:1234“ = největší viditelné okno procesu (chiaki-ng spuštěný PlayLingem)
+        if self.nazev.startswith("pid:") and self.nazev[4:].isdigit():
+            from ctypes import wintypes
+            hledany = int(self.nazev[4:])
+            okna = []
+
+            def podle_procesu(hwnd, _):
+                if self.u.IsWindowVisible(hwnd):
+                    pid = wintypes.DWORD()
+                    self.u.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+                    if pid.value == hledany:
+                        r = wintypes.RECT()
+                        self.u.GetWindowRect(hwnd, ctypes.byref(r))
+                        okna.append(((r.right - r.left) * (r.bottom - r.top), hwnd))
+                return True
+
+            self.u.EnumWindows(typ(podle_procesu), 0)
+            return max(okna)[1] if okna else None
 
         def kazde(hwnd, _):
             if self.u.IsWindowVisible(hwnd):
