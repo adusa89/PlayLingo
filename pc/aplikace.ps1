@@ -1,4 +1,4 @@
-# Spustí okno aplikace PlayLingo pro počítač (spouští ho PlayLingo.cmd dvojklikem).
+﻿# Spustí okno aplikace PlayLingo pro počítač (spouští ho PlayLingo.cmd dvojklikem).
 # Když čtečka ještě není sestavená, sestaví ji (asi minuta, jen poprvé a po změně kódu).
 # Knihovny pro čtení a překlad stáhne aplikace sama tlačítkem Připravit na stránce Domů.
 $ErrorActionPreference = "Stop"
