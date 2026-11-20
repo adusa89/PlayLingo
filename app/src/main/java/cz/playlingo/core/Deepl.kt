@@ -13,8 +13,9 @@ package cz.playlingo.core
 object Deepl {
     const val FREE_HOST = "api-free.deepl.com"
     const val PRO_HOST = "api.deepl.com"
-    /** Stránka DeepL pro vývojáře (horní menu „Developers“), kde se zakládá „Free API Key“. */
-    const val SIGNUP_URL = "https://www.deepl.com/pro-api"
+    /** Registrace účtu DeepL pro API (bezplatný plán Developer). Účet jen pro DeepL Translator klíč nemá
+     *  a přihlášeného uživatele registrace přesměruje do Translatoru – proto nový účet (ověřeno 20. 11. 2026). */
+    const val SIGNUP_URL = "https://www.deepl.com/en/signup?cta=checkout&is_api=true&productId=api-developer"
     /** Stránka s klíči v účtu DeepL – přímo, bez hledání v menu (na mobilu se tam jinak špatně trefuje). */
     const val KEYS_URL = "https://www.deepl.com/your-account/keys"
     /** Odpověď, která přijde později, se už do pruhu nedává (hráč mezitím čte), jen se zapamatuje. */
@@ -205,7 +206,7 @@ object Deepl {
  * Kdy se DeepL zase zkusí po chybě. Hráč o chybách nic neví – překlad jede offline dál a důvod
  * je vidět v Nastavení → Experimentální a v hlášení o stavu.
  *  - špatný klíč: do změny klíče (nemá smysl zkoušet),
- *  - vyčerpaný měsíční limit: 6 hodin,
+ *  - vyčerpaný limit znaků: 6 hodin,
  *  - moc dotazů: 1 minuta,
  *  - síť nebo chyba serveru: po třech chybách po sobě 2 minuty, pak 4, 8, nejvýš 15.
  */

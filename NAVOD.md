@@ -246,7 +246,7 @@ slangu i nadávkám a pro hráče je zdarma – stačí vlastní bezplatný úč
 DeepL – nastavit** (je to tamtéž jako ⚙ Nastavení → Experimentální).
 
 Jak to funguje: offline překlad se ukáže hned jako vždy a DeepL ho během chvilky (do 1,5 s) potichu
-nahradí lepším – i v televizi LG / Samsung. Když DeepL nejde (bez internetu, vyčerpaný měsíční limit,
+nahradí lepším – i v televizi LG / Samsung. Když DeepL nejde (bez internetu, vyčerpaný limit znaků,
 špatný klíč), překládá se dál offline a důvod je vidět v Nastavení.
 
 ### Nastavení klíče – nic se nepíše ovladačem
@@ -254,13 +254,18 @@ Klíč je dlouhý (asi 40 znaků), proto ho do televize **nepíšeš** – zkop�
 
 1. **Televize ukáže čtvereček.** Naskenuj ho telefonem (Android i iPhone), který je na **stejné
    Wi‑Fi** jako televize. Otevře se malá stránka „PlayLingo · DeepL“.
-2. **Nemáš účet DeepL?** Na té stránce zvol **Otevřít DeepL** (otevře se na nové kartě):
-   - nahoře **Developers → Free API Key**,
-   - zaregistruj se e-mailem a heslem (platební kartu DeepL nechce),
+2. **Nemáš účet DeepL pro API?** Na té stránce zvol **Otevřít DeepL** (otevře se na nové kartě
+   rovnou registrace):
+   - zaregistruj se v plánu **Developer** (zdarma) e-mailem a heslem (platební kartu DeepL nechce),
    - potvrď e-mail odkazem, který ti DeepL pošle.
-3. **Zkopíruj klíč.** Na stránce PlayLingo zvol **Otevřít stránku s klíčem** (nebo otevři
-   https://www.deepl.com/your-account/keys) a u klíče klepni na tlačítko pro **kopírování**.
-   Klíč končí na `:fx`.
+
+   Registraci otevři v prohlížeči, kde **nejsi přihlášený do DeepL** – nejjednodušší je soukromá
+   karta (iPhone: Safari → Panely → Soukromé; Android: Chrome → ⋮ → Nová anonymní karta).
+   Jinak tě DeepL přesměruje do Translatoru.
+3. **Zkopíruj klíč.** Po přihlášení je klíč na úvodní stránce účtu (tlačítko **Copy key**). Jinak na
+   stránce PlayLingo zvol **Otevřít stránku s klíčem** (nebo otevři
+   https://www.deepl.com/your-account/keys), případně klíč vytvoř tlačítkem **Create key**, a klepni
+   na tlačítko pro **kopírování**. Klíč končí na `:fx`.
 4. **Vlož klíč.** Vrať se na kartu „PlayLingo · DeepL“, **podrž prst v políčku → Vložit** a zvol
    **Odeslat do televize**.
 5. Televize klíč ověří, uloží a DeepL sama zapne. Hotovo – víc už nic nastavovat nemusíš.
@@ -270,8 +275,13 @@ a čtvereček naskenuj znovu. Ruční psaní klíče ovladačem je jen záloha: 
 a objeví se políčko. Přímo v telefonu s PlayLingem klíč jen vložíš do políčka.
 
 ### Dobré vědět
-- **Limit:** bezplatný účet DeepL má měsíční limit znaků (aplikace ho po ověření ukáže, i kolik zbývá);
-  stačí na desítky hodin hraní. Opakované věty se znovu neposílají.
+- **Mám DeepL na překládání, ale klíč nevidím / přesměruje mě to do Translatoru:** účet jen pro
+  DeepL Translator klíč API nemá a přidat ho do něj nejde. Založ si **nový účet pro API s jiným
+  e-mailem** (postup výše, v soukromé kartě).
+- **Registrace visí na „Security check“:** vypni VPN nebo blokování reklam (na iPhonu i Soukromý
+  přenos iCloud), případně zkus jiný prohlížeč nebo mobilní data.
+- **Limit:** bezplatný plán Developer má limit znaků zdarma (aplikace ho po ověření ukáže, i kolik
+  zbývá); stačí na desítky hodin hraní. Opakované věty se znovu neposílají.
 - **Placený DeepL Pro** funguje taky – aplikace pozná druh klíče sama.
 - **Soukromí:** se zapnutým DeepL se **rozpoznaný text titulků posílá přes internet do DeepL**. Klíč je
   jen tvůj, zůstává zašifrovaný v zařízení s PlayLingem a nikam jinam se neposílá (ani do hlášení).
