@@ -55,7 +55,9 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
 - `tizen` – PlayLingo pro televize Samsung (viz Televize Samsung): `tizen/app` se společným kódem
   s `webos/obchod/app`, do APK jako nepodepsaný `.wgt` (úloha `samsungBalicek`).
 - `pc` – zkušební čtečka pro počítač s Windows (viz `pc/CTI-ME.md`): čte titulky z okna s obrazem
-  hry, přeloží je a pošle do televize LG. Překládá se proti téže složce `core` jako aplikace,
+  hry, přeloží je a ukáže v pruhu přes okno hry (`pc/src/Pruh.kt`, výchozí) nebo pošle do televize LG
+  (`-Vystup tv`). Základ budoucí aplikace pro Windows / handheld: hráč hraje v chiaki-ng na hlavním
+  účtu, PlayLingo se ke konzoli nepřipojuje. Překládá se proti téže složce `core` jako aplikace,
   takže změna v `core` se týká i jí – po úpravě `core` ověř i `gradlew -p pc installDist`.
   Do APK se nedostane a sestavení na GitHubu o ní neví.
 
@@ -458,6 +460,11 @@ nebo e-mailem. Záměrně bez e-mailové služby (Resend apod.): klíč by musel
 Pro rozbor odpojování zapisuje služba i `NET|` (síť ztracena/připojena), `SCREEN|` (televize se uspává),
 `MEM|` (dochází paměť), `STOP|tlačítkem v notifikaci` a `PS5|quit … | trvalo=…s | síť=… | pokus=…`;
 seznam ukončení ze strany PS5 je v hlášení („PlayStation ukončil spojení“) a důvod na Domů (`ls_ended`).
+
+## Návrhy na později (`navrhy/`)
+
+- `navrhy/preklad-menu.md` – překlad menu a UI hry (box s přeloženým menu vedle originálu, zvýraznění vybrané
+  položky, tooltipy v Diablu IV). Schváleno majitelem jako samostatná session po profilu Diablo IV; nezačato.
 
 ## Stránky s pomocí (`pomoc/`)
 
