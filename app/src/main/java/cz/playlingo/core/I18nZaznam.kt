@@ -21,6 +21,9 @@ internal val ZAZNAM_S: Map<String, Pair<String, String>> = mapOf(
     "zz_share" to ("Sdílet" to "Zdieľať"),
     "zz_copied" to ("Hlášení je ve schránce." to "Hlásenie je v schránke."),
     "zz_noshare" to ("Tady to nejde – hlášení je uložené v souboru (cesta je dole v hlášení)." to "Tu to nejde – hlásenie je uložené v súbore (cesta je dole v hlásení)."),
+    "zz_ip" to ("IP" to "IP"),
+    "zz_port" to ("Port" to "Port"),
+    "zz_code" to ("Kód" to "Kód"),
 )
 
 internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
@@ -40,6 +43,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_share" to "Share",
         "zz_copied" to "The report is in the clipboard.",
         "zz_noshare" to "Not possible here – the report is saved in a file (path at the bottom of the report).",
+        "zz_ip" to "IP",
+        "zz_port" to "Port",
+        "zz_code" to "Code",
     ),
     Lang.PL to mapOf(
         "zz_qr_btn" to "Do telefonu",
@@ -57,6 +63,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_share" to "Udostępnij",
         "zz_copied" to "Raport jest w schowku.",
         "zz_noshare" to "Tu się nie da – raport jest zapisany w pliku (ścieżka na dole raportu).",
+        "zz_ip" to "IP",
+        "zz_port" to "Port",
+        "zz_code" to "Kod",
     ),
     Lang.DE to mapOf(
         "zz_qr_btn" to "Aufs Handy",
@@ -74,6 +83,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_share" to "Teilen",
         "zz_copied" to "Der Bericht ist in der Zwischenablage.",
         "zz_noshare" to "Hier nicht möglich – der Bericht ist in einer Datei gespeichert (Pfad unten im Bericht).",
+        "zz_ip" to "IP",
+        "zz_port" to "Port",
+        "zz_code" to "Code",
     ),
     Lang.HU to mapOf(
         "zz_qr_btn" to "Telefonra",
@@ -91,6 +103,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_share" to "Megosztás",
         "zz_copied" to "A jelentés a vágólapon van.",
         "zz_noshare" to "Itt nem lehet – a jelentés fájlba van mentve (az elérési út a jelentés alján).",
+        "zz_ip" to "IP",
+        "zz_port" to "Port",
+        "zz_code" to "Kód",
     ),
     Lang.UK to mapOf(
         "zz_qr_btn" to "На телефон",
@@ -108,6 +123,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_share" to "Поділитися",
         "zz_copied" to "Звіт у буфері обміну.",
         "zz_noshare" to "Тут це неможливо – звіт збережено у файлі (шлях унизу звіту).",
+        "zz_ip" to "IP",
+        "zz_port" to "Порт",
+        "zz_code" to "Код",
     ),
     Lang.ES to mapOf(
         "zz_qr_btn" to "Al teléfono",
@@ -125,6 +143,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_share" to "Compartir",
         "zz_copied" to "El informe está en el portapapeles.",
         "zz_noshare" to "Aquí no es posible: el informe está guardado en un archivo (ruta al final del informe).",
+        "zz_ip" to "IP",
+        "zz_port" to "Puerto",
+        "zz_code" to "Código",
     ),
     Lang.FR to mapOf(
         "zz_qr_btn" to "Vers le téléphone",
@@ -142,6 +163,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_share" to "Partager",
         "zz_copied" to "Le rapport est dans le presse-papiers.",
         "zz_noshare" to "Impossible ici – le rapport est enregistré dans un fichier (chemin en bas du rapport).",
+        "zz_ip" to "IP",
+        "zz_port" to "Port",
+        "zz_code" to "Code",
     ),
     Lang.IT to mapOf(
         "zz_qr_btn" to "Al telefono",
@@ -159,5 +183,8 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_share" to "Condividi",
         "zz_copied" to "Il rapporto è negli appunti.",
         "zz_noshare" to "Qui non è possibile: il rapporto è salvato in un file (percorso in fondo al rapporto).",
+        "zz_ip" to "IP",
+        "zz_port" to "Porta",
+        "zz_code" to "Codice",
     ),
 )

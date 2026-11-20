@@ -180,10 +180,22 @@ object NetLogShare {
             rerender()
         }.apply { tag = "zaznamsit" })
         val u = url(a)
-        val desc = if (on && u != null)
-            a.tx("zz_url").replace("%s", u) + "\n" + a.tx("zz_left").replace("%s", minutesLeft(a).toString())
-        else a.tx("zz_desc")
-        box.addView(ui.text(desc, 14f, if (on) Theme.OK else Theme.MUTED), ui.lp(top = 6))
+        if (!on || u == null) {
+            box.addView(ui.text(a.tx("zz_desc"), 14f, Theme.MUTED), ui.lp(top = 6))
+            return box
+        }
+        // IP, port a kód velkým písmem pod sebou – majitel je čte z obrazovky a diktuje (od 0.97.38);
+        // kdy se to vypne až pod tím, celá adresa pro vývojáře úplně dole
+        val uri = try { android.net.Uri.parse(u) } catch (_: Throwable) { null }
+        listOf("zz_ip" to (uri?.host ?: "?"), "zz_port" to (uri?.port?.toString() ?: "?"), "zz_code" to (uri?.getQueryParameter("k") ?: "?"))
+            .forEachIndexed { i, (k, v) ->
+                box.addView(ui.hbox().apply {
+                    addView(ui.text(a.tx(k), 20f, Theme.MUTED), android.widget.LinearLayout.LayoutParams(ui.dp(90), android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
+                    addView(ui.text(v, 26f, Theme.OK, bold = true).apply { letterSpacing = 0.06f })
+                }, ui.lp(top = if (i == 0) 10 else 4))
+            }
+        box.addView(ui.text(a.tx("zz_left").replace("%s", minutesLeft(a).toString()), 14f, Theme.MUTED), ui.lp(top = 12))
+        box.addView(ui.text(a.tx("zz_url").replace("%s", u), 12f, Theme.MUTED), ui.lp(top = 14))
         return box
     }
 
