@@ -147,7 +147,10 @@ class Ps5Link(
     private fun connectWhenAwake() {
         if (stopped || session != null) return
         if (!consolesLogged) logConsoles()
-        if (!everConnected && !Prefs.ps5Wake(ctx) && sleeping()) {
+        // spící konzoli nebudit: pokus o spojení s PS5 v klidovém režimu ji zapne. Do 0.97.36 se tohle hlídalo jen
+        // před prvním spojením – když hráč PS5 během překladu vypnul, aplikace se připojovala dál a PS5 se sama
+        // zapnula (testeři majitele, 20. 11. 2026). Volba „Probouzet“ budí jen při spuštění překladu, ne potom.
+        if ((everConnected || !Prefs.ps5Wake(ctx)) && sleeping()) {
             if (!asleep) log("console in rest mode, waiting (wake off)")
             asleep = true
             state = Ps5.Link.WAITING
