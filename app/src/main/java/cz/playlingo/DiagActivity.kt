@@ -203,6 +203,7 @@ object DiagReport {
             cz.playlingo.core.SubtitleHistory.all().reversed().joinToString("\n") { h ->
                 hm.format(Date(h.time)) + "  " + h.original.replace('\n', ' ') + "\n          → " + h.translated.replace('\n', ' ')
             }.ifBlank { "zatím nic" }
+        parts += "barvy jmen ze hry (pro profil hry)" to cz.playlingo.core.NameColor.report()
         parts += "co aplikace četla v oblasti titulků" to
             cz.playlingo.core.ScreenReads.all().joinToString("\n") { r ->
                 hm.format(Date(r.time)) + (if (r.count > 1) " ×${r.count}" else "") + "  [" + r.verdict + "]  " + r.raw

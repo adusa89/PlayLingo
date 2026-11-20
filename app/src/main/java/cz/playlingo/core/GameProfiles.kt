@@ -12,18 +12,34 @@ data class GameProfile(
     val hud: List<String> = emptyList(),
     /** Nápisy z menu hry – obrazovka s aspoň dvěma z nich je menu a nečte se. */
     val menu: List<String> = emptyList(),
+    /** Řádky, které se nečtou podle tvaru (chat v Diablu IV: „[Trade] …“). */
+    val skip: List<Regex> = emptyList(),
+    /** Hra píše pod repliku pokyny pro hráče (GTA) – poslední krátký řádek se ukáže zvlášť ([TextLogic.markPrompt]). */
+    val prompts: Boolean = false,
+    /** Barvy jmen jako v titulcích hry (jméno postavy → barva 0xAARRGGBB); platí i pro její přezdívky. */
+    val colors: Map<String, Int> = emptyMap(),
 ) {
+    /** Barvy pro [SpeakerColors]: zjednodušené jméno i všechny přezdívky postavy → barva. */
+    val colorsByKey: Map<String, Int> by lazy {
+        val out = HashMap<String, Int>()
+        for ((name, color) in colors) {
+            val ch = characters.firstOrNull { it.name == name }
+            (ch?.allNames ?: listOf(name)).forEach { out[SpeakerColors.key(it)] = color }
+        }
+        out
+    }
+
     val cast: Cast by lazy { Cast(characters) }
-    val screen: GameScreen by lazy { GameScreen(hud, menu) }
+    val screen: GameScreen by lazy { GameScreen(hud, menu, skip) }
     fun termsFor(lang: Lang): Map<String, String> = terms[lang.code] ?: emptyMap()
 }
 
 /** Co hra ukazuje mimo titulky: hlášky (jednotlivě se přeskočí) a nápisy menu (celá obrazovka se přeskočí). */
-class GameScreen(hud: List<String>, menu: List<String>) {
+class GameScreen(hud: List<String>, menu: List<String>, private val skip: List<Regex> = emptyList()) {
     private val hudKeys = hud.map { TextLogic.simplify(it) }.filter { it.isNotEmpty() }.toSet()
     private val menuKeys = menu.map { TextLogic.simplify(it) }.filter { it.isNotEmpty() }.toSet()
-    val isEmpty: Boolean get() = hudKeys.isEmpty() && menuKeys.isEmpty()
-    fun isHud(line: String): Boolean = hudKeys.isNotEmpty() && TextLogic.simplify(line) in hudKeys
+    val isEmpty: Boolean get() = hudKeys.isEmpty() && menuKeys.isEmpty() && skip.isEmpty()
+    fun isHud(line: String): Boolean = (hudKeys.isNotEmpty() && TextLogic.simplify(line) in hudKeys) || skip.any { it.containsMatchIn(line) }
     fun isMenu(lines: List<String>): Boolean = menuKeys.isNotEmpty() && lines.count { TextLogic.simplify(it) in menuKeys } >= 2
 
     companion object { val EMPTY = GameScreen(emptyList(), emptyList()) }
@@ -116,7 +132,7 @@ object GameProfiles {
      */
     private val GTA6 = GTA6_COMMON + listOf(
         // postavy
-        "Jason", "Duval", "Lucia", "Caminos", "Lu", "Jay", "Jay Dog", "Jas", "Loony", "Cal Hampton", "Boobie Ike", "Dre'Quan",
+        "Jason", "Duval", "Lucia", "Caminos", "Lu", "Jay", "Jay Dog", "J-dog", "J-Dog", "Jas", "Loony", "Cal Hampton", "Boobie Ike", "Dre'Quan",
         "Dre'Quan Priest", "Real Dimez", "Bae-Luxe", "Roxy", "Raul Bautista", "Brian Heder", "Lori Heder", "Heder",
         "Kenton Rees", "Mattia", "Mattia Tauro", "Katerina Rosselli", "Mia Caminos", "Tomás Caminos", "Frankie Delight",
         "Yasmani", "Yasmani Cabrera", "Yago Jiménez", "Bret Vogel", "Eddie Acosta", "Pilot Pete", "Wyman",
@@ -231,7 +247,7 @@ object GameProfiles {
     // a gtabase; Jasona volá Lucia „Jay“, Andrés „Jay Dog“; Lucii Jason „Lu“, Dre'Quan „Loony“ (gta.wiki).
     // Mia Caminos jen podle gtabase – gta.wiki má Luciinu matku bez jména.
     private val GTA6_CAST = listOf(
-        m("Jason", "Jason Duval", "Jay", "Jay Dog", "Jas", "Duval"), f("Lucia", "Lucia Caminos", "Lu", "Loony", "Caminos"),
+        m("Jason", "Jason Duval", "Jay", "Jay Dog", "J-dog", "J-Dog", "Jas", "Duval"), f("Lucia", "Lucia Caminos", "Lu", "Loony", "Caminos"),
         m("Cal Hampton"), m("Boobie Ike", "Boobie"), m("Dre'Quan", "Dre'Quan Priest", "Dre"), f("Bae-Luxe"), f("Roxy"),
         m("Raul Bautista", "Raul"), m("Brian Heder", "Brian"), f("Lori Heder", "Lori"), m("Donnie"), m("Arnold"),
         f("Mandy"), m("Kenton Rees", "Kenton"), m("Mattia", "Mattia Tauro"), f("Katerina Rosselli", "Kat"), m("Joey"),
@@ -327,12 +343,17 @@ object GameProfiles {
 
     val GAMES: List<GameProfile> = listOf(
         GameProfile("rdr2", "Red Dead Redemption 2", RDR2, Rdr2.CAST, Rdr2.TERMS, Rdr2.HUD, Rdr2.MENU),
-        GameProfile("gta6", "Grand Theft Auto VI", GTA6, GTA6_CAST, GTA6_TERMS, GTA6_HUD, GTA6_MENU),
-        GameProfile("gta", "Grand Theft Auto V", Gta5.NAMES.distinct(), Gta5.CAST, Gta5.TERMS, Gta5.HUD, Gta5.MENU),
+        // barvy jmen jako v titulcích GTA VI (majitel ve hře 20. 11. 2026): Jason žlutě, Lucia modře
+        GameProfile("gta6", "Grand Theft Auto VI", GTA6, GTA6_CAST, GTA6_TERMS, GTA6_HUD, GTA6_MENU, prompts = true,
+            colors = mapOf("Jason" to SpeakerColors.PALETTE[0], "Lucia" to SpeakerColors.PALETTE[1])),
+        // GTA V: Michael modře, Franklin zeleně, Trevor oranžově (barvy postav v titulcích hry)
+        GameProfile("gta", "Grand Theft Auto V", Gta5.NAMES.distinct(), Gta5.CAST, Gta5.TERMS, Gta5.HUD, Gta5.MENU, prompts = true,
+            colors = mapOf("Michael" to SpeakerColors.PALETTE[1], "Franklin" to SpeakerColors.PALETTE[2], "Trevor" to SpeakerColors.PALETTE[5])),
         GameProfile("alanwake2", "Alan Wake 2", AlanWake2.NAMES.distinct(), AlanWake2.CAST, hud = AlanWake2.HUD, menu = AlanWake2.MENU),
         GameProfile("re9", "Resident Evil Requiem", ReRequiem.NAMES.distinct(), ReRequiem.CAST, ReRequiem.TERMS, ReRequiem.HUD, ReRequiem.MENU),
         GameProfile("bond", "007 First Light", Bond007.NAMES.distinct(), Bond007.CAST),
-        GameProfile("diablo4", "Diablo IV", Diablo4.NAMES.distinct(), Diablo4.CAST, Diablo4.TERMS, Diablo4.HUD, Diablo4.MENU),
+        GameProfile("diablo4", "Diablo IV", Diablo4.NAMES.distinct(), Diablo4.CAST, Diablo4.TERMS, Diablo4.HUD, Diablo4.MENU,
+            skip = Diablo4.SKIP),
         GameProfile("tlou", "The Last of Us", TLOU, TLOU_CAST),
         GameProfile("gow", "God of War", GOW, GOW_CAST),
         GameProfile("spiderman", "Spider-Man", SPIDERMAN, SPIDERMAN_CAST),

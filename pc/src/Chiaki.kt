@@ -19,9 +19,10 @@ import java.util.zip.ZipInputStream
  * v síti, probudí ji a spustí hru rovnou přes celou obrazovku (`chiaki stream <konzole> <adresa>
  * --fullscreen --exit-app-on-stream-exit`). Hráč tak vidí jen hru s pruhem PlayLinga.
  *
- * Spárování s PS5 se dělá jednou v samotném chiaki-ng (tlačítko Spárovat); chiaki-ng si ho ukládá
- * do registru Windows (`HKCU\Software\Chiaki\Chiaki\registered_hosts`), odkud PlayLingo bere jméno
- * konzole a číslo pro probuzení. Klíče z registru se nikam nevypisují.
+ * Spárování s PS5 dělá PlayLingo samo ([Registrace], průvodce v `Parovani.kt`) a výsledek zapíše
+ * tam, kam si ho ukládá chiaki-ng: do registru Windows (`HKCU\Software\Chiaki\Chiaki\registered_hosts`,
+ * [uloz]). Odtud ho chiaki-ng při `chiaki stream` vezme a PlayLingo odtud bere jméno konzole a číslo
+ * pro probuzení. Klíče z registru se nikam nevypisují.
  */
 object Chiaki {
     val slozka = File(Nastroje.slozka, "chiaki-ng")
@@ -209,6 +210,49 @@ object Chiaki {
             .directory(exe.parentFile).redirectErrorStream(true)
             .redirectOutput(File(Nastroje.slozka, "chiaki-vystup.txt")).start()
 
-    /** Celý chiaki-ng – jen kvůli spárování s PS5 (nebo nastavení ovladače). */
-    fun otevri(exe: File): Process = ProcessBuilder(exe.path).directory(exe.parentFile).start()
+    /** Běží chiaki-ng? Při zavření by si přepsal seznam konzolí tím, co měl v paměti. */
+    fun bezi(): List<ProcessHandle> = ProcessHandle.allProcesses().filter { p ->
+        p.info().command().map { File(it).name.equals("chiaki.exe", ignoreCase = true) }.orElse(false)
+    }.toList()
+
+    // ---- zápis spárované konzole (tvar jako QSettings v chiaki-ng, `RegisteredHost::SaveToSettings`) ----
+
+    /**
+     * Uloží spárovanou konzoli mezi `registered_hosts` chiaki-ng. Stejná konzole (podle MAC) se
+     * přepíše, jinak se přidá na konec. Qt ukládá pole jako podklíče 1…N a hodnotu `size`, čísla
+     * jako REG_DWORD, text jako REG_SZ a bajty jako text „@ByteArray(…)“ (Latin-1) v UTF-16 –
+     * s nulami uvnitř jako REG_BINARY.
+     */
+    fun uloz(k: Registrace.Konzole) {
+        val hk = WinReg.HKEY_CURRENT_USER
+        val pole = "$REG\\registered_hosts"
+        if (!Advapi32Util.registryKeyExists(hk, pole)) Advapi32Util.registryCreateKey(hk, pole)
+        val indexy = Advapi32Util.registryGetKeys(hk, pole).mapNotNull { it.toIntOrNull() }
+        val stejny = indexy.firstOrNull { i -> bajty(hodnota("$pole\\$i", "server_mac"))?.contentEquals(k.mac) == true }
+        val i = stejny ?: ((indexy.maxOrNull() ?: 0) + 1)
+        val h = "$pole\\$i"
+        if (!Advapi32Util.registryKeyExists(hk, h)) Advapi32Util.registryCreateKey(hk, h)
+        Advapi32Util.registrySetIntValue(hk, h, "target", 1000100) // CHIAKI_TARGET_PS5_1
+        for ((n, v) in k.ap) Advapi32Util.registrySetStringValue(hk, h, n, qtText(v))
+        Advapi32Util.registrySetStringValue(hk, h, "server_nickname", qtText(k.jmeno))
+        Advapi32Util.registrySetBinaryValue(hk, h, "server_mac", qtBajty(k.mac))
+        Advapi32Util.registrySetBinaryValue(hk, h, "rp_regist_key", qtBajty(k.klicRegistrace))
+        Advapi32Util.registrySetIntValue(hk, h, "rp_key_type", k.typKlice)
+        Advapi32Util.registrySetBinaryValue(hk, h, "rp_key", qtBajty(k.klicRelace))
+        Advapi32Util.registrySetStringValue(hk, h, "console_pin", "")
+        Advapi32Util.registrySetIntValue(hk, pole, "size", maxOf(i, indexy.maxOrNull() ?: 0))
+    }
+
+    /** Text tak, jak ho zapisuje Qt (začátek „@“ se zdvojí). */
+    private fun qtText(s: String) = if (s.startsWith("@")) "@$s" else s
+
+    private fun qtBajty(b: ByteArray): ByteArray =
+        ("@ByteArray(" + String(b, Charsets.ISO_8859_1) + ")").toByteArray(Charsets.UTF_16LE)
+
+    /** „@ByteArray(…)“ z registru zpět na bajty. */
+    private fun bajty(ulozeno: String?): ByteArray? {
+        val s = ulozeno ?: return null
+        if (!s.startsWith("@ByteArray(") || !s.endsWith(")")) return null
+        return s.substring(11, s.length - 1).toByteArray(Charsets.ISO_8859_1)
+    }
 }

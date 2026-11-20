@@ -54,6 +54,7 @@ $konec = (Get-Date).AddMinutes($Minut)
 $posledniHash = ''
 $posledniZaznam = Get-Date
 $snimku = 0
+$odmitnuto = 0
 try {
     while ((Get-Date) -lt $konec) {
         try {
@@ -66,9 +67,18 @@ try {
             }
         } catch {
             $kod = $_.Exception.Response.StatusCode.value__
-            if ($kod -eq 403) { Write-Output 'Kód nesedí – končím.'; break }
+            # 403 přišel i se správným kódem (telefon zhasl displej, 20. 11. 2026) – končí se až po
+            # třech za sebou s minutovou pauzou (server se zavře po 30 špatných, tohle ho nevyčerpá)
+            if ($kod -eq 403) {
+                $odmitnuto++
+                if ($odmitnuto -ge 3) { Write-Output 'Kód nesedí – končím.'; break }
+                Write-Output ("{0:HH:mm} – zařízení odmítlo kód, zkusím za minutu" -f (Get-Date))
+                Start-Sleep -Seconds 60
+                continue
+            }
             # 404 = obraz zrovna nechodí (překlad neběží) – zkusí se znovu
         }
+        $odmitnuto = 0
         if (((Get-Date) - $posledniZaznam).TotalSeconds -ge 60) {
             if (-not (Uloz-Zaznam)) { break }
             $posledniZaznam = Get-Date

@@ -107,6 +107,8 @@ h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; 
 #titulek .odrazka { color: #F2C14E; }
 /* anglický originál pod překladem (volba „Ukazovat i originál“ v PlayLingu na Androidu) */
 #titulek .puvodni { font-size: 0.62em; color: #A8B0B8; }
+/* pokyn pro hráče pod replikou (GTA „Take your shot“) – menší a šedý */
+#titulek .pokyn { font-size: 0.75em; color: #A8B0B8; }
 
 #zpet {
   display: none;

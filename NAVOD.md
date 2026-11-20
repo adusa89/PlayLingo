@@ -27,38 +27,31 @@ Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nah
 
 ## 3. První nastavení (průvodce tě provede)
 
-**Připrav PlayStation** (jen jednou; průvodce ti to ukáže v kroku Připojení konzole – bez toho
-se párování nepovede):
-1. Na PS5 zvol Přidat uživatele a založ **druhý účet** PlayStation s jiným e-mailem (zdarma). Proč
-   druhý účet, je vysvětlené v bodě 4.
-2. Přepni se na PS5 na toho druhého uživatele a zapni **Nastavení → Systém → Remote Play →
-   Povolit Remote Play**.
-   Hned tam zapni i **Skrýt stav připojení Remote Play** (anglicky Hide Remote Play Connection
-   Status) – jinak ti ve hře pořád svítí hláška „Aplikace Remote Play je připojena“. Totéž nastav
-   i pod svým herním uživatelem. Když tam volba není, aktualizuj systém PS5.
-3. PS5 a zařízení s PlayLingem musí být ve stejné domácí síti.
-4. Aby ho PlayLingo umělo probudit z klidového režimu: **Nastavení → Systém → Úspora energie →
-   Funkce dostupné v klidovém režimu** → zapni „Zůstat připojen k internetu“ a „Povolit zapnutí
-   systému PS5 ze sítě“.
+Průvodce má 8 kroků, na každé obrazovce jedna věc. Na PlayStationu zatím nic nenastavuj – co je potřeba,
+ukáže až krok Připojení konzole (bod 4).
 
-Pak v aplikaci projdi průvodce:
 1. **Zařízení:** na čem PlayLingo běží – Android TV nebo box s Androidem, nebo telefon či tablet
    (ten jen čte a hotové titulky posílá do televize LG nebo Samsung, viz bod 8).
 2. **Konzole:** PlayStation 5, nebo Xbox (viz bod 7b).
-3. **Televize:** Android TV (pruh ukazuje toto zařízení), LG, nebo Samsung. U LG a Samsungu jde
-   aplikaci do televize nahrát rovnou z tohoto kroku, nebo později.
-4. **Jazyk překladu:** vyber ho a počkej na stažení jazykového modelu (jednou, asi 30 MB).
-   **Kvalita překladu:** buď **DeepL** (mnohem lepší, zdarma s vlastním klíčem – postup a čtvereček
-   ukáže průvodce, viz bod 9 – klíč se jen zkopíruje a vloží v telefonu), nebo jen offline překlad (bez internetu, ale hodně doslovný).
-5. **Zobrazení titulků** (jen Android TV): zapni aplikaci v nastavení televize: Usnadnění →
-   PlayLingo → Zapnout.
-6. **Připojení konzole:** spáruj PlayStation – viz další bod (Xbox: bod 7b).
+3. **Televize:** Android TV (pruh ukazuje toto zařízení), LG, nebo Samsung. U LG a Samsungu tu je tlačítko
+   pro nahrání aplikace do televize – můžeš ho přeskočit a nahrát ji později (Domů, Instalace).
+4. **Jazyk:** jazyk překladu; počkej na stažení jazykového balíčku (jednou, asi 30 MB).
+5. **Lepší překlad (DeepL):** jedna věta proč a tři čtverečky pro telefon (registrace na DeepL, stránka
+   s klíčem, vložení klíče) – viz bod 9. Bez klíče zvol **Přeskočit – zůstat u offline překladu**; DeepL
+   jde nastavit kdykoli později v Titulkách → Kvalita překladu. Po přijetí klíče se ukáže „✔ DeepL je
+   nastavený“ a Pokračovat.
+6. **Zobrazení titulků** (jen Android TV): zapni aplikaci v nastavení televize: Usnadnění →
+   PlayLingo → Zapnout. U LG a Samsungu jen krátké vysvětlení.
+7. **Připojení konzole:** spárování PlayStationu v šesti malých krocích – viz bod 4 (Xbox: bod 7b). Má
+   jen tlačítka spárování a pod nimi malé **Spárovat později** (průvodce skočí na Hotovo).
+8. **Hotovo:** jak se hraje; se spárovanou konzolí tlačítko Spustit.
 
 Máš-li víc televizí LG nebo Samsung, pamatuje si PlayLingo vzhled titulků a oblasti pro každou zvlášť
 a přepne je samo podle televize, ke které se připojí (v Titulkách je nahoře vidět, pro kterou).
 
 Každou volbu jde později změnit v **Nastavení** – ozubené kolo (⚙), které je vidět pořád (v telefonu vpravo nahoře, na televizi dole v levém sloupci). Nastavení má záložky Obecné, Čtení a překlad a Experimentální (v ní i Ladění a hlášení); co která volba dělá, je v Instalaci v kapitole „Volby v Nastavení“.
-Tam je i povolení, jazyk aplikace, a v části Experimentální zkušební verze, DeepL a hlášení chyby. Hra (profil hry) je v Titulkách. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:
+Tam je i povolení, jazyk aplikace, a v části Experimentální zkušební verze a hlášení chyby. Hra (profil hry) a DeepL
+(Kvalita překladu) jsou v Titulkách. V menu jsou dál stránky Domů, Konzole (párování, nadpis podle konzole:
 PlayStation nebo Xbox), Titulky a Instalace.
 
 Stránka **Domů** ukazuje jen to podstatné: stav překladu, tlačítka Spustit / Zastavit a pod stavem přehled
@@ -76,45 +69,58 @@ jinou televizi.
 
 **Důležité: aplikace se připojuje DRUHÝM účtem PlayStation, ne tím, na kterém hraješ.**
 Kdyby se připojila tvým herním účtem, konzole by ti při hraní vypínala ovladač a zhasínala obraz
-(bere to tak, že ses přesunul hrát jinam).
+(bere to tak, že ses přesunul hrát jinam). Po spárování se na ovladači přepneš zpět na herní účet
+a hraješ jako vždy, se svými hrami. Druhý účet se jen „dívá“.
 
-Druhý účet a zapnuté Remote Play pod ním máš připravené z bodu 3. V aplikaci se pak přihlásíš
-tím druhým účtem a číslo pro propojení zobrazíš na konzoli také pod ním. Hned po spárování se na
-ovladači přepni na účet, na kterém hraješ, a hraj jako vždy, se svými hrami. Druhý účet se jen
-„dívá“ – nic na něm nekupuješ ani nehraješ.
+**PS5 spáruje jen tehdy, když osmimístné číslo vyvolá na PS5 stejný uživatel, jakým se PlayLingo
+přihlásilo.** Proto aplikace účet nikdy nebere potichu a jeho jméno (Online ID) ukazuje až do konce.
 
-Aplikace tě provede šesti kroky, na každé obrazovce je jedna věc. Televize a PS5 musí být
-ve stejné domácí síti. Připrav si telefon – bude potřeba jen teď, k hraní už ne.
+Aplikace tě provede šesti kroky, na každé obrazovce je jedna věc. V průvodci je nahoře „Krok 7 z 8“
+a pod ním malý podtitul „Spárování · 3 z 6“, na stránce Konzole pruh s dílky.
 
-1. **Zkontroluj na PlayStationu Remote Play** (pod druhým uživatelem): Nastavení → Systém →
-   Remote Play → „Povolit Remote Play“ musí být zapnuté.
+1. **Zapni PlayStation.** Stejná domácí síť jako zařízení s PlayLingem (nejlépe obojí kabelem).
+   Na PS5 zatím nic nenastavuj.
 2. **Najdi PlayStation.** Aplikace ho v síti najde sama. Když ne, zadej adresu ručně
    (PS5 → Nastavení → Síť → Stav připojení → Adresa IPv4).
-3. **Naskenuj čtvereček telefonem.** Otevři v telefonu fotoaparát, namiř ho na čtvereček
-   v televizi a klepni na odkaz. Otevře se stránka PlayLingo z tvé televize – telefon proto
-   musí být na stejné Wi-Fi jako televize.
-   **Bez telefonu:** pod čtverečkem je adresa stránky (např. `http://192.168.1.20:8765/p/k7mq2xra`).
-   Opiš ji do prohlížeče v počítači ve stejné síti a další krok udělej tam – adresu stránky
-   „redirect“ zkopíruješ z řádku s adresou v prohlížeči (Ctrl+C) a vložíš na kartu PlayLingo.
-4. **V telefonu se přihlas.** Na stránce klepni na „Přihlásit se u PlayStation“ a zadej e-mail
-   a heslo druhého účtu. Když se stránka zeptá na „passkey“, zvol „Remind Me Later“. Nakonec
-   zůstane skoro prázdná stránka s jediným slovem „redirect“. Zkopíruj její adresu (klepni
-   nahoře na adresu a zvol Kopírovat), vrať se na stránku PlayLingo a adresu tam vlož.
-   Televize pak pokračuje sama, nic se neopisuje.
-5. **Záloha: opiš kód ručně.** Tenhle krok televize sama přeskočí. Potřebuješ ho, jen když
-   se stránka z čtverečku v telefonu neotevře (v kroku 3 pak zvol „Stránka se neotevřela“).
-   Krok má vlastní čtvereček, který vede rovnou na přihlášení Sony: naskenuj ho, přihlas se,
-   na prázdné stránce „redirect“ klepni nahoře na adresu, najdi v ní „code=“ a opiš do
-   televize to, co je hned za ním, až po znak & (i s tečkou a velkými písmeny). Zvol
-   „Ověřit kód“. Kód platí jen pár minut.
-6. **Opiš číslo z PlayStationu.** Na PS5: Nastavení → Systém → Remote Play → Propojit
-   zařízení. Osmimístné číslo opiš do televize a zvol Spárovat.
+3. **Účet pro PlayLingo.** Druhý účet PlayStation, na kterém nehraješ. Nemáš ho? Založ ho zdarma –
+   návod je pod tlačítky (čtvereček, v telefonu tlačítko; stránka [pomoc/ps5.md](pomoc/ps5.md)).
+   - Když už je účet uložený (i po „Zrušit spárování“), ukáže se **Použít účet JMÉNO** a **Přihlásit jiný účet**.
+   - Když jsou účty uložené v PlayLingu v telefonu, nabídnou se se jmény.
+4. **Přihlas se tím účtem** (telefon). Otevři v telefonu fotoaparát, namiř ho na čtvereček v televizi
+   a klepni na odkaz – otevře se stránka PlayLingo z tvé televize (telefon musí být na stejné Wi-Fi).
+   Klepni na „Přihlásit se u PlayStation“, zadej e-mail a heslo **druhého** účtu (na „passkey“ zvol
+   „Remind Me Later“). Zůstane skoro prázdná stránka „redirect“ – zkopíruj její adresu a vlož ji na
+   stránku PlayLingo. Televize pak pokračuje sama.
+   **Bez telefonu:** pod čtverečkem je adresa stránky (např. `http://192.168.1.20:8765/p/k7mq2xra`) –
+   otevři ji v prohlížeči počítače ve stejné síti.
+   **Záloha – opiš kód ručně:** když se stránka v telefonu neotevře, zvol „Stránka se neotevřela“.
+   Krok má vlastní čtvereček rovnou na přihlášení Sony; na stránce „redirect“ najdi v adrese „code=“
+   a opiš do televize to, co je za ním, až po znak & (i s tečkou a velkými písmeny). Kód platí pár minut.
+   Výsledek: **„✔ Ověřený účet: JMÉNO“** (s malým tlačítkem Přihlásit jiný účet).
+5. **Na PS5 přepni na uživatele JMÉNO** (tlačítko PS → ikona profilu → Přepnout uživatele) a v
+   **Nastavení → Systém → Remote Play** zapni **Povolit Remote Play** a **Skrýt stav připojení Remote Play**
+   (anglicky Hide Remote Play Connection Status – jinak ve hře svítí „Aplikace Remote Play je připojena“;
+   nastav ho i pod svým herním uživatelem). Když tam volba není, aktualizuj systém PS5.
+6. **Kód z PS5.** Pod uživatelem JMÉNO zvol Nastavení → Systém → Remote Play → **Propojit zařízení**.
+   Osmimístné číslo opiš do PlayLinga (v telefonu ho přečte kamerou) a zvol Spárovat. Po úspěchu:
+   „Spárováno (účet JMÉNO). Na ovladači se přepni zpět na herní účet.“
+
+**Chyba CE‑110032‑7 na PS5 / „Spárování se nepovedlo“ v aplikaci:** číslo nejspíš vyvolal jiný
+uživatel než JMÉNO. Aplikace to napíše a nabídne **Zkusit znovu** a **Přihlásit jiný účet**: buď se na PS5
+přepni na JMÉNO a vyvolej nové číslo, nebo se přihlas tím účtem, pod kterým číslo vyvoláváš (musí to být
+druhý účet, ne herní).
+
+**Probouzení z klidového režimu** je volba v ⚙ Nastavení → Obecné („Probouzet PlayStation“, výchozí
+vypnutá). Na PS5 k tomu: Nastavení → Systém → Úspora energie → Funkce dostupné v klidovém režimu →
+„Zůstat připojen k internetu“ a „Povolit zapnutí systému PS5 ze sítě“.
 
 **PlayLingo i v telefonu (jen Android, nepovinné).** Stejnou aplikaci můžeš nainstalovat i do
 telefonu – tam nepřekládá, jen pomáhá s přihlášením. Na stránce z čtverečku zvol „Otevřít
 v aplikaci PlayLingo“, přihlas se druhým účtem přímo v aplikaci a ta pošle účet do televize sama,
-bez kopírování. Účet si zapamatuje (jen jeho číslo, heslo ne), takže při příštím párování nebo
-na další televizi stačí naskenovat čtvereček a klepnout na „Odeslat do televize“.
+bez kopírování. Účet si zapamatuje (jen číslo a jméno, heslo ne), takže při příštím párování nebo
+na další televizi stačí naskenovat čtvereček a klepnout na „Odeslat do televize“. Přihlášení u Sony
+v pomocníkovi začíná vždy načisto (e-mail a heslo se píší pokaždé), ať omylem nepoužiješ herní účet.
+Když telefon sám čte pro televizi LG / Samsung, uložené účty nabídne krok 3 „Účet pro PlayLingo“ se jmény.
 
 ## 5. Hraní
 1. Na stránce Domů zvol „Spustit překlad“ a počkej na „Překlad běží“ (objeví se i malý náhled
@@ -241,51 +247,50 @@ Podrobnosti a důvody jsou v `tizen/CTI-ME.md`.
 
 ## 9. Lepší překlad: DeepL (doporučeno)
 Offline překlad je zdarma a bez internetu, ale hodně doslovný. **DeepL** překládá přirozeně, rozumí
-slangu i nadávkám a pro hráče je zdarma – stačí vlastní bezplatný účet DeepL. Nastavíš ho v průvodci
-(krok **Kvalita překladu**) nebo kdykoli v ⚙ Nastavení → Čtení a překlad → **Lepší překlad přes
-DeepL – nastavit** (je to tamtéž jako ⚙ Nastavení → Experimentální).
+slangu i nadávkám a pro hráče je zdarma – stačí vlastní bezplatný účet DeepL API. Nastavíš ho v průvodci
+(krok **Lepší překlad (DeepL)**) nebo kdykoli v **Titulky → Kvalita překladu** (rozbalovací skupina hned
+pod jazykem překladu; vede tam i řádek s jazykem na Domů). Tamtéž je zapnutí a vypnutí, ověření klíče,
+kolik znaků zbývá a odebrání klíče.
 
-Jak to funguje: offline překlad se ukáže hned jako vždy a DeepL ho během chvilky (do 1,5 s) potichu
-nahradí lepším – i v televizi LG / Samsung. Když DeepL nejde (bez internetu, vyčerpaný limit znaků,
-špatný klíč), překládá se dál offline a důvod je vidět v Nastavení.
+Jak to funguje: PlayLingo počká na DeepL (nejvýš 2,5 s) a ukáže jeho překlad – i v televizi LG / Samsung.
+Když DeepL nejde (bez internetu, vyčerpaný limit, špatný klíč), ukáže se offline překlad a důvod je vidět
+v Titulkách → Kvalita překladu.
 
 ### Nastavení klíče – nic se nepíše ovladačem
 Klíč je dlouhý (asi 40 znaků), proto ho do televize **nepíšeš** – zkopíruješ a vložíš ho jen v telefonu.
+Televize ukáže **tři čtverečky vedle sebe**; naskenuj je telefonem (Android i iPhone) postupně:
 
-1. **Televize ukáže čtvereček.** Naskenuj ho telefonem (Android i iPhone), který je na **stejné
-   Wi‑Fi** jako televize. Otevře se malá stránka „PlayLingo · DeepL“.
-2. **Nemáš účet DeepL pro API?** Na té stránce zvol **Otevřít DeepL** (otevře se na nové kartě
-   rovnou registrace):
-   - zaregistruj se v plánu **Developer** (zdarma) e-mailem a heslem (platební kartu DeepL nechce),
-   - potvrď e-mail odkazem, který ti DeepL pošle.
+1. **Účet DeepL API zdarma** (jen poprvé) – čtvereček vede rovnou na registraci s plánem **Developer**:
+   zadej e-mail a heslo, nech „Developer“ („Test out the API for free“) a zvol **Continue**. Plán je zdarma:
+   **1 000 000 znaků celkem**, každý měsíc se neobnovuje. Kdyby DeepL chtěl platební kartu, plán Developer
+   stejně nic nestojí (20. 11. 2026 kartu nechtěl). Pak **potvrď e-mail** odkazem, který ti DeepL pošle.
+   - Registraci otevři v prohlížeči, kde **nejsi přihlášený do DeepL** – nejjednodušší je soukromá karta
+     (iPhone: Safari → Panely → Soukromé; Android: Chrome → ⋮ → Nová anonymní karta). Jinak tě DeepL
+     přesměruje do Translatoru.
+   - **Máš DeepL jen na překládání (Translator)?** Ten účet klíč API nemá a přidat ho do něj nejde –
+     zaregistruj se **jiným e-mailem**.
+2. **Stránka s klíčem** – https://www.deepl.com/your-account/keys (záložka **API Keys & Limits**). Celý klíč
+   se tam nezobrazuje: zkopíruj ho **ikonou kopírování** vedle klíče. Když tam klíč není, zvol **Create key**.
+3. **Vlož klíč** – třetí čtvereček otevře malou stránku „PlayLingo · DeepL“ z televize (telefon musí být
+   na **stejné Wi‑Fi**). **Podrž prst v políčku → Vložit** a zvol **Odeslat do TV**. Televize mezitím
+   ukazuje „Čekám na klíč z telefonu…“.
+4. Televize klíč ověří, uloží a DeepL zapne: „✔ DeepL je nastavený“.
 
-   Registraci otevři v prohlížeči, kde **nejsi přihlášený do DeepL** – nejjednodušší je soukromá
-   karta (iPhone: Safari → Panely → Soukromé; Android: Chrome → ⋮ → Nová anonymní karta).
-   Jinak tě DeepL přesměruje do Translatoru.
-3. **Zkopíruj klíč.** Po přihlášení je klíč na úvodní stránce účtu (tlačítko **Copy key**). Jinak na
-   stránce PlayLingo zvol **Otevřít stránku s klíčem** (nebo otevři
-   https://www.deepl.com/your-account/keys), případně klíč vytvoř tlačítkem **Create key**, a klepni
-   na tlačítko pro **kopírování**. Klíč končí na `:fx`.
-4. **Vlož klíč.** Vrať se na kartu „PlayLingo · DeepL“, **podrž prst v políčku → Vložit** a zvol
-   **Odeslat do televize**.
-5. Televize klíč ověří, uloží a DeepL sama zapne. Hotovo – víc už nic nastavovat nemusíš.
-
-Když telefon stránku neotevře (je na mobilních datech nebo na jiné Wi‑Fi), připoj ho ke stejné Wi‑Fi
-a čtvereček naskenuj znovu. Ruční psaní klíče ovladačem je jen záloha: pod čtverečkem zvol **Zavřít**
-a objeví se políčko. Přímo v telefonu s PlayLingem klíč jen vložíš do políčka.
+Stránka „PlayLingo · DeepL“ má stejné tři kroky s tlačítky, takže stačí i jen třetí čtvereček.
+Když telefon stránku neotevře (mobilní data, jiná Wi‑Fi), připoj ho ke stejné Wi‑Fi a naskenuj znovu.
+Ruční psaní ovladačem je jen záloha: **Napsat klíč ručně**. **Telefon jako čtečka** čtverečky nemá – má
+tlačítka **Otevřít DeepL**, **Otevřít stránku s klíčem** a políčko, kam klíč vložíš.
 
 ### Dobré vědět
-- **Mám DeepL na překládání, ale klíč nevidím / přesměruje mě to do Translatoru:** účet jen pro
-  DeepL Translator klíč API nemá a přidat ho do něj nejde. Založ si **nový účet pro API s jiným
-  e-mailem** (postup výše, v soukromé kartě).
-- **Registrace visí na „Security check“:** vypni VPN nebo blokování reklam (na iPhonu i Soukromý
-  přenos iCloud), případně zkus jiný prohlížeč nebo mobilní data.
-- **Limit:** bezplatný plán Developer má limit znaků zdarma (aplikace ho po ověření ukáže, i kolik
-  zbývá); stačí na desítky hodin hraní. Opakované věty se znovu neposílají.
-- **Placený DeepL Pro** funguje taky – aplikace pozná druh klíče sama.
+- **Mám DeepL, ale klíč nevidím / „Create key“ mě přesměruje do Translatoru:** účet jen pro DeepL
+  Translator klíč API nemá. Založ si **nový účet pro API s jiným e-mailem** (krok 1, v soukromé kartě).
+- **Registrace visí na „Security check“:** vypni VPN nebo blokování reklam (na iPhonu i Soukromý přenos
+  iCloud), případně zkus jiný prohlížeč nebo mobilní data.
+- **Limit:** plán Developer má 1 000 000 znaků celkem (aplikace po ověření ukáže, kolik zbývá).
+  Opakované věty se znovu neposílají. Placený klíč (API Pro / Growth) funguje taky – aplikace pozná druh klíče sama.
 - **Soukromí:** se zapnutým DeepL se **rozpoznaný text titulků posílá přes internet do DeepL**. Klíč je
   jen tvůj, zůstává zašifrovaný v zařízení s PlayLingem a nikam jinam se neposílá (ani do hlášení).
-- Klíč jde kdykoli odebrat tlačítkem **Odebrat klíč** a DeepL vypnout v Nastavení.
+- Klíč jde kdykoli odebrat tlačítkem **Odebrat klíč** a DeepL vypnout v Titulkách → Kvalita překladu.
 
 ## Licence a zdrojový kód
 Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng

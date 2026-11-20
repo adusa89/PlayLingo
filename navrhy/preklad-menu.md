@@ -45,6 +45,31 @@ obrazovce menu, přeložit ho a ukázat překlad tak, aby hráč dál ovládal o
 5. **Tooltip předmětu** (Diablo IV): souvislý blok textu u vybraného předmětu → překlad do boxu.
 6. Volba v Nastavení (krátký název, výchozí vypnuto), popis do Nápovědy, texty ve všech 10 jazycích.
 
+## Aktuální úkol hry (přání majitele 20. 11. 2026)
+
+U Diabla IV je vpravo pod mapou aktuální úkol – název a co dělat (snímek ze hry: „Hatred's Wake“ ·
+„Speak with Lorath aboard the ship“). Statický text, dnes se nečte (čte se jen pás s titulky a stojící text
+se schová jako nápis), ale hráč bez něj neví, kam jít. Návrh:
+
+- V profilu hry pevná oblast úkolu (Diablo IV: vpravo pod mapou, zhruba x 0,79–1,0, y 0,26–0,38 – upřesnit
+  ze snímků `zaznamy\hra-20261120-154048`), mimo oblast titulků.
+- Číst jen při změně otisku té oblasti (úkol se mění zřídka → čtení nic nestojí), přeložit s pamětí,
+  jména a místa (Lorath, Backwater) nechat podle profilu.
+- Ukázat trvale a nenápadně, odděleně od pruhu s replikami: malé písmo pod originálem úkolu, nebo v rohu
+  se stavem v TV LG (`stavKresli` v `app.js`) / na Android TV. Repliky a úkol se nemíchají.
+- Volba v Nastavení (krátký název, např. „Překlad úkolu“), výchozí podle profilu hry.
+- Pořadí: první kus téhle session (malý a hned užitečný), před boxem s menu a tooltipy.
+
+## Zásada pro všechny „texty hry“ (majitel 20. 11. 2026, platí i pro GTA VI)
+
+- Univerzální chování (jen pás s titulky) zůstává pro všechny hry; profil hry ho jen vylepšuje.
+- I s vybranou hrou volba **„Rozsah čtení“: Jen titulky / Titulky a texty hry**. „Jen titulky“ = z profilu jen jména,
+  rod, pojmy a přeskakování; žádné další oblasti obrazovky. „Titulky a texty hry“ = navíc oblasti z profilu
+  (Diablo IV: úkol, menu, tooltipy; GTA VI: prompty pro hráče pod titulky, např. „Take your shot“).
+- Oblasti a jejich vzhled patří do `GameProfile` (nové pole), ne natvrdo do kódu čtečky. Jedna volba v Nastavení
+  pro všechny hry (krátký název), popis do Nápovědy.
+- Texty hry se nemíchají s replikami v pruhu. GTA prompty odděluje hlavní session (0.97.24+), menu/úkol tahle.
+
 ## Rizika
 
 - Čas čtení celé obrazovky na slabší TV (měřit `READ|ocr=…`); menu je statické, takže stačí číst při změně.

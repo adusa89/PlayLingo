@@ -56,7 +56,7 @@ import kotlin.concurrent.thread
  */
 
 /** Barvy aplikace – stejné jako `Theme` v aplikaci pro Android. */
-private object B {
+internal object B {
     val BG = Color(0x0E, 0x10, 0x14)
     val SIDEBAR = Color(0x14, 0x17, 0x1D)
     val CARD = Color(0x1B, 0x1F, 0x27)
@@ -71,27 +71,27 @@ private object B {
     val WARN = Color(0xF5, 0x9E, 0x0B)
 }
 
-private fun pismo(size: Int, tucne: Boolean = false) = Font("Segoe UI", if (tucne) Font.BOLD else Font.PLAIN, size)
+internal fun pismo(size: Int, tucne: Boolean = false) = Font("Segoe UI", if (tucne) Font.BOLD else Font.PLAIN, size)
 
-private fun Graphics.hladce(): Graphics2D = (this as Graphics2D).apply {
+internal fun Graphics.hladce(): Graphics2D = (this as Graphics2D).apply {
     setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
     setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 }
 
-private fun popisek(text: String, size: Int = 16, barva: Color = B.TEXT, tucne: Boolean = false) =
+internal fun popisek(text: String, size: Int = 16, barva: Color = B.TEXT, tucne: Boolean = false) =
     JLabel(text).apply { font = pismo(size, tucne); foreground = barva }
 
 /** Svislý sloupec bez pozadí. */
-private fun sloupec(vararg deti: Component) = JPanel().apply {
+internal fun sloupec(vararg deti: Component) = JPanel().apply {
     isOpaque = false
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
     deti.forEach { add(it) }
 }
 
-private fun JComponent.vlevo() = apply { alignmentX = Component.LEFT_ALIGNMENT }
+internal fun JComponent.vlevo() = apply { alignmentX = Component.LEFT_ALIGNMENT }
 
 /** Karta se zaoblenými rohy jako `ui.card()` na Androidu. */
-private class Karta : JPanel() {
+internal class Karta : JPanel() {
     init {
         isOpaque = false
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -109,7 +109,7 @@ private class Karta : JPanel() {
 }
 
 /** Tlačítko – hlavní (žluté) nebo obyčejné; vybrané ovladačem/klávesnicí má zlatý rámeček. */
-private class Tlacitko(text: String, private val hlavni: Boolean = false, akce: () -> Unit) : JButton(text) {
+internal class Tlacitko(text: String, private val hlavni: Boolean = false, akce: () -> Unit) : JButton(text) {
     init {
         isContentAreaFilled = false
         isFocusPainted = false
@@ -146,7 +146,7 @@ private class Tlacitko(text: String, private val hlavni: Boolean = false, akce: 
 }
 
 /** Řádek nastavení: název vlevo, hodnota a „›“ vpravo; klik / Enter = [akce]. */
-private class Radek(nazev: String, private val hodnota: () -> String, private val akce: (Radek) -> Unit) : JPanel(BorderLayout()) {
+internal class Radek(nazev: String, private val hodnota: () -> String, private val akce: (Radek) -> Unit) : JPanel(BorderLayout()) {
     private val vpravo = popisek("", 16, B.ACCENT)
     private var nad = false
 
@@ -193,7 +193,7 @@ private class Radek(nazev: String, private val hodnota: () -> String, private va
 }
 
 /** Stavový řádek: tečka + „Popis · hodnota“ + případně tlačítko pod tím. */
-private class StavRadek : JPanel() {
+internal class StavRadek : JPanel() {
     private val tecka = object : JComponent() {
         var barva = B.MUTED
         init { preferredSize = Dimension(14, 14); maximumSize = preferredSize }
@@ -240,7 +240,7 @@ private class StavRadek : JPanel() {
 }
 
 /** Nabídka možností pod řádkem (jako výběr na Androidu). */
-private fun vyber(kde: Component, moznosti: List<String>, aktualni: Int, vybrano: (Int) -> Unit) {
+internal fun vyber(kde: Component, moznosti: List<String>, aktualni: Int, vybrano: (Int) -> Unit) {
     val menu = JPopupMenu().apply {
         background = B.CARD2
         border = BorderFactory.createLineBorder(B.ACCENT, 2)
@@ -329,6 +329,8 @@ private class Aplikace {
         if (System.getProperty("playlingo.autostart") == "1" && Nastroje.pripraveno(nast.jazyk)) spustit()
         okno.isVisible = true
         hlavniTlacitko.requestFocusInWindow()
+        // jen pro snímky při ladění: -Dplaylingo.parovani=1 otevře průvodce spárováním
+        if (System.getProperty("playlingo.parovani") == "1") sparovat()
     }
 
     private fun svislePosuvne(c: JComponent) = JScrollPane(c).apply {
@@ -580,12 +582,16 @@ private class Aplikace {
         }
     }
 
-    /** Spárování s PS5 se dělá v samotném chiaki-ng (jednou); po jeho zavření se konzole načte. */
+    /** Spárování s PS5 v průvodci PlayLinga ([Parovani]); výsledek si chiaki-ng vezme z registru. */
+    private var parovani: Parovani? = null
+
     private fun sparovat() {
-        val exe = Chiaki.exe() ?: return stahnoutChiaki()
-        val p = runCatching { Chiaki.otevri(exe) }.getOrElse { zapis("chiaki-ng se nespustil: ${it.message}"); return }
-        zapis("chiaki-ng otevřen ke spárování.")
-        thread(isDaemon = true) { p.waitFor(); hledatPs5() }
+        if (parovani != null) return
+        parovani = Parovani(okno, nast, ::zapis, zavreno = { parovani = null }) { jmeno ->
+            nast.konzole = jmeno
+            ps5 = null
+            hledatPs5()
+        }
     }
 
     private fun selhalo(proc: String) {
@@ -788,7 +794,7 @@ private class Aplikace {
                 if (jmena.isEmpty()) sparovat()
                 else vyber(r, jmena, jmena.indexOf(vybranaKonzole()?.jmeno)) { nast.konzole = jmena[it]; ps5 = null; hledatPs5(); r.obnov() }
             }.also { radky += it })
-            add(Radek("Spárovat v chiaki-ng", { "" }) { sparovat() }.also { radky += it })
+            add(Radek("Spárovat PS5", { "" }) { sparovat() }.also { radky += it })
             add(Radek("chiaki-ng", { if (stahovani != null) "stahování" else if (Chiaki.exe() != null) "připraveno" else "chybí" }) {
                 if (Chiaki.exe() == null) stahnoutChiaki() else Chiaki.exe()?.parentFile?.let { runCatching { java.awt.Desktop.getDesktop().open(it) } }
             }.also { radky += it })

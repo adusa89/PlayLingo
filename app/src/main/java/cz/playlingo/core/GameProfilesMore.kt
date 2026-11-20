@@ -344,6 +344,8 @@ internal object Diablo4 {
     )
     val HUD = listOf("Stronghold Reclaimed", "Level Up", "Quest Completed", "Dungeon Completed", "Waypoint Discovered",
         "You Died", "Respawn at Checkpoint")
+    /** Chat (záznam majitele 20. 11. 2026: „[Trade] TITUS: wtb Greater Lair Key“, OCR i „Trade)“) – nepřekládá se. */
+    val SKIP = listOf(Regex("^\\W{0,2}(trade|general|party|clan|whisper|local|group|lfg|warband)\\s*[\\])}|:]", RegexOption.IGNORE_CASE))
     val MENU = listOf("Inventory", "Skill Tree", "Paragon", "Codex of Power", "Collections", "Journal", "Quests",
         "Achievements", "Battle Pass", "Wardrobe", "Options", "Gameplay", "Graphics", "Accessibility", "Controls",
         "Leave Game", "Exit Game", "Change Character", "Create New", "Online Play", "Campaign Mode", "Seasonal Realm",

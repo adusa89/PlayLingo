@@ -100,6 +100,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
             segments.joinToString(",", "[", "]") { s ->
                 when {
                     s.choice -> "{\"volba\":true,\"text\":${json(s.body)}}"
+                    s.prompt -> "{\"pokyn\":true,\"text\":${json(s.body)}}"
                     s.speaker != null -> "{\"jmeno\":${json(s.speaker)}" +
                         (colors[s.speaker]?.let { ",\"barva\":\"${SpeakerColors.hex(it)}\"" } ?: "") +
                         ",\"text\":${json(s.body)}}"

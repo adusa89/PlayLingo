@@ -233,14 +233,13 @@ class PhoneHelperActivity : Activity() {
     }
 
     /**
-     * Telefon bude číst a překládat pro televizi LG: otevře se celá aplikace se zapnutým posíláním
-     * titulků. Účet, který je tu už ověřený, si vezme rovnou – párování pak přeskočí přihlášení.
+     * Telefon bude číst a překládat pro televizi LG nebo Samsung (typ televize se nastaví na Domů).
+     * Účet se tu potichu nebere (od 0.97.28): účty uložené v telefonu nabídne krok „Účet pro PlayLingo“
+     * při spárování se jménem a hráč ho vědomě zvolí – jinak PS5 hlásila CE-110032-7 (jiný uživatel).
      */
-    /** Telefon bude číst a překládat pro televizi LG nebo Samsung (typ televize se nastaví na Domů). */
     private fun useForTv(type: TvType) {
         Prefs.setForceTv(this, true)
         Prefs.setTvType(this, type)
-        if (Ps5.parseAccountId(Prefs.psnId(this)) == null) Prefs.phoneAccounts(this).firstOrNull()?.let { Prefs.setPsnId(this, it.id) }
         log(if (type == TvType.LG) "lg mode" else "samsung mode")
         startActivity(Intent(this, MainActivity::class.java))
         finish()
@@ -260,8 +259,9 @@ class PhoneHelperActivity : Activity() {
         w.settings.domStorageEnabled = true
         // stránka Sony se má chovat stejně jako v běžném prohlížeči telefonu
         w.settings.userAgentString = w.settings.userAgentString.replace("; wv", "").replace(Regex("Version/\\d+\\.\\d+ "), "")
-        CookieManager.getInstance().setAcceptCookie(true)
-        CookieManager.getInstance().setAcceptThirdPartyCookies(w, true)
+        val cookies = CookieManager.getInstance()
+        cookies.setAcceptCookie(true)
+        cookies.setAcceptThirdPartyCookies(w, true)
         w.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean = caught(request.url.toString())
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) { caught(url) }
@@ -278,7 +278,17 @@ class PhoneHelperActivity : Activity() {
         web = w
         setContentView(box)
         log("login open")
-        w.loadUrl(PsnAuth.LOGIN_URL)
+        // předchozí přihlášení u Sony zapomenout (od 0.97.28): hráč vždy píše e-mail a heslo a vědomě volí
+        // účet – jinak Sony potichu vzala naposledy přihlášený (často herní) účet a PS5 pak hlásila CE-110032-7.
+        // Mažou se jen data přihlašovacího okna PlayLinga (WebView), ne prohlížeče telefonu.
+        try { android.webkit.WebStorage.getInstance().deleteAllData() } catch (_: Throwable) {}
+        try {
+            cookies.removeAllCookies { removed ->
+                log("cookies cleared=$removed")
+                cookies.flush()
+                if (web === w) w.loadUrl(PsnAuth.LOGIN_URL)
+            }
+        } catch (e: Throwable) { log("cookies " + e.javaClass.simpleName); w.loadUrl(PsnAuth.LOGIN_URL) }
     }
 
     private fun closeLogin() {

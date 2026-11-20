@@ -239,6 +239,8 @@ class TranslatorService : Service() {
     @Volatile private var glossary: Glossary? = null
     /** Hlášky a menu podle profilu hry (přeskočí se při čtení). */
     @Volatile private var screen: cz.playlingo.core.GameScreen = cz.playlingo.core.GameScreen.EMPTY
+    /** Profil hry píše pod repliky pokyny pro hráče (GTA) – poslední krátký řádek se označí jako pokyn. */
+    @Volatile private var prompts = false
     /** Odhad hry podle jmen v titulcích – jen nabídka v Nastavení, nic se nepřepíná. */
     private val gameGuess = cz.playlingo.core.GameGuess()
 
@@ -376,7 +378,22 @@ class TranslatorService : Service() {
     private val tvStatusHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private fun startTvStatus() {
         tvStatusHandler.removeCallbacks(tvStatusTick)
+        tvStatusHandler.removeCallbacks(panelTick)
         if (tv != null) tvStatusHandler.post(tvStatusTick)
+        // Android TV: stejný stav v bodech přes hru vlevo nahoře (StatusPanel), jako má TV LG
+        else if (Prefs.tvType(this) == cz.playlingo.core.TvType.ANDROID) tvStatusHandler.post(panelTick)
+    }
+
+    /** Stav přes hru na Android TV každé 2 s (ukáže se jen při změně; jen když aplikace není vidět). */
+    private val panelTick = object : Runnable {
+        override fun run() {
+            if (!running) return
+            try {
+                if (demo || UiState.visible) StatusPanel.hide()
+                else StatusPanel.update(this@TranslatorService, TvStatus.rows(this@TranslatorService))
+            } catch (_: Throwable) {}
+            tvStatusHandler.postDelayed(this, 2000)
+        }
     }
 
     private fun reloadSettings() {
@@ -393,6 +410,9 @@ class TranslatorService : Service() {
         if (autoFind) layout = layout.copy(read = autoZone.current)
         glossary = Prefs.glossary(this)
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
+        prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
+        coloredSpeaker = Prefs.coloredSpeaker(this)
+        cz.playlingo.core.NameColor.profile = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey
         // změna hry nebo slovníku → dřívější překlady už neplatí
         val sig = Prefs.glossarySignature(this)
         if (sig != Prefs.savedGlossarySignature(this)) {
@@ -427,6 +447,8 @@ class TranslatorService : Service() {
             debug, Prefs.coloredSpeaker(this),
             Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this),
             barPad = Prefs.barPad(this),
+            showPrompts = Prefs.gameTexts(this),
+            speakerPreset = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey,
             onText = sender?.let { s -> { text: String?, parts: String?, look: String? -> if (text == null) s.hide() else s.show(text, parts, look) } }
         )
         resetReading()
@@ -437,6 +459,40 @@ class TranslatorService : Service() {
     }
 
     /** Změna vzhledu z ovladače televize ([TvSettings]): stejné hodnoty jako v Titulkách v telefonu. */
+    /** Barvy jmen: požádat čtečku obrazu o barvu jména, které ještě nemá naučenou (jednou za jméno a chvíli). */
+    @Volatile private var coloredSpeaker = true
+    private val colorAsked = HashMap<String, Long>()
+    private fun askNameColor(blocks: List<cz.playlingo.core.OcrBlock>, text: String, x0: Int, y0: Int) {
+        val r = reader ?: return
+        val now = SystemClock.uptimeMillis()
+        for (line in blocks.flatMap { it.lines }) {
+            val seg = TextLogic.splitSpeaker(line.text)
+            val name = seg.speaker ?: continue
+            if (!text.contains(name)) continue
+            val key = cz.playlingo.core.SpeakerColors.key(name)
+            // naučená → už se nečte (i postavy z profilu se ověří – hra mohla po aktualizaci barvy změnit);
+            // jinak nejvýš jednou za 3 s pro to jméno
+            if (cz.playlingo.core.NameColor.learned(name) != null || now - (colorAsked[key] ?: 0L) < 3000) continue
+            colorAsked[key] = now
+            val frac = (name.length + 1).toFloat() / maxOf(1, line.text.length)
+            val nameRight = line.left + ((line.right - line.left) * frac).toInt()
+            r.requestColor(StreamReader.ColorRequest(TextLogic.normalizeName(name),
+                (x0 + line.left).toFloat() / capW, (y0 + line.top).toFloat() / capH,
+                (x0 + nameRight).toFloat() / capW, (y0 + line.bottom).toFloat() / capH))
+            return
+        }
+    }
+
+    /** Výsledek čtení barvy: zapsat (měření, naučené barvy) a dát pruhu, když se barva shoduje aspoň 2×. */
+    private fun takeNameColor() {
+        val r = reader ?: return
+        val (name, rgb, us) = r.colorResult ?: return
+        r.colorResult = null
+        cz.playlingo.core.NameColor.record(name, rgb, us)
+        tp("COLOR|$name|${rgb?.let { cz.playlingo.core.SpeakerColors.hex(it) } ?: "-"}|us=$us")
+        cz.playlingo.core.NameColor.learned(name)?.let { c -> overlay?.learnColor(name, c) }
+    }
+
     /** Ukázková věta v pruhu (rychlá nabídka vzhledu), jen když není vidět skutečný titulek. */
     private var sampleShown = false
     private fun quickSample() {
@@ -724,6 +780,8 @@ class TranslatorService : Service() {
             screen = screen,
         )
         if (picked.text.isNotEmpty()) lastOcrText = picked.text
+        takeNameColor()
+        if (coloredSpeaker && picked.text.isNotEmpty()) askNameColor(blocks, picked.text, x0, y0)
         // záznam pro ladění profilů her: co bylo v oblasti čtení a co se z toho vzalo
         cz.playlingo.core.ScreenReads.add(result.text, when {
             foreignScreen -> "jiný jazyk"
@@ -791,6 +849,7 @@ class TranslatorService : Service() {
                     }
                 } else synchronized(showLock) {
                     sampleShown = false   // skutečný titulek nahradil ukázku rychlé nabídky
+                    StatusPanel.onSubtitle()
                     ov.show(segs, original, top, bottom, left, right, lineHeight = lineH)
                     ++showSeq
                 }
@@ -846,12 +905,13 @@ class TranslatorService : Service() {
     private suspend fun translateSegments(text: String): List<Segment>? {
         val l = lang   // jazyk se může během překladu změnit – celý text se překládá do jednoho
         val out = ArrayList<Segment>()
-        for (s in TextLogic.segments(text)) {
+        val segs = TextLogic.segments(text).let { if (prompts) TextLogic.markPrompt(it) else it }
+        for (s in segs) {
             val body = TextLogic.normalizeCase(s.body)
             val raw = QuickWords.lookup(l.code, body) ?: translate(l, TextLogic.forTranslator(body)) ?: return null
             // rod postav (mluvčí, oslovený) – až po paměti překladů, ta je jen podle textu
             val tr = glossary?.genders(l, body, raw, s.speaker) ?: raw
-            out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice))
+            out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice, s.prompt))
         }
         return out
     }
@@ -999,6 +1059,8 @@ class TranslatorService : Service() {
 
     override fun onDestroy() {
         tvStatusHandler.removeCallbacks(tvStatusTick)
+        tvStatusHandler.removeCallbacks(panelTick)
+        StatusPanel.reset()
         if (self === this) self = null
         QuickLook.close()
         try { netCallback?.let { getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(it) } } catch (_: Throwable) {}

@@ -285,6 +285,7 @@ class LgInstallActivity : Activity() {
 
         val target = focused?.let { content.findViewWithTag<View>(it) }
             ?: content.findViewWithTag<View>(if (running) "lgcancel" else if (ip.isEmpty()) "lgip" else "lggo")
+        ui.restoringFocus()   // po překreslení bez „pulzu“ vybraného tlačítka
         target?.requestFocus()
     }
 
