@@ -144,7 +144,8 @@ class TranslatorService : Service() {
         private const val STALE_MS = 15_000L
 
         /** Události, které se ukládají i do souboru (viz [EventFile]). */
-        private val KEEP = listOf("START|", "LINK|", "VIDEO|", "PERF|", "SOURCE|", "STOP|", "SCALE|", "WARM|", "IMAGE|")
+        private val KEEP = listOf("START|", "LINK|", "VIDEO|", "PERF|", "SOURCE|", "STOP|", "SCALE|", "WARM|", "IMAGE|",
+            "NET|", "SCREEN|", "MEM|", "TVSET|")
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -234,7 +235,7 @@ class TranslatorService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         EventFile.init(this)
         when (intent?.action) {
-            ACTION_STOP -> { stopSelf(); return START_NOT_STICKY }
+            ACTION_STOP -> { tp("STOP|tlačítkem v notifikaci"); stopSelf(); return START_NOT_STICKY }
             ACTION_PAUSE -> {
                 if (running) {
                     paused = !paused
@@ -818,7 +819,49 @@ class TranslatorService : Service() {
         )
     }
 
+    // ---------------- záznam okolností (proč se spojení rozpadlo) ----------------
+    // Jen se zapisuje do záznamu událostí a hlášení – na čtení ani spojení to nemá vliv.
+
+    private var netCallback: android.net.ConnectivityManager.NetworkCallback? = null
+    private var screenReceiver: android.content.BroadcastReceiver? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        try {
+            val cm = getSystemService(android.net.ConnectivityManager::class.java)
+            val cb = object : android.net.ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(n: android.net.Network) { tp("NET|připojeno ${NetInfo.kind(this@TranslatorService)}") }
+                override fun onLost(n: android.net.Network) { tp("NET|síť ztracena") }
+            }
+            cm.registerDefaultNetworkCallback(cb)
+            netCallback = cb
+        } catch (_: Throwable) {}
+        try {
+            val r = object : android.content.BroadcastReceiver() {
+                override fun onReceive(c: Context, i: Intent) {
+                    tp("SCREEN|" + when (i.action) { Intent.ACTION_SCREEN_OFF -> "obrazovka zhasla (televize se uspává)"; Intent.ACTION_SCREEN_ON -> "obrazovka rozsvícena"; else -> i.action })
+                }
+            }
+            registerReceiver(r, android.content.IntentFilter().apply { addAction(Intent.ACTION_SCREEN_OFF); addAction(Intent.ACTION_SCREEN_ON) })
+            screenReceiver = r
+        } catch (_: Throwable) {}
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) tp("MEM|systému dochází paměť (úroveň $level)")
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        tp("MEM|systému došla paměť")
+    }
+
     override fun onDestroy() {
+        try { netCallback?.let { getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(it) } } catch (_: Throwable) {}
+        netCallback = null
+        try { screenReceiver?.let { unregisterReceiver(it) } } catch (_: Throwable) {}
+        screenReceiver = null
         if (running) tp("STOP|čtení=$ocrRuns|průměr=${if (ocrRuns > 0) ocrMsSum / ocrRuns else 0}ms|titulků=$shows")
         running = false
         paused = false

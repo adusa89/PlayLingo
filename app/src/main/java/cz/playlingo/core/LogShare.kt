@@ -14,7 +14,10 @@ import java.util.concurrent.Executors
  * vypnuto, samo se vypne po [DURATION_MS]). Zařízení pak na portu [PORT] vydá celé hlášení o stavu
  * (stejné jako obrazovka hlášení + záznam událostí, záznam z televize a pády), vždy přes [Redact]:
  *  - `GET /zaznam?k=KÓD` → text,
- *  - `GET /zaznam.json?k=KÓD` → totéž po oddílech v JSON.
+ *  - `GET /zaznam.json?k=KÓD` → totéž po oddílech v JSON,
+ *  - `GET /hlaseni?k=KÓD` → stránka pro telefon (čtvereček na obrazovce hlášení): odkaz ke stažení
+ *    a text k označení – hráč ho pak pošle autorovi chatem nebo e-mailem (bez serveru a klíčů),
+ *  - `GET /hlaseni.txt?k=KÓD` → text jako soubor ke stažení (i iPhone ho uloží a nasdílí).
  * Kód je krátký a náhodný, ukazuje se na obrazovce. Jen čtení, jen adresy domácí sítě.
  * Rozhodování je tady bez Androidu (testy `LogShareTest`); server je [LogServer].
  */
@@ -41,7 +44,7 @@ object LogShare {
         return d == 0
     }
 
-    enum class Route { TEXT, JSON, BAD_CODE, NOT_FOUND, BAD_METHOD, BAD_REQUEST }
+    enum class Route { TEXT, JSON, PAGE, DOWNLOAD, BAD_CODE, NOT_FOUND, BAD_METHOD, BAD_REQUEST }
 
     /** Co udělat s požadavkem (první řádek HTTP) při platném kódu [code]. */
     fun route(requestLine: String, code: String): Route {
@@ -53,6 +56,8 @@ object LogShare {
         val kind = when (path) {
             "/zaznam", "/zaznam.txt" -> Route.TEXT
             "/zaznam.json" -> Route.JSON
+            "/hlaseni" -> Route.PAGE
+            "/hlaseni.txt" -> Route.DOWNLOAD
             else -> return Route.NOT_FOUND
         }
         val k = query(target)["k"]
@@ -85,6 +90,34 @@ object LogShare {
     fun url(ip: String, port: Int, code: String, json: Boolean = false) =
         "http://$ip:$port/zaznam" + (if (json) ".json" else "") + "?k=$code"
 
+    /** Adresa stránky pro telefon (čtvereček na obrazovce hlášení). */
+    fun pageUrl(ip: String, port: Int, code: String) = "http://$ip:$port/hlaseni?k=$code"
+
+    /** Název souboru ke stažení: playlingo-hlaseni-2026-11-20-2130.txt. */
+    fun fileName(stamp: String) = "playlingo-hlaseni-" + stamp.filter { it.isDigit() || it == '-' }.take(20) + ".txt"
+
+    private fun html(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
+
+    /**
+     * Stránka pro telefon: velký odkaz ke stažení a celý text (dá se označit a zkopírovat).
+     * Schránku ani sdílení stránka z domácí sítě bez https použít nesmí, proto jen tohle.
+     */
+    fun page(text: String, code: String, file: String, lang: Lang): String {
+        val cz = lang == Lang.CS || lang == Lang.SK
+        val title = if (cz) "Hlášení PlayLinga" else "PlayLingo report"
+        val how = if (cz) "1. Stáhni soubor tlačítkem níž. 2. Pošli ho autorovi aplikace (Messenger, WhatsApp, e-mail – v iPhonu ze Souborů → Stažené, v Androidu ze Stažených). Hesla, klíče ani číslo účtu v něm nejsou."
+            else "1. Download the file with the button below. 2. Send it to the app author (Messenger, WhatsApp, e-mail – on iPhone from Files → Downloads, on Android from Downloads). It contains no passwords, keys or account numbers."
+        val btn = if (cz) "Stáhnout hlášení" else "Download the report"
+        return "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">" +
+            "<title>${html(title)}</title><style>body{font-family:sans-serif;background:#0E1014;color:#E9E6DF;margin:0;padding:16px}" +
+            "h1{color:#F2C14E;font-size:22px}a.b{display:block;text-align:center;background:#F2C14E;color:#0E1014;font-weight:bold;" +
+            "padding:16px;border-radius:10px;text-decoration:none;font-size:18px;margin:16px 0}" +
+            "pre{white-space:pre-wrap;word-break:break-word;font-size:11px;background:#1A1D23;padding:10px;border-radius:8px}</style></head><body>" +
+            "<h1>${html(title)}</h1><p>${html(how)}</p>" +
+            "<a class=\"b\" href=\"/hlaseni.txt?k=${html(code)}\" download=\"${html(file)}\">${html(btn)}</a>" +
+            "<pre>${html(text)}</pre></body></html>"
+    }
+
     /** Celý text z oddílů (název, obsah); prochází [Redact]. */
     fun text(parts: List<Pair<String, String>>, secrets: Collection<String> = emptyList()): String =
         Redact.clean(parts.joinToString("\n\n") { (t, s) -> "=== $t ===\n${s.trimEnd()}" } + "\n", secrets)
@@ -95,12 +128,14 @@ object LogShare {
             "{\"nazev\":${TvSender.json(t)},\"text\":${TvSender.json(Redact.clean(s, secrets))}}"
         }
 
-    /** Odpověď HTTP (text nebo JSON). */
-    fun response(status: Int, body: String, json: Boolean = false): ByteArray {
+    /** Odpověď HTTP (text, JSON, stránka nebo soubor ke stažení [download] = název souboru). */
+    fun response(status: Int, body: String, json: Boolean = false, htmlPage: Boolean = false, download: String? = null): ByteArray {
         val bytes = body.toByteArray(Charsets.UTF_8)
         val reason = when (status) { 200 -> "OK"; 400 -> "Bad Request"; 403 -> "Forbidden"; 404 -> "Not Found"; 405 -> "Method Not Allowed"; else -> "Error" }
+        val type = when { download != null -> "application/octet-stream"; json -> "application/json"; htmlPage -> "text/html"; else -> "text/plain" }
         val head = "HTTP/1.1 $status $reason\r\n" +
-            "Content-Type: " + (if (json) "application/json" else "text/plain") + "; charset=utf-8\r\n" +
+            "Content-Type: $type; charset=utf-8\r\n" +
+            (if (download != null) "Content-Disposition: attachment; filename=\"$download\"\r\n" else "") +
             "Content-Length: ${bytes.size}\r\n" +
             "Cache-Control: no-store\r\n" +
             "X-Content-Type-Options: nosniff\r\n" +
@@ -121,6 +156,8 @@ class LogServer(
     private val open: () -> Boolean = { true },
     private val onStop: () -> Unit = {},
     private val log: (String) -> Unit = {},
+    /** Jazyk stránky pro telefon (čeština/slovenština, jinak anglicky). */
+    private val lang: () -> Lang = { Lang.CS },
 ) {
     @Volatile var port = 0
         private set
@@ -168,6 +205,14 @@ class LogServer(
             c.soTimeout = 8000
             val head = readHead(c.getInputStream()) ?: return
             when (val r = LogShare.route(head.substringBefore("\r\n"), code)) {
+                LogShare.Route.PAGE, LogShare.Route.DOWNLOAD -> {
+                    val text = LogShare.text(parts(), secrets())
+                    val file = LogShare.fileName(java.text.SimpleDateFormat("yyyy-MM-dd-HHmm", java.util.Locale.ROOT).format(java.util.Date()))
+                    val bytes = if (r == LogShare.Route.PAGE) LogShare.response(200, LogShare.page(text, code, file, lang()), htmlPage = true)
+                        else LogShare.response(200, text, download = file)
+                    c.getOutputStream().apply { write(bytes); flush() }
+                    log("log served " + (if (r == LogShare.Route.PAGE) "page" else "file"))
+                }
                 LogShare.Route.TEXT, LogShare.Route.JSON -> {
                     val p = parts()
                     val sec = secrets()

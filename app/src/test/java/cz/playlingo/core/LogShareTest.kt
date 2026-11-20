@@ -183,4 +183,19 @@ class LogShareTest {
             assertFalse(server.running)
         } finally { server.stop() }
     }
+
+    @Test fun phonePageAndDownload() {
+        assertEquals(LogShare.Route.PAGE, LogShare.route("GET /hlaseni?k=ab3k7m HTTP/1.1", "ab3k7m"))
+        assertEquals(LogShare.Route.DOWNLOAD, LogShare.route("GET /hlaseni.txt?k=ab3k7m HTTP/1.1", "ab3k7m"))
+        assertEquals(LogShare.Route.BAD_CODE, LogShare.route("GET /hlaseni?k=xxxxxx HTTP/1.1", "ab3k7m"))
+        assertEquals("http://192.168.1.23:8789/hlaseni?k=ab3k7m", LogShare.pageUrl("192.168.1.23", 8789, "ab3k7m"))
+        val page = LogShare.page("<script>x</script> & ok", "ab3k7m", "playlingo-hlaseni-2026-11-20-2130.txt", Lang.CS)
+        // text hlášení se do stránky dostane jen jako text, ne jako kód
+        assertTrue(page.contains("&lt;script&gt;x&lt;/script&gt; &amp; ok"))
+        assertTrue(page.contains("href=\"/hlaseni.txt?k=ab3k7m\""))
+        val file = String(LogShare.response(200, "abc", download = "playlingo-hlaseni-x.txt"), Charsets.UTF_8)
+        assertTrue(file.contains("Content-Disposition: attachment; filename=\"playlingo-hlaseni-x.txt\""))
+        assertTrue(file.contains("Content-Type: application/octet-stream"))
+        assertEquals("playlingo-hlaseni-2026-11-20-2130.txt", LogShare.fileName("2026-11-20-2130\"x"))
+    }
 }

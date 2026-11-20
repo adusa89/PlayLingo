@@ -154,7 +154,9 @@ class Ps5Link(
                 else exec.execute { reason = "login-pin"; drop(s); state = Ps5.Link.FAILED }
             }
             is QuitEvent -> {
-                log("quit ${e.reason} ${e.reasonString ?: ""}")
+                // pro hlášení: jak dlouho spojení drželo a na jaké síti (kvůli rozboru odpojování)
+                val heldS = if (sessionConnectedAt > 0) (SystemClock.uptimeMillis() - sessionConnectedAt) / 1000 else -1
+                log("quit ${e.reason} ${e.reasonString ?: ""} | trvalo=${heldS}s | síť=${NetInfo.kind(ctx)} | pokus=${failures + 1}")
                 reason = e.reasonString?.takeIf { it.isNotBlank() } ?: e.reason.toString()
                 if (!stopped) {
                     endedByConsole = reason

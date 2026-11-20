@@ -52,6 +52,39 @@ object NetLogShare {
         return LogShare.url(ip, s.port, s.code)
     }
 
+    /** Adresa stránky pro telefon (čtvereček na obrazovce hlášení); null = vypnuto nebo mimo domácí síť. */
+    fun pageUrl(c: Context): String? {
+        val s = server?.takeIf { active(c) } ?: return null
+        val ip = NetInfo.homeAddress(c) ?: return null
+        return LogShare.pageUrl(ip, s.port, s.code)
+    }
+
+    /**
+     * Hlášení do telefonu: zapne záznam v síti (když neběží) a ukáže čtvereček na stránku pro telefon.
+     * Telefon na stejné Wi-Fi si hlášení stáhne jako soubor a hráč ho pošle autorovi chatem nebo e-mailem.
+     */
+    fun showQr(a: Activity, ui: Ui) {
+        if (!active(a)) {
+            val r = enable(a)
+            if (r != Result.OK) {
+                Toast.makeText(a, a.tx(if (r == Result.NO_NETWORK) "zz_nonet" else "zz_fail"), Toast.LENGTH_LONG).show()
+                return
+            }
+        }
+        val url = pageUrl(a) ?: return
+        val box = ui.vbox().apply { setBackgroundColor(Theme.BG); setPadding(ui.dp(20), ui.dp(16), ui.dp(20), ui.dp(8)) }
+        QrImage.bitmap(url)?.let { qr ->
+            box.addView(android.widget.ImageView(a).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8)) },
+                android.widget.LinearLayout.LayoutParams(ui.dp(240), ui.dp(240)).apply { gravity = android.view.Gravity.CENTER_HORIZONTAL })
+        }
+        box.addView(ui.text(a.tx("zz_qr_text"), 16f, Theme.TEXT), ui.lp(top = 12))
+        box.addView(ui.text(url, 13f, Theme.MUTED), ui.lp(top = 6))
+        try {
+            android.app.AlertDialog.Builder(a).setTitle(a.tx("zz_qr_title")).setView(box)
+                .setPositiveButton(a.tx("dg_close")) { d, _ -> d.dismiss() }.show()
+        } catch (_: Exception) {}
+    }
+
     fun minutesLeft(c: Context): Long = LogShare.minutesLeft(until(c), now())
 
     /** Zapne na [LogShare.DURATION_MS]. */
@@ -91,6 +124,7 @@ object NetLogShare {
             open = { LogShare.active(until(ctx), now()) },
             onStop = { main.post { disable(ctx) } },
             log = { DiagLog.add("ZAZNAM|$it") },
+            lang = { Prefs.uiLang(ctx) },
         )
         // poslouchat jen na adrese domácí sítě (ne na mobilních datech); neznámá = všude, ptát se
         // stejně smí jen domácí síť (LogShare.allowedPeer)

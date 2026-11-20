@@ -399,6 +399,14 @@ Záznam z televize umí aplikace v televizi od verze 1.2.0.
 Bez sítě: obrazovka hlášení má tlačítka **Kopírovat** (schránka) a **Sdílet** (soubor přes
 `ReportProvider`, jediný soubor v `cacheDir/sdileni`, jen ke čtení).
 
+**Hlášení od jiných hráčů (od 0.90):** tlačítko **Do telefonu** na obrazovce hlášení zapne záznam v síti
+(když neběží) a ukáže čtvereček na `GET /hlaseni?k=…` – stránka pro telefon (i iPhone) s tlačítkem ke
+stažení (`/hlaseni.txt`, `Content-Disposition: attachment`) a textem k označení. Hráč soubor pošle chatem
+nebo e-mailem. Záměrně bez e-mailové služby (Resend apod.): klíč by musel být v APK a šel by zneužít.
+Pro rozbor odpojování zapisuje služba i `NET|` (síť ztracena/připojena), `SCREEN|` (televize se uspává),
+`MEM|` (dochází paměť), `STOP|tlačítkem v notifikaci` a `PS5|quit … | trvalo=…s | síť=… | pokus=…`;
+seznam ukončení ze strany PS5 je v hlášení („PlayStation ukončil spojení“) a důvod na Domů (`ls_ended`).
+
 ## Texty aplikace a jazyky
 
 Aplikace má dvě na sobě nezávislá nastavení jazyka (`core/Lang.kt`):

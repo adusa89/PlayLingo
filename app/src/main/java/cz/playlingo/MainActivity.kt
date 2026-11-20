@@ -1121,16 +1121,7 @@ class MainActivity : Activity() {
     }
 
     /** QR kód s adresou (černobílý obrázek); null, když se ho nepodaří vytvořit. */
-    private fun qrBitmap(text: String): android.graphics.Bitmap? = try {
-        val m = com.google.zxing.qrcode.QRCodeWriter().encode(text, com.google.zxing.BarcodeFormat.QR_CODE, 0, 0,
-            mapOf(com.google.zxing.EncodeHintType.MARGIN to 1))
-        val n = m.width
-        val scale = maxOf(1, 480 / n)
-        val px = IntArray(n * scale * n * scale)
-        for (y in 0 until n * scale) for (x in 0 until n * scale)
-            px[y * n * scale + x] = if (m.get(x / scale, y / scale)) android.graphics.Color.BLACK else android.graphics.Color.WHITE
-        android.graphics.Bitmap.createBitmap(px, n * scale, n * scale, android.graphics.Bitmap.Config.ARGB_8888)
-    } catch (e: Throwable) { null }
+    private fun qrBitmap(text: String): android.graphics.Bitmap? = QrImage.bitmap(text)
 
     /** Kód opsaný z telefonu → číslo účtu (dotaz jde přímo na server Sony, ne přes přihlašovací stránku). */
     private fun checkPhoneCode() {
@@ -1879,6 +1870,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.89"
-    const val VERSION_CODE = 89
+    const val VERSION = "verze 0.90"
+    const val VERSION_CODE = 90
 }

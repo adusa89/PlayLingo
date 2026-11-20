@@ -6,6 +6,9 @@ package cz.playlingo.core
  * ZAZNAM_X = ostatní jazyky. %s = adresa nebo počet minut.
  */
 internal val ZAZNAM_S: Map<String, Pair<String, String>> = mapOf(
+    "zz_qr_btn" to ("Do telefonu" to "Do telefónu"),
+    "zz_qr_title" to ("Hlášení do telefonu" to "Hlásenie do telefónu"),
+    "zz_qr_text" to ("Naskenuj čtvereček telefonem, který je na stejné Wi-Fi. Otevře se stránka s tlačítkem Stáhnout hlášení – soubor pak pošli autorovi aplikace (Messenger, WhatsApp, e-mail). Hesla, klíče ani číslo účtu v něm nejsou. Za 2 hodiny se to samo vypne." to "Naskenuj štvorček telefónom, ktorý je na rovnakej Wi-Fi. Otvorí sa stránka s tlačidlom Stiahnuť hlásenie – súbor potom pošli autorovi aplikácie (Messenger, WhatsApp, e-mail). Heslá, kľúče ani číslo účtu v ňom nie sú. O 2 hodiny sa to samo vypne."),
     "zz_toggle" to ("Zpřístupnit záznam v domácí síti" to "Sprístupniť záznam v domácej sieti"),
     "zz_desc" to ("Pro vývojáře: hlášení o stavu (bez klíčů a čísel účtu) půjde na 2 hodiny stáhnout z počítače ve stejné síti. Pak se to samo vypne." to "Pre vývojárov: hlásenie o stave (bez kľúčov a čísel účtu) pôjde na 2 hodiny stiahnuť z počítača v tej istej sieti. Potom sa to samo vypne."),
     "zz_url" to ("Adresa pro vývojáře: %s" to "Adresa pre vývojárov: %s"),
@@ -22,6 +25,9 @@ internal val ZAZNAM_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "zz_qr_btn" to "To phone",
+        "zz_qr_title" to "Report to your phone",
+        "zz_qr_text" to "Scan the code with a phone on the same Wi-Fi. A page opens with a Download the report button – then send the file to the app author (Messenger, WhatsApp, e-mail). It contains no passwords, keys or account numbers. It turns itself off in 2 hours.",
         "zz_toggle" to "Share log on home network",
         "zz_desc" to "For developers: the status report (without keys or account numbers) can be downloaded for 2 hours from a computer on the same network. Then it turns off by itself.",
         "zz_url" to "Address for developers: %s",
@@ -36,6 +42,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_noshare" to "Not possible here – the report is saved in a file (path at the bottom of the report).",
     ),
     Lang.PL to mapOf(
+        "zz_qr_btn" to "Do telefonu",
+        "zz_qr_title" to "Raport do telefonu",
+        "zz_qr_text" to "Zeskanuj kod telefonem w tej samej sieci Wi-Fi. Otworzy się strona z przyciskiem pobrania raportu – plik wyślij autorowi aplikacji (Messenger, WhatsApp, e-mail). Nie ma w nim haseł, kluczy ani numeru konta. Samo wyłączy się po 2 godzinach.",
         "zz_toggle" to "Udostępnij dziennik w sieci domowej",
         "zz_desc" to "Dla programistów: raport o stanie (bez kluczy i numerów kont) będzie można przez 2 godziny pobrać z komputera w tej samej sieci. Potem wyłączy się samo.",
         "zz_url" to "Adres dla programistów: %s",
@@ -50,6 +59,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_noshare" to "Tu się nie da – raport jest zapisany w pliku (ścieżka na dole raportu).",
     ),
     Lang.DE to mapOf(
+        "zz_qr_btn" to "Aufs Handy",
+        "zz_qr_title" to "Bericht aufs Handy",
+        "zz_qr_text" to "Scanne den Code mit einem Handy im selben WLAN. Es öffnet sich eine Seite mit dem Knopf zum Herunterladen – schicke die Datei dann dem App-Autor (Messenger, WhatsApp, E-Mail). Sie enthält keine Passwörter, Schlüssel oder Kontonummern. Schaltet sich nach 2 Stunden selbst ab.",
         "zz_toggle" to "Protokoll im Heimnetz freigeben",
         "zz_desc" to "Für Entwickler: Der Statusbericht (ohne Schlüssel und Kontonummern) kann 2 Stunden lang von einem Computer im selben Netz abgerufen werden. Danach schaltet es sich selbst ab.",
         "zz_url" to "Adresse für Entwickler: %s",
@@ -64,6 +76,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_noshare" to "Hier nicht möglich – der Bericht ist in einer Datei gespeichert (Pfad unten im Bericht).",
     ),
     Lang.HU to mapOf(
+        "zz_qr_btn" to "Telefonra",
+        "zz_qr_title" to "Jelentés telefonra",
+        "zz_qr_text" to "Olvasd be a kódot egy ugyanazon a Wi-Fi-n lévő telefonnal. Megnyílik egy oldal a letöltés gombbal – a fájlt küldd el az alkalmazás szerzőjének (Messenger, WhatsApp, e-mail). Nincs benne jelszó, kulcs vagy fiókszám. 2 óra múlva magától kikapcsol.",
         "zz_toggle" to "Napló megosztása az otthoni hálózaton",
         "zz_desc" to "Fejlesztőknek: az állapotjelentés (kulcsok és fiókszámok nélkül) 2 órán át letölthető egy ugyanazon a hálózaton lévő számítógépről. Utána magától kikapcsol.",
         "zz_url" to "Cím a fejlesztőknek: %s",
@@ -78,6 +93,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_noshare" to "Itt nem lehet – a jelentés fájlba van mentve (az elérési út a jelentés alján).",
     ),
     Lang.UK to mapOf(
+        "zz_qr_btn" to "На телефон",
+        "zz_qr_title" to "Звіт на телефон",
+        "zz_qr_text" to "Відскануй код телефоном у тій самій мережі Wi-Fi. Відкриється сторінка з кнопкою завантаження звіту – потім надішли файл авторові застосунку (Messenger, WhatsApp, e-mail). У ньому немає паролів, ключів чи номера облікового запису. Саме вимкнеться за 2 години.",
         "zz_toggle" to "Відкрити журнал у домашній мережі",
         "zz_desc" to "Для розробників: звіт про стан (без ключів і номерів облікових записів) можна буде 2 години завантажувати з комп’ютера в тій самій мережі. Потім це вимкнеться саме.",
         "zz_url" to "Адреса для розробників: %s",
@@ -92,6 +110,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_noshare" to "Тут це неможливо – звіт збережено у файлі (шлях унизу звіту).",
     ),
     Lang.ES to mapOf(
+        "zz_qr_btn" to "Al teléfono",
+        "zz_qr_title" to "Informe al teléfono",
+        "zz_qr_text" to "Escanea el código con un teléfono en la misma Wi-Fi. Se abrirá una página con el botón para descargar el informe; envía el archivo al autor de la app (Messenger, WhatsApp, correo). No contiene contraseñas, claves ni número de cuenta. Se desactiva solo en 2 horas.",
         "zz_toggle" to "Compartir registro en la red doméstica",
         "zz_desc" to "Para desarrolladores: el informe de estado (sin claves ni números de cuenta) se podrá descargar durante 2 horas desde un ordenador de la misma red. Después se apaga solo.",
         "zz_url" to "Dirección para desarrolladores: %s",
@@ -106,6 +127,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_noshare" to "Aquí no es posible: el informe está guardado en un archivo (ruta al final del informe).",
     ),
     Lang.FR to mapOf(
+        "zz_qr_btn" to "Vers le téléphone",
+        "zz_qr_title" to "Rapport vers le téléphone",
+        "zz_qr_text" to "Scanne le code avec un téléphone sur le même Wi-Fi. Une page s’ouvre avec un bouton pour télécharger le rapport – envoie ensuite le fichier à l’auteur de l’app (Messenger, WhatsApp, e-mail). Il ne contient ni mot de passe, ni clé, ni numéro de compte. Se désactive tout seul après 2 heures.",
         "zz_toggle" to "Partager le journal sur le réseau domestique",
         "zz_desc" to "Pour les développeurs : le rapport d’état (sans clés ni numéros de compte) pourra être téléchargé pendant 2 heures depuis un ordinateur du même réseau. Ensuite, cela s’arrête tout seul.",
         "zz_url" to "Adresse pour les développeurs : %s",
@@ -120,6 +144,9 @@ internal val ZAZNAM_X: Map<Lang, Map<String, String>> = mapOf(
         "zz_noshare" to "Impossible ici – le rapport est enregistré dans un fichier (chemin en bas du rapport).",
     ),
     Lang.IT to mapOf(
+        "zz_qr_btn" to "Al telefono",
+        "zz_qr_title" to "Rapporto al telefono",
+        "zz_qr_text" to "Inquadra il codice con un telefono sulla stessa Wi-Fi. Si apre una pagina con il pulsante per scaricare il rapporto: invia poi il file all’autore dell’app (Messenger, WhatsApp, e-mail). Non contiene password, chiavi né numero di account. Si spegne da solo dopo 2 ore.",
         "zz_toggle" to "Condividi il registro nella rete domestica",
         "zz_desc" to "Per sviluppatori: il rapporto di stato (senza chiavi né numeri di account) si potrà scaricare per 2 ore da un computer della stessa rete. Poi si spegne da solo.",
         "zz_url" to "Indirizzo per sviluppatori: %s",
