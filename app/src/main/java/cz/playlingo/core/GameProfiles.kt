@@ -31,7 +31,7 @@ class GameScreen(hud: List<String>, menu: List<String>) {
 
 /**
  * Odhad hry podle jmen v titulcích: jména, která má jen jedna hra (Caminos, Port Gellhorn…).
- * Nic nepřepíná – jen nabídne řádek v Nastavení („Hraješ asi GTA VI · Přepnout“).
+ * Nic nepřepíná – jen nabídne řádek v Nastavení („Čtená hra · Grand Theft Auto VI“ s Přepnout).
  * Hra platí, když se objevila aspoň [MIN_NAMES] různá její jména a žádná jiná hra jich nemá ani polovinu.
  */
 class GameGuess(games: List<GameProfile> = GameProfiles.GAMES) {

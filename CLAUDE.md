@@ -121,7 +121,7 @@ Zatím jen čeština. Bez jmen mluvčích v titulcích hry funguje jen 2. a 3. o
   `GameScreen`, předává se do `TextLogic.assemble(screen = …)`. Univerzální profil má sjednocení všech her.
 - `GameGuess` – odhad hry z nezaměnitelných jmen v titulcích (aspoň 3 různá, jiná hra méně než polovinu);
   **nic nepřepíná** (přání majitele), jen uloží `Prefs.gameGuess` a v ⚙ → Čtení a překlad → Hra se ukáže
-  oranžový řádek „Hraješ asi …“ s dialogem Přepnout / Nechat (`dismissGameGuess`, pak se stejná hra nenabízí).
+  oranžový řádek „Čtená hra · …“ s dialogem Přepnout / Nechat (`dismissGameGuess`, pak se stejná hra nenabízí).
 - Nastavení → Hra (`gameSection` v MainActivity): Profil hry, případně odhad, rozbalovací „Postavy, místa
   a pojmy“ (postavy ♀/♂, jména, pojmy, nečtené nápisy). Texty `gp_…` v `core/I18nGame.kt`.
 - **Názvy aut, ulic, čtvrtí a věcí ve hře se nepřekládají, ani když jsou to běžná anglická slova** (přání
@@ -520,6 +520,9 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 - **Související volby do rozbalovacích skupin** po vzoru Nápovědy (`settingRow` s ▼/▲, barevná šipka) –
   majitel Nápovědu v tomhle stylu výslovně chválil. Akce jako „Nastavit oblasti“ jsou řádky ve stejném
   stylu (s „›“), ne velká žlutá tlačítka; velké žluté je jen hlavní akce stránky (Spustit, Spárovat).
+- **Stavové hlášky, ne věty a bez tykání** (přání majitele, 20. 11. 2026): na Domů, v řádcích a v menu jen
+  „Popis · hodnota“ („Čtená hra · Grand Theft Auto VI“), ne „Hraješ asi …“ ani jiné oslovení hráče. Kratší
+  i v úzkém menu telefonu. Platí pro nové texty ve všech jazycích; staré s tykáním přepisuj, když na ně narazíš.
 - **Krátké stavové řádky:** „PS5-151 · připojeno“, „LG OLED55B7 · připojeno“ – jméno a jedno slovo stavu,
   žádné dlouhé věty. Popisky voleb bez závorek s vysvětlením („Diagnostický režim“, ne „… (co aplikace čte)“).
 - **Rozlišuj zařízení:** co dává smysl jen na Android TV / boxu (Zpět do hry HDMI, povolení pruhu) a co jen
@@ -553,7 +556,9 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   vlastním `TvSender` zavře). Bez připojené televize velký stav „Čeká na televizi“ (`st_wait_tv`), ne Připraveno.
   Verze: řádek PlayLingo (aktuální zeleně, novější oranžově „· nová X“ s tlačítkem Aktualizovat v řádku a postupem
   stahování pod ním – samostatná karta aktualizace není) a řádek PlayLingo v televizi (chybí / starší oranžově
-  s tlačítkem nahrání, aktuální zeleně). Na novou verzi se aplikace ptá i po návratu do ní (nejvýš jednou za 5 min). Běh na pozadí (telefon, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) se
+  s tlačítkem nahrání, aktuální zeleně).
+  Od 0.97.8 řádek Hra: vybraný profil zeleně („Hra · Grand Theft Auto VI“, OK = výběr hry `pickGame`); když
+  `GameGuess` z titulků pozná jinou hru, oranžově „Čtená hra · …“ (`gp_guess`) s tlačítkem Přepnout. Univerzální profil bez odhadu = řádek není. Na novou verzi se aplikace ptá i po návratu do ní (nejvýš jednou za 5 min). Běh na pozadí (telefon, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) se
   zeptá jednou při prvním Spustit (`ui_jednou`) a dál je jen v ⚙ Nastavení → Obecné, na Domů ne.
   Řádek konzole/televize OK = změna. Samostatný souhrnný řádek ani návody v textu tam už nejsou. Náhled obrazu
   je jen na stránce Konzole (s popiskem `pv_stale`, když obraz nechodí). „Zpět do hry (HDMI)“ jen na zařízení

@@ -140,6 +140,8 @@ class MainActivity : Activity() {
     /** Kolik televizí LG / Samsung bylo připojeno a kdy se naposledy ohlásila (pro obnovu stránky Domů). */
     private var lastTv = -1
     private var lastTvSeen = 0L
+    /** Odhad hry z titulků při posledním vykreslení – nový odhad překreslí Domů (oranžový řádek Hra). */
+    private var lastGuess: String? = null
 
     private val ticker = object : Runnable {
         override fun run() {
@@ -149,7 +151,8 @@ class MainActivity : Activity() {
             val changed = lastRunning != TranslatorService.running || lastPaused != TranslatorService.paused ||
                 lastLink != TranslatorService.linkState || (lastFrames == 0L) != (TranslatorService.framesDecoded == 0L) ||
                 lastStage != TranslatorService.linkStatus().stage ||
-                (section == Section.HOME && (lastTv != TranslatorService.tvConnected || lastTvSeen != (TvSender.lastSeen?.at ?: 0L)))
+                (section == Section.HOME && (lastTv != TranslatorService.tvConnected || lastTvSeen != (TvSender.lastSeen?.at ?: 0L) ||
+                    lastGuess != Prefs.gameGuess(this@MainActivity)))
             // náhled obrazu z PlayStationu se obnovuje každé 3 s (ne když uživatel zrovna píše)
             val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 &&
                 (section == Section.HOME || section == Section.PS5)
@@ -480,6 +483,7 @@ class MainActivity : Activity() {
         lastStage = TranslatorService.linkStatus().stage
         lastTv = TranslatorService.tvConnected
         lastTvSeen = TvSender.lastSeen?.at ?: 0L
+        lastGuess = Prefs.gameGuess(this)
         // aplikace v televizi LG/Samsung se může připojit i před Spustit (skutečný stav na Domů)
         TvIdle.ensure(this)
         // pevná hlavička jen v Nastavení (nadpis a záložky), jinde schovaná a obsah s běžným odsazením
@@ -863,6 +867,13 @@ class MainActivity : Activity() {
         val tl = Prefs.lang(this)
         if (!modelOk) row(Theme.WARN, t("w_model").replace("%s", tl.label), "hmodel", t("download"), { downloadModel() })
         else row(Theme.OK, tl.label + " · " + t(if (DeeplTranslator.activeKey(this) != null) "dl_mode_on" else "h_offline"), "hmodel")
+        // hra: vybraný profil zeleně; titulky ukazují na jinou hru → oranžově s Přepnout (GameGuess, nic se nepřepíná samo).
+        // S univerzálním profilem a bez odhadu řádek není.
+        val game = GameProfiles.of(Prefs.gameId(this))
+        val guess = Prefs.gameGuess(this)?.let { GameProfiles.of(it) }
+        if (guess != null) row(Theme.WARN, String.format(t("gp_guess"), guess.title), "hgame", t("gp_switch"),
+            { Prefs.setGameId(this, guess.id); applyToService(); render(true) }, onClick = { pickGame() })
+        else if (game.id != "all") row(Theme.OK, t("t_game") + " · " + game.title, "hgame", onClick = { pickGame() })
         // verze PlayLinga: aktuální zeleně, novější ke stažení oranžově s tlačítkem Aktualizovat v řádku
         val me = "PlayLingo ${BuildInfo.VERSION.removePrefix("verze ")}"
         val o = update
@@ -1330,6 +1341,17 @@ class MainActivity : Activity() {
         }, tag), top)
     }
 
+    private fun gameTitle(g: cz.playlingo.core.GameProfile) = if (g.id == "all") t("game_universal") else g.title
+
+    /** Výběr profilu hry (Nastavení → Hra i řádek Hra na Domů). */
+    private fun pickGame() {
+        val game = GameProfiles.of(Prefs.gameId(this))
+        val games = GameProfiles.ALL
+        choose(t("gp_profile"), games.map { gameTitle(it) }, games.indexOf(game)) { i ->
+            Prefs.setGameId(this, games[i].id); applyToService(); render(true)
+        }
+    }
+
     /** Rozbalený seznam postav, míst a pojmů profilu hry. */
     private var gameListOpen = false
 
@@ -1340,13 +1362,7 @@ class MainActivity : Activity() {
     private fun gameSection() {
         content.addView(ui.section(t("t_game")))
         val game = GameProfiles.of(Prefs.gameId(this))
-        fun title(g: cz.playlingo.core.GameProfile) = if (g.id == "all") t("game_universal") else g.title
-        add(tagged(ui.settingRow(t("gp_profile"), title(game)) {
-            val games = GameProfiles.ALL
-            choose(t("gp_profile"), games.map { title(it) }, games.indexOf(game)) { i ->
-                Prefs.setGameId(this, games[i].id); applyToService(); render(true)
-            }
-        }, "game"), 0)
+        add(tagged(ui.settingRow(t("gp_profile"), gameTitle(game)) { pickGame() }, "game"), 0)
         Prefs.gameGuess(this)?.let { id ->
             val g = GameProfiles.of(id)
             add(tagged(ui.settingRow(String.format(t("gp_guess"), g.title), t("gp_switch") + " ›", Theme.WARN) {
@@ -2140,6 +2156,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.7"
-    const val VERSION_CODE = 104
+    const val VERSION = "verze 0.97.8"
+    const val VERSION_CODE = 105
 }
