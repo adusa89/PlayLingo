@@ -119,8 +119,34 @@ class Ps5Link(
      * PlayLingo spárované (druhý účet), a ne na výběr účtu. Bez volby: dokud konzole spí, jen se každých 8 s
      * podívá (hledání v síti hlásí klidový režim) a připojí se, až ji hráč zapne.
      */
+    /** Konzole v síti už je v záznamu za tohle spuštění (vypisuje se jen jednou, při prvním pokusu). */
+    private var consolesLogged = false
+
+    /**
+     * Pro hlášení (od 0.97.32): které konzole aplikace v síti vidí a jestli mezi nimi je ta spárovaná (podle MAC
+     * i adresy), v jakém je stavu, a jakým účtem se párovalo. Bez klíčů; MAC jen poslední 4 znaky.
+     */
+    private fun logConsoles() {
+        consolesLogged = true
+        try {
+            val mac = Ps5.hex(host.mac)
+            val list = Ps5Pairing.discover(1500)
+            val mine = list.firstOrNull { mac.isNotEmpty() && it.id.equals(mac, ignoreCase = true) }
+            log("v síti: " + (if (list.isEmpty()) "žádná konzole" else list.joinToString("; ") {
+                "${it.name} ${it.ip} …${it.id.takeLast(4)} " + (if (it.standby) "klid" else "zapnutá") + (if (it.ps5) "" else " (PS4)")
+            }))
+            log("spárováno: ${host.name} ${host.ip} …${mac.takeLast(4)} · účet ${Prefs.psnName(ctx).ifEmpty { "?" }} · " + when {
+                mine == null && list.any { it.ip == host.ip } -> "na adrese ${host.ip} je JINÁ konzole"
+                mine == null -> "spárovaná konzole v síti nenalezena"
+                mine.ip != host.ip -> "konzole má novou adresu ${mine.ip}"
+                else -> "nalezena, adresa sedí"
+            })
+        } catch (e: Throwable) { log("v síti: chyba hledání ${e.javaClass.simpleName}") }
+    }
+
     private fun connectWhenAwake() {
         if (stopped || session != null) return
+        if (!consolesLogged) logConsoles()
         if (!everConnected && !Prefs.ps5Wake(ctx) && sleeping()) {
             if (!asleep) log("console in rest mode, waiting (wake off)")
             asleep = true

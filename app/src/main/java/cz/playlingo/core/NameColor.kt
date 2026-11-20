@@ -28,13 +28,30 @@ object NameColor {
         return maxOf(r, g, b) - minOf(r, g, b) >= 50
     }
 
-    /** Nejbližší barva z palety pruhu (čitelná na černém podkladu). */
-    fun nearest(rgb: Int, palette: IntArray = SpeakerColors.PALETTE): Int = palette.minByOrNull { p ->
-        val dr = ((p shr 16) and 0xFF) - ((rgb shr 16) and 0xFF)
-        val dg = ((p shr 8) and 0xFF) - ((rgb shr 8) and 0xFF)
-        val db = (p and 0xFF) - (rgb and 0xFF)
-        dr * dr + dg * dg + db * db
-    } ?: palette[0]
+    /**
+     * Nejbližší barva z palety pruhu (čitelná na černém podkladu) – podle **odstínu**, ne podle rozdílu RGB.
+     * Písmo jména je na okrajích vyhlazené do bílé, takže z obrazu vychází bledá barva (Jason ve GTA VI
+     * #DBD899 místo sytě žluté). Podle RGB byla bledě žlutá „blíž“ růžové #F59A9A a všechna jména byla
+     * růžová (0.97.28–0.97.31, záznam majitele 20. 11. 2026). Odstín se bledostí nemění.
+     */
+    fun nearest(rgb: Int, palette: IntArray = SpeakerColors.PALETTE): Int {
+        val h = hue(rgb)
+        return palette.minByOrNull { p -> val d = Math.abs(hue(p) - h); minOf(d, 360f - d) } ?: palette[0]
+    }
+
+    /** Odstín 0–360° (0 červená, 60 žlutá, 120 zelená, 240 modrá). */
+    fun hue(rgb: Int): Float {
+        val r = (rgb shr 16) and 0xFF; val g = (rgb shr 8) and 0xFF; val b = rgb and 0xFF
+        val max = maxOf(r, g, b); val min = minOf(r, g, b)
+        if (max == min) return 0f
+        val d = (max - min).toFloat()
+        val h = when (max) {
+            r -> 60f * (((g - b) / d) % 6f)
+            g -> 60f * ((b - r) / d + 2f)
+            else -> 60f * ((r - g) / d + 4f)
+        }
+        return if (h < 0) h + 360f else h
+    }
 
     // ---- naučené barvy a měření (pro záznam v síti) ----
 

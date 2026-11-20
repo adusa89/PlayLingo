@@ -1092,7 +1092,7 @@ class MainActivity : Activity() {
             if (loginPinWanted()) add(input("ps5_login", draftLogin, "plogin", number = true), 12)
             add(tagged(ui.button(t("ps5_forget")) {
                 if (TranslatorService.running && !TranslatorService.demo) stopService(Intent(this, TranslatorService::class.java))
-                Prefs.setPs5Host(this, null); pairStep = 0; pairMsg = null; render(true)
+                EventFile.add("PAIR|zrušeno spárování " + host.name); Prefs.setPs5Host(this, null); pairStep = 0; pairMsg = null; render(true)
             }, "pforget"), 12)
             return
         }
@@ -1388,6 +1388,9 @@ class MainActivity : Activity() {
         pairNote(t("ps5_pairing"), busy = true)
         Thread({
             Ps5Pairing.pair(ip, account, pin) { h: Ps5Host? ->
+                // do záznamu (i z minulých spuštění): kdy a jakým účtem se párovalo – opakované párování je vidět v hlášení
+                EventFile.add("PAIR|" + (if (h != null) "spárováno ${h.name} ${h.ip} …${Ps5.hex(h.mac).takeLast(4)}" else "nepovedlo se ($ip)") +
+                    " · účet $name" + (Ps5Pairing.lastError?.takeIf { h == null }?.let { " · $it" } ?: ""))
                 if (h != null) {
                     Prefs.setPs5Host(this, h)
                     pairNote(t("ps5_ok").replace("%s", name), Theme.OK) { draftPin = ""; pairStep = 0; pairFailed = false }
@@ -2283,6 +2286,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.31"
-    const val VERSION_CODE = 128
+    const val VERSION = "verze 0.97.32"
+    const val VERSION_CODE = 129
 }

@@ -30,6 +30,17 @@ class NameColorTest {
         assertEquals(SpeakerColors.PALETTE[1], NameColor.nearest(sample(0x6FB8F0)!!))
     }
 
+    @Test fun paleReadingsKeepTheirHue() {
+        // skutečná čtení z GTA VI (záznam majitele 20. 11. 2026): Jason a „Locals“ žlutě vyhlazené do bílé
+        assertEquals(SpeakerColors.PALETTE[0], NameColor.nearest(0xFFDBD899.toInt()))
+        assertEquals(SpeakerColors.PALETTE[0], NameColor.nearest(0xFFD7D79E.toInt()))
+        // bledě modrá (Lucia), bledě zelená (Franklin), oranžová (Trevor) a růžová zůstanou svou barvou
+        assertEquals(SpeakerColors.PALETTE[1], NameColor.nearest(0xFFB4D2EB.toInt()))
+        assertEquals(SpeakerColors.PALETTE[2], NameColor.nearest(0xFFB0E0B0.toInt()))
+        assertEquals(SpeakerColors.PALETTE[5], NameColor.nearest(0xFFF5A55A.toInt()))
+        assertEquals(SpeakerColors.PALETTE[3], NameColor.nearest(0xFFF0A0A8.toInt()))
+    }
+
     @Test fun whiteNameHasNoColor() {
         assertNull(sample(0xF0F0F0))
     }
