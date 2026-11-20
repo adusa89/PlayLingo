@@ -72,8 +72,8 @@ for m in "${MODES[@]}"; do
   set -- $m
   adb shell am force-stop $PKG
   mode $1 $2 $3
-  # průvodce: zařízení (0), konzole (1) a televize (2) – volby s popisem musí být celé vidět
-  for step in 0 1 2; do
+  # průvodce: zařízení (0), konzole (1), televize (2) a kvalita překladu (4) – volby s popisem musí být celé vidět
+  for step in 0 1 2 4; do
     adb shell am start -n $PKG/.MainActivity --ei wizard $step
     sleep 3; shot "p2_${4}_pruvodce_$step"
   done

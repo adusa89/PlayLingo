@@ -64,8 +64,10 @@ class MainActivity : Activity() {
         private const val SHOW_LICENSE = false
         private const val W_TV = 2
         private const val W_LANG = 3
-        private const val W_PERM = 4
-        private const val W_PAIR = 5
+        /** Kvalita překladu: jen offline, nebo DeepL s vlastním klíčem (od 0.94). */
+        private const val W_TRANSLATE = 4
+        private const val W_PERM = 5
+        private const val W_PAIR = 6
     }
 
     /**
@@ -482,7 +484,10 @@ class MainActivity : Activity() {
      * Názvy kroků průvodce: zařízení, konzole, televize, jazyk překladu, povolení pruhu, spárování
      * konzole, hotovo (indexy W_…). Jednorázové volby jdou později změnit v Nastavení.
      */
-    private val wizardSteps = listOf("wz_dev", "c_console", "wz_tv", "wz_s2", "wz_s1", "wz_s3", "wz_s4")
+    private val wizardSteps = listOf("wz_dev", "c_console", "wz_tv", "wz_s2", "wz_tr", "wz_s1", "wz_s3", "wz_s4")
+
+    /** Krok Kvalita překladu: zvolil hráč DeepL? (DeepL se zapne, jakmile je uložený klíč.) */
+    private var wizardDeepl: Boolean? = null
 
     /** Volba v průvodci: řádek s názvem a popisem; vybraná je zlatá a s fajfkou. */
     private fun option(title: String, desc: String?, selected: Boolean, tag: String, onPick: () -> Unit) {
@@ -573,6 +578,28 @@ class MainActivity : Activity() {
                 if (!ok) {
                     add(tagged(ui.button(t("download")) { downloadModel() }, "wdl"), 16)
                     nextLabel = t("wz_skip_step")
+                }
+            }
+            // kvalita překladu: offline je zdarma, ale slabý; DeepL je mnohem lepší (vlastní klíč zdarma)
+            W_TRANSLATE -> {
+                add(ui.text(t("wz_tr_desc"), 17f, Theme.MUTED), 12)
+                val deepl = wizardDeepl ?: DeeplKey.enabled(this)
+                option(t("wz_tr_deepl"), t("wz_tr_deepl_d"), deepl, "wtrdeepl") {
+                    wizardDeepl = true
+                    if (DeeplKey.has(this)) { DeeplKey.setEnabled(this, true); applyToService() }
+                    render(true)
+                }
+                option(t("wz_tr_offline"), t("wz_tr_offline_d"), !deepl, "wtroffline") {
+                    wizardDeepl = false
+                    if (DeeplKey.enabled(this)) { DeeplKey.setEnabled(this, false); applyToService() }
+                    render(true)
+                }
+                if (deepl) {
+                    // klíč uložený z telefonu nebo políčka → DeepL rovnou zapnout
+                    if (DeeplKey.has(this) && !DeeplKey.enabled(this)) { DeeplKey.setEnabled(this, true); applyToService() }
+                    val d = deeplUi ?: DeeplSection(this, ui, { applyToService() }, { render(true) }) { url, text -> qrRow(url, text) }.also { deeplUi = it }
+                    d.build(content)
+                    if (!DeeplKey.has(this)) nextLabel = t("wz_skip_step")
                 }
             }
             // titulky jdou do televize LG / Samsung → povolení pruhu na tomto zařízení není potřeba
@@ -1889,6 +1916,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.93"
-    const val VERSION_CODE = 93
+    const val VERSION = "verze 0.94"
+    const val VERSION_CODE = 94
 }

@@ -479,7 +479,8 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 - **Průvodce prvním spuštěním** (`wizardSteps`, indexy `W_…`): Zařízení (Android TV/box, nebo
   telefon/tablet jako čtečka pro LG/Samsung, `Prefs.readerDevice`; výchozí podle
   `NetInfo.isHandheld`; samo nic nepřepíná – pomocník v telefonu se dál řídí `Prefs.forceTv`) →
-  Konzole → Televize (u LG/Samsungu tlačítko nahrání) → Jazyk překladu → Zobrazení titulků
+  Konzole → Televize (u LG/Samsungu tlačítko nahrání) → Jazyk překladu → Kvalita překladu (od 0.94,
+  `W_TRANSLATE`: DeepL s celou `DeeplSection`, nebo jen offline; DeepL se zapne, jakmile je klíč) → Zobrazení titulků
   (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
   Příprava PS5 (druhý účet, Remote Play, skrytí hlášky, probouzení ze sítě, čtvereček na `pomoc/ps5.md`)
   je od 0.93 až v prvním kroku párování (Připojení konzole), ne u volby konzole – tam byla moc brzo.
@@ -525,7 +526,7 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 - Pořadí položek menu a kroků průvodce – skript se jimi prokliká naslepo šipkami (viz Obrazovky
   a průvodce). Na každém kroku průvodce je po vykreslení vybrané tlačítko Pokračovat (`wnext`, u párování
   `pnext`), takže OK posune dál. Snímky průvodce: `01_pruvodce_zarizeni`, `01b_…konzole`,
-  `01c_…televize`, `03_…jazyk`, `03b_…po_stazeni`, `02_…povoleni`, `04_…ps5_krok1`, `04b_…hledani`;
+  `01c_…televize`, `03_…jazyk`, `03b_…po_stazeni`, `03c_…preklad`, `02_…povoleni`, `04_…ps5_krok1`, `04b_…hledani`;
   stránky menu `07_menu_1`–`4` (Konzole, Titulky, Nápověda, Nastavení).
 - Zbytky starého názvu „TestPreklad“ (značka logu, `rootProject.name`, názvy souborů
   v sestavování, `TestPreklad.apk` ve vydání, sůl odemykacího kódu v `License.kt`).

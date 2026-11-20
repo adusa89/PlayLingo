@@ -48,6 +48,8 @@ Pak v aplikaci projdi průvodce:
 3. **Televize:** Android TV (pruh ukazuje toto zařízení), LG, nebo Samsung. U LG a Samsungu jde
    aplikaci do televize nahrát rovnou z tohoto kroku, nebo později.
 4. **Jazyk překladu:** vyber ho a počkej na stažení jazykového modelu (jednou, asi 30 MB).
+   **Kvalita překladu:** buď **DeepL** (mnohem lepší, zdarma s vlastním klíčem – postup a čtvereček
+   ukáže průvodce, viz bod 9), nebo jen offline překlad (bez internetu, ale hodně doslovný).
 5. **Zobrazení titulků** (jen Android TV): zapni aplikaci v nastavení televize: Usnadnění →
    PlayLingo → Zapnout.
 6. **Připojení konzole:** spáruj PlayStation – viz další bod (Xbox: bod 7b).

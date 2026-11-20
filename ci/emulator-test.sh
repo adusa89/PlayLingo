@@ -22,13 +22,14 @@ adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null || tru
 adb logcat -c
 
 # 1) první spuštění: průvodce krok za krokem (OK = Pokračovat; pořadí kroků v MainActivity.wizardSteps:
-#    zařízení, konzole, televize, jazyk překladu, povolení pruhu, spárování konzole, hotovo)
+#    zařízení, konzole, televize, jazyk překladu, kvalita překladu (DeepL), povolení pruhu, spárování konzole, hotovo)
 adb shell am start -n $PKG/.MainActivity
 sleep 10; shot 01_pruvodce_zarizeni
 key 23; sleep 2; shot 01b_pruvodce_konzole
 key 23; sleep 2; shot 01c_pruvodce_televize
 key 23; sleep 2; shot 03_pruvodce_jazyk
 sleep 45; shot 03b_pruvodce_jazyk_po_stazeni
+key 23; sleep 2; shot 03c_pruvodce_preklad
 key 23; sleep 2; shot 02_pruvodce_povoleni
 key 23; sleep 2; shot 04_pruvodce_ps5_krok1
 key 23; sleep 8; shot 04b_pruvodce_ps5_krok2_hledani
