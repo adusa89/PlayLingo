@@ -56,6 +56,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import kotlin.math.max
 
@@ -725,12 +726,17 @@ class TranslatorService : Service() {
                 val right = if (picked.right >= 0) (x0 + picked.right).toFloat() / capW else -1f
                 val original = if (showOriginal) action.text else null
                 val lineH = picked.lineHeight.toFloat() / capH
-                val seq = synchronized(showLock) {
+                // DeepL zapnutý: ukáže se JEN jedna varianta – překlad z DeepL (chvilku se na něj počká),
+                // offline jen když DeepL neodpoví. Do 0.97 se ukázal offline a DeepL ho pak přepsal –
+                // vypadalo to, jako by naskočila nová věta (majitel: „hrozné přeblikávání“).
+                if (deeplJob != null && fromDeepl == null && DeeplTranslator.tryStart()) {
+                    val seq = synchronized(showLock) { ++showSeq }
+                    deeplThenShow(deeplJob, segs, token, seq, ov) { chosen ->
+                        ov.show(chosen, original, top, bottom, left, right, lineHeight = lineH)
+                    }
+                } else synchronized(showLock) {
                     ov.show(segs, original, top, bottom, left, right, lineHeight = lineH)
                     ++showSeq
-                }
-                if (deeplJob != null && fromDeepl == null) improveWithDeepl(deeplJob, segs, token, seq, ov) { better ->
-                    ov.show(better, original, top, bottom, left, right, lineHeight = lineH)
                 }
                 statsFor(this).line()
                 // automatika: zapamatuj si, kde na obrazovce titulky jsou
@@ -814,31 +820,34 @@ class TranslatorService : Service() {
     private var showSeq = 0L
 
     /**
-     * Souběžně s offline překladem se zeptá DeepL. Text v pruhu se vymění jen tehdy, když odpověď
-     * přišla včas, liší se a v pruhu je pořád týž titulek (stejný začátek čtení i pořadí zobrazení).
+     * DeepL zapnutý: počká se na jeho překlad (nejvýš [cz.playlingo.core.Deepl.WAIT_MS]) a ukáže se jen ten;
+     * když nepřijde včas nebo selže, ukáže se offline překlad. Pruh se mezitím nemění (žádné přeblikávání).
+     * Neukáže se nic, když mezitím titulek zmizel nebo přišel jiný (stejný začátek čtení i pořadí zobrazení).
      */
-    private fun improveWithDeepl(job: DeeplTranslator.Job, offline: List<Segment>, token: Long, seq: Long, ov: SubtitleOverlay,
-                                 redraw: (List<Segment>) -> Unit) {
-        if (!DeeplTranslator.tryStart()) return
+    private fun deeplThenShow(job: DeeplTranslator.Job, offline: List<Segment>, token: Long, seq: Long, ov: SubtitleOverlay,
+                              show: (List<Segment>) -> Unit) {
         scope.launch {
-            val r = DeeplTranslator.fetch(job)
-            val texts = r.texts
-            if (texts == null) { tp(cz.playlingo.core.Deepl.logLine(r.ms, "error-" + r.problem?.name?.lowercase(), 0)); return@launch }
-            val better = DeeplTranslator.merge(offline, job, texts)
-            val swap = synchronized(showLock) {
-                val current = tracker.isCurrent(token) && seq == showSeq && ov.isShown && overlay === ov
-                cz.playlingo.core.Deepl.decide(TextLogic.joinSegments(offline), TextLogic.joinSegments(better), current, r.ms).also {
-                    if (it == cz.playlingo.core.Deepl.Swap.YES) redraw(better)
-                }
+            val started = SystemClock.uptimeMillis()
+            val pending = async { DeeplTranslator.fetch(job) }
+            val r = withTimeoutOrNull(cz.playlingo.core.Deepl.WAIT_MS) { pending.await() }
+            val texts = r?.texts
+            val chosen = if (texts != null) DeeplTranslator.merge(offline, job, texts) else offline
+            val shown = synchronized(showLock) {
+                (tracker.isCurrent(token) && seq == showSeq && overlay === ov).also { if (it) show(chosen) }
             }
-            DeeplTranslator.stats.answer(r.ms, swap, r.chars)
-            val label = when (swap) {
-                cz.playlingo.core.Deepl.Swap.YES -> "yes"
-                cz.playlingo.core.Deepl.Swap.SAME -> "no"
-                cz.playlingo.core.Deepl.Swap.LATE -> "late"
-                cz.playlingo.core.Deepl.Swap.STALE -> "stale"
+            val ms = r?.ms ?: (SystemClock.uptimeMillis() - started)
+            val label = when {
+                !shown -> "stale"
+                texts != null -> "deepl"
+                r == null -> "timeout-offline"
+                else -> "error-" + r.problem?.name?.lowercase() + "-offline"
             }
-            tp(cz.playlingo.core.Deepl.logLine(r.ms, label, r.chars))
+            DeeplTranslator.stats.answer(ms, when {
+                !shown -> cz.playlingo.core.Deepl.Swap.STALE
+                texts != null -> cz.playlingo.core.Deepl.Swap.YES
+                else -> cz.playlingo.core.Deepl.Swap.LATE
+            }, r?.chars ?: 0)
+            tp(cz.playlingo.core.Deepl.logLine(ms, label, r?.chars ?: 0))
         }
     }
 
@@ -892,7 +901,11 @@ class TranslatorService : Service() {
         try {
             val cm = getSystemService(android.net.ConnectivityManager::class.java)
             val cb = object : android.net.ConnectivityManager.NetworkCallback() {
-                override fun onAvailable(n: android.net.Network) { tp("NET|připojeno ${NetInfo.kind(this@TranslatorService)}") }
+                override fun onAvailable(n: android.net.Network) {
+                    tp("NET|připojeno ${NetInfo.kind(this@TranslatorService)}")
+                    // nová síť = možná nová adresa: záznam pro vývojáře přesunout (adresa se přidělí za chvilku)
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ NetLogShare.refresh(this@TranslatorService) }, 4000)
+                }
                 override fun onLost(n: android.net.Network) { tp("NET|síť ztracena") }
             }
             cm.registerDefaultNetworkCallback(cb)

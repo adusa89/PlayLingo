@@ -47,6 +47,7 @@ object NetLogShare {
 
     /** Adresa pro vývojáře (null = vypnuto nebo zařízení není v domácí síti). */
     fun url(c: Context): String? {
+        rebindIfMoved(c)
         val s = server?.takeIf { active(c) } ?: return null
         val ip = NetInfo.homeAddress(c) ?: return null
         return LogShare.url(ip, s.port, s.code)
@@ -54,6 +55,7 @@ object NetLogShare {
 
     /** Adresa stránky pro telefon (čtvereček na obrazovce hlášení); null = vypnuto nebo mimo domácí síť. */
     fun pageUrl(c: Context): String? {
+        rebindIfMoved(c)
         val s = server?.takeIf { active(c) } ?: return null
         val ip = NetInfo.homeAddress(c) ?: return null
         return LogShare.pageUrl(ip, s.port, s.code)
@@ -113,6 +115,28 @@ object NetLogShare {
         start(c, code!!, u)
     }
 
+    /** Po změně sítě (volá služba): server přesunout na novou adresu zařízení, když se změnila. */
+    fun refresh(c: Context) = try { rebindIfMoved(c) } catch (_: Throwable) {}
+
+    /** Adresa, na které server právě poslouchá (null = všude). */
+    private var boundIp: String? = null
+
+    /**
+     * Telefon dostal v síti jinou adresu (přeskok mezi pásmy Wi-Fi, nové přidělení routerem): server by dál
+     * poslouchal na staré, která už neexistuje, a vývojář by se nepřipojil, i když aplikace ukazuje „zapnuto“
+     * s novou adresou (0.97: 192.168.3.76 → .42). Pustit znovu na nové adrese se stejným kódem.
+     */
+    @Synchronized private fun rebindIfMoved(c: Context) {
+        if (server?.running != true) return
+        val now = NetInfo.homeAddress(c) ?: return
+        if (now == boundIp) return
+        val code = prefs(c).getString("code", null) ?: return
+        val u = until(c)
+        if (!LogShare.active(u, now())) return
+        DiagLog.add("ZAZNAM|adresa $boundIp → $now")
+        start(c, code, u)
+    }
+
     private fun start(c: Context, code: String, end: Long): Boolean {
         val ctx = c.applicationContext
         appCtx = ctx
@@ -128,9 +152,11 @@ object NetLogShare {
         )
         // poslouchat jen na adrese domácí sítě (ne na mobilních datech); neznámá = všude, ptát se
         // stejně smí jen domácí síť (LogShare.allowedPeer)
-        val bind = NetInfo.homeAddress(ctx)?.let { runCatching { java.net.InetAddress.getByName(it) }.getOrNull() }
+        val ip = NetInfo.homeAddress(ctx)
+        val bind = ip?.let { runCatching { java.net.InetAddress.getByName(it) }.getOrNull() }
         if (!s.start(LogShare.PORT, bind)) return false
         server = s
+        boundIp = ip
         main.removeCallbacks(autoOff)
         main.postDelayed(autoOff, LogShare.remainingMs(end, now()))
         return true

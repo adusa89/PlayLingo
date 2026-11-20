@@ -44,7 +44,7 @@ object I18n {
         "lic_enter" to ("Odemknout" to "Odomknúť"),
         "lic_ok" to ("Odemčeno ✔" to "Odomknuté ✔"),
         "lic_bad" to ("Tento kód neplatí." to "Tento kód neplatí."),
-        "m_help" to ("Nápověda" to "Pomocník"),
+        "m_help" to ("Instalace" to "Inštalácia"),
 
         // ---- domů ----
         "st_running" to ("Překlad běží" to "Preklad beží"),
@@ -96,7 +96,7 @@ object I18n {
 
         // ---- oblasti ----
         "z_calibrate" to ("Nastavit oblasti nad snímkem ze hry" to "Nastaviť oblasti nad snímkou z hry"),
-        "z_only_subs" to ("Číst jen titulky (ignorovat menu a nápovědy)" to "Čítať len titulky (ignorovať menu a nápovedy)"),
+        "z_only_subs" to ("Číst jen titulky" to "Čítať len titulky"),
         "z_reset" to ("Obnovit výchozí oblasti" to "Obnoviť predvolené oblasti"),
         "z_reset_done" to ("Oblasti vráceny na výchozí." to "Oblasti vrátené na predvolené."),
         "z_saved" to ("Oblasti uloženy ✔" to "Oblasti uložené ✔"),
@@ -120,7 +120,7 @@ object I18n {
         "l_size_auto" to ("Písmo stejně velké jako originál" to "Písmo rovnako veľké ako originál"),
         "l_size" to ("Velikost písma" to "Veľkosť písma"),
         "l_opacity" to ("Neprůhlednost pruhu" to "Nepriehľadnosť pruhu"),
-        "l_original" to ("Zobrazit i anglický originál (malým písmem)" to "Zobraziť aj anglický originál (malým písmom)"),
+        "l_original" to ("Zobrazit i anglický originál" to "Zobraziť aj anglický originál"),
         "l_speaker" to ("Jména mluvčích barevně" to "Mená hovoriacich farebne"),
         "l_hold" to ("Nechat překlad déle na obrazovce" to "Nechať preklad dlhšie na obrazovke"),
         "l_demo" to ("Ukázka na obrazovce" to "Ukážka na obrazovke"),
@@ -165,8 +165,8 @@ object I18n {
         "s_a11y" to ("Zobrazení přes Usnadnění (doporučeno pro Google TV a Chromecast)" to "Zobrazenie cez Zjednodušenie ovládania (odporúčané pre Google TV a Chromecast)"),
         "s_overlay" to ("Zobrazení přes jiné aplikace" to "Zobrazenie cez iné aplikácie"),
         "s_behavior" to ("Chování" to "Správanie"),
-        "s_debug" to ("Diagnostický režim (co aplikace čte, rychlost)" to "Diagnostický režim (čo aplikácia číta, rýchlosť)"),
-        "s_test" to ("Zkušební verze (dřív než ostatní)" to "Skúšobné verzie (skôr ako ostatní)"),
+        "s_debug" to ("Diagnostický režim" to "Diagnostický režim"),
+        "s_test" to ("Zkušební verze" to "Skúšobné verzie"),
         "s_test_desc" to ("Aplikace nabídne i verze, které se teprve zkoušejí. Mohou obsahovat chyby." to "Aplikácia ponúkne aj verzie, ktoré sa ešte len skúšajú. Môžu obsahovať chyby."),
         "on" to ("ZAP" to "ZAP"),
         "off" to ("VYP" to "VYP"),

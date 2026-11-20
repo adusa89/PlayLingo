@@ -19,6 +19,11 @@ object Deepl {
     const val KEYS_URL = "https://www.deepl.com/your-account/keys"
     /** Odpověď, která přijde později, se už do pruhu nedává (hráč mezitím čte), jen se zapamatuje. */
     const val LATE_MS = 1500L
+    /**
+     * Jak dlouho se čeká na DeepL, než se místo něj ukáže offline překlad (od 0.97.2 se ukazuje vždy jen
+     * jedna varianta, bez výměny v pruhu). DeepL odpovídá obvykle za 0,1–0,6 s.
+     */
+    const val WAIT_MS = 2500L
     /** Značka, ve které jsou jména a výrazy ze slovníku – DeepL je nepřekládá. */
     const val KEEP_TAG = "k"
 

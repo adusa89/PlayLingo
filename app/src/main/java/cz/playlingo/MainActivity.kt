@@ -807,11 +807,18 @@ class MainActivity : Activity() {
         }
         // konzole a obraz
         val console = Prefs.console(this)
-        val conName = (if (console == Console.XBOX) "Xbox" else "PS5") + (consoleName()?.let { " ($it)" } ?: "")
+        // krátce jako ostatní řádky: „PS5-151 · připojeno“ (jméno konzole, jinak PS5 / Xbox)
+        val conName = consoleName() ?: if (console == Console.XBOX) "Xbox" else "PS5"
         if (running && !demoRun) {
             val ls = TranslatorService.linkStatus()
-            row(if (ls.warning) Theme.WARN else if (ls.image) Theme.OK else Theme.MUTED,
-                cz.playlingo.core.LinkStatus.line(lang, ls, console), "linkline", onClick = { chooseConsole() })
+            val (color, state) = when (ls.stage) {
+                cz.playlingo.core.LinkStatus.Stage.IMAGE -> Theme.OK to t("tv_st_on")
+                cz.playlingo.core.LinkStatus.Stage.STALLED, cz.playlingo.core.LinkStatus.Stage.NO_IMAGE -> Theme.WARN to t("h_con_noimg")
+                cz.playlingo.core.LinkStatus.Stage.FAILED -> Theme.WARN to t("h_con_fail")
+                cz.playlingo.core.LinkStatus.Stage.PAUSED -> Theme.MUTED to t("st_paused").lowercase()
+                else -> Theme.MUTED to t("h_con_wait")
+            }
+            row(color, "$conName · $state", "linkline", onClick = { chooseConsole() })
             if (ls.stage == cz.playlingo.core.LinkStatus.Stage.CONNECTING || ls.stage == cz.playlingo.core.LinkStatus.Stage.RETRYING ||
                 ls.stage == cz.playlingo.core.LinkStatus.Stage.WAIT_IMAGE) card.addView(ui.progress(null), ui.lp(h = ui.dp(8), top = 2))
             // spojení ukončil sám PlayStation: jiné zařízení se stejným účtem, nebo jeho vlastní důvod
@@ -820,7 +827,7 @@ class MainActivity : Activity() {
                 else Ps5Link.endedByConsole?.let { why -> card.addView(ui.text(t("ls_ended").replace("%s", why), 14f, Theme.WARN), ui.lp(top = 2)) }
             }
         } else {
-            row(if (paired) Theme.OK else Theme.WARN, conName + if (paired) "" else " · " + t("sum_nopair"), "hcon", onClick = { chooseConsole() })
+            row(if (paired) Theme.OK else Theme.WARN, conName + " · " + t(if (paired) "h_con_ready" else "sum_nopair"), "hcon", onClick = { chooseConsole() })
         }
         // televize
         if (type == TvType.ANDROID) {
@@ -1537,7 +1544,6 @@ class MainActivity : Activity() {
             SettingsTab.DIAG -> settingsDiag()
             SettingsTab.EXPERIMENTAL -> experimentalSection()
         }
-        add(ui.text(t("st_more"), 14f, Theme.MUTED), 24)
     }
 
     /** Obecné: konzole, televize (+ nahrání), jazyk aplikace, zařízení, zkušební verze, povolení (jen Android TV). */
@@ -1549,7 +1555,6 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("tv_type"), TvChoice.label(this, type)) {
             TvChoice.show(this) { render(true) }
         }, "tvtype"), 8)
-        if (type.sends) add(tagged(ui.button(TvChoice.installLabel(this, type)) { TvChoice.openInstall(this, type) }, "stvinstall"), 8)
         // jazyk aplikace je nezávislý na jazyku překladu (ten je na stránce Titulky)
         val uiLang = Prefs.uiLang(this)
         add(tagged(ui.settingRow(t("l_ui_lang"), uiLang.label) {
@@ -1809,7 +1814,8 @@ class MainActivity : Activity() {
         chapters.forEachIndexed { i, (key, done, make) ->
             val open = helpOpen == i
             val mark = when (done) { true -> "✔  "; false -> "○  "; null -> "" }
-            add(tagged(ui.settingRow(mark + t(key), if (open) "▲" else "▼", if (done == true) Theme.OK else Theme.ACCENT) {
+            // šipka: zeleně hotovo, žlutě ještě udělat, šedě kapitola bez stavu (Hraní, Když něco nejde…)
+            add(tagged(ui.settingRow(mark + t(key), if (open) "▲" else "▼", when (done) { true -> Theme.OK; false -> Theme.ACCENT; null -> Theme.MUTED }) {
                 helpOpen = if (open) -1 else i; render(true)
             }, "hc$i"), if (i == 0) 16 else 8)
             if (open) add(make(), 6)
@@ -2076,6 +2082,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.1"
-    const val VERSION_CODE = 98
+    const val VERSION = "verze 0.97.2"
+    const val VERSION_CODE = 99
 }

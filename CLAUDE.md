@@ -368,6 +368,10 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   se ovladačem psát nedá; ruční políčko je až po „Zavřít“ (`DeeplSection.manual`).
 - Se zapnutým DeepL ukazuje i karta „Režim překladu“ (Nastavení → Čtení a překlad) „Offline + DeepL“
   (`dl_mode_on`), zapnutý bez klíče `dl_mode_idle` – dřív tam stálo jen „Offline“ a mátlo to.
+- **Od 0.97.2 se ukazuje vždy jen jedna varianta** (`deeplThenShow`): počká se na DeepL (nejvýš
+  `Deepl.WAIT_MS` = 2,5 s) a ukáže se jeho překlad; offline jen když DeepL nepřijde včas / selže
+  (`DEEPL|…|deepl / timeout-offline / error-…-offline / stale`). Výměna offline → DeepL v pruhu
+  vypadala jako nová věta a majitel ji nechtěl. Následující popis výměny platí do 0.97.1:
 - Překlad (`TranslatorService` → `improveWithDeepl`): offline překlad se ukáže hned, souběžně jde
   `POST /v2/translate` (původní anglický text bez `IDIOMS`, jména ze slovníku ve značce `<k>` s
   `ignore_tags`, `formality=prefer_less`). Odpověď do 1,5 s, jiná a k témuž zobrazenému řádku
@@ -483,6 +487,8 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
 - **Související volby do rozbalovacích skupin** po vzoru Nápovědy (`settingRow` s ▼/▲, barevná šipka) –
   majitel Nápovědu v tomhle stylu výslovně chválil. Akce jako „Nastavit oblasti“ jsou řádky ve stejném
   stylu (s „›“), ne velká žlutá tlačítka; velké žluté je jen hlavní akce stránky (Spustit, Spárovat).
+- **Krátké stavové řádky:** „PS5-151 · připojeno“, „LG OLED55B7 · připojeno“ – jméno a jedno slovo stavu,
+  žádné dlouhé věty. Popisky voleb bez závorek s vysvětlením („Diagnostický režim“, ne „… (co aplikace čte)“).
 - **Rozlišuj zařízení:** co dává smysl jen na Android TV / boxu (Zpět do hry HDMI, povolení pruhu) a co jen
   v telefonu jako čtečce pro LG/Samsung (běh na pozadí) – `Prefs.isTv`, `Prefs.tvType`.
 
@@ -517,14 +523,16 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   šipkou vpravo + OK), pod ním rozbalovací skupiny Jazyk a písmo / Pruh s překladem / Oblasti titulků
   (`lookOpen`) a dole řádek Obnovit vzhled. Automatika oblastí ukáže popis v dialogu jen při zapnutí.
   Volba „Černý pruh přes anglické titulky“ zmizela – je to totéž co poloha „Přes titulky“.
-- **Nápověda** (od 0.97, `help()`, texty `core/I18nHelp.kt`): nahoře „Nápověda pro“ (typ televize, výchozí
+- **Instalace** (do 0.97.1 se jmenovala Nápověda; klíč `m_help`, `help()`) – návodné věci patří sem, ne do
+  Nastavení: nahrání aplikace do televize je v kapitole 3 (z ⚙ Nastavení → Obecné zmizelo v 0.97.2).
+- **Nápověda / Instalace** (od 0.97, `help()`, texty `core/I18nHelp.kt`): nahoře „Nápověda pro“ (typ televize, výchozí
   zvolený), pod tím kapitoly 1–8 jako `settingRow` (OK rozbalí, `helpOpen`): instalace, příprava konzole (druhý
   účet, Remote Play, `rp_hide`, `ps5_rest` / Xbox), televize (povolení pruhu / pomocník LG / průvodce Samsung),
   jazyk a DeepL, spárování, hraní, když něco nejde (+ hlášení), volby v Nastavení. ✔/○ podle skutečného stavu
   jen pro zvolenou televizi. Stránky s návodem (`HelpLinks`): telefon tlačítko, televize čtvereček.
 - **Nahrání do televize** se nabízí jen, když tam aplikace ještě nikdy nebyla nebo je starší (`TvChoice.upToDate`,
   `outdated`): Domů v přehledu, krok Televize v průvodci jinak ukáže „✔ PlayLingo je v televizi (verze X)“;
-  ⚙ Nastavení → Obecné ho nabízí vždy. Pomocník LG u aktuální verze píše „V televizi je aktuální…“ a tlačítko
+  vždy je k dispozici v Instalaci (kapitola 3). Pomocník LG u aktuální verze píše „V televizi je aktuální…“ a tlačítko
   „Spustit PlayLingo v televizi“; u spárované televize je políčko Passphrase schované pod tlačítkem
   „Zadat Passphrase znovu“.
 - **Nastavení (⚙)** má záložky (`SettingsTab`) a ukazuje jen obsah vybrané: **Obecné** (konzole, typ

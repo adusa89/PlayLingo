@@ -7,7 +7,7 @@ package cz.playlingo.core
  * HELP_S = čeština a slovenština, HELP_X = ostatní jazyky.
  */
 internal val HELP_S: Map<String, Pair<String, String>> = mapOf(
-    "help_for" to ("Nápověda pro" to "Pomocník pre"),
+    "help_for" to ("Instalace pro" to "Inštalácia pre"),
     "hc1" to ("1. Instalace PlayLinga" to "1. Inštalácia PlayLinga"),
     "hc1_android" to ("PlayLingo patří do Android TV nebo boxu s Androidem, který je zapojený v televizi. Soubor PlayLingo.apk nahraj aplikací Downloader (adresu najdeš na stránce s návodem), nebo z flash disku správcem souborů. Další verze už se nabídnou samy na Domů." to "PlayLingo patrí do Android TV alebo boxu s Androidom, ktorý je zapojený v televízore. Súbor PlayLingo.apk nahraj aplikáciou Downloader (adresu nájdeš na stránke s návodom), alebo z flash disku správcom súborov. Ďalšie verzie sa už ponúknu samy na Domov."),
     "hc1_reader" to ("Televize LG a Samsung si obraz hry samy nepřečtou. PlayLingo proto běží v telefonu s Androidem (nebo v boxu): čte obraz z konzole, překládá a hotové titulky posílá do aplikace PlayLingo v televizi. Do telefonu stáhni PlayLingo.apk a nainstaluj ho (odkaz je na stránce s návodem)." to "Televízory LG a Samsung si obraz hry samy neprečítajú. PlayLingo preto beží v telefóne s Androidom (alebo v boxe): číta obraz z konzoly, prekladá a hotové titulky posiela do aplikácie PlayLingo v televízore. Do telefónu stiahni PlayLingo.apk a nainštaluj ho (odkaz je na stránke s návodom)."),
@@ -43,7 +43,7 @@ internal val HELP_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
-        "help_for" to "Help for",
+        "help_for" to "Setup for",
         "hc1" to "1. Installing PlayLingo",
         "hc1_android" to "PlayLingo goes on the Android TV or Android box connected to the TV. Install PlayLingo.apk with the Downloader app (the address is on the guide page) or from a USB stick with a file manager. Later versions are offered automatically on Home.",
         "hc1_reader" to "LG and Samsung TVs can’t read the game picture themselves. So PlayLingo runs on an Android phone (or a box): it reads the picture from the console, translates and sends the finished subtitles to the PlayLingo app on the TV. Download PlayLingo.apk to the phone and install it (the link is on the guide page).",
@@ -77,7 +77,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_pass_other" to "Enter a Passphrase again (another TV or new pairing)",
     ),
     Lang.PL to mapOf(
-        "help_for" to "Pomoc dla",
+        "help_for" to "Instalacja dla",
         "hc1" to "1. Instalacja PlayLingo",
         "hc1_android" to "PlayLingo instaluje się na Android TV lub przystawce z Androidem podłączonej do telewizora. Wgraj PlayLingo.apk aplikacją Downloader (adres jest na stronie z instrukcją) albo z pendrive’a menedżerem plików. Kolejne wersje pojawią się same na Start.",
         "hc1_reader" to "Telewizory LG i Samsung same nie odczytają obrazu gry. Dlatego PlayLingo działa w telefonie z Androidem (lub w przystawce): czyta obraz z konsoli, tłumaczy i wysyła gotowe napisy do aplikacji PlayLingo w telewizorze. Pobierz PlayLingo.apk na telefon i zainstaluj (link jest na stronie z instrukcją).",
@@ -111,7 +111,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_pass_other" to "Wpisz Passphrase ponownie (inny telewizor lub nowe parowanie)",
     ),
     Lang.DE to mapOf(
-        "help_for" to "Hilfe für",
+        "help_for" to "Einrichtung für",
         "hc1" to "1. PlayLingo installieren",
         "hc1_android" to "PlayLingo gehört auf das Android TV oder die Android-Box am Fernseher. Installiere PlayLingo.apk mit der App Downloader (die Adresse steht auf der Anleitungsseite) oder per USB-Stick mit einem Dateimanager. Neue Versionen werden danach auf Start angeboten.",
         "hc1_reader" to "LG- und Samsung-Fernseher können das Spielbild nicht selbst lesen. PlayLingo läuft deshalb auf einem Android-Telefon (oder einer Box): Es liest das Bild der Konsole, übersetzt und schickt die fertigen Untertitel an die PlayLingo-App auf dem Fernseher. Lade PlayLingo.apk aufs Telefon und installiere sie (Link auf der Anleitungsseite).",
@@ -145,7 +145,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_pass_other" to "Passphrase erneut eingeben (anderer Fernseher oder neue Kopplung)",
     ),
     Lang.HU to mapOf(
-        "help_for" to "Súgó ehhez",
+        "help_for" to "Telepítés ehhez",
         "hc1" to "1. A PlayLingo telepítése",
         "hc1_android" to "A PlayLingo a tévére kötött Android TV-re vagy androidos boxra kerül. A PlayLingo.apk-t a Downloader alkalmazással (a cím az útmutató oldalán van) vagy pendrive-ról fájlkezelővel telepítsd. A későbbi verziókat a Kezdőlap magától felajánlja.",
         "hc1_reader" to "Az LG és Samsung tévék maguk nem tudják olvasni a játék képét. Ezért a PlayLingo androidos telefonon (vagy boxon) fut: olvassa a konzol képét, fordít, és a kész feliratokat elküldi a tévén futó PlayLingo alkalmazásnak. Töltsd le a PlayLingo.apk-t a telefonra és telepítsd (a link az útmutató oldalán van).",
@@ -179,7 +179,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_pass_other" to "Passphrase újbóli megadása (másik tévé vagy új párosítás)",
     ),
     Lang.UK to mapOf(
-        "help_for" to "Довідка для",
+        "help_for" to "Встановлення для",
         "hc1" to "1. Встановлення PlayLingo",
         "hc1_android" to "PlayLingo встановлюється на Android TV або Android-приставку, підключену до телевізора. Завантаж PlayLingo.apk застосунком Downloader (адреса на сторінці з інструкцією) або з флешки файловим менеджером. Наступні версії запропонуються самі на Головній.",
         "hc1_reader" to "Телевізори LG і Samsung не можуть самі читати зображення гри. Тому PlayLingo працює на Android-телефоні (або приставці): читає зображення з консолі, перекладає й надсилає готові субтитри в застосунок PlayLingo на телевізорі. Завантаж PlayLingo.apk у телефон і встанови (посилання на сторінці з інструкцією).",
@@ -213,7 +213,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_pass_other" to "Ввести Passphrase знову (інший телевізор або нове з’єднання)",
     ),
     Lang.ES to mapOf(
-        "help_for" to "Ayuda para",
+        "help_for" to "Instalación para",
         "hc1" to "1. Instalar PlayLingo",
         "hc1_android" to "PlayLingo se instala en el Android TV o la caja Android conectada al televisor. Instala PlayLingo.apk con la app Downloader (la dirección está en la página de la guía) o desde un USB con un gestor de archivos. Las versiones nuevas se ofrecen solas en Inicio.",
         "hc1_reader" to "Los televisores LG y Samsung no pueden leer la imagen del juego por sí mismos. Por eso PlayLingo funciona en un teléfono Android (o una caja): lee la imagen de la consola, traduce y envía los subtítulos terminados a la app PlayLingo del televisor. Descarga PlayLingo.apk en el teléfono e instálalo (el enlace está en la página de la guía).",
@@ -247,7 +247,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_pass_other" to "Introducir de nuevo la Passphrase (otro televisor o nueva vinculación)",
     ),
     Lang.FR to mapOf(
-        "help_for" to "Aide pour",
+        "help_for" to "Installation pour",
         "hc1" to "1. Installer PlayLingo",
         "hc1_android" to "PlayLingo s’installe sur l’Android TV ou le boîtier Android branché au téléviseur. Installe PlayLingo.apk avec l’appli Downloader (l’adresse est sur la page du guide) ou depuis une clé USB avec un gestionnaire de fichiers. Les versions suivantes sont proposées toutes seules sur Accueil.",
         "hc1_reader" to "Les téléviseurs LG et Samsung ne savent pas lire eux-mêmes l’image du jeu. PlayLingo tourne donc sur un téléphone Android (ou un boîtier) : il lit l’image de la console, traduit et envoie les sous-titres prêts à l’appli PlayLingo du téléviseur. Télécharge PlayLingo.apk sur le téléphone et installe-le (le lien est sur la page du guide).",
@@ -281,7 +281,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
         "lg_pass_other" to "Saisir à nouveau la Passphrase (autre téléviseur ou nouvelle association)",
     ),
     Lang.IT to mapOf(
-        "help_for" to "Guida per",
+        "help_for" to "Installazione per",
         "hc1" to "1. Installare PlayLingo",
         "hc1_android" to "PlayLingo va sull’Android TV o sul box Android collegato al televisore. Installa PlayLingo.apk con l’app Downloader (l’indirizzo è nella pagina della guida) o da una chiavetta USB con un file manager. Le versioni successive vengono proposte da sole in Home.",
         "hc1_reader" to "I televisori LG e Samsung non sanno leggere da soli l’immagine del gioco. Per questo PlayLingo funziona su un telefono Android (o un box): legge l’immagine della console, traduce e invia i sottotitoli pronti all’app PlayLingo sul televisore. Scarica PlayLingo.apk sul telefono e installalo (il link è nella pagina della guida).",
