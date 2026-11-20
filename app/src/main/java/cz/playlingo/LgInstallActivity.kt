@@ -265,13 +265,17 @@ class LgInstallActivity : Activity() {
             // telefon s kamerou: adresu a Passphrase přečíst z obrazovky televize (LgScanActivity) – pomocník
             // pod políčkem; hlavní jen dokud adresa chybí
             if (!running && LgScanActivity.available(this))
-                add(tagged(ui.button(t("km_scan"), primary = ip.isEmpty()) { scan() }, "lgscan"), 10)
+                add(tagged(if (ip.isEmpty()) ui.button("📷 " + t("km_scan"), primary = true) { scan() }
+                    else ui.smallButton("📷 " + t("km_scan")) { scan() }, "lgscan"), 6)
             scanNote?.let { add(ui.text(it.first, 15f, if (it.second) Theme.WARN else Theme.OK, bold = true), 10) }
             // spárovaná televize: prázdné políčko by mátlo („mám něco vyplnit?“) – schované, nabídne se až pod tlačítkem
             // (jiný otisk TV: „Spárovat znovu“ potřebuje Passphrase – políčko rovnou)
             if (!paired || askPass || error == LgError.HOST_CHANGED) {
                 add(ui.text(t("lg_pass"), 16f, Theme.TEXT, bold = true), 16)
                 add(field(pass, "lg_pass_hint", "lgpass", true) { val was = LgSetup.passphraseLooksOk(pass); pass = it; if (was != LgSetup.passphraseLooksOk(it)) needsRender = true }, 6)
+                // Passphrase je na téže obrazovce Developer Mode jako adresa – kamera vyplní obojí (od 0.97.37 i pod tímto políčkem)
+                if (!running && LgScanActivity.available(this) && ip.isNotEmpty())
+                    add(tagged(ui.smallButton("📷 " + t("km_scan")) { scan() }, "lgscanpass"), 6)
             }
             actions(paired, compact = false)
             add(devRow(), 22)

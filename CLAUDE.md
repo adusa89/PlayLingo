@@ -429,7 +429,8 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   z obrazovky PS5 (`core/Ps5CodeScan.kt`, testy `Ps5CodeScanTest`); tlačítko „Načíst číslo…“ je
   v posledním kroku párování v MainActivity (jen telefon s kamerou). `MODE_PS5_IP` čte adresu PS5
   z Nastavení → Síť → Stav připojení (`Ps5CodeScan.ip`: adresa u „IPv4“, jinak jediná domácí adresa
-  nekončící .1/.254); tlačítko je v kroku hledání PS5 jen po neúspěšném hledání (`ps5NotFound`).
+  nekončící .1/.254); tlačítko je od 0.97.37 vždy hned pod políčkem adresy (malé „📷 …“), stejně pod číslem z PS5
+  a v LgInstallActivity pod adresou i pod Passphrase (jen telefon s kamerou – `LgScanActivity.available`).
 - Políčka pro adresu (PS5 i LG) nastavuje `IpField`: klávesnice pro adresy a čárka/mezera → tečka
   (česká číselná klávesnice má místo tečky čárku).
 - `webos/obchod/app/app.js`, `style.css` a `index.html` jsou **společné s aplikací pro Samsung**

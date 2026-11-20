@@ -1126,9 +1126,10 @@ class MainActivity : Activity() {
             1 -> {
                 add(ui.card().apply { addView(ui.text(t("pg_2_text"), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_ip", draftIp, "pip", number = true).also { IpField.setup(it) }, 10)
-                add(tagged(ui.button(t("ps5_find")) { findPs5() }, "pfind"), 8)
-                // adresu aplikace většinou najde sama; kamera jen když hledání neuspělo (telefon s kamerou)
-                if (ps5NotFound && LgScanActivity.available(this)) add(tagged(ui.button(t("km_scan_ps5ip")) { scanPs5Code(true) }, "pscanip"), 8)
+                // telefon s kamerou: čtení adresy z obrazovky PS5 vždy hned pod políčkem (od 0.97.37, dřív jen po
+                // neúspěšném hledání a až pod Najít); hlavní tlačítko až když hledání nenašlo nic
+                if (LgScanActivity.available(this)) add(tagged(ui.smallButton("📷 " + t("km_scan_ps5ip")) { scanPs5Code(true) }, "pscanip"), 6)
+                add(tagged(ui.button(t("ps5_find")) { findPs5() }, "pfind"), 10)
             }
             // účet pro PlayLingo: druhý účet, na kterém se nehraje. Uložený se nikdy nepoužije potichu.
             7 -> {
@@ -1189,7 +1190,7 @@ class MainActivity : Activity() {
                 add(ui.card().apply { addView(ui.text(t("pg_4_text").replace("%s", name), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_pin", draftPin, "ppin", number = true), 10)
                 // telefon s kamerou: osmimístné číslo přečíst z obrazovky PlayStationu
-                if (LgScanActivity.available(this)) add(tagged(ui.button(t("km_scan_ps5")) { scanPs5Code() }, "pscan"), 8)
+                if (LgScanActivity.available(this)) add(tagged(ui.smallButton("📷 " + t("km_scan_ps5")) { scanPs5Code() }, "pscan"), 6)
                 if (loginPinWanted()) add(input("ps5_login", draftLogin, "plogin", number = true), 8)
                 nextOk = false
             }
@@ -2291,6 +2292,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.36"
-    const val VERSION_CODE = 133
+    const val VERSION = "verze 0.97.37"
+    const val VERSION_CODE = 134
 }
