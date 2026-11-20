@@ -111,7 +111,8 @@ class SamsungInstallActivity : Activity() {
     private fun <V : View> tagged(v: V, tag: String): V { v.tag = tag; return v }
 
     /** Návod Samsungu k instalaci Tizen Studia (TV SDK). */
-    private val TIZEN_URL = "https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/installing-tv-sdk.html"
+    // naše stránka s pomocí (odkaz na Tizen Studio + záložní odkazy, kdyby ho Samsung přesunul)
+    private val TIZEN_URL = cz.playlingo.core.HelpLinks.SAMSUNG
 
     private fun qr(text: String): android.graphics.Bitmap? = try {
         val m = com.google.zxing.qrcode.QRCodeWriter().encode(text, com.google.zxing.BarcodeFormat.QR_CODE, 0, 0,

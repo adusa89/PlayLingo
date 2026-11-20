@@ -546,6 +546,8 @@ class MainActivity : Activity() {
                     // bez tohohle aplikace spící PS5 nevzbudí
                     addView(ui.text(t("ps5_rest"), 15f, Theme.MUTED), ui.lp(top = 10))
                 }, 14)
+                // celý postup s odkazy na založení účtu Sony (i do iPhonu): čtvereček, v telefonu tlačítko
+                if (cur == Console.PLAYSTATION) add(helpLink(cz.playlingo.core.HelpLinks.PS5_PREP, t("help_ps5")), 10)
             }
             W_TV -> {
                 add(ui.text(t("wz_tv_q"), 20f, Theme.TEXT, bold = true), 18)
@@ -1124,6 +1126,17 @@ class MainActivity : Activity() {
 
     /** QR kód s adresou (černobílý obrázek); null, když se ho nepodaří vytvořit. */
     private fun qrBitmap(text: String): android.graphics.Bitmap? = QrImage.bitmap(text)
+
+    /**
+     * Odkaz na stránku s pomocí ([cz.playlingo.core.HelpLinks]): v telefonu tlačítko do prohlížeče,
+     * na televizi čtvereček pro telefon (i iPhone).
+     */
+    private fun helpLink(url: String, label: String): View {
+        if (narrow) return ui.button(label) {
+            try { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))) } catch (_: Exception) {}
+        }
+        return qrRow(url, label + "\n" + t("help_qr_note"))
+    }
 
     /** Kód opsaný z telefonu → číslo účtu (dotaz jde přímo na server Sony, ne přes přihlašovací stránku). */
     private fun checkPhoneCode() {
@@ -1873,6 +1886,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.91"
-    const val VERSION_CODE = 91
+    const val VERSION = "verze 0.92"
+    const val VERSION_CODE = 92
 }

@@ -1,0 +1,47 @@
+# PlayStation 5 – příprava (jen poprvé)
+
+<a id="ucet"></a>
+## 1. Druhý účet PlayStation (zdarma)
+
+PlayLingo se k PS5 připojuje jako druhý hráč přes Remote Play. Kdyby použilo tvůj herní účet,
+konzole by ti vypnula ovladač. Proto potřebuje **vlastní účet** – stačí jiný e-mail.
+
+👉 **[Založit účet PlayStation](https://www.playstation.com/cs-cz/support/account/create-account-for-psn/)**
+(nebo přímo na PS5: Přepnout uživatele → **Přidat uživatele** → Vytvořit účet).
+
+- Použij **jiný e-mail**, než má tvůj herní účet, a potvrď ho v e-mailu, který přijde.
+- Zadej datum narození dospělého – u dětského účtu je Remote Play omezené. Datum ani zemi později změnit nejde.
+
+Když odkaz nefunguje:
+- [Návod Sony (anglicky)](https://www.playstation.com/en-gb/support/account/create-account-for-psn/)
+- nebo hledej: **„vytvořit účet PlayStation Network“**
+
+<a id="remote-play"></a>
+## 2. Remote Play na PS5
+
+Přepni se na PS5 na ten **druhý** účet a zapni:
+**Nastavení → Systém → Remote Play → Povolit Remote Play**.
+
+Ve hře by ti jinak pořád svítila hláška „Aplikace Remote Play je připojena“. Proto tamtéž zapni i
+**Skrýt stav připojení Remote Play**, pod svým herním i pod druhým účtem. Když tam volba není,
+aktualizuj systém PS5.
+
+[Návod Sony k Remote Play](https://www.playstation.com/cs-cz/support/games/remote-play-settings/)
+
+<a id="probouzeni"></a>
+## 3. Probouzení z klidového režimu
+
+Aby PlayLingo umělo konzoli vzbudit:
+**Nastavení → Systém → Úspora energie → Funkce dostupné v klidovém režimu** → zapni
+**Zůstat připojen k internetu** a **Povolit zapnutí systému PS5 ze sítě**.
+
+## 4. Spárování
+V PlayLingu projdi krok „Připojení konzole“. PS5 najde samo. Osmimístné číslo najdeš na PS5 v
+Nastavení → Systém → Remote Play → **Propojit zařízení**. V telefonu ho PlayLingo přečte kamerou.
+
+---
+*English: create a second, free PlayStation account (different e-mail, adult date of birth):
+[create account](https://www.playstation.com/en-gb/support/account/create-account-for-psn/).
+On the PS5, under that account: Settings → System → Remote Play → **Enable Remote Play** and
+**Hide Remote Play Connection Status**. For waking from rest mode: Settings → System → Power Saving →
+Features Available in Rest Mode → **Stay Connected to the Internet** + **Enable Turning On PS5 from Network**.*

@@ -1,7 +1,8 @@
 # PlayLingo
 
 **Nejnovější APK ke stažení:** https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk  
-Číslo verze je vidět v aplikaci v sekci Nápověda.
+Číslo verze je vidět v aplikaci v sekci Nápověda.  
+**Pomoc krok za krokem (i pro iPhone):** [pomoc](pomoc/README.md) – první instalace do Android TV, televize LG, PS5, telefon.
 
 Aplikace pro Android TV: sama se po domácí síti připojí k PlayStationu 5 (nebo přes vzdálené hraní k Xboxu), přečte anglické
 titulky hry a v reálném čase je ukáže přeložené (čeština, slovenština a dalších 7 jazyků)

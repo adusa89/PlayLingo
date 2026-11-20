@@ -132,7 +132,8 @@ class LgInstallActivity : Activity() {
 
     /** Účet LG pro vývojáře: v telefonu tlačítko do prohlížeče, v televizi čtvereček pro telefon. */
     private fun accountLink(): View {
-        val url = "https://webostv.developer.lge.com/"
+        // naše stránka s pomocí: odkaz na registraci LG + záložní odkazy, kdyby LG stránku přesunulo
+        val url = cz.playlingo.core.HelpLinks.LG_ACCOUNT
         if (LgScanActivity.available(this)) return tagged(ui.button(t("lg_s_account")) {
             try { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))) } catch (_: Exception) {}
         }, "lgacc")
@@ -141,7 +142,7 @@ class LgInstallActivity : Activity() {
             row.addView(android.widget.ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(6), ui.dp(6), ui.dp(6), ui.dp(6)) },
                 LinearLayout.LayoutParams(ui.dp(150), ui.dp(150)))
         }
-        row.addView(ui.text(t("lg_s_account") + "\n" + url, 15f, Theme.MUTED).apply { setPadding(ui.dp(16), 0, 0, 0) })
+        row.addView(ui.text(t("lg_s_account") + "\n" + t("help_qr_note"), 15f, Theme.MUTED).apply { setPadding(ui.dp(16), 0, 0, 0) })
         return row
     }
 

@@ -413,6 +413,15 @@ Pro rozbor odpojování zapisuje služba i `NET|` (síť ztracena/připojena), `
 `MEM|` (dochází paměť), `STOP|tlačítkem v notifikaci` a `PS5|quit … | trvalo=…s | síť=… | pokus=…`;
 seznam ukončení ze strany PS5 je v hlášení („PlayStation ukončil spojení“) a důvod na Domů (`ls_ended`).
 
+## Stránky s pomocí (`pomoc/`)
+
+Čtverečky a tlačítka v aplikaci (`core/HelpLinks.kt`) vedou na `pomoc/*.md` ve větvi `main` na GitHubu,
+ne přímo na stránky LG, Sony, Samsungu: na každé stránce je hlavní odkaz, záložní odkazy a co hledat.
+Když výrobce stránku přesune, oprav odkaz v `pomoc/*.md` (commit `[skip ci]`) – aplikace se měnit nemusí.
+Kotvy jsou `<a id="…">` (např. `lg.md#ucet`, `ps5.md#ucet`). Stránky jsou pro iPhone i Android.
+Odkazy občas ověř: `grep -oh "https://[^) ]*" pomoc/*.md | sort -u` a `curl -L -o /dev/null -w "%{http_code}"`
+(microsoft.com/link vrací robotům 403, v prohlížeči funguje).
+
 ## Texty aplikace a jazyky
 
 Aplikace má dvě na sobě nezávislá nastavení jazyka (`core/Lang.kt`):
