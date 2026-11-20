@@ -543,6 +543,8 @@ class MainActivity : Activity() {
                     addView(ui.text(t("wz_ps_prep"), 15f, Theme.ACCENT))
                     // hláška „Remote Play je připojena“ by jinak svítila přes hru
                     addView(ui.text(t("rp_hide"), 15f, Theme.MUTED), ui.lp(top = 10))
+                    // bez tohohle aplikace spící PS5 nevzbudí
+                    addView(ui.text(t("ps5_rest"), 15f, Theme.MUTED), ui.lp(top = 10))
                 }, 14)
             }
             W_TV -> {
@@ -1576,6 +1578,7 @@ class MainActivity : Activity() {
         val c2 = ui.card()
         for (i in 1..4) c2.addView(ui.text("•  " + t("help_t$i"), 16f, Theme.MUTED), ui.lp(top = if (i == 1) 0 else 8))
         if (Prefs.console(this) == Console.PLAYSTATION) c2.addView(ui.text("•  " + t("rp_hide"), 16f, Theme.MUTED), ui.lp(top = 8))
+        if (Prefs.console(this) == Console.PLAYSTATION) c2.addView(ui.text("•  " + t("ps5_rest"), 16f, Theme.MUTED), ui.lp(top = 8))
         add(c2, 0)
         // jen část pro zvolený typ televize (ostatní typy jdou zvolit na Domů / v Nastavení)
         when (Prefs.tvType(this)) {
@@ -1870,6 +1873,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.90"
-    const val VERSION_CODE = 90
+    const val VERSION = "verze 0.91"
+    const val VERSION_CODE = 91
 }

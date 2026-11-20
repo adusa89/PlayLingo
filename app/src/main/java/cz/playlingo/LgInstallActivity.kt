@@ -18,6 +18,7 @@ import cz.playlingo.core.LgError
 import cz.playlingo.core.LgException
 import cz.playlingo.core.LgInstall
 import cz.playlingo.core.LgPhase
+import cz.playlingo.core.LgSetup
 
 /**
  * Průvodce: nahrát PlayLingo do televize LG z tohoto zařízení (telefon nebo box) přes vývojářský
@@ -41,6 +42,108 @@ class LgInstallActivity : Activity() {
     private var errorDetail: String? = null
     /** Zpráva po čtení kamerou (text, upozornit?) – jen do dalšího spuštění instalace. */
     private var scanNote: Pair<String, Boolean>? = null
+
+    // ---- pomocník krok za krokem (core/LgSetup.kt): co se o televizi právě ví ----
+    private var probe = LgSetup.Probe(tvFound = false, devMode = false, keyServer = false, paired = false, passphrase = false)
+    /** Televize LG nalezené v síti (pro řádek „Nalezena televize“). */
+    private var foundTvs: List<String> = emptyList()
+    private val main = android.os.Handler(android.os.Looper.getMainLooper())
+    @Volatile private var watching = false
+    @Volatile private var checking = false
+    private var lastSearch = 0L
+    private var lastScan = 0L
+    private val tick = object : Runnable {
+        override fun run() {
+            if (!watching) return
+            check()
+            main.postDelayed(this, 3000)
+        }
+    }
+
+    /** Na pozadí: najdi televizi (když adresa chybí) a zkus porty vývojářského režimu. */
+    private fun check() {
+        if (checking || running) return
+        checking = true
+        val ipNow = ip
+        val passOk = LgSetup.passphraseLooksOk(pass)
+        Thread({
+            try {
+                var found = foundTvs
+                var target = runCatching { LgInstall.address(ipNow) }.getOrNull()
+                val now = System.currentTimeMillis()
+                if (target == null && now - lastSearch > 10_000) {
+                    lastSearch = now
+                    found = LgFinder.ssdp(this)
+                    if (found.isEmpty() && now - lastScan > 30_000) { lastScan = now; found = LgFinder.scan(this) }
+                    target = found.firstOrNull()
+                }
+                val t = target
+                val dev = t != null && LgFinder.open(t, LgSetup.SSH_PORT)
+                val key = t != null && LgFinder.open(t, LgSetup.KEY_PORT)
+                val tvOn = t != null && (dev || found.contains(t) || LgFinder.open(t, LgSetup.WEBOS_PORT))
+                val paired = t != null && runCatching { vault.paired(t) }.getOrDefault(false)
+                val next = LgSetup.Probe(tvOn, dev, key, paired, passOk)
+                runOnUiThread {
+                    if (isFinishing || running) return@runOnUiThread
+                    val fill = ip.isEmpty() && t != null && found.contains(t)
+                    if (fill) ip = t!!
+                    if (next != probe || found != foundTvs || fill) {
+                        probe = next; foundTvs = found
+                        render(true)
+                    }
+                }
+            } finally { checking = false }
+        }, "tp-lg-check").start()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        watching = true
+        main.removeCallbacks(tick)
+        main.post(tick)
+    }
+
+    override fun onPause() {
+        watching = false
+        main.removeCallbacks(tick)
+        super.onPause()
+    }
+
+    /** Seznam kroků s fajfkami; rozepsaný je jen ten, který je na řadě. */
+    private fun stepsCard(): View = ui.card().apply {
+        addView(ui.text(t("lg_steps_h"), 18f, Theme.ACCENT, bold = true))
+        val p = probe.copy(passphrase = LgSetup.passphraseLooksOk(pass))
+        val now = LgSetup.step(p)
+        val steps = listOf(LgSetup.Step.FIND_TV to "lg_s_find", LgSetup.Step.DEV_MODE to "lg_s_dev",
+            LgSetup.Step.KEY_SERVER to "lg_s_key", LgSetup.Step.PASSPHRASE to "lg_s_pass")
+        for ((s, key) in steps) {
+            val done = LgSetup.done(s, p)
+            val cur = s == now
+            val mark = if (done) "✔ " else if (cur) "➜ " else "○ "
+            addView(ui.text(mark + t(key), 16f, if (done) Theme.OK else if (cur) Theme.TEXT else Theme.MUTED, bold = cur), ui.lp(top = 8))
+            if (cur) {
+                addView(ui.text(t(key + "_how"), 15f, Theme.TEXT), ui.lp(top = 4))
+                if (s == LgSetup.Step.DEV_MODE) addView(accountLink(), ui.lp(top = 10))
+            }
+        }
+        if (now == LgSetup.Step.READY) addView(ui.text(t("lg_s_ready"), 16f, Theme.OK, bold = true), ui.lp(top = 10))
+        foundTvs.takeIf { it.isNotEmpty() }?.let { addView(ui.text(t("lg_s_found").replace("%s", it.joinToString(", ")), 14f, Theme.MUTED), ui.lp(top = 8)) }
+    }
+
+    /** Účet LG pro vývojáře: v telefonu tlačítko do prohlížeče, v televizi čtvereček pro telefon. */
+    private fun accountLink(): View {
+        val url = "https://webostv.developer.lge.com/"
+        if (LgScanActivity.available(this)) return tagged(ui.button(t("lg_s_account")) {
+            try { startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))) } catch (_: Exception) {}
+        }, "lgacc")
+        val row = ui.hbox()
+        QrImage.bitmap(url)?.let { qr ->
+            row.addView(android.widget.ImageView(this).apply { setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE); setPadding(ui.dp(6), ui.dp(6), ui.dp(6), ui.dp(6)) },
+                LinearLayout.LayoutParams(ui.dp(150), ui.dp(150)))
+        }
+        row.addView(ui.text(t("lg_s_account") + "\n" + url, 15f, Theme.MUTED).apply { setPadding(ui.dp(16), 0, 0, 0) })
+        return row
+    }
 
     private fun t(key: String) = tx(key)
 
@@ -76,6 +179,7 @@ class LgInstallActivity : Activity() {
 
     private fun field(value: String, hintKey: String, tagName: String, secret: Boolean, onChange: (String) -> Unit) = EditText(this).apply {
         setText(value)
+        setSelection(value.length)
         hint = t(hintKey)
         setSingleLine(true)
         inputType = if (secret) InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
@@ -105,10 +209,8 @@ class LgInstallActivity : Activity() {
         add(ui.text(t("lg_title"), 26f, Theme.TEXT, bold = true), 0)
         add(ui.text(t("lg_intro"), 16f, Theme.MUTED), 8)
 
-        add(ui.card().apply {
-            addView(ui.text(t("lg_prep_h"), 18f, Theme.ACCENT, bold = true))
-            addView(ui.text(t("lg_prep"), 16f, Theme.TEXT), ui.lp(top = 8))
-        }, 18)
+        // krok za krokem: kroky, které jde poznat, se odškrtávají samy (televize v síti, vývojářský režim, Key Server)
+        add(stepsCard(), 18)
 
         // telefon s kamerou: adresu a Passphrase přečíst z obrazovky televize (LgScanActivity) – napřed,
         // ať se nic nepíše ručně
@@ -122,7 +224,7 @@ class LgInstallActivity : Activity() {
         add(field(ip, "lg_ip_hint", "lgip", false) { ip = it.trim() }, 6)
         val paired = runCatching { vault.paired(LgInstall.address(ip)) }.getOrDefault(false)
         add(ui.text(t("lg_pass"), 16f, Theme.TEXT, bold = true), 16)
-        add(field(pass, "lg_pass_hint", "lgpass", true) { pass = it }, 6)
+        add(field(pass, "lg_pass_hint", "lgpass", true) { val was = LgSetup.passphraseLooksOk(pass); pass = it; if (was != LgSetup.passphraseLooksOk(it)) render(true) }, 6)
         if (paired) add(ui.text(t("lg_pass_paired"), 14f, Theme.OK), 6)
 
         if (running) {

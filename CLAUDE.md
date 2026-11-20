@@ -270,6 +270,12 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   televize a boxy bez kamery (ověř `aapt dump badging`: kamera jen `uses-feature-not-required`).
   Texty `km_…` v `core/I18nKamera.kt`. Na skutečné televizi LG čtení ověří jen uživatel.
   Tlačítko skeneru je v `LgInstallActivity` nad políčky (dokud není adresa, je hlavní).
+  **Pomocník krok za krokem** (od 0.91, `core/LgSetup.kt` s testy `LgSetupTest`, síť `LgFinder.kt`): karta
+  nahoře v `LgInstallActivity` se každé 3 s (jen když je vidět) sama odškrtává – televize v síti (SSDP
+  `urn:lge-com:service:webos-second-screen:1`, záloha projití /24 na portech 3000/9922; nalezenou adresu
+  sama vyplní), vývojářský režim (otevřený port 9922), Key Server (9991; u spárované televize se
+  přeskočí), Passphrase (6 znaků 0–9/A–F). Rozepsaný je jen krok na řadě; u vývojářského režimu odkaz
+  na účet LG (telefon: tlačítko, televize: čtvereček). Dřívější texty `lg_prep…` nahradily `lg_s_…`.
   Od 0.86 umí `LgScanActivity` s `EXTRA_MODE = MODE_PS5` přečíst i osmimístné číslo pro spárování
   z obrazovky PS5 (`core/Ps5CodeScan.kt`, testy `Ps5CodeScanTest`); tlačítko „Načíst číslo…“ je
   v posledním kroku párování v MainActivity (jen telefon s kamerou). `MODE_PS5_IP` čte adresu PS5

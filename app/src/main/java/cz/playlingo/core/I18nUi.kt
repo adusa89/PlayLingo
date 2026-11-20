@@ -6,6 +6,7 @@ package cz.playlingo.core
  * UI_S = čeština a slovenština, UI_X = ostatní jazyky.
  */
 internal val UI_S: Map<String, Pair<String, String>> = mapOf(
+    "ps5_rest" to ("Aby se PS5 dal z aplikace probudit z klidového režimu: Nastavení → Systém → Úspora energie → Funkce dostupné v klidovém režimu → zapni „Zůstat připojen k internetu“ a „Povolit zapnutí systému PS5 ze sítě“." to "Aby sa PS5 dal z aplikácie prebudiť z pokojového režimu: Nastavenia → Systém → Úspora energie → Funkcie dostupné v pokojovom režime → zapni „Zostať pripojený na internet“ a „Povoliť zapnutie systému PS5 zo siete“."),
     "w_tv_old" to ("V televizi je starší PlayLingo (%1), nové je %2 – nahraj ho, ať televize umí všechny volby vzhledu." to "V televízore je staršie PlayLingo (%1), nové je %2 – nahraj ho, nech televízor vie všetky voľby vzhľadu."),
     "wz_dev" to ("Zařízení" to "Zariadenie"),
     "wz_tv" to ("Televize" to "Televízor"),
@@ -41,6 +42,7 @@ internal val UI_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "ps5_rest" to "So the app can wake the PS5 from rest mode: Settings → System → Power Saving → Features Available in Rest Mode → turn on “Stay Connected to the Internet” and “Enable Turning On PS5 from Network”.",
         "w_tv_old" to "The TV has an older PlayLingo (%1), the new one is %2 – install it so the TV knows all look options.",
         "rp_hide" to "So the game doesn’t keep showing “Remote Play app is connected”: on the PlayStation open Settings → System → Remote Play and turn on “Hide Remote Play Connection Status”. Set it under your gaming user and, to be safe, under the second one too. If the option is missing, update the PlayStation system software.",
         "wz_ps_prep" to "Before you continue, prepare the PlayStation: add a second user (another PlayStation account, free), switch to it and turn on Settings → System → Remote Play → Enable Remote Play. Without this, pairing at the end of the setup won’t work.",
@@ -74,6 +76,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugging and reports",
     ),
     Lang.PL to mapOf(
+        "ps5_rest" to "Aby aplikacja mogła wybudzić PS5 z trybu spoczynku: Ustawienia → System → Oszczędzanie energii → Funkcje dostępne w trybie spoczynku → włącz „Pozostań połączony z internetem” i „Włącz uruchamianie PS5 przez sieć”.",
         "w_tv_old" to "W telewizorze jest starsze PlayLingo (%1), nowe to %2 – wgraj je, by telewizor znał wszystkie opcje wyglądu.",
         "rp_hide" to "Żeby w grze nie świecił się stale komunikat o połączeniu Remote Play: na PlayStation otwórz Ustawienia → System → Remote Play i włącz „Ukryj stan połączenia Remote Play” (ang. Hide Remote Play Connection Status). Ustaw to na swoim użytkowniku do gry i dla pewności też na drugim. Jeśli tej opcji nie ma, zaktualizuj oprogramowanie PlayStation.",
         "wz_ps_prep" to "Zanim przejdziesz dalej, przygotuj PlayStation: dodaj drugiego użytkownika (inne konto PlayStation, za darmo), przełącz się na niego i włącz Ustawienia → System → Remote Play → Włącz Remote Play. Bez tego parowanie na końcu kreatora się nie uda.",
@@ -107,6 +110,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugowanie i zgłoszenia",
     ),
     Lang.DE to mapOf(
+        "ps5_rest" to "Damit die App die PS5 aus dem Ruhemodus wecken kann: Einstellungen → System → Energiesparen → Im Ruhemodus verfügbare Funktionen → „Mit dem Internet verbunden bleiben“ und „Einschalten der PS5 über das Netzwerk aktivieren“ einschalten.",
         "w_tv_old" to "Auf dem Fernseher ist ein älteres PlayLingo (%1), neu ist %2 – installiere es, damit der Fernseher alle Darstellungsoptionen kennt.",
         "rp_hide" to "Damit im Spiel nicht ständig „Remote Play-App ist verbunden“ erscheint: Öffne auf der PlayStation Einstellungen → System → Remote Play und schalte „Remote Play-Verbindungsstatus ausblenden“ ein (englisch Hide Remote Play Connection Status). Stelle das bei deinem Spielbenutzer und sicherheitshalber auch beim zweiten ein. Fehlt die Option, aktualisiere die Systemsoftware der PlayStation.",
         "wz_ps_prep" to "Bevor du weitermachst, bereite die PlayStation vor: Lege einen zweiten Benutzer an (anderes PlayStation-Konto, kostenlos), wechsle zu ihm und schalte Einstellungen → System → Remote Play → Remote Play aktivieren ein. Ohne das klappt das Koppeln am Ende nicht.",
@@ -140,6 +144,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Fehlersuche und Berichte",
     ),
     Lang.HU to mapOf(
+        "ps5_rest" to "Hogy az alkalmazás felébreszthesse a PS5-öt nyugalmi módból: Beállítások → Rendszer → Energiatakarékosság → Nyugalmi módban elérhető funkciók → kapcsold be a „Maradjon csatlakozva az internethez” és a „PS5 bekapcsolásának engedélyezése hálózaton keresztül” opciót.",
         "w_tv_old" to "A tévén régebbi PlayLingo van (%1), az új a %2 – telepítsd, hogy a tévé ismerje az összes megjelenési beállítást.",
         "rp_hide" to "Hogy játék közben ne látszódjon folyton a Remote Play kapcsolódási üzenet: a PlayStationön nyisd meg a Beállítások → Rendszer → Remote Play menüt, és kapcsold be a „Remote Play kapcsolat állapotának elrejtése” opciót (angolul Hide Remote Play Connection Status). Állítsd be a játékos felhasználódnál és biztos, ami biztos, a másodiknál is. Ha nincs ilyen opció, frissítsd a PlayStation rendszerszoftverét.",
         "wz_ps_prep" to "Mielőtt továbblépsz, készítsd elő a PlayStationt: adj hozzá egy második felhasználót (másik PlayStation-fiók, ingyenes), válts rá, és kapcsold be: Beállítások → Rendszer → Remote Play → Remote Play engedélyezése. Enélkül a párosítás a végén nem sikerül.",
@@ -173,6 +178,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Hibakeresés és jelentések",
     ),
     Lang.UK to mapOf(
+        "ps5_rest" to "Щоб застосунок міг вивести PS5 з режиму спокою: Налаштування → Система → Енергозбереження → Функції, доступні в режимі спокою → увімкни «Залишатися підключеним до інтернету» і «Дозволити вмикання PS5 через мережу».",
         "w_tv_old" to "У телевізорі старіший PlayLingo (%1), новий – %2. Встанови його, щоб телевізор знав усі параметри вигляду.",
         "rp_hide" to "Щоб у грі постійно не світилося повідомлення про підключення Remote Play: на PlayStation відкрий Налаштування → Система → Remote Play й увімкни «Приховати стан підключення Remote Play» (англ. Hide Remote Play Connection Status). Зроби це під своїм ігровим користувачем і про всяк випадок під другим. Якщо такого пункту немає, онови системне ПЗ PlayStation.",
         "wz_ps_prep" to "Перш ніж продовжити, підготуй PlayStation: додай другого користувача (інший обліковий запис PlayStation, безкоштовно), перейди на нього й увімкни Налаштування → Система → Remote Play → Увімкнути Remote Play. Без цього з’єднання в кінці не вдасться.",
@@ -206,6 +212,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Налагодження і звіти",
     ),
     Lang.ES to mapOf(
+        "ps5_rest" to "Para que la app pueda despertar la PS5 del modo de reposo: Ajustes → Sistema → Ahorro de energía → Funciones disponibles en modo de reposo → activa «Permanecer conectado a Internet» y «Permitir encender la PS5 desde la red».",
         "w_tv_old" to "El televisor tiene un PlayLingo antiguo (%1), el nuevo es %2: instálalo para que el televisor conozca todas las opciones de aspecto.",
         "rp_hide" to "Para que en el juego no aparezca todo el rato el aviso de conexión de Remote Play: en la PlayStation abre Ajustes → Sistema → Remote Play y activa «Ocultar estado de conexión de Remote Play» (en inglés Hide Remote Play Connection Status). Hazlo con tu usuario de juego y, por si acaso, también con el segundo. Si no aparece la opción, actualiza el software del sistema de la PlayStation.",
         "wz_ps_prep" to "Antes de seguir, prepara la PlayStation: añade un segundo usuario (otra cuenta de PlayStation, gratis), cambia a él y activa Ajustes → Sistema → Juego remoto → Habilitar juego remoto. Sin esto, la vinculación al final no funcionará.",
@@ -239,6 +246,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Depuración e informes",
     ),
     Lang.FR to mapOf(
+        "ps5_rest" to "Pour que l’app puisse sortir la PS5 du mode repos : Paramètres → Système → Économie d’énergie → Fonctions disponibles en mode repos → active « Rester connecté à Internet » et « Activer la mise sous tension de la PS5 depuis le réseau ».",
         "w_tv_old" to "Le téléviseur a un ancien PlayLingo (%1), le nouveau est %2 : installe-le pour que le téléviseur connaisse toutes les options d’apparence.",
         "rp_hide" to "Pour que le message de connexion Remote Play ne reste pas affiché en jeu : sur la PlayStation, ouvre Paramètres → Système → Remote Play et active « Masquer l’état de connexion Remote Play » (en anglais Hide Remote Play Connection Status). Fais-le avec ton utilisateur de jeu et, par sécurité, aussi avec le deuxième. Si l’option manque, mets à jour le logiciel système de la PlayStation.",
         "wz_ps_prep" to "Avant de continuer, prépare la PlayStation : ajoute un deuxième utilisateur (un autre compte PlayStation, gratuit), passe sur lui et active Paramètres → Système → Remote Play → Activer Remote Play. Sans cela, l’association à la fin ne marchera pas.",
@@ -272,6 +280,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Débogage et rapports",
     ),
     Lang.IT to mapOf(
+        "ps5_rest" to "Perché l’app possa riattivare la PS5 dalla modalità di riposo: Impostazioni → Sistema → Risparmio energetico → Funzioni disponibili in modalità di riposo → attiva «Resta connesso a Internet» e «Abilita accensione della PS5 dalla rete».",
         "w_tv_old" to "Sul televisore c’è un PlayLingo più vecchio (%1), quello nuovo è %2: installalo perché il televisore conosca tutte le opzioni di aspetto.",
         "rp_hide" to "Perché durante il gioco non resti il messaggio di connessione di Remote Play: sulla PlayStation apri Impostazioni → Sistema → Riproduzione remota e attiva «Nascondi stato connessione Riproduzione remota» (in inglese Hide Remote Play Connection Status). Fallo con il tuo utente di gioco e, per sicurezza, anche con il secondo. Se l’opzione manca, aggiorna il software di sistema della PlayStation.",
         "wz_ps_prep" to "Prima di continuare, prepara la PlayStation: aggiungi un secondo utente (un altro account PlayStation, gratis), passa a lui e attiva Impostazioni → Sistema → Riproduzione remota → Abilita Riproduzione remota. Senza questo l’associazione alla fine non riuscirà.",

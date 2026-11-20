@@ -37,6 +37,9 @@ se párování v posledním kroku nepovede):
    Status) – jinak ti ve hře pořád svítí hláška „Aplikace Remote Play je připojena“. Totéž nastav
    i pod svým herním uživatelem. Když tam volba není, aktualizuj systém PS5.
 3. PS5 a zařízení s PlayLingem musí být ve stejné domácí síti.
+4. Aby ho PlayLingo umělo probudit z klidového režimu: **Nastavení → Systém → Úspora energie →
+   Funkce dostupné v klidovém režimu** → zapni „Zůstat připojen k internetu“ a „Povolit zapnutí
+   systému PS5 ze sítě“.
 
 Pak v aplikaci projdi průvodce:
 1. **Zařízení:** na čem PlayLingo běží – Android TV nebo box s Androidem, nebo telefon či tablet
@@ -170,6 +173,10 @@ v televizi starší PlayLingo, než nese aplikace v telefonu, upozorní na to Do
 telefon a televize mají vždycky stejné nastavení. Všechno ostatní se nastavuje jen v telefonu.
 
 ### Televize LG
+
+**Nejjednodušší je pomocník v aplikaci** („Nahrát PlayLingo do televize LG“): ukáže postup krok
+za krokem a kroky, které pozná sám, odškrtne. Televizi v síti najde sám (adresu psát nemusíš), pozná,
+že je zapnutý vývojářský režim i Key Server, a na odkaz na účet LG ukáže čtvereček.
 
 **Nahrání PlayLingo do televize LG z telefonu nebo boxu (bez počítače):**
 1. Na webu webostv.developer.lge.com si založ účet LG (zdarma).
