@@ -117,6 +117,12 @@ s různým rodem v různých hrách vynechá `Cast`). Postavy jdou se slovníkem
 Běží až po paměti překladů (ta je jen podle textu) – ve službě, v `translateSubtitle` i v `DeeplTranslator.merge`.
 Zatím jen čeština. Bez jmen mluvčích v titulcích hry funguje jen 2. a 3. osoba.
 
+**Zásada profilů her (přání majitele 20. 11. 2026):** univerzální chování (čte se jen pás s titulky) zůstává pro
+všechny hry, profil hry ho jen vylepšuje. Volba „rozsah čtení“ i u vybrané hry: **Jen titulky** = z profilu jen jména,
+rod, pojmy a co v titulcích přeskočit, jiná místa obrazovky se nečtou; **Titulky a texty hry** = navíc oblasti, které
+zná profil (GTA VI: prompty pro hráče pod titulky; Diablo IV: úkol, menu, tooltipy – `navrhy/preklad-menu.md`).
+Texty hry se nemíchají s replikami v pruhu. Bez profilu (univerzální) jen titulky.
+
 **Profil hry dál (od 0.97.4)**, vše v `core/GameProfiles.kt` (testy `GameCastTest`):
 - `terms` – herní pojmy s pevným překladem po jazycích (jdou do `Prefs.glossary` před vlastní slovník, ten má
   přednost); jen pojmy, které mají v 1. a 4. pádě stejný tvar (výraz se vkládá do věty hotový).

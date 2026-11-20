@@ -60,6 +60,16 @@ se schová jako nápis), ale hráč bez něj neví, kam jít. Návrh:
 - Volba v Nastavení (krátký název, např. „Překlad úkolu“), výchozí podle profilu hry.
 - Pořadí: první kus téhle session (malý a hned užitečný), před boxem s menu a tooltipy.
 
+## Zásada pro všechny „texty hry“ (majitel 20. 11. 2026, platí i pro GTA VI)
+
+- Univerzální chování (jen pás s titulky) zůstává pro všechny hry; profil hry ho jen vylepšuje.
+- I s vybranou hrou volba **„Rozsah čtení“: Jen titulky / Titulky a texty hry**. „Jen titulky“ = z profilu jen jména,
+  rod, pojmy a přeskakování; žádné další oblasti obrazovky. „Titulky a texty hry“ = navíc oblasti z profilu
+  (Diablo IV: úkol, menu, tooltipy; GTA VI: prompty pro hráče pod titulky, např. „Take your shot“).
+- Oblasti a jejich vzhled patří do `GameProfile` (nové pole), ne natvrdo do kódu čtečky. Jedna volba v Nastavení
+  pro všechny hry (krátký název), popis do Nápovědy.
+- Texty hry se nemíchají s replikami v pruhu. GTA prompty odděluje hlavní session (0.97.24+), menu/úkol tahle.
+
 ## Rizika
 
 - Čas čtení celé obrazovky na slabší TV (měřit `READ|ocr=…`); menu je statické, takže stačí číst při změně.
