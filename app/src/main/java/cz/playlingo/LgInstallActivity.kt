@@ -114,6 +114,9 @@ class LgInstallActivity : Activity() {
         addView(ui.text(t("lg_steps_h"), 18f, Theme.ACCENT, bold = true))
         val p = probe.copy(passphrase = LgSetup.passphraseLooksOk(pass))
         val now = LgSetup.step(p)
+        // kolik kroků zbývá: 4 kroky přípravy + nahrání (READY = poslední)
+        val total = LgSetup.Step.values().size
+        addView(ui.steps(now.ordinal + 1, total, tx("steps_of").replace("%1", (now.ordinal + 1).toString()).replace("%2", total.toString())), ui.lp(top = 8))
         val steps = listOf(LgSetup.Step.FIND_TV to "lg_s_find", LgSetup.Step.DEV_MODE to "lg_s_dev",
             LgSetup.Step.KEY_SERVER to "lg_s_key", LgSetup.Step.PASSPHRASE to "lg_s_pass")
         for ((s, key) in steps) {
@@ -230,6 +233,9 @@ class LgInstallActivity : Activity() {
 
         if (running) {
             add(ui.text(t("lg_p_" + (phase ?: LgPhase.PACKAGE).name.lowercase()), 17f, Theme.ACCENT, bold = true), 18)
+            // nahrávání má pevné kroky (balíček → klíč → spojení → … → spuštění): pruh podle kroku
+            val ph = phase ?: LgPhase.PACKAGE
+            add(ui.progress((ph.ordinal + 1f) / LgPhase.values().size), 8)
             add(tagged(ui.button(t("lg_cancel")) { installer?.cancel() }, "lgcancel"), 10)
         } else {
             add(tagged(ui.button(t("lg_go"), primary = true) { start(false) }, "lggo"), 18)

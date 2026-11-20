@@ -135,6 +135,8 @@ class SamsungInstallActivity : Activity() {
         content.removeAllViews()
         add(ui.text(t("ss_title"), 26f, Theme.TEXT, bold = true), 0)
         add(ui.text(t("ss_intro"), 16f, Theme.MUTED), 8)
+        // kolik to dá práce, ať hráč ví předem (Samsung bez počítače nejde)
+        add(ui.text(t("ss_overview"), 16f, Theme.WARN, bold = true), 8)
 
         // výsledek nahoře: tohle uživatel hledá, když se vrací z instalace
         add(ui.card().apply {

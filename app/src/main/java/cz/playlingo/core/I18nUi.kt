@@ -6,6 +6,7 @@ package cz.playlingo.core
  * UI_S = čeština a slovenština, UI_X = ostatní jazyky.
  */
 internal val UI_S: Map<String, Pair<String, String>> = mapOf(
+    "steps_of" to ("Krok %1 z %2" to "Krok %1 z %2"),
     "help_ps5" to ("Celý postup s odkazy na založení účtu" to "Celý postup s odkazmi na založenie účtu"),
     "help_qr_note" to ("Naskenuj telefonem (i iPhonem). Když výrobce odkaz změní, najdeš na stránce záložní." to "Naskenuj telefónom (aj iPhonom). Keď výrobca odkaz zmení, nájdeš na stránke záložný."),
     "ps5_rest" to ("Aby se PS5 dal z aplikace probudit z klidového režimu: Nastavení → Systém → Úspora energie → Funkce dostupné v klidovém režimu → zapni „Zůstat připojen k internetu“ a „Povolit zapnutí systému PS5 ze sítě“." to "Aby sa PS5 dal z aplikácie prebudiť z pokojového režimu: Nastavenia → Systém → Úspora energie → Funkcie dostupné v pokojovom režime → zapni „Zostať pripojený na internet“ a „Povoliť zapnutie systému PS5 zo siete“."),
@@ -43,6 +44,7 @@ internal val UI_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "steps_of" to "Step %1 of %2",
         "help_ps5" to "Full steps with links to create the account",
         "help_qr_note" to "Scan it with a phone (iPhone too). If the maker moves the page, the page lists fallback links.",
         "ps5_rest" to "So the app can wake the PS5 from rest mode: Settings → System → Power Saving → Features Available in Rest Mode → turn on “Stay Connected to the Internet” and “Enable Turning On PS5 from Network”.",
@@ -78,6 +80,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugging and reports",
     ),
     Lang.PL to mapOf(
+        "steps_of" to "Krok %1 z %2",
         "help_ps5" to "Cały postęp z linkami do założenia konta",
         "help_qr_note" to "Zeskanuj telefonem (także iPhonem). Gdy producent zmieni link, na stronie są zapasowe.",
         "ps5_rest" to "Aby aplikacja mogła wybudzić PS5 z trybu spoczynku: Ustawienia → System → Oszczędzanie energii → Funkcje dostępne w trybie spoczynku → włącz „Pozostań połączony z internetem” i „Włącz uruchamianie PS5 przez sieć”.",
@@ -113,6 +116,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Debugowanie i zgłoszenia",
     ),
     Lang.DE to mapOf(
+        "steps_of" to "Schritt %1 von %2",
         "help_ps5" to "Alle Schritte mit Links zum Anlegen des Kontos",
         "help_qr_note" to "Mit dem Handy scannen (auch iPhone). Ändert der Hersteller den Link, stehen auf der Seite Ersatzlinks.",
         "ps5_rest" to "Damit die App die PS5 aus dem Ruhemodus wecken kann: Einstellungen → System → Energiesparen → Im Ruhemodus verfügbare Funktionen → „Mit dem Internet verbunden bleiben“ und „Einschalten der PS5 über das Netzwerk aktivieren“ einschalten.",
@@ -148,6 +152,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Fehlersuche und Berichte",
     ),
     Lang.HU to mapOf(
+        "steps_of" to "%1. lépés / %2",
         "help_ps5" to "A teljes lépéssor fiókregisztrációs linkekkel",
         "help_qr_note" to "Olvasd be telefonnal (iPhone-nal is). Ha a gyártó módosítja a linket, az oldalon tartalék linkek vannak.",
         "ps5_rest" to "Hogy az alkalmazás felébreszthesse a PS5-öt nyugalmi módból: Beállítások → Rendszer → Energiatakarékosság → Nyugalmi módban elérhető funkciók → kapcsold be a „Maradjon csatlakozva az internethez” és a „PS5 bekapcsolásának engedélyezése hálózaton keresztül” opciót.",
@@ -183,6 +188,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Hibakeresés és jelentések",
     ),
     Lang.UK to mapOf(
+        "steps_of" to "Крок %1 з %2",
         "help_ps5" to "Усі кроки з посиланнями на створення облікового запису",
         "help_qr_note" to "Відскануй телефоном (і iPhone). Якщо виробник змінить посилання, на сторінці є запасні.",
         "ps5_rest" to "Щоб застосунок міг вивести PS5 з режиму спокою: Налаштування → Система → Енергозбереження → Функції, доступні в режимі спокою → увімкни «Залишатися підключеним до інтернету» і «Дозволити вмикання PS5 через мережу».",
@@ -218,6 +224,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Налагодження і звіти",
     ),
     Lang.ES to mapOf(
+        "steps_of" to "Paso %1 de %2",
         "help_ps5" to "Todos los pasos con enlaces para crear la cuenta",
         "help_qr_note" to "Escanéalo con el teléfono (también iPhone). Si el fabricante cambia el enlace, la página tiene alternativas.",
         "ps5_rest" to "Para que la app pueda despertar la PS5 del modo de reposo: Ajustes → Sistema → Ahorro de energía → Funciones disponibles en modo de reposo → activa «Permanecer conectado a Internet» y «Permitir encender la PS5 desde la red».",
@@ -253,6 +260,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Depuración e informes",
     ),
     Lang.FR to mapOf(
+        "steps_of" to "Étape %1 sur %2",
         "help_ps5" to "Toutes les étapes avec liens pour créer le compte",
         "help_qr_note" to "Scanne avec un téléphone (iPhone aussi). Si le fabricant change le lien, la page en propose d’autres.",
         "ps5_rest" to "Pour que l’app puisse sortir la PS5 du mode repos : Paramètres → Système → Économie d’énergie → Fonctions disponibles en mode repos → active « Rester connecté à Internet » et « Activer la mise sous tension de la PS5 depuis le réseau ».",
@@ -288,6 +296,7 @@ internal val UI_X: Map<Lang, Map<String, String>> = mapOf(
         "s_diag" to "Débogage et rapports",
     ),
     Lang.IT to mapOf(
+        "steps_of" to "Passo %1 di %2",
         "help_ps5" to "Tutti i passi con i link per creare l’account",
         "help_qr_note" to "Inquadra con il telefono (anche iPhone). Se il produttore cambia il link, la pagina ha link alternativi.",
         "ps5_rest" to "Perché l’app possa riattivare la PS5 dalla modalità di riposo: Impostazioni → Sistema → Risparmio energetico → Funzioni disponibili in modalità di riposo → attiva «Resta connesso a Internet» e «Abilita accensione della PS5 dalla rete».",

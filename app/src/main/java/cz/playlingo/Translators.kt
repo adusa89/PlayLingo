@@ -34,13 +34,19 @@ object OfflineTranslator {
 
     fun isReady(lang: Lang): Boolean = ready[lang] == true
 
+    /** Jazyky, jejichž balíček se právě stahuje (pro ukazatel postupu; ML Kit procenta neříká). */
+    private val downloading = java.util.concurrent.ConcurrentHashMap.newKeySet<Lang>()
+
+    fun isDownloading(lang: Lang): Boolean = lang in downloading
+
     fun ensureModel(lang: Lang, callback: (Boolean) -> Unit) {
         try {
+            downloading.add(lang)
             client(lang).downloadModelIfNeeded(DownloadConditions.Builder().build())
-                .addOnSuccessListener { ready[lang] = true; callback(true) }
-                .addOnFailureListener { e -> Log.w("TestPreklad", "model", e); callback(false) }
+                .addOnSuccessListener { downloading.remove(lang); ready[lang] = true; callback(true) }
+                .addOnFailureListener { e -> downloading.remove(lang); Log.w("TestPreklad", "model", e); callback(false) }
         } catch (e: Exception) {
-            Log.w("TestPreklad", "model", e); callback(false)
+            downloading.remove(lang); Log.w("TestPreklad", "model", e); callback(false)
         }
     }
 

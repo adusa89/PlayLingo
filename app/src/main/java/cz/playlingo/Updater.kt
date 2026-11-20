@@ -129,7 +129,7 @@ object Updater {
                         if (n < 0) break
                         out.write(buf, 0, n); done += n
                         // po pěti procentech, ať se obrazovka nepřekresluje zbytečně často
-                        if (total > 0) progress((done * 100 / total).toInt() / 5 * 5)
+                        if (total > 0) progress((done * 100 / total).toInt() / 2 * 2)
                     }
                 }
             }

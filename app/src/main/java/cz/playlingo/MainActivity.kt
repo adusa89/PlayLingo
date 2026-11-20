@@ -527,7 +527,9 @@ class MainActivity : Activity() {
         }
         content.removeAllViews()
         content.addView(ui.text(t("wz_title"), 15f, Theme.ACCENT, bold = true))
-        content.addView(ui.text(ct(wizardSteps[wizard]), 30f, Theme.TEXT, bold = true), ui.lp(top = 4))
+        // kolik kroků zbývá (v telefonu není vidět levý seznam kroků)
+        content.addView(ui.steps(wizard + 1, wizardSteps.size, steps(wizard + 1, wizardSteps.size)), ui.lp(top = 8))
+        content.addView(ui.text(ct(wizardSteps[wizard]), 30f, Theme.TEXT, bold = true), ui.lp(top = 10))
 
         val lang = Prefs.lang(this)
         var nextLabel = t("wz_next")
@@ -575,6 +577,8 @@ class MainActivity : Activity() {
                 add(ui.card().apply {
                     addView(ui.checkRow(ok, false, t("chk_model") + " (${lang.label})", t("ok"), null, null))
                     if (!ok) addView(ui.text(busyText ?: t("prep_model"), 15f, Theme.WARN), ui.lp(top = 6))
+                    // stahování jazykového balíčku (asi 30 MB): pruh běhá, dokud ML Kit neskončí
+                    if (!ok && OfflineTranslator.isDownloading(lang)) addView(ui.progress(null), ui.lp(h = ui.dp(10), top = 8))
                 }, 12)
                 if (!ok) {
                     add(tagged(ui.button(t("download")) { downloadModel() }, "wdl"), 16)
@@ -718,11 +722,15 @@ class MainActivity : Activity() {
         head.addView(ui.text(title, 24f, Theme.TEXT, bold = true))
         status.addView(head)
         status.addView(ui.text(busyText ?: sub, 16f, Theme.MUTED), ui.lp(top = 6))
+        if (busyText != null && OfflineTranslator.isDownloading(Prefs.lang(this))) status.addView(ui.progress(null), ui.lp(h = ui.dp(10), top = 8))
         // stav spojení v jednom řádku: překlad běží / spojeno / obraz přichází
         if (running) {
             val ls = TranslatorService.linkStatus()
             status.addView(ui.text("● " + cz.playlingo.core.LinkStatus.line(Prefs.uiLang(this), ls, Prefs.console(this)), 15f,
                 if (ls.warning) Theme.WARN else if (ls.image) Theme.OK else Theme.MUTED).apply { tag = "linkline" }, ui.lp(top = 8))
+            // připojování ke konzoli a čekání na první obraz: pruh běhá, ať je vidět, že se něco děje
+            if (ls.stage == cz.playlingo.core.LinkStatus.Stage.CONNECTING || ls.stage == cz.playlingo.core.LinkStatus.Stage.RETRYING ||
+                ls.stage == cz.playlingo.core.LinkStatus.Stage.WAIT_IMAGE) status.addView(ui.progress(null), ui.lp(h = ui.dp(10), top = 6))
             // spojení ukončil sám PlayStation: ukázat jeho důvod, ať je vidět, že nejde o výpadek sítě
             if (!ls.console && Prefs.console(this) == Console.PLAYSTATION) Ps5Link.endedByConsole?.let { why ->
                 status.addView(ui.text(t("ls_ended").replace("%s", why), 14f, Theme.WARN), ui.lp(top = 4))
@@ -745,6 +753,9 @@ class MainActivity : Activity() {
                     else -> t("upd_how")
                 }
                 addView(ui.text(line, 14f, if (st == Updater.State.FAILED) Theme.BAD else Theme.MUTED), ui.lp(top = 4))
+                // pruh: kolik je staženo (instalace = čekání na systém, pruh jen běhá)
+                if (st == Updater.State.DOWNLOADING) addView(ui.progress(if (Updater.percent >= 0) Updater.percent / 100f else null), ui.lp(h = ui.dp(10), top = 8))
+                if (st == Updater.State.INSTALLING) addView(ui.progress(null), ui.lp(h = ui.dp(10), top = 8))
                 // když to z aplikace nejde, zbývá ruční cesta – adresa souboru
                 if (st == Updater.State.FAILED) addView(ui.text(UpdateCheck.url(o.channel, "PlayLingo.apk"), 13f, Theme.MUTED), ui.lp(top = 6))
                 if (!Updater.busy) addView(tagged(ui.button(t("upd_btn"), primary = true) { startUpdate(o) }, "update"),
@@ -962,6 +973,8 @@ class MainActivity : Activity() {
             c.addView(ui.text(host.ip, 15f, Theme.MUTED), ui.lp(top = 4))
             add(c, 16)
             pairMsg?.let { add(ui.text(it, 15f, pairMsgColor), 10) }
+        // hledání PS5, ověřování účtu, párování: pruh běhá, ať je vidět, že se něco děje
+        if (pairBusy) add(ui.progress(null), 8)
             if (wizard < 0 && !TranslatorService.running) add(tagged(ui.button(t("b_start"), primary = true) { section = Section.HOME; startFlow() }, "pstart"), 12)
             // přihlašovací kód účtu na PS5 jen tehdy, když ho PlayStation chtěl (nebo už je zadaný)
             if (loginPinWanted()) add(input("ps5_login", draftLogin, "plogin", number = true), 12)
@@ -978,9 +991,8 @@ class MainActivity : Activity() {
         val step = pairStep.coerceIn(0, 5)
         val have = Ps5.parseAccountId(draftPsn) != null
         val key = when (step) { 0 -> "pg_1"; 1 -> "pg_2"; 2 -> "pa_1"; 3 -> "pa_2"; 4 -> "pa_3"; else -> "pg_4" }
-        // text „krok X ze 4“ se používá i pro šest kroků – číslo celkem se dosadí
-        val label = t("pg_step").let { it.substringBefore("%d") + (step + 1) + it.substringAfter("%d").replace("4", "6") }
-        add(ui.text(label, 14f, Theme.ACCENT, bold = true), 16)
+        // kolikátý krok spárování to je (pruh rozdělený na dílky)
+        add(ui.steps(step + 1, 6, steps(step + 1, 6)), 16)
         add(ui.text(t("${key}_title"), 22f, Theme.TEXT, bold = true), 2)
         var nextOk = true
         when (step) {
@@ -1046,6 +1058,8 @@ class MainActivity : Activity() {
             }
         }
         pairMsg?.let { add(ui.text(it, 15f, pairMsgColor), 10) }
+        // hledání PS5, ověřování účtu, párování: pruh běhá, ať je vidět, že se něco děje
+        if (pairBusy) add(ui.progress(null), 8)
         val row = row()
         when {
             nextOk -> row.addView(tagged(ui.button(t("wz_next"), primary = true) { pairNext() }, "pnext"))
@@ -1676,6 +1690,9 @@ class MainActivity : Activity() {
     /** Text podle vybrané konzole: u Xboxu „xb_<klíč>“, pokud existuje (core/I18nXbox.kt). */
     private fun ct(key: String) = t(Prefs.console(this).key(key))
 
+    /** „Krok 3 z 8“. */
+    private fun steps(current: Int, total: Int) = t("steps_of").replace("%1", current.toString()).replace("%2", total.toString())
+
     /** Jméno spárovaného PlayStationu / vybraného Xboxu, nebo null. */
     private fun consoleName(): String? = when (Prefs.console(this)) {
         Console.PLAYSTATION -> Prefs.ps5Host(this)?.name
@@ -1746,7 +1763,7 @@ class MainActivity : Activity() {
         if (TranslatorService.running && !TranslatorService.demo) { moveTaskToBack(true); return }
         if (!SubtitleOverlay.canShow(this) && !Prefs.tvSend(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
         if (!Prefs.consoleReady(this)) { section = Section.PS5; render(); return }
-        busyText = t("prep_model"); render(true)
+        busyText = t("prep_model")
         OfflineTranslator.ensureModel(Prefs.lang(this)) { ok ->
             runOnUiThread {
                 if (!ok) {
@@ -1757,6 +1774,7 @@ class MainActivity : Activity() {
                 }
             }
         }
+        if (busyText != null) render(true)   // až po spuštění stahování, ať je vidět pruh
     }
 
     /** Zkouška bez PlayStationu: ukázková hra jde do aplikace stejnou cestou jako video z konzole. */
@@ -1786,10 +1804,11 @@ class MainActivity : Activity() {
     }
 
     private fun downloadModel() {
-        busyText = t("prep_model"); render(true)
+        busyText = t("prep_model")
         OfflineTranslator.ensureModel(Prefs.lang(this)) { ok ->
             runOnUiThread { busyText = if (ok) null else t("model_fail"); render(true); busyText = null }
         }
+        render(true)   // až po spuštění stahování, ať je vidět pruh
     }
 
     /** Číslo nejnovější verze v daném kanálu; null, když se nedá zjistit. Volat mimo hlavní vlákno. */
@@ -1917,6 +1936,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.95"
-    const val VERSION_CODE = 95
+    const val VERSION = "verze 0.96"
+    const val VERSION_CODE = 96
 }

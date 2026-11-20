@@ -72,6 +72,7 @@ class XboxForm(
         add(qrRow(c.verificationUri, t("xb_login_qr")), 10)
         val left = ((c.expiresAt - System.currentTimeMillis()) / 60_000).coerceAtLeast(0)
         add(ui.text(t("xb_login_waiting").replace("%d", left.toString()), 15f, Theme.MUTED), 8)
+        add(ui.progress(null), 6)   // čeká se, až se hráč přihlásí v telefonu
         val r = row()
         // telefon: stránku rovnou otevřít (čtvereček by si sám nenačetl)
         if (NetInfo.isHandheld(a)) r.addView(tagged(ui.button(t("xb_login_open"), primary = true) {

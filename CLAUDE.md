@@ -502,6 +502,15 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   dlouhé popisy jsou v Nápovědě v části „Volby v Nastavení“ (`help_settings`). Nová volba = krátký název
   v Nastavení, popis do Nápovědy.
 
+## Ukazatele postupu (od 0.96)
+
+`Ui.progress(fraction)` – pruh (0..1; `null` = nevíme kolik, pruh běhá) a `Ui.steps(current, total, label)` –
+„Krok 3 z 8“ (text `steps_of`) s pruhem na dílky. Používá se: stahování aktualizace (Domů i pomocník
+v telefonu, procenta po 2 %; instalace = běhající pruh), stahování jazykového balíčku (ML Kit procenta neříká –
+`OfflineTranslator.isDownloading`), připojování ke konzoli a čekání na obraz na Domů, hledání/párování PS5
+(`pairBusy`), přihlášení Xboxu, nahrávání do LG (podle `LgPhase`), kroky průvodce, spárování PS5 (6 kroků)
+a pomocník LG (5 kroků). Nový postup o víc krocích = přidej `ui.steps`, nové čekání = `ui.progress`.
+
 ## Na co zkouška spoléhá (neměnit jen tak)
 
 - Řádky v logu se značkou `TP_TEST` (`SHOW|`, `VIDEO|`, `LINK|`, `PAIR|`, `START|`…) –

@@ -29,6 +29,8 @@ object Theme {
 }
 
 class Ui(private val ctx: Context) {
+    /** Podklad prázdné části ukazatelů postupu. */
+    private val TRACK = 0x33FFFFFF
 
     private val density = ctx.resources.displayMetrics.density
     fun dp(v: Int): Int = (v * density).toInt()
@@ -84,6 +86,40 @@ class Ui(private val ctx: Context) {
     fun card(): LinearLayout = vbox().apply {
         background = cardBg()
         setPadding(dp(22), dp(18), dp(22), dp(18))
+    }
+
+    /**
+     * Ukazatel postupu (stahování, nahrávání, čekání). [fraction] 0..1; null = nevíme, kolik zbývá –
+     * pak pruh běhá sem a tam, ať je vidět, že se něco děje.
+     */
+    fun progress(fraction: Float?): View {
+        if (fraction == null) return android.widget.ProgressBar(ctx, null, android.R.attr.progressBarStyleHorizontal).apply {
+            isIndeterminate = true
+            indeterminateTintList = android.content.res.ColorStateList.valueOf(Theme.ACCENT)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(10))
+        }
+        val f = fraction.coerceIn(0f, 1f)
+        return LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            background = rounded(TRACK, 5)
+            clipToOutline = true
+            addView(View(ctx).apply { background = rounded(Theme.ACCENT, 5) }, LinearLayout.LayoutParams(0, dp(10), f))
+            addView(View(ctx), LinearLayout.LayoutParams(0, dp(10), 1f - f))
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(10))
+        }
+    }
+
+    /**
+     * Kde v postupu hráč je: text („Krok 3 z 8“, [label] už s dosazenými čísly) a pod ním pruh
+     * rozdělený na [total] dílků, hotové a právě probíhající dílky zlaté.
+     */
+    fun steps(current: Int, total: Int, label: String): View = vbox().apply {
+        addView(text(label, 14f, Theme.ACCENT, bold = true))
+        addView(LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            for (i in 1..total) addView(View(ctx).apply { background = rounded(if (i <= current) Theme.ACCENT else TRACK, 3) },
+                LinearLayout.LayoutParams(0, dp(6), 1f).apply { if (i > 1) leftMargin = dp(4) })
+        }, lp(top = 6))
     }
 
     fun lp(w: Int = LinearLayout.LayoutParams.MATCH_PARENT, h: Int = LinearLayout.LayoutParams.WRAP_CONTENT, top: Int = 0) =
