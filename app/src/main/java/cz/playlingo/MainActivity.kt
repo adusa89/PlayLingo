@@ -1071,7 +1071,7 @@ class MainActivity : Activity() {
     /** Spárování s PlayStationem (stránka PlayStation i krok průvodce). */
     private fun ps5Form() {
         if (Prefs.console(this) == Console.XBOX) {
-            xbox.render(if (wizard < 0) ({ section = Section.HOME; startFlow() }) else null); return
+            xbox.render(null); return   // Spustit jen na Domů
         }
         val host = Prefs.ps5Host(this)
         if (draftLogin.isEmpty()) draftLogin = Prefs.ps5LoginPin(this)
@@ -1083,7 +1083,7 @@ class MainActivity : Activity() {
             pairMsg?.let { add(ui.text(it, 15f, pairMsgColor), 10) }
         // hledání PS5, ověřování účtu, párování: pruh běhá, ať je vidět, že se něco děje
         if (pairBusy) add(ui.progress(null), 8)
-            if (wizard < 0 && !TranslatorService.running) add(tagged(ui.button(t("b_start"), primary = true) { section = Section.HOME; startFlow() }, "pstart"), 12)
+            // Spustit je jen na Domů (telefon i Android TV) – na stránce Konzole bylo podruhé (od 0.97.13)
             // přihlašovací kód účtu na PS5 jen tehdy, když ho PlayStation chtěl (nebo už je zadaný)
             if (loginPinWanted()) add(input("ps5_login", draftLogin, "plogin", number = true), 12)
             add(tagged(ui.button(t("ps5_forget")) {
@@ -2165,6 +2165,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.12"
-    const val VERSION_CODE = 109
+    const val VERSION = "verze 0.97.13"
+    const val VERSION_CODE = 110
 }
