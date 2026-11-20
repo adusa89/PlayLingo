@@ -124,8 +124,13 @@ Zatím jen čeština. Bez jmen mluvčích v titulcích hry funguje jen 2. a 3. o
   oranžový řádek „Hraješ asi …“ s dialogem Přepnout / Nechat (`dismissGameGuess`, pak se stejná hra nenabízí).
 - Nastavení → Hra (`gameSection` v MainActivity): Profil hry, případně odhad, rozbalovací „Postavy, místa
   a pojmy“ (postavy ♀/♂, jména, pojmy, nečtené nápisy). Texty `gp_…` v `core/I18nGame.kt`.
-- Obecná anglická slova (Downtown, Buffalo, Map…) do jmen nepatří, a u jmen sdílených s jinými hrami
-  patří do `AMBIGUOUS` (univerzální profil je vynechá).
+- **Názvy aut, ulic, čtvrtí a věcí ve hře se nepřekládají, ani když jsou to běžná anglická slova** (přání
+  majitele, od 0.97.5: v telefonu a na mapě hry jsou anglicky, přeložené by mátly). V profilu hry jsou
+  (u GTA VI v `GTA6_COMMON`) a zároveň v `AMBIGUOUS`, takže je univerzální profil ani odhad hry nebere.
+  Slova z menu (Map, Help, Settings…) do jmen nepatří, jen do `menu`. Překlad v závorce za názvem
+  záměrně ne – pruh by se roztáhl přes další text.
+- Ulice ve všech hrách: `Glossary.STREET` (1–3 slova s velkým písmenem + Street/St/Avenue/Drive/Road…)
+  nechá název v originále i bez seznamu; testy v `GlossaryTest.streetNamesStayInOriginal`.
 
 **Ladění profilu ze hry (od 0.97.4):** záznam v síti má navíc `GET /snimek.jpg?k=…` (celý poslední snímek,
 šedý, nanejvýš 1280 px – `StreamReader.still`, čtení titulků neovlivní) a hlášení oddíly „titulky ze hry“

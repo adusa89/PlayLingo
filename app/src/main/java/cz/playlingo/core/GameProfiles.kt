@@ -42,7 +42,7 @@ class GameGuess(games: List<GameProfile> = GameProfiles.GAMES) {
         for (g in games) for (n in (g.names + g.characters.flatMap { it.allNames }).distinct()) {
             if (n in GameProfiles.AMBIGUOUS) continue
             val k = TextLogic.simplify(n)
-            if (k.length < 4) continue          // krátké přezdívky (Lu, Jas) jsou moc náhodné
+            if (k.length < 4) continue          // krátké přezdívky (Lu, Jay) jsou moc náhodné
             m[k] = if (m.containsKey(k) && m[k]?.id != g.id) null else g
         }
         owner = m.filterValues { it != null }.mapValues { it.value!! }
@@ -86,19 +86,51 @@ object GameProfiles {
         "Lamar", "Lester", "Amanda", "Tracey", "Jimmy", "Chop", "Wade", "Simeon", "Devin Weston", "Merryweather",
         "Ballas", "Vagos", "Niko", "Bellic", "Roman", "Tommy Vercetti", "Carl Johnson", "Big Smoke",
     )
-    /** GTA VI: postavy a místa (Vice City, Leonida) – zvlášť, ať se neplete se staršími díly. */
     /**
-     * GTA VI (vyšlo 19. 11. 2026). Seznam z wiki a průvodců po vydání (gtabase, wikily, beebom, playday.one),
-     * oficiální je jen část – ladí se podle záznamu ze hry (ci/sbirej-hru.ps1). Obecná anglická slova
-     * (Downtown, Southside, Buffalo…) tu záměrně nejsou: překladač je má přeložit.
+     * Jména z GTA VI, která jsou zároveň běžná anglická slova nebo jména (modely aut, čtvrti, ulice). Přání majitele:
+     * v GTA VI se nepřekládají ani ta – přeložená by nesouhlasila s nápisy v telefonu a na mapě. Patří proto do
+     * profilu GTA VI, ale zároveň do [AMBIGUOUS], takže je univerzální profil (a odhad hry) vynechá.
+     * Zdroje: gta.wiki (Vehicles in GTA VI, Leonida, 20. 11. 2026), gtabase, wikily.gg (mapa, 19. 11. 2026).
      */
-    private val GTA6 = listOf(
+    private val GTA6_COMMON = listOf(
+        // čtvrti, města a ulice
+        "Downtown", "Downtown Vice City", "Southside", "Bayside", "Crosstown", "Stockyard", "Hamlet", "Bluegrass",
+        "Sundown", "Bonanza", "Capri", "Grayson", "Yorktown", "Bohemia", "Buckskin", "Domed Hills", "North Beaches",
+        "Sandbars", "East Key", "Shore Drive",
+        // modely aut, motorek, lodí a letadel
+        "Lasso", "Mamba", "Mamba GT", "Sentinel", "Sentinel Classic", "Dominator", "Sirius", "Animus", "Bogan", "Greta",
+        "Grouse", "Impaler", "Lowline", "Parkland", "Transient", "Woodland", "Granger", "Bison", "Blast", "Bobcat",
+        "Crawler", "Reclaimer", "Moocher", "Shifter", "Shuttle", "Sojourn", "Spritz", "Trotter", "Iota", "Garda", "Crake",
+        "Maverick", "Pumper", "Rhode", "Erode", "Azure", "Clarion", "Dingus", "Pontoon", "Tao", "Comet", "Furia",
+        "Growler", "Locust", "Neo", "Paragon", "Zion", "Alpha", "Buccaneer", "Chino", "Deviant", "Faction", "Gauntlet",
+        "Hermes", "Hustler", "Phoenix", "Stallion", "Tulip", "Vamos", "Virgo", "Cypher", "Buffalo", "Emperor", "Ingot",
+        "Intruder", "Jugular", "Neon", "Primo", "Regina", "Stratum", "Sultan", "Windsor", "Astron", "Baller", "Cavalcade",
+        "Dorado", "Jubilee", "Marshall", "Mesa", "Novak", "Terminus", "Blazer", "Caddy", "Contender", "Outlaw", "Patriot",
+        "Rancher", "Rebel", "Injection", "Walton", "Wastelander", "Yosemite", "Burrito", "Journey", "Speedo", "Benson",
+        "Biff", "Hauler", "Mule", "Packer", "Phantom", "Rubble", "Stockade", "Yankee", "Ripley", "Cliffhanger",
+        "Double T", "Enduro", "Sanchez", "Sovereign", "Scorcher", "Dinghy", "Marquis", "Dodo", "Duster", "Luxor",
+        "Mallard", "Nimbus", "Buzzard", "Swift", "Valkyrie", "Sea Sparrow", "Brigade", "Predator", "Guardian", "Golfer",
+        "Surfer", "Hemming", "Furrow",
+        // výrobci
+        "Brute", "Stanley", "Lure", "Principe", "Lapwing", "Interstate", "Buckingham", "Mammoth",
+    )
+    /**
+     * GTA VI (vyšlo 19. 11. 2026) – zvlášť od starších dílů, ať se neplete. Seznam z wiki a průvodců po vydání
+     * (gta.wiki 20. 11. 2026, gtabase, beebom, playday.one, allthings.how, wikily.gg), oficiální je jen část – ladí
+     * se podle záznamu ze hry (ci/sbirej-hru.ps1). Jména, která jsou i běžná slova, jsou v [GTA6_COMMON].
+     * Nepodložená jména z doby před vydáním (Kordell, Raina, Cecilia, Abe Gonzalez) byla vyřazena.
+     */
+    private val GTA6 = GTA6_COMMON + listOf(
         // postavy
-        "Jason", "Duval", "Lucia", "Caminos", "Lu", "Jas", "Cal Hampton", "Boobie Ike", "Dre'Quan", "Dre'Quan Priest",
-        "Real Dimez", "Bae-Luxe", "Roxy", "Raul Bautista", "Brian Heder", "Lori Heder", "Heder", "Kenton Rees", "Mattia",
-        "Katerina Rosselli", "Mia Caminos", "Frankie Delight", "Yasmani", "Kordell", "Raina", "Bret Vogel", "Cecilia",
-        "Eddie Acosta", "Pilot Pete", "Wyman", "Benedict Halifax", "Evelyn Andrews", "Nicole Park", "Andrés de León",
-        "Petra Navarro", "Valentina", "Abe Gonzalez", "Méndez", "El Martillo", "La Gata", "Mud Dog Mike", "Delta Dawne",
+        "Jason", "Duval", "Lucia", "Caminos", "Lu", "Jay", "Jay Dog", "Jas", "Loony", "Cal Hampton", "Boobie Ike", "Dre'Quan",
+        "Dre'Quan Priest", "Real Dimez", "Bae-Luxe", "Roxy", "Raul Bautista", "Brian Heder", "Lori Heder", "Heder",
+        "Kenton Rees", "Mattia", "Mattia Tauro", "Katerina Rosselli", "Mia Caminos", "Tomás Caminos", "Frankie Delight",
+        "Yasmani", "Yasmani Cabrera", "Yago Jiménez", "Bret Vogel", "Eddie Acosta", "Pilot Pete", "Wyman",
+        "Benedict Halifax", "Evelyn Andrews", "Nicole Park", "Andrés de León", "Petra Navarro", "Valentina", "Méndez",
+        "Aldo Méndez", "Stefanie Gates", "Moses Watkins", "Sir Todd Bancroft", "Sparky Malarky",
+        // moderátoři rádií a postavičky z televize
+        "El Martillo", "La Gata", "Mud Dog Mike", "Delta Dawne", "Dr. Nita", "Madame Brigitte", "Skipper McD",
+        "Richard Bastion", "Macca the Gator", "Chunkee the Manatee",
         // kraj, okresy, města
         "Leonida", "Vice City", "Vice-Dale County", "Mariana County", "Kelly County", "Leonard County", "Lummox County",
         "Leonida Keys", "Grassrivers", "Port Gellhorn", "Gellhorn", "Ambrosia", "Mount Kalaga", "Little Cuba", "Ocean Beach",
@@ -108,19 +140,41 @@ object GameProfiles {
         "Abismo Key", "Frogswater", "Draper Island", "Belville", "Waning Sands", "Millport", "Moreau", "Zephyr Islands",
         "Featherstone Islands", "Saint Attaway Islands", "Manifest Canyon", "Gulf of Leonida", "Lake Leonida",
         "Cottonmouth Lake", "Nehrling River", "Buckskin Swamp", "Lake Tallaloko", "Kalaga Reservoir",
+        // doplněno podle gta.wiki (Leonida, 20. 11. 2026); „Key“ a „Island“ by překladač přeložil doslova
+        "Vinewood Beach", "Redhill", "Ekanfinaka", "Peregrine Bay", "Bobcat Key", "Corsair Key", "Goose Key",
+        "Hyde Island", "Little Hardin Island", "Frampton Islands", "Crude Islands", "Catalan Bay", "Gambit Bay",
+        "Straits of Leonida", "Tequesta Retreat", "Mount Kalaga National Park", "Fairyland Forest", "Vice Decor District",
+        "Sundown Beach",
+        // ulice (wikily.gg: cedule v záběrech; Shorefront Ave a Seaview Blvd jen z jednoho zdroje)
+        "Huevo St", "Huevo", "Storefront Ave", "Shorefront Ave", "Seaview Blvd",
         // místa a podniky
-        "VCIA", "Leonida Penitentiary", "Hamlet Correctional", "Gellhorn International Raceway", "Boone Speedway",
+        "VCIA", "Vice City International Airport", "Leonida Penitentiary", "Leonida State Prison", "Hamlet Correctional",
+        "Hamlet Correctional Facility", "Breakwater Quarry", "Emerald Springs", "Goliath Global", "Wyman's World",
+        "Gellhorn International Raceway", "Boone Speedway",
         "MacAlister Gold Mine", "Allied Crystal", "Tisha-Wocka", "Starlet Motel", "Vercetti Estate", "McKittrick Farm",
         "Thrillbilly Mud Club", "Jack of Hearts", "Only Raw", "Only Raw Records", "Delights", "Rusty Anchor",
         "Barnacle Beauties", "Ammu-Nation", "Pay 'n' Spray", "Coastal Auto Care", "Rideout Customs", "One-Eyed Willie's",
         "Electric Fang", "Sinfrontera", "Sinfrontera National Bank", "Megamundo", "Navitrak", "Dale's Shopwell",
         "Bunko Jack's", "Kitty Litter",
         // gangy, organizace, rádia, aplikace v telefonu
-        "Kingfishers", "Kolt and Associates", "M7", "La Polilla Negra", "Final Chapter", "San4San", "PTT Youngin\$",
-        "Guardia Brothers", "Cellerica", "VCPD", "Cocoteo FM", "Back Country Radio", "AfroBank FM", "The Chamber",
-        "Flash FM", "Dirty South Classics", "V-Rock", "WAINK", "BuckMe", "Ryde Me", "Scooter Bros", "Snapmatic",
+        "Kingfishers", "Kolt and Associates", "M7", "La Polilla Negra", "Final Chapter", "Final Chapter MC", "San4San",
+        "PTT Youngin\$", "Guardia Brothers", "Cellerica", "VCPD",
+        // rádia (gta.wiki, Radio Stations in GTA VI)
+        "Cocoteo FM", "Back Country Radio", "AfroBank FM", "The Chamber", "The Chamber 106.6", "Flash FM",
+        "Dirty South Classics", "V-Rock", "Vice City FM", "Vice City Rap Radio", "WKTT", "WKTT Talk Radio",
+        "Emotion 98.3", "Honey FM", "Kaleidoscope FM", "La Ola", "Leonida Jazz Radio", "Radio On-U", "Stockyard FM",
+        "Symphony FM", "CircoLoco Records Radio", "Gloriana Blues Radio", "WorldWide FM",
+        // aplikace v telefonu (beebom: potvrzené; WhatUp, Bleeter, LifeInvader zatím jen dohady)
+        "WAINK", "BuckMe", "Ryde Me", "RydeMe", "Scooter Bros", "Snapmatic",
         "Skunk Ape", "Mr. Mangrove",
-        // značky a modely aut a lodí (jen nezaměnitelné)
+        // značky a modely aut, motorek, lodí a letadel (nezaměnitelné; běžná slova jsou v GTA6_COMMON)
+        "Rugger", "Hauners", "MTL", "HVY", "BF", "Arcturus", "DeVanity", "Sungrazer", "Chavos XS", "Montagne",
+        "Riata", "Gresley", "Swamp Blaster", "Vivanite", "Verus", "Alvino", "Nimbe", "Boomazoom", "LomBike", "Fan-E",
+        "Delmar", "Dibnah", "Flatdeck", "Seacab", "Sea Enchantress", "Sedna", "Shasa", "Torlan", "Yakuruna",
+        "Transgressor", "8F Drafter", "Bestia GTS", "Omnis", "Thrax", "Ruiner", "Sabre GT", "Vigero", "DF8-90",
+        "Raiden", "V-STR", "Toros", "Slamvan", "Securicar", "Airtug", "Dashound", "Fieldmaster", "Lifta", "Avarus",
+        "Lectro", "Manchez", "Nightblade", "Faggio", "Seashark", "Hydroblast", "Mammatus", "Shamal", "SuperVolito",
+        "Volatus", "Esskey", "Venturas", "Rhino Tank", "P-996 LAZER", "DH-7 Iron Mule", "Zombie Chopper",
         "Albany", "Annis", "Benefactor", "Bravado", "Declasse", "Dinka", "Dundreary", "Gallivanter", "Grotti", "Imponte",
         "Invetero", "JoBuilt", "Karin", "Maibatsu", "Mer-Can", "Nagasaki", "Ocelot", "Pegassi", "Pfister", "Progen",
         "Schyster", "Shitzu", "Übermacht", "Vapid", "Zirconium", "Ganado", "Stanier", "Schafter", "Squalo", "Zorrusso",
@@ -179,30 +233,48 @@ object GameProfiles {
     private fun m(name: String, vararg aliases: String) = GameCharacter(name, Gender.M, aliases.toList())
     private fun f(name: String, vararg aliases: String) = GameCharacter(name, Gender.F, aliases.toList())
 
-    // postavy s rodem (hlavní a časté vedlejší; přezdívky, jak je hra používá)
+    // postavy s rodem (hlavní a časté vedlejší; přezdívky, jak je hra používá). Rod podle zájmen na gta.wiki
+    // a gtabase; Jasona volá Lucia „Jay“, Andrés „Jay Dog“; Lucii Jason „Lu“, Dre'Quan „Loony“ (gta.wiki).
+    // Mia Caminos jen podle gtabase – gta.wiki má Luciinu matku bez jména.
     private val GTA6_CAST = listOf(
-        m("Jason", "Jason Duval", "Jas", "Duval"), f("Lucia", "Lucia Caminos", "Lu", "Caminos"),
+        m("Jason", "Jason Duval", "Jay", "Jay Dog", "Jas", "Duval"), f("Lucia", "Lucia Caminos", "Lu", "Loony", "Caminos"),
         m("Cal Hampton"), m("Boobie Ike", "Boobie"), m("Dre'Quan", "Dre'Quan Priest", "Dre"), f("Bae-Luxe"), f("Roxy"),
         m("Raul Bautista", "Raul"), m("Brian Heder", "Brian"), f("Lori Heder", "Lori"), m("Donnie"), m("Arnold"),
-        f("Mandy"), m("Kenton Rees", "Kenton"), m("Mattia"), f("Katerina Rosselli", "Kat"), m("Joey"), f("Shirley"),
-        f("Mia Caminos", "Mia"), f("Linda"), f("Vicki"), m("Frankie Delight", "Frankie"), m("Moses"), m("Dunk"),
-        m("Tyrone"), m("Randy"), f("Andrea"), f("Nicole Park", "Nicole"), m("Andrés de León", "Andrés"),
-        f("Petra Navarro", "Petra"), f("Valentina"), m("Abe Gonzalez", "Abe"), m("Manuel"), m("Kirk"), m("Kyle"),
+        f("Mandy"), m("Kenton Rees", "Kenton"), m("Mattia", "Mattia Tauro"), f("Katerina Rosselli", "Kat"), m("Joey"),
+        f("Shirley"), f("Mia Caminos", "Mia"), m("Tomás", "Tomás Caminos"), f("Linda"), f("Vicki"),
+        m("Frankie Delight", "Frankie"), m("Moses", "Moses Watkins"), m("Dunk"), m("Tyrone"), m("Randy"), f("Andrea"),
+        f("Nicole Park", "Nicole"), m("Andrés de León", "Andrés"), f("Petra Navarro", "Petra"), f("Valentina"),
+        m("Méndez", "Aldo Méndez", "Mendez"), f("Stefanie Gates", "Stefanie"), m("Manuel"), m("Kirk"), m("Kyle"),
         m("Pilot Pete", "Pete"), m("Wyman"), m("Benedict Halifax", "Benedict"), f("Evelyn Andrews", "Evelyn"),
         m("El Martillo"), f("La Gata"), m("Mud Dog Mike"),
     )
     /** Herní pojmy GTA VI s pevným překladem – jen ty, které se v 1. a 4. pádě nemění. */
     private val GTA6_TERMS = mapOf(
         "cs" to mapOf("wanted level" to "hledanost", "safehouse" to "úkryt", "safe house" to "úkryt", "stash house" to "skrýš",
-            "heist" to "loupež"),
+            "heist" to "loupež", "rap sheet" to "trestní rejstřík", "burner phone" to "jednorázový telefon",
+            "getaway car" to "auto na útěk"),
         "sk" to mapOf("wanted level" to "hľadanosť", "safehouse" to "úkryt", "safe house" to "úkryt", "stash house" to "skrýš",
-            "heist" to "lúpež"),
+            "heist" to "lúpež", "rap sheet" to "register trestov", "burner phone" to "jednorazový telefón",
+            "getaway car" to "auto na útek"),
     )
-    /** Nápisy GTA VI mimo titulky. MISSION PASSED/FAILED, BUSTED jsou zvyk série – ověřit ve hře. */
-    private val GTA6_HUD = listOf("WASTED", "BUSTED", "MISSION PASSED", "MISSION FAILED", "Retry Checkpoint", "Restart Mission")
-    /** Pauza a menu (Jason & Lucia, Mapa, Brief…) – aspoň dva z nich na obrazovce = menu. */
+    /**
+     * Nápisy GTA VI mimo titulky. Podle průvodců po vydání (allthings.how 19. 11. 2026): obrazovka neúspěchu má
+     * nadpis FAILED a tlačítka RETRY CHECKPOINT / SKIP CHECKPOINT / RESTART MISSION; WASTED je červený nápis
+     * uprostřed. MISSION PASSED, MISSION FAILED a BUSTED jsou jen zvyk série – ve hře zatím neověřené.
+     */
+    private val GTA6_HUD = listOf("WASTED", "BUSTED", "FAILED", "MISSION PASSED", "MISSION FAILED", "Retry Checkpoint",
+        "Skip Checkpoint", "Restart Mission")
+    /**
+     * Pauza a menu – aspoň dva z nich na obrazovce = menu. Záložky pauzy Jason & Lucia / Map / Brief / Progress
+     * a hlavní menu (beebom), filtry záznamu v Brief (Help Text, Objective Text) a záložky a řádky Nastavení
+     * (allthings.how, Best GTA 6 Settings). Jednoslovné běžné řádky (Music, Dialogue, Media) záměrně ne.
+     */
     private val GTA6_MENU = listOf("Jason & Lucia", "Map", "Brief", "Progress", "Game", "Store", "Help", "Photo Studio",
-        "Settings", "Save", "Retry Checkpoint", "Restart Mission")
+        "Settings", "Save", "Retry Checkpoint", "Restart Mission", "Help Text", "Objective Text",
+        "Control Scheme", "Controller", "Gameplay", "Display", "UI", "Camera", "Audio",
+        "Screen Narration", "Navigation Experience", "UI Text Size", "HDR Calibration", "Safe Zone", "Subtitles",
+        "Speaker Names", "Closed Captions", "Aim Assist Strength", "Wanted Stars", "Ticker Feed", "Master Volume",
+        "Mute Licensed Music", "GPS Voice", "Vehicle Radio", "Vibration & Haptics Strength", "Adaptive Triggers Resistance")
     private val GTA_CAST = listOf(
         m("Michael", "De Santa"), m("Franklin"), m("Trevor"), m("Lamar"), m("Lester"), f("Amanda"), f("Tracey"),
         m("Jimmy"), m("Simeon"), m("Niko"), m("Roman"), m("Tommy Vercetti"), m("Carl Johnson", "CJ"), m("Big Smoke"),
@@ -261,11 +333,12 @@ object GameProfiles {
         "Johnny", "Jackie", "Sebastian", "Poppy", "Otto", "Norman", "Yuri", "Franklin", "Clinton", "Philips",
         "Morgan", "Milton", "Ross", "Leviathan", "Afterlife", "Badlands", "Cutter", "Avery", "Scorpion", "Rhino",
         "Vulture", "Electro", "Kingpin", "Venom", "Boston", "Seattle", "Pittsburgh", "Manhattan", "Harlem",
-        "Mandy", "Linda", "Joey", "Randy", "Kirk", "Kyle", "Moses", "Dunk", "Abe", "Pete", "Lori", "Mia", "Kat", "Arnold",
+        "Mandy", "Linda", "Joey", "Randy", "Kirk", "Kyle", "Moses", "Dunk", "Pete",
+        "Jay", "Loony", "BF", "Huevo", "Tomás", "Stefanie", "Méndez", "Mendez", "La Ola", "Lori", "Mia", "Kat", "Arnold",
         "Donnie", "Shirley", "Vicki", "Frankie", "Andrea", "Nicole", "Petra", "Valentina", "Manuel", "Benedict",
         "Delights", "Cheetah", "Elegy", "Moreau", "Salton", "Southwind", "Millport", "M7", "Kingfishers", "Final Chapter",
         "The Chamber", "Game", "Map", "Help", "Save", "Store", "Progress", "Brief", "Settings",
-    )
+    ) + GTA6_COMMON
 
     val GAMES: List<GameProfile> = listOf(
         GameProfile("rdr2", "Red Dead Redemption 2", RDR2, RDR2_CAST),

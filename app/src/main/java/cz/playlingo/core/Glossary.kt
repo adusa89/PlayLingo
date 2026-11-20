@@ -29,9 +29,8 @@ class Glossary(
 
     private val rx: Regex? = run {
         val alts = (nameList.map { Regex.escape(it) } + termMap.keys.map { "(?i:" + Regex.escape(it) + ")" })
-            .sortedByDescending { it.length }
-        if (alts.isEmpty()) null
-        else Regex("(?<![A-Za-z'\\-])(" + alts.joinToString("|") + ")(?![A-Za-z\\-])")
+            .sortedByDescending { it.length } + STREET
+        Regex("(?<![A-Za-z'\\-])(" + alts.joinToString("|") + ")(?![A-Za-z\\-])")
     }
 
     val size: Int get() = nameList.size + termMap.size + sentenceMap.size
@@ -73,6 +72,16 @@ class Glossary(
     }
 
     companion object {
+        /**
+         * Názvy ulic ve všech hrách zůstávají v originále (přání majitele: v telefonu a na mapě hry jsou
+         * anglicky, přeložené by mátly): 1–3 slova s velkým písmenem + Street/Avenue/Drive… („Shore Drive“,
+         * „Huevo St“, „Ocean Avenue“). Slova jako „The“, „Take“ na začátku se do názvu nepočítají.
+         */
+        private const val STREET =
+            "(?:(?!(?:The|A|An|Take|Go|On|At|To|In|Down|Up|Our|My|Your|His|Her|Their|This|That|No|Hit|Get|Head|Meet|Off|Cross|Across|Turn|Back|Into|Onto|Near|Past|From|Via)\\b)" +
+                "(?:[A-Z][A-Za-z'\\-]+|\\d+(?:st|nd|rd|th)?) ){1,3}" +
+                "(?:Street|St|Avenue|Ave|Boulevard|Blvd|Drive|Road|Rd|Lane|Highway|Hwy|Parkway|Causeway|Expressway|Freeway|Court)"
+
         /** Řádky "anglicky = překlad" → mapa. Poškozené řádky se přeskočí. */
         fun parseUser(data: String?): LinkedHashMap<String, String> {
             val out = LinkedHashMap<String, String>()

@@ -14,6 +14,7 @@ class GameCastTest {
         assertEquals(Gender.F, gta6.genderOf("LUCIA"))
         assertEquals(Gender.F, gta6.genderOf("Lu"))
         assertEquals(Gender.M, gta6.genderOf("JASON"))
+        assertEquals(Gender.M, gta6.genderOf("Jay"))
         assertEquals(Gender.M, gta6.genderOf("Jas"))
         assertEquals(Gender.M, gta6.genderOf("CAL"))          // první slovo jména Cal Hampton
         assertEquals(Gender.F, gta6.genderOf("BAE-LUXE"))

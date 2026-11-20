@@ -11,6 +11,20 @@ class GlossaryTest {
         assertEquals("Kratos, ta odměna je pro Atreus.", OfflinePrep.finish(p, "[1], ta [2] je pro [3]."))
     }
 
+    @Test fun streetNamesStayInOriginal() {
+        val g = Glossary()
+        fun kept(t: String) = g.prepare(t).names
+        assertEquals(listOf("Shore Drive"), kept("Meet me on Shore Drive."))
+        assertEquals(listOf("Huevo St"), kept("The lab is on Huevo St, near the bridge."))
+        assertEquals(listOf("Ocean Avenue"), kept("Take Ocean Avenue to the beach."))
+        assertEquals(listOf("5th Street"), kept("Go down 5th Street."))
+        assertEquals(emptyList<String>(), kept("Take the road on the left."))
+        assertEquals(emptyList<String>(), kept("Go Drive."))
+        // překlad: název ulice se vrátí do věty beze změny
+        val out = g.translate("Meet me on Shore Drive.") { it.replace("Meet me on", "Sejdeme se na") }
+        assertEquals("Sejdeme se na Shore Drive.", out)
+    }
+
     @Test fun termsMatchWholeWordsOnly() {
         val g = Glossary(terms = mapOf("posse" to "tlupa"))
         assertEquals("He is possessed.", g.prepare("He is possessed.").protectedText)
