@@ -44,7 +44,7 @@ object LogShare {
         return d == 0
     }
 
-    enum class Route { TEXT, JSON, PAGE, DOWNLOAD, BAD_CODE, NOT_FOUND, BAD_METHOD, BAD_REQUEST }
+    enum class Route { TEXT, JSON, PAGE, DOWNLOAD, IMAGE, BAD_CODE, NOT_FOUND, BAD_METHOD, BAD_REQUEST }
 
     /** Co udělat s požadavkem (první řádek HTTP) při platném kódu [code]. */
     fun route(requestLine: String, code: String): Route {
@@ -58,6 +58,7 @@ object LogShare {
             "/zaznam.json" -> Route.JSON
             "/hlaseni" -> Route.PAGE
             "/hlaseni.txt" -> Route.DOWNLOAD
+            "/snimek.jpg" -> Route.IMAGE
             else -> return Route.NOT_FOUND
         }
         val k = query(target)["k"]
@@ -128,6 +129,11 @@ object LogShare {
             "{\"nazev\":${TvSender.json(t)},\"text\":${TvSender.json(Redact.clean(s, secrets))}}"
         }
 
+    /** Obrázek (snímek obrazovky hry pro ladění) jako odpověď HTTP. */
+    fun jpeg(bytes: ByteArray): ByteArray =
+        ("HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: ${bytes.size}\r\nCache-Control: no-store\r\n" +
+            "X-Content-Type-Options: nosniff\r\nConnection: close\r\n\r\n").toByteArray(Charsets.US_ASCII) + bytes
+
     /** Odpověď HTTP (text, JSON, stránka nebo soubor ke stažení [download] = název souboru). */
     fun response(status: Int, body: String, json: Boolean = false, htmlPage: Boolean = false, download: String? = null): ByteArray {
         val bytes = body.toByteArray(Charsets.UTF_8)
@@ -158,6 +164,8 @@ class LogServer(
     private val log: (String) -> Unit = {},
     /** Jazyk stránky pro telefon (čeština/slovenština, jinak anglicky). */
     private val lang: () -> Lang = { Lang.CS },
+    /** Snímek obrazovky hry (JPEG) pro ladění; null = žádný obraz. */
+    private val image: () -> ByteArray? = { null },
 ) {
     @Volatile var port = 0
         private set
@@ -219,6 +227,11 @@ class LogServer(
                     if (r == LogShare.Route.JSON) send(c, 200, LogShare.json(p, sec), json = true)
                     else send(c, 200, LogShare.text(p, sec))
                     log("log served " + (if (r == LogShare.Route.JSON) "json" else "text"))
+                }
+                LogShare.Route.IMAGE -> {
+                    val img = image()
+                    if (img == null) send(c, 404, "?")
+                    else { c.getOutputStream().apply { write(LogShare.jpeg(img)); flush() }; log("log served image") }
                 }
                 LogShare.Route.BAD_CODE -> {
                     send(c, 403, "?")

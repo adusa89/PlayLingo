@@ -197,6 +197,16 @@ object DiagReport {
             if (f.exists()) parts += "spojení s PlayStationem" to f.readText().takeLast(6000)
         } catch (_: Exception) {}
         parts += "televize (záznam z aplikace v televizi)" to TvLog.tail(tvLog, 400).ifBlank { "nic nepřišlo" }
+        // ladění profilů her: titulky s překladem a co bylo v oblasti čtení (jen text ze hry, nic osobního)
+        val hm = SimpleDateFormat("HH:mm:ss", Locale.US)
+        parts += "titulky ze hry (hra: ${Prefs.gameId(c)}, odhad: ${Prefs.gameGuess(c) ?: "–"})" to
+            cz.playlingo.core.SubtitleHistory.all().reversed().joinToString("\n") { h ->
+                hm.format(Date(h.time)) + "  " + h.original.replace('\n', ' ') + "\n          → " + h.translated.replace('\n', ' ')
+            }.ifBlank { "zatím nic" }
+        parts += "co aplikace četla v oblasti titulků" to
+            cz.playlingo.core.ScreenReads.all().joinToString("\n") { r ->
+                hm.format(Date(r.time)) + (if (r.count > 1) " ×${r.count}" else "") + "  [" + r.verdict + "]  " + r.raw
+            }.ifBlank { "zatím nic" }
         val cleanParts = parts.map { (t, s) -> t to clean(s) }
         return Report(sections, LogShare.text(cleanParts, secrets), cleanParts)
     }

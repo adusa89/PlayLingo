@@ -50,7 +50,6 @@ internal val I18N_HU: Map<String, String> = mapOf(
     "b_go_game" to "Vissza a játékhoz (HDMI)",
     "b_testcard" to "Próba mintaképen (játék nélkül)",
     "t_game" to "Játék",
-    "t_game_row" to "Szereplők és helyek neve játék szerint",
     "game_universal" to "Univerzális (minden játék)",
     "t_game_desc" to "A kiválasztott játék nevei nem kerülnek lefordításra. Az univerzális profil a legnépszerűbb játékok neveit ismeri; egy adott játék profilja pontosabb.",
     "t_dict" to "Saját szótár",

@@ -114,6 +114,25 @@ s různým rodem v různých hrách vynechá `Cast`). Postavy jdou se slovníkem
 Běží až po paměti překladů (ta je jen podle textu) – ve službě, v `translateSubtitle` i v `DeeplTranslator.merge`.
 Zatím jen čeština. Bez jmen mluvčích v titulcích hry funguje jen 2. a 3. osoba.
 
+**Profil hry dál (od 0.97.4)**, vše v `core/GameProfiles.kt` (testy `GameCastTest`):
+- `terms` – herní pojmy s pevným překladem po jazycích (jdou do `Prefs.glossary` před vlastní slovník, ten má
+  přednost); jen pojmy, které mají v 1. a 4. pádě stejný tvar (výraz se vkládá do věty hotový).
+- `hud` (přesná shoda řádku se přeskočí: WASTED…) a `menu` (aspoň 2 řádky z něj = menu, nečte se nic) →
+  `GameScreen`, předává se do `TextLogic.assemble(screen = …)`. Univerzální profil má sjednocení všech her.
+- `GameGuess` – odhad hry z nezaměnitelných jmen v titulcích (aspoň 3 různá, jiná hra méně než polovinu);
+  **nic nepřepíná** (přání majitele), jen uloží `Prefs.gameGuess` a v ⚙ → Čtení a překlad → Hra se ukáže
+  oranžový řádek „Hraješ asi …“ s dialogem Přepnout / Nechat (`dismissGameGuess`, pak se stejná hra nenabízí).
+- Nastavení → Hra (`gameSection` v MainActivity): Profil hry, případně odhad, rozbalovací „Postavy, místa
+  a pojmy“ (postavy ♀/♂, jména, pojmy, nečtené nápisy). Texty `gp_…` v `core/I18nGame.kt`.
+- Obecná anglická slova (Downtown, Buffalo, Map…) do jmen nepatří, a u jmen sdílených s jinými hrami
+  patří do `AMBIGUOUS` (univerzální profil je vynechá).
+
+**Ladění profilu ze hry (od 0.97.4):** záznam v síti má navíc `GET /snimek.jpg?k=…` (celý poslední snímek,
+šedý, nanejvýš 1280 px – `StreamReader.still`, čtení titulků neovlivní) a hlášení oddíly „titulky ze hry“
+(`SubtitleHistory`, originál → překlad) a „co aplikace četla v oblasti titulků“ (`core/ScreenReads.kt`: surový
+text z OCR a co se z něj vzalo). Během hraní na PC: `.\ci\sbirej-hru.ps1 <adresa ze zařízení>` ukládá snímky
+(jen změněné) a záznam do `zaznamy\hra-<čas>\`. Podle toho se ladí `hud`, `menu`, jména a pojmy – ne odhadem.
+
 Zkouška na Android TV navíc nechá přeložit typické herní repliky (`core/TranslationProbe.kt`)
 a uloží je do `preklad.txt` ve větvích s výsledky – podle něj se ladí přirozenost překladu.
 

@@ -1297,6 +1297,57 @@ class MainActivity : Activity() {
         }, tag), top)
     }
 
+    /** Rozbalený seznam postav, míst a pojmů profilu hry. */
+    private var gameListOpen = false
+
+    /**
+     * Hra (Nastavení → Čtení a překlad): profil hry, nabídka hry odhadnuté z titulků (nic se nepřepíná samo)
+     * a rozbalovací seznam toho, co profil zná – postavy s rodem, jména a místa, pojmy, přeskakované nápisy.
+     */
+    private fun gameSection() {
+        content.addView(ui.section(t("t_game")))
+        val game = GameProfiles.of(Prefs.gameId(this))
+        fun title(g: cz.playlingo.core.GameProfile) = if (g.id == "all") t("game_universal") else g.title
+        add(tagged(ui.settingRow(t("gp_profile"), title(game)) {
+            val games = GameProfiles.ALL
+            choose(t("gp_profile"), games.map { title(it) }, games.indexOf(game)) { i ->
+                Prefs.setGameId(this, games[i].id); applyToService(); render(true)
+            }
+        }, "game"), 0)
+        Prefs.gameGuess(this)?.let { id ->
+            val g = GameProfiles.of(id)
+            add(tagged(ui.settingRow(String.format(t("gp_guess"), g.title), t("gp_switch") + " ›", Theme.WARN) {
+                try {
+                    AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                        .setTitle(String.format(t("gp_guess"), g.title)).setMessage(String.format(t("gp_guess_desc"), g.title))
+                        .setPositiveButton(t("gp_switch")) { d, _ -> d.dismiss(); Prefs.setGameId(this, g.id); applyToService(); render(true) }
+                        .setNegativeButton(t("gp_keep")) { d, _ -> d.dismiss(); Prefs.dismissGameGuess(this); render(true) }
+                        .show()
+                } catch (_: Exception) {}
+            }, "gameguess"), 8)
+        }
+        add(tagged(ui.settingRow(t("gp_list"), if (gameListOpen) "▲" else "▼") { gameListOpen = !gameListOpen; render(true) }, "gamelist"), 8)
+        if (!gameListOpen) return
+        add(ui.text(t("t_game_desc") + " " + t("t_game_deepl"), 14f, Theme.MUTED), 8)
+        if (game.id == "all") {
+            add(ui.text(String.format(t("gp_universal"), game.names.size, game.characters.size), 15f), 8)
+            return
+        }
+        fun block(head: String, items: List<String>) {
+            if (items.isEmpty()) return
+            add(ui.text(head + " (" + items.size + ")", 16f, Theme.ACCENT, bold = true), 12)
+            add(ui.text(items.joinToString(" · "), 15f), 4)
+        }
+        block(t("gp_chars"), game.characters.map { c ->
+            c.name + (if (c.gender == cz.playlingo.core.Gender.F) " ♀" else " ♂") +
+                (c.aliases.filter { !c.name.contains(it) }.takeIf { it.isNotEmpty() }?.joinToString(", ", " (", ")") ?: "")
+        })
+        val inCast = game.characters.flatMap { it.allNames }.toSet()
+        block(t("gp_names"), game.names.filter { it !in inCast })
+        block(t("gp_terms"), game.termsFor(Prefs.lang(this)).map { (en, tr) -> "$en → $tr" })
+        block(t("gp_skip"), game.hud + game.menu)
+    }
+
     /** Titulky: otevřená skupina (-1 = žádná). */
     private var lookOpen = -1
 
@@ -1434,17 +1485,7 @@ class MainActivity : Activity() {
 
         if (!ready) add(tagged(ui.button(t("download")) { downloadModel() }, "dl"), 12)
 
-        // --- hra: jména postav a míst, která se nepřekládají ---
-        content.addView(ui.section(t("t_game")))
-        val game = GameProfiles.of(Prefs.gameId(this))
-        add(tagged(ui.settingRow(t("t_game_row"), if (game.id == "all") t("game_universal") else game.title) {
-            val games = GameProfiles.ALL
-            choose(t("t_game_row"), games.map { if (it.id == "all") t("game_universal") else it.title }, games.indexOf(game)) { i ->
-                Prefs.setGameId(this, games[i].id); applyToService(); render(true)
-            }
-        }, "game"), 0)
-        // k čemu to je: jména se nepřeloží ani offline, ani v DeepL (dřív to nebylo z obrazovky poznat)
-        add(ui.text(t("t_game_desc") + " " + t("t_game_deepl"), 14f, Theme.MUTED), 6)
+        gameSection()
 
         // --- vlastní slovník ---
         content.addView(ui.section(t("t_dict")))
@@ -2082,6 +2123,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.3"
-    const val VERSION_CODE = 100
+    const val VERSION = "verze 0.97.4"
+    const val VERSION_CODE = 101
 }

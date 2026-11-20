@@ -72,4 +72,50 @@ class GameCastTest {
         assertEquals("Bol som pripravený.", g.genders(Lang.SK, "I was ready.", "Bol som pripravený.", "LUCIA"))
         assertEquals("Byla jsem připravená.", g.genders(Lang.CS, "I was ready.", "Byl jsem připravený.", "LUCIA"))
     }
+
+    @Test fun guessesGameFromNames() {
+        val g = GameGuess()
+        g.onText("LUCIA: We should lay low in Key Lento.")
+        assertNull(g.guess())                          // jedno jméno nestačí
+        g.onText("JASON: Brian Heder wants the boat back.")
+        g.onText("Meet me at the Jack of Hearts in Little Cuba.")
+        assertEquals("gta6", g.guess()?.id)
+        // jména z jiné hry stejně často → nejisté
+        val mix = GameGuess()
+        mix.onText("Arthur Morgan rode with Dutch and Sadie.")
+        mix.onText("Key Lento, Port Gellhorn and Little Cuba.")
+        assertNull(mix.guess())
+        // běžná slova a krátké přezdívky hru neprozradí
+        val common = GameGuess()
+        repeat(5) { common.onText("Jason, Lu, Michael and Peter went downtown.") }
+        assertNull(common.guess())
+    }
+
+    @Test fun skipsHudAndMenu() {
+        val s = GameProfiles.of("gta6").screen
+        assertEquals(true, s.isHud("WASTED"))
+        assertEquals(true, s.isHud("Mission passed"))
+        assertEquals(false, s.isHud("We wasted the whole day."))
+        assertEquals(true, s.isMenu(listOf("Map", "Brief", "Progress")))
+        assertEquals(false, s.isMenu(listOf("JASON: Check the map.", "Map")))
+        // menu se nečte vůbec, hláška se vynechá a titulek zůstane
+        fun line(t: String, top: Int) = OcrLine(t, 300, top, 900, top + 30)
+        val menu = TextLogic.assemble(listOf(OcrBlock(listOf(line("Map", 10), line("Brief", 60), line("Settings", 110)))), 10, screen = s)
+        assertEquals("", menu.text)
+        val hud = TextLogic.assemble(listOf(OcrBlock(listOf(line("MISSION PASSED", 10))), OcrBlock(listOf(line("LUCIA: Let's go home.", 400)))), 10, screen = s)
+        assertEquals(false, hud.text.contains("MISSION"))
+        // univerzální profil zná nápisy všech her
+        assertEquals(true, GameProfiles.UNIVERSAL.screen.isHud("WASTED"))
+    }
+
+    @Test fun gameTermsAndNames() {
+        val p = GameProfiles.of("gta6")
+        assertEquals("hledanost", p.termsFor(Lang.CS)["wanted level"])
+        assertEquals(emptyMap<String, String>(), p.termsFor(Lang.DE))
+        assertEquals(Gender.F, p.cast.genderOf("KAT"))
+        assertEquals(Gender.M, p.cast.genderOf("Dre"))
+        // běžná slova nejsou v univerzálním profilu
+        assertEquals(false, "Cheetah" in GameProfiles.UNIVERSAL.names)
+        assertEquals(true, "Port Gellhorn" in GameProfiles.UNIVERSAL.names)
+    }
 }

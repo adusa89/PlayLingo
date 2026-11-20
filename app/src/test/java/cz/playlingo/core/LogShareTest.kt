@@ -88,6 +88,8 @@ class LogShareTest {
         assertEquals(LogShare.Route.TEXT, LogShare.route("GET /zaznam?k=abc234 HTTP/1.1", k))
         assertEquals(LogShare.Route.TEXT, LogShare.route("GET /zaznam.txt?x=1&k=abc234 HTTP/1.1", k))
         assertEquals(LogShare.Route.JSON, LogShare.route("GET /zaznam.json?k=abc234 HTTP/1.1", k))
+        assertEquals(LogShare.Route.IMAGE, LogShare.route("GET /snimek.jpg?k=abc234 HTTP/1.1", k))
+        assertEquals(LogShare.Route.BAD_CODE, LogShare.route("GET /snimek.jpg?k=zzz234 HTTP/1.1", k))
         assertEquals(LogShare.Route.BAD_CODE, LogShare.route("GET /zaznam?k=abc235 HTTP/1.1", k))
         assertEquals(LogShare.Route.BAD_CODE, LogShare.route("GET /zaznam HTTP/1.1", k))
         assertEquals(LogShare.Route.BAD_METHOD, LogShare.route("POST /zaznam?k=abc234 HTTP/1.1", k))

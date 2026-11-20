@@ -4,8 +4,76 @@ package cz.playlingo.core
  * Profil hry: jména postav a míst, která se nemají překládat, a postavy s rodem
  * (podle něj se opraví tvary v překladu, viz [CzechGender]).
  */
-data class GameProfile(val id: String, val title: String, val names: List<String>, val characters: List<GameCharacter> = emptyList()) {
+data class GameProfile(
+    val id: String, val title: String, val names: List<String>, val characters: List<GameCharacter> = emptyList(),
+    /** Herní pojmy s pevným překladem: kód jazyka → (anglicky → překlad). Vlastní slovník má přednost. */
+    val terms: Map<String, Map<String, String>> = emptyMap(),
+    /** Hlášky na obrazovce, které nejsou replika (MISSION PASSED, WASTED…) – nečtou se. */
+    val hud: List<String> = emptyList(),
+    /** Nápisy z menu hry – obrazovka s aspoň dvěma z nich je menu a nečte se. */
+    val menu: List<String> = emptyList(),
+) {
     val cast: Cast by lazy { Cast(characters) }
+    val screen: GameScreen by lazy { GameScreen(hud, menu) }
+    fun termsFor(lang: Lang): Map<String, String> = terms[lang.code] ?: emptyMap()
+}
+
+/** Co hra ukazuje mimo titulky: hlášky (jednotlivě se přeskočí) a nápisy menu (celá obrazovka se přeskočí). */
+class GameScreen(hud: List<String>, menu: List<String>) {
+    private val hudKeys = hud.map { TextLogic.simplify(it) }.filter { it.isNotEmpty() }.toSet()
+    private val menuKeys = menu.map { TextLogic.simplify(it) }.filter { it.isNotEmpty() }.toSet()
+    val isEmpty: Boolean get() = hudKeys.isEmpty() && menuKeys.isEmpty()
+    fun isHud(line: String): Boolean = hudKeys.isNotEmpty() && TextLogic.simplify(line) in hudKeys
+    fun isMenu(lines: List<String>): Boolean = menuKeys.isNotEmpty() && lines.count { TextLogic.simplify(it) in menuKeys } >= 2
+
+    companion object { val EMPTY = GameScreen(emptyList(), emptyList()) }
+}
+
+/**
+ * Odhad hry podle jmen v titulcích: jména, která má jen jedna hra (Caminos, Port Gellhorn…).
+ * Nic nepřepíná – jen nabídne řádek v Nastavení („Hraješ asi GTA VI · Přepnout“).
+ * Hra platí, když se objevila aspoň [MIN_NAMES] různá její jména a žádná jiná hra jich nemá ani polovinu.
+ */
+class GameGuess(games: List<GameProfile> = GameProfiles.GAMES) {
+    private val owner: Map<String, GameProfile>
+    private val longest: Int
+    init {
+        val m = HashMap<String, GameProfile?>()
+        for (g in games) for (n in (g.names + g.characters.flatMap { it.allNames }).distinct()) {
+            if (n in GameProfiles.AMBIGUOUS) continue
+            val k = TextLogic.simplify(n)
+            if (k.length < 4) continue          // krátké přezdívky (Lu, Jas) jsou moc náhodné
+            m[k] = if (m.containsKey(k) && m[k]?.id != g.id) null else g
+        }
+        owner = m.filterValues { it != null }.mapValues { it.value!! }
+        longest = owner.keys.maxOfOrNull { it.count { c -> c == ' ' } + 1 } ?: 1
+    }
+    private val seen = HashMap<String, MutableSet<String>>()
+
+    /** Přečtený titulek (anglicky, i se jménem mluvčího). */
+    @Synchronized fun onText(text: String) {
+        val words = TextLogic.simplify(text).split(' ').filter { it.isNotEmpty() }
+        for (i in words.indices) for (len in 1..longest) {
+            if (i + len > words.size) break
+            val k = words.subList(i, i + len).joinToString(" ")
+            val g = owner[k] ?: continue
+            seen.getOrPut(g.id) { HashSet() }.add(k)
+        }
+    }
+
+    /** Odhadnutá hra, nebo null (zatím málo jmen, nebo se to plete). */
+    @Synchronized fun guess(): GameProfile? {
+        val ranked = seen.entries.sortedByDescending { it.value.size }
+        val best = ranked.firstOrNull() ?: return null
+        if (best.value.size < MIN_NAMES) return null
+        val second = ranked.getOrNull(1)?.value?.size ?: 0
+        if (second * 2 >= best.value.size) return null
+        return GameProfiles.of(best.key)
+    }
+
+    @Synchronized fun reset() = seen.clear()
+
+    companion object { const val MIN_NAMES = 3 }
 }
 
 object GameProfiles {
@@ -14,15 +82,52 @@ object GameProfiles {
 
     private val GTA = listOf(
         "Los Santos", "San Andreas", "Vice City", "Liberty City", "Blaine County", "Sandy Shores", "Paleto Bay",
-        "Vinewood", "Leonida", "Grove Street", "Michael", "De Santa", "Franklin", "Clinton", "Trevor", "Philips",
+        "Vinewood", "Grove Street", "Michael", "De Santa", "Franklin", "Clinton", "Trevor", "Philips",
         "Lamar", "Lester", "Amanda", "Tracey", "Jimmy", "Chop", "Wade", "Simeon", "Devin Weston", "Merryweather",
-        "Ballas", "Vagos", "Niko", "Bellic", "Roman", "Tommy Vercetti", "Carl Johnson", "Big Smoke", "Jason", "Lucia",
+        "Ballas", "Vagos", "Niko", "Bellic", "Roman", "Tommy Vercetti", "Carl Johnson", "Big Smoke",
     )
     /** GTA VI: postavy a místa (Vice City, Leonida) – zvlášť, ať se neplete se staršími díly. */
+    /**
+     * GTA VI (vyšlo 19. 11. 2026). Seznam z wiki a průvodců po vydání (gtabase, wikily, beebom, playday.one),
+     * oficiální je jen část – ladí se podle záznamu ze hry (ci/sbirej-hru.ps1). Obecná anglická slova
+     * (Downtown, Southside, Buffalo…) tu záměrně nejsou: překladač je má přeložit.
+     */
     private val GTA6 = listOf(
-        "Jason", "Duval", "Lucia", "Caminos", "Vice City", "Leonida", "Leonida Keys", "Port Gellhorn", "Ambrosia",
-        "Grassrivers", "Mount Kalaga", "Cal Hampton", "Boobie Ike", "Dre'Quan", "Real Dimez", "Bae-Luxe", "Roxy",
-        "Raul Bautista", "Brian Heder", "Only Raw", "Lu", "Jas",
+        // postavy
+        "Jason", "Duval", "Lucia", "Caminos", "Lu", "Jas", "Cal Hampton", "Boobie Ike", "Dre'Quan", "Dre'Quan Priest",
+        "Real Dimez", "Bae-Luxe", "Roxy", "Raul Bautista", "Brian Heder", "Lori Heder", "Heder", "Kenton Rees", "Mattia",
+        "Katerina Rosselli", "Mia Caminos", "Frankie Delight", "Yasmani", "Kordell", "Raina", "Bret Vogel", "Cecilia",
+        "Eddie Acosta", "Pilot Pete", "Wyman", "Benedict Halifax", "Evelyn Andrews", "Nicole Park", "Andrés de León",
+        "Petra Navarro", "Valentina", "Abe Gonzalez", "Méndez", "El Martillo", "La Gata", "Mud Dog Mike", "Delta Dawne",
+        // kraj, okresy, města
+        "Leonida", "Vice City", "Vice-Dale County", "Mariana County", "Kelly County", "Leonard County", "Lummox County",
+        "Leonida Keys", "Grassrivers", "Port Gellhorn", "Gellhorn", "Ambrosia", "Mount Kalaga", "Little Cuba", "Ocean Beach",
+        "Vice Beach", "Washington Beach", "Peacock Bay", "Tequesta", "Salton", "Rockridge", "La Perle", "Balsero",
+        "Leaf Links", "Starfish Island", "Rialto Islands", "Waxman Island", "Dalton Island", "Catalan Key", "Gloriana Key",
+        "Key Lento", "Southwind", "Pelican Valley", "Watson Bay", "Belpoint", "Riquezas Keys", "Permit Keys", "Maroon Key",
+        "Abismo Key", "Frogswater", "Draper Island", "Belville", "Waning Sands", "Millport", "Moreau", "Zephyr Islands",
+        "Featherstone Islands", "Saint Attaway Islands", "Manifest Canyon", "Gulf of Leonida", "Lake Leonida",
+        "Cottonmouth Lake", "Nehrling River", "Buckskin Swamp", "Lake Tallaloko", "Kalaga Reservoir",
+        // místa a podniky
+        "VCIA", "Leonida Penitentiary", "Hamlet Correctional", "Gellhorn International Raceway", "Boone Speedway",
+        "MacAlister Gold Mine", "Allied Crystal", "Tisha-Wocka", "Starlet Motel", "Vercetti Estate", "McKittrick Farm",
+        "Thrillbilly Mud Club", "Jack of Hearts", "Only Raw", "Only Raw Records", "Delights", "Rusty Anchor",
+        "Barnacle Beauties", "Ammu-Nation", "Pay 'n' Spray", "Coastal Auto Care", "Rideout Customs", "One-Eyed Willie's",
+        "Electric Fang", "Sinfrontera", "Sinfrontera National Bank", "Megamundo", "Navitrak", "Dale's Shopwell",
+        "Bunko Jack's", "Kitty Litter",
+        // gangy, organizace, rádia, aplikace v telefonu
+        "Kingfishers", "Kolt and Associates", "M7", "La Polilla Negra", "Final Chapter", "San4San", "PTT Youngin\$",
+        "Guardia Brothers", "Cellerica", "VCPD", "Cocoteo FM", "Back Country Radio", "AfroBank FM", "The Chamber",
+        "Flash FM", "Dirty South Classics", "V-Rock", "WAINK", "BuckMe", "Ryde Me", "Scooter Bros", "Snapmatic",
+        "Skunk Ape", "Mr. Mangrove",
+        // značky a modely aut a lodí (jen nezaměnitelné)
+        "Albany", "Annis", "Benefactor", "Bravado", "Declasse", "Dinka", "Dundreary", "Gallivanter", "Grotti", "Imponte",
+        "Invetero", "JoBuilt", "Karin", "Maibatsu", "Mer-Can", "Nagasaki", "Ocelot", "Pegassi", "Pfister", "Progen",
+        "Schyster", "Shitzu", "Übermacht", "Vapid", "Zirconium", "Ganado", "Stanier", "Schafter", "Squalo", "Zorrusso",
+        "Infernus", "Itali RSX", "Itali GTO", "Coquette", "Banshee", "Elegy", "Futo", "Blista", "Asterope", "Feroci",
+        "Penumbra", "Tempesta", "Vitello", "Emerus", "Carbonizzare", "Dubsta", "Kamacho", "Landstalker", "Rebla",
+        "Sandking", "Caracara", "Akane", "Schutzen", "Vectre", "Picador", "Manana", "Tailgater", "Sugoi", "Aleutian",
+        "Allander", "Hellion", "Youga", "Boxville", "Rumpo", "Bandito", "Cheetah",
     )
     private val TLOU = listOf(
         "Joel", "Ellie", "Tommy", "Tess", "Marlene", "Sarah", "Henry", "Sam", "Abby", "Lev", "Yara", "Dina", "Jesse",
@@ -77,9 +182,27 @@ object GameProfiles {
     // postavy s rodem (hlavní a časté vedlejší; přezdívky, jak je hra používá)
     private val GTA6_CAST = listOf(
         m("Jason", "Jason Duval", "Jas", "Duval"), f("Lucia", "Lucia Caminos", "Lu", "Caminos"),
-        m("Cal Hampton"), m("Boobie Ike", "Boobie"), m("Dre'Quan"), f("Bae-Luxe"), f("Roxy"),
-        m("Raul Bautista", "Raul"), m("Brian Heder", "Brian"),
+        m("Cal Hampton"), m("Boobie Ike", "Boobie"), m("Dre'Quan", "Dre'Quan Priest", "Dre"), f("Bae-Luxe"), f("Roxy"),
+        m("Raul Bautista", "Raul"), m("Brian Heder", "Brian"), f("Lori Heder", "Lori"), m("Donnie"), m("Arnold"),
+        f("Mandy"), m("Kenton Rees", "Kenton"), m("Mattia"), f("Katerina Rosselli", "Kat"), m("Joey"), f("Shirley"),
+        f("Mia Caminos", "Mia"), f("Linda"), f("Vicki"), m("Frankie Delight", "Frankie"), m("Moses"), m("Dunk"),
+        m("Tyrone"), m("Randy"), f("Andrea"), f("Nicole Park", "Nicole"), m("Andrés de León", "Andrés"),
+        f("Petra Navarro", "Petra"), f("Valentina"), m("Abe Gonzalez", "Abe"), m("Manuel"), m("Kirk"), m("Kyle"),
+        m("Pilot Pete", "Pete"), m("Wyman"), m("Benedict Halifax", "Benedict"), f("Evelyn Andrews", "Evelyn"),
+        m("El Martillo"), f("La Gata"), m("Mud Dog Mike"),
     )
+    /** Herní pojmy GTA VI s pevným překladem – jen ty, které se v 1. a 4. pádě nemění. */
+    private val GTA6_TERMS = mapOf(
+        "cs" to mapOf("wanted level" to "hledanost", "safehouse" to "úkryt", "safe house" to "úkryt", "stash house" to "skrýš",
+            "heist" to "loupež"),
+        "sk" to mapOf("wanted level" to "hľadanosť", "safehouse" to "úkryt", "safe house" to "úkryt", "stash house" to "skrýš",
+            "heist" to "lúpež"),
+    )
+    /** Nápisy GTA VI mimo titulky. MISSION PASSED/FAILED, BUSTED jsou zvyk série – ověřit ve hře. */
+    private val GTA6_HUD = listOf("WASTED", "BUSTED", "MISSION PASSED", "MISSION FAILED", "Retry Checkpoint", "Restart Mission")
+    /** Pauza a menu (Jason & Lucia, Mapa, Brief…) – aspoň dva z nich na obrazovce = menu. */
+    private val GTA6_MENU = listOf("Jason & Lucia", "Map", "Brief", "Progress", "Game", "Store", "Help", "Photo Studio",
+        "Settings", "Save", "Retry Checkpoint", "Restart Mission")
     private val GTA_CAST = listOf(
         m("Michael", "De Santa"), m("Franklin"), m("Trevor"), m("Lamar"), m("Lester"), f("Amanda"), f("Tracey"),
         m("Jimmy"), m("Simeon"), m("Niko"), m("Roman"), m("Tommy Vercetti"), m("Carl Johnson", "CJ"), m("Big Smoke"),
@@ -129,7 +252,7 @@ object GameProfiles {
     )
 
     /** Slova, která jsou zároveň běžná anglická slova – do univerzálního profilu nepatří. */
-    private val AMBIGUOUS = setOf(
+    val AMBIGUOUS = setOf(
         "Gray", "Grays", "Bell", "Bill", "Smith", "Jack", "John", "Uncle", "Sam", "Wolves", "Beta", "Rio", "Reed",
         "Rogue", "Fig", "Watcher", "Chop", "Roach", "Zenith", "Torrent", "Tarnished", "Jackson", "Summers", "Wade",
         "Drake", "Queens", "Watson", "Roman", "Jason", "Nora", "Zo", "Taka", "Jin", "Tess", "Mel", "Lev", "Faye",
@@ -138,11 +261,15 @@ object GameProfiles {
         "Johnny", "Jackie", "Sebastian", "Poppy", "Otto", "Norman", "Yuri", "Franklin", "Clinton", "Philips",
         "Morgan", "Milton", "Ross", "Leviathan", "Afterlife", "Badlands", "Cutter", "Avery", "Scorpion", "Rhino",
         "Vulture", "Electro", "Kingpin", "Venom", "Boston", "Seattle", "Pittsburgh", "Manhattan", "Harlem",
+        "Mandy", "Linda", "Joey", "Randy", "Kirk", "Kyle", "Moses", "Dunk", "Abe", "Pete", "Lori", "Mia", "Kat", "Arnold",
+        "Donnie", "Shirley", "Vicki", "Frankie", "Andrea", "Nicole", "Petra", "Valentina", "Manuel", "Benedict",
+        "Delights", "Cheetah", "Elegy", "Moreau", "Salton", "Southwind", "Millport", "M7", "Kingfishers", "Final Chapter",
+        "The Chamber", "Game", "Map", "Help", "Save", "Store", "Progress", "Brief", "Settings",
     )
 
-    private val GAMES: List<GameProfile> = listOf(
+    val GAMES: List<GameProfile> = listOf(
         GameProfile("rdr2", "Red Dead Redemption 2", RDR2, RDR2_CAST),
-        GameProfile("gta6", "Grand Theft Auto VI", GTA6, GTA6_CAST),
+        GameProfile("gta6", "Grand Theft Auto VI", GTA6, GTA6_CAST, GTA6_TERMS, GTA6_HUD, GTA6_MENU),
         GameProfile("gta", "Grand Theft Auto V / IV / San Andreas", GTA, GTA_CAST),
         GameProfile("tlou", "The Last of Us", TLOU, TLOU_CAST),
         GameProfile("gow", "God of War", GOW, GOW_CAST),
@@ -159,7 +286,9 @@ object GameProfiles {
     /** Univerzální profil: nezaměnitelná jména ze všech her dohromady (bez běžných slov). */
     val UNIVERSAL = GameProfile("all", "*", GAMES.flatMap { it.names }.filter { it !in AMBIGUOUS }.distinct(),
         // rod postav platí i v univerzálním profilu (Jason je muž v každé hře); jména s různým rodem vynechá [Cast]
-        GAMES.flatMap { it.characters })
+        GAMES.flatMap { it.characters },
+        // hlášky a menu všech her (přesná shoda celého řádku – v replice se neobjeví)
+        hud = GAMES.flatMap { it.hud }.distinct(), menu = GAMES.flatMap { it.menu }.distinct())
 
     val ALL: List<GameProfile> = listOf(UNIVERSAL) + GAMES
 

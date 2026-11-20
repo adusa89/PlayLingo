@@ -50,7 +50,6 @@ internal val I18N_FR: Map<String, String> = mapOf(
     "b_go_game" to "Retour au jeu (HDMI)",
     "b_testcard" to "Essai sur un exemple (sans jeu)",
     "t_game" to "Jeu",
-    "t_game_row" to "Noms des personnages et des lieux selon le jeu",
     "game_universal" to "Universel (tous les jeux)",
     "t_game_desc" to "Les noms du jeu choisi ne sont pas traduits. Le profil universel connaît les noms des jeux les plus populaires ; le profil d’un jeu précis est plus exact.",
     "t_dict" to "Dictionnaire personnel",

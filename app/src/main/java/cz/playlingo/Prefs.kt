@@ -177,7 +177,13 @@ object Prefs {
 
     // ---- hra a slovník ----
     fun gameId(c: Context): String = p(c).getString("game", "all") ?: "all"
-    fun setGameId(c: Context, v: String) = p(c).edit().putString("game", v).apply()
+    fun setGameId(c: Context, v: String) = p(c).edit().putString("game", v).remove("game_guess").apply()
+    /** Hra odhadnutá podle titulků (nabídka „Přepnout“ v Nastavení); null = nic. */
+    fun gameGuess(c: Context): String? = p(c).getString("game_guess", null)?.takeIf { it != gameId(c) && it != gameGuessNo(c) }
+    /** Hráč nabídku odmítl („Nechat“) – stejná hra se už nenabízí. */
+    fun gameGuessNo(c: Context): String? = p(c).getString("game_guess_no", null)
+    fun dismissGameGuess(c: Context) = p(c).edit().putString("game_guess_no", p(c).getString("game_guess", null)).remove("game_guess").apply()
+    fun setGameGuess(c: Context, v: String?) = p(c).edit().apply { if (v == null) remove("game_guess") else putString("game_guess", v) }.apply()
 
     /** Vlastní slovník uživatele pro daný jazyk (anglicky → překlad). */
     fun userDict(c: Context, lang: Lang): LinkedHashMap<String, String> =
@@ -190,15 +196,16 @@ object Prefs {
         val lang = lang(c)
         val user = userDict(c, lang)
         val sentences = LinkedHashMap(BuiltinPhrases.forLang(lang))
-        val terms = LinkedHashMap<String, String>()
-        for ((k, v) in user) if (Glossary.isSentence(k)) sentences[k] = v else terms[k] = v
         val game = GameProfiles.of(gameId(c))
+        val terms = LinkedHashMap(game.termsFor(lang))     // pojmy hry; vlastní slovník je přepíše
+        for ((k, v) in user) if (Glossary.isSentence(k)) sentences[k] = v else terms[k] = v
         return Glossary(game.names, terms, sentences, game.cast)
     }
 
     /** Otisk nastavení slovníku – když se změní, paměť překladů se smaže. */
     fun glossarySignature(c: Context): String =
-        gameId(c) + "|" + lang(c).code + "|" + userDict(c, lang(c)).hashCode()
+        gameId(c) + "|" + lang(c).code + "|" + userDict(c, lang(c)).hashCode() + "|" +
+            GameProfiles.of(gameId(c)).let { it.names.hashCode() + 31 * it.termsFor(lang(c)).hashCode() }
     fun savedGlossarySignature(c: Context): String = p(c).getString("gloss_sig", "") ?: ""
     fun setSavedGlossarySignature(c: Context, v: String) = p(c).edit().putString("gloss_sig", v).apply()
 

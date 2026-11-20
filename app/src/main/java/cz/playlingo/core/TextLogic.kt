@@ -282,7 +282,10 @@ object TextLogic {
         centerTolerance: Int = Int.MAX_VALUE,
         /** Vyšší řádky nejsou titulky (nadpisy, loga, nápisy ve scéně). */
         maxLineHeight: Int = Int.MAX_VALUE,
+        /** Hlášky a menu podle profilu hry ([GameProfile.screen]). */
+        screen: GameScreen = GameScreen.EMPTY,
     ): Picked {
+        if (screen.isMenu(blocks.flatMap { b -> b.lines.map { it.text } })) return Picked("", 0)
         val sorted = blocks.sortedBy { b -> b.lines.minOfOrNull { it.top } ?: Int.MAX_VALUE }
         // Obrazovka plná textu (menu, inventář, mapa) není scéna s titulky.
         if (subtitlesOnly) {
@@ -302,7 +305,7 @@ object TextLogic {
                     (centerTolerance != Int.MAX_VALUE && bl < screenCenterX && br > screenCenterX)
                 )
             block.lines
-                .filter { it.height in minLineHeight..maxLineHeight && isUseful(it.text) && !isLyrics(it.text) }
+                .filter { it.height in minLineHeight..maxLineHeight && isUseful(it.text) && !isLyrics(it.text) && !screen.isHud(it.text) }
                 .filter { l ->
                     !subtitlesOnly || (
                         !isControlPrompt(l.text) &&

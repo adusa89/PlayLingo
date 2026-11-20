@@ -149,6 +149,7 @@ object NetLogShare {
             onStop = { main.post { disable(ctx) } },
             log = { DiagLog.add("ZAZNAM|$it") },
             lang = { Prefs.uiLang(ctx) },
+            image = { TranslatorService.stillJpeg() },
         )
         // poslouchat jen na adrese domácí sítě (ne na mobilních datech); neznámá = všude, ptát se
         // stejně smí jen domácí síť (LogShare.allowedPeer)

@@ -108,6 +108,14 @@ class TranslatorService : Service() {
         /** Poslední obrázek ze hry (zmenšený, barevný) – pro náhled a nastavení oblastí. */
         val snapshot: Bitmap? get() = activeReader?.colorSnapshot
 
+        /** Snímek obrazovky hry jako JPEG pro záznam v síti (ladění menu a oblastí); null = obraz nechodí. */
+        fun stillJpeg(): ByteArray? {
+            val b = activeReader?.still() ?: return null
+            return try {
+                java.io.ByteArrayOutputStream().also { b.compress(Bitmap.CompressFormat.JPEG, 80, it) }.toByteArray()
+            } catch (_: Throwable) { null } finally { b.recycle() }
+        }
+
         /** Kolik snímků videa už aplikace dostala a dekódovala (pro obrazovku aplikace). */
         val framesDecoded: Long get() = activeReader?.decoded ?: 0
 
@@ -217,6 +225,10 @@ class TranslatorService : Service() {
 
     /** Slovník: jména podle hry, předpřipravené hlášky a vlastní slovník uživatele. */
     @Volatile private var glossary: Glossary? = null
+    /** Hlášky a menu podle profilu hry (přeskočí se při čtení). */
+    @Volatile private var screen: cz.playlingo.core.GameScreen = cz.playlingo.core.GameScreen.EMPTY
+    /** Odhad hry podle jmen v titulcích – jen nabídka v Nastavení, nic se nepřepíná. */
+    private val gameGuess = cz.playlingo.core.GameGuess()
 
     private val textScale = TextScale()
     /** Jazyk, jehož překladový model už je načtený v paměti. */
@@ -354,6 +366,7 @@ class TranslatorService : Service() {
         if (autoFind != wasAuto) autoZone.reset()
         if (autoFind) layout = layout.copy(read = autoZone.current)
         glossary = Prefs.glossary(this)
+        screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
         // změna hry nebo slovníku → dřívější překlady už neplatí
         val sig = Prefs.glossarySignature(this)
         if (sig != Prefs.savedGlossarySignature(this)) {
@@ -673,8 +686,15 @@ class TranslatorService : Service() {
             screenCenterX = capW / 2 - x0,
             centerTolerance = (capW * 0.14f).toInt(),
             maxLineHeight = (capH * 0.085f).toInt(),
+            screen = screen,
         )
         if (picked.text.isNotEmpty()) lastOcrText = picked.text
+        // záznam pro ladění profilů her: co bylo v oblasti čtení a co se z toho vzalo
+        cz.playlingo.core.ScreenReads.add(result.text, when {
+            foreignScreen -> "jiný jazyk"
+            picked.text.isEmpty() -> "nevzato"
+            else -> "titulek: " + picked.text.replace('\n', ' ')
+        })
 
         // text, který není anglicky (hra už je v jiném jazyce, nebo je to šum), se nepřekládá
         if (picked.text.isNotEmpty() && TextLogic.looksForeign(picked.text)) {
@@ -742,6 +762,10 @@ class TranslatorService : Service() {
                 // automatika: zapamatuj si, kde na obrazovce titulky jsou
                 if (autoFind && autoZone.onSubtitle(top, bottom, SystemClock.uptimeMillis())) zoneChanged()
                 SubtitleHistory.add(action.text, TextLogic.joinSegments(segs))
+                gameGuess.onText(action.text)
+                gameGuess.guess()?.let { g ->
+                    if (g.id != Prefs.gameId(this) && g.id != Prefs.gameGuess(this) && g.id != Prefs.gameGuessNo(this)) { Prefs.setGameGuess(this, g.id); tp("GAME|guess ${g.id}") }
+                }
             }
             // anglický titulek zmizel – překlad nech chvíli dočíst
             SubtitleTracker.Action.Hide -> {

@@ -403,6 +403,25 @@ class StreamReader(private val width: Int, private val height: Int) {
         Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { it.setPixels(out, 0, w, 0, 0, w, h) }
     } catch (_: Exception) { null }
 
+    /**
+     * Celý poslední obrázek (šedý, nanejvýš [maxW] široký) pro snímek k ladění v záznamu v síti.
+     * Na čtení titulků nemá vliv (neposouvá „nový snímek“ pro [grab]).
+     */
+    fun still(maxW: Int = 1280): Bitmap? = try {
+        synchronized(frameLock) {
+            if (frameW <= 0 || frameH <= 0) return null
+            val step = maxOf(1, (frameW + maxW - 1) / maxW)
+            val w = frameW / step; val h = frameH / step
+            val out = IntArray(w * h)
+            var o = 0
+            for (row in 0 until h) for (x in 0 until w) {
+                val v = yBuf[row * step * yStride + x * step].toInt() and 0xFF
+                out[o++] = (0xFF shl 24) or (v shl 16) or (v shl 8) or v
+            }
+            Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { it.setPixels(out, 0, w, 0, 0, w, h) }
+        }
+    } catch (_: Throwable) { null }
+
     /** Výřez posledního obrázku: bitmapa (znovupoužívaná – nerecyklovat) a kde v celém obrázku leží. */
     class Crop(
         val bmp: Bitmap, val x0: Int, val y0: Int, val fullW: Int, val fullH: Int,
