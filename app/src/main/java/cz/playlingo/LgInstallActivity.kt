@@ -53,11 +53,14 @@ class LgInstallActivity : Activity() {
     private val main = android.os.Handler(android.os.Looper.getMainLooper())
     @Volatile private var watching = false
     @Volatile private var checking = false
+    /** Stav se změnil, ale hráč zrovna píše do políčka – překreslit, až z něj odejde. */
+    private var needsRender = false
     private var lastSearch = 0L
     private var lastScan = 0L
     private val tick = object : Runnable {
         override fun run() {
             if (!watching) return
+            if (needsRender && currentFocus !is EditText && !running) { needsRender = false; render(true) }
             check()
             main.postDelayed(this, 3000)
         }
@@ -83,7 +86,7 @@ class LgInstallActivity : Activity() {
                 val t = target
                 val dev = t != null && LgFinder.open(t, LgSetup.SSH_PORT)
                 val key = t != null && LgFinder.open(t, LgSetup.KEY_PORT)
-                val tvOn = t != null && (dev || found.contains(t) || LgFinder.open(t, LgSetup.WEBOS_PORT))
+                val tvOn = t != null && (dev || found.contains(t) || LgFinder.open(t, LgSetup.WEBOS_PORT) || LgFinder.open(t, LgSetup.WEBOS_SSL_PORT))
                 val paired = t != null && runCatching { vault.paired(t) }.getOrDefault(false)
                 val next = LgSetup.Probe(tvOn, dev, key, paired, passOk)
                 runOnUiThread {
@@ -92,7 +95,8 @@ class LgInstallActivity : Activity() {
                     if (fill) ip = t!!
                     if (next != probe || found != foundTvs || fill) {
                         probe = next; foundTvs = found
-                        render(true)
+                        // při psaní do políčka nepřekreslovat (zavřela by se klávesnice a skočil kurzor) – až potom
+                        if (currentFocus is EditText && !fill) needsRender = true else render(true)
                     }
                 }
             } finally { checking = false }
@@ -237,7 +241,7 @@ class LgInstallActivity : Activity() {
         // spárovaná televize: prázdné políčko by mátlo („mám něco vyplnit?“) – schované, nabídne se až pod tlačítkem
         if (!paired || askPass) {
             add(ui.text(t("lg_pass"), 16f, Theme.TEXT, bold = true), 16)
-            add(field(pass, "lg_pass_hint", "lgpass", true) { val was = LgSetup.passphraseLooksOk(pass); pass = it; if (was != LgSetup.passphraseLooksOk(it)) render(true) }, 6)
+            add(field(pass, "lg_pass_hint", "lgpass", true) { val was = LgSetup.passphraseLooksOk(pass); pass = it; if (was != LgSetup.passphraseLooksOk(it)) needsRender = true }, 6)
         }
 
         if (running) {

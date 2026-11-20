@@ -15,6 +15,8 @@ object LgSetup {
     const val KEY_PORT = 9991
     /** Port, na kterém webOS poslouchá i bez vývojářského režimu (ovládání z telefonu) – podle něj se pozná zapnutá televize. */
     const val WEBOS_PORT = 3000
+    /** Novější webOS nechává otevřený jen zabezpečený port ovládání. */
+    const val WEBOS_SSL_PORT = 3001
     const val SSDP_ST = "urn:lge-com:service:webos-second-screen:1"
 
     fun searchMessage(): String =
