@@ -103,7 +103,7 @@ class TranslatorService : Service() {
         @Volatile private var activeTv: TvSender? = null
 
         /** Kolik televizí LG si právě bere titulky; -1 = posílání neběží (vypnuté, nebo nejde otevřít port). */
-        val tvConnected: Int get() = activeTv?.takeIf { it.running }?.connected ?: -1
+        val tvConnected: Int get() = activeTv?.takeIf { it.running }?.connected ?: TvIdle.connected ?: -1
 
         /** Poslední obrázek ze hry (zmenšený, barevný) – pro náhled a nastavení oblastí. */
         val snapshot: Bitmap? get() = activeReader?.colorSnapshot
@@ -380,6 +380,7 @@ class TranslatorService : Service() {
         overlay?.destroy()
         // Titulky do televize LG: jen když si to uživatel zapnul. Jinak se nic neotevírá ani neposílá.
         if (Prefs.tvSend(this)) {
+            if (tv == null) TvIdle.stop()   // čekající spojení z obrazovky aplikace uvolní port
             if (tv == null) TvSender { tp("TV|$it") }.also {
                 // jiná televize než minule → její vzhled pruhu a oblasti (TvProfile)
                 it.onAnnounce = { a ->

@@ -302,9 +302,13 @@ class MainActivity : Activity() {
         render(keepFocus = true)
         main.removeCallbacks(ticker)
         main.postDelayed(ticker, 1000)
+        // po návratu do aplikace se zeptá i na novou verzi (dřív jen při spuštění – nová verze se pak
+        // ukázala až po zavření a otevření aplikace); nejvýš jednou za 5 minut
+        if (android.os.SystemClock.elapsedRealtime() - lastUpdateCheck > 5 * 60_000L) checkForUpdate()
     }
 
     override fun onPause() {
+        TvIdle.stop()
         UiState.hidden()
         main.removeCallbacks(ticker)
         Prefs.setStats(this, TranslatorService.statsFor(this))
@@ -476,6 +480,8 @@ class MainActivity : Activity() {
         lastStage = TranslatorService.linkStatus().stage
         lastTv = TranslatorService.tvConnected
         lastTvSeen = TvSender.lastSeen?.at ?: 0L
+        // aplikace v televizi LG/Samsung se může připojit i před Spustit (skutečný stav na Domů)
+        TvIdle.ensure(this)
         // pevná hlavička jen v Nastavení (nadpis a záložky), jinde schovaná a obsah s běžným odsazením
         pinned.removeAllViews()
         val pin = wizard < 0 && section == Section.SETTINGS
@@ -730,6 +736,8 @@ class MainActivity : Activity() {
             }
             running && link == Ps5.Link.WAITING -> { title = ct("m_ps5"); sub = ct("st_waiting"); color = Theme.WARN }
             running -> { title = ct("m_ps5"); sub = ct("st_connecting"); color = Theme.WARN }
+            // LG / Samsung: připraveno je až s připojenou aplikací v televizi (spojení drží TvIdle i před Spustit)
+            ready && Prefs.tvSend(this) && TranslatorService.tvConnected <= 0 -> { title = t("st_wait_tv"); sub = ""; color = Theme.WARN }
             ready -> { title = t("st_ready"); sub = ""; color = Theme.ACCENT }
             // co chybí, ukazují body pod nadpisem – bez dalšího textu
             else -> { title = t("st_setup"); sub = ""; color = Theme.WARN }
@@ -751,27 +759,6 @@ class MainActivity : Activity() {
             addView(ui.text(t("cr_note") + " " + t("m_help") + " → " + t("rep_btn"), 15f, Theme.WARN))
         }, 12)
 
-        update?.let { o ->
-            val st = Updater.state
-            val test = if (o.channel == UpdateCheck.Channel.TEST) " · " + t("upd_test") else ""
-            add(ui.card().apply {
-                addView(ui.text(t("upd_new") + " (${o.remote.name}$test)", 17f, Theme.ACCENT, bold = true))
-                val line = when {
-                    st == Updater.State.DOWNLOADING -> t("upd_down") + (if (Updater.percent >= 0) " ${Updater.percent} %" else "…")
-                    st == Updater.State.INSTALLING -> t("upd_inst")
-                    st == Updater.State.FAILED -> t(Updater.problem ?: "upd_fail")
-                    else -> t("upd_how")
-                }
-                addView(ui.text(line, 14f, if (st == Updater.State.FAILED) Theme.BAD else Theme.MUTED), ui.lp(top = 4))
-                // pruh: kolik je staženo (instalace = čekání na systém, pruh jen běhá)
-                if (st == Updater.State.DOWNLOADING) addView(ui.progress(if (Updater.percent >= 0) Updater.percent / 100f else null), ui.lp(h = ui.dp(10), top = 8))
-                if (st == Updater.State.INSTALLING) addView(ui.progress(null), ui.lp(h = ui.dp(10), top = 8))
-                // když to z aplikace nejde, zbývá ruční cesta – adresa souboru
-                if (st == Updater.State.FAILED) addView(ui.text(UpdateCheck.url(o.channel, "PlayLingo.apk"), 13f, Theme.MUTED), ui.lp(top = 6))
-                if (!Updater.busy) addView(tagged(ui.button(t("upd_btn"), primary = true) { startUpdate(o) }, "update"),
-                    ui.lp(w = LinearLayout.LayoutParams.WRAP_CONTENT, top = 10))
-            }, 12)
-        }
         val buttons = row()
         if (!lic.canRun) {
             buttons.addView(tagged(ui.button(t("lic_open"), primary = true) { section = Section.SETTINGS; render() }, "start"))
@@ -856,15 +843,9 @@ class MainActivity : Activity() {
             if (overlayOk) row(Theme.OK, t("h_bar_ok"), "htv", onClick = { TvChoice.show(this) { render(true) } })
             else row(Theme.WARN, t("w_overlay"), "htv", t("fix"), { settingsTab = SettingsTab.GENERAL; section = Section.SETTINGS; render() })
         } else {
+            // jen spojení: „LG OLED55B7 · připojeno“ zeleně, jinak „nepřipojeno“ oranžově (verze aplikace má vlastní řádek)
             val (tvLine, connected) = TvChoice.short(this)
-            val old = TvChoice.outdated(this, type)
-            when {
-                TvChoice.needsInstall(this, type) -> row(Theme.WARN, tvLine, "htv", t("w_install"), { TvChoice.openInstall(this, type) })
-                old != null -> row(Theme.WARN, t("w_tv_old").replace("%1", old.first).replace("%2", old.second), "htv",
-                    t("w_install"), { TvChoice.openInstall(this, type) })
-                else -> row(if (connected) Theme.OK else if (running) Theme.WARN else Theme.MUTED, tvLine, "htv",
-                    onClick = { TvChoice.show(this) { render(true) } })
-            }
+            row(if (connected) Theme.OK else Theme.WARN, tvLine, "htv", onClick = { TvChoice.show(this) { render(true) } })
         }
         // síť tohoto zařízení – jen věcně, bez varování (vysvětlení k výpadkům je v Nápovědě)
         when (NetInfo.kind(this)) {
@@ -882,9 +863,39 @@ class MainActivity : Activity() {
         val tl = Prefs.lang(this)
         if (!modelOk) row(Theme.WARN, t("w_model").replace("%s", tl.label), "hmodel", t("download"), { downloadModel() })
         else row(Theme.OK, tl.label + " · " + t(if (DeeplTranslator.activeKey(this) != null) "dl_mode_on" else "h_offline"), "hmodel")
-        // verze aplikace (a v televizi)
-        val tvVer = TvSender.lastSeen?.announce?.takeIf { type.sends && it.platform == type.platform }?.version
-        row(Theme.MUTED, "PlayLingo ${BuildInfo.VERSION.removePrefix("verze ")}" + (tvVer?.let { " · " + t("h_ver_tv").replace("%s", it) } ?: ""), "hver")
+        // verze PlayLinga: aktuální zeleně, novější ke stažení oranžově s tlačítkem Aktualizovat v řádku
+        val me = "PlayLingo ${BuildInfo.VERSION.removePrefix("verze ")}"
+        val o = update
+        if (o == null) row(Theme.OK, me, "hver")
+        else {
+            val st = Updater.state
+            row(Theme.WARN, me + " · " + t("h_ver_new").replace("%s", o.remote.name), "hver",
+                if (Updater.busy) null else t("upd_btn"), { startUpdate(o) })
+            val line = when (st) {
+                Updater.State.DOWNLOADING -> t("upd_down") + (if (Updater.percent >= 0) " ${Updater.percent} %" else "…")
+                Updater.State.INSTALLING -> t("upd_inst")
+                Updater.State.FAILED -> t(Updater.problem ?: "upd_fail")
+                else -> null
+            }
+            line?.let { card.addView(ui.text(it, 14f, if (st == Updater.State.FAILED) Theme.BAD else Theme.MUTED), ui.lp(top = 2)) }
+            if (st == Updater.State.DOWNLOADING) card.addView(ui.progress(if (Updater.percent >= 0) Updater.percent / 100f else null), ui.lp(h = ui.dp(8), top = 4))
+            if (st == Updater.State.INSTALLING) card.addView(ui.progress(null), ui.lp(h = ui.dp(8), top = 4))
+            // když to z aplikace nejde, zbývá ruční cesta – adresa souboru
+            if (st == Updater.State.FAILED) card.addView(ui.text(UpdateCheck.url(o.channel, "PlayLingo.apk"), 13f, Theme.MUTED), ui.lp(top = 4))
+        }
+        // aplikace v televizi LG/Samsung: stejně – chybí / starší oranžově s tlačítkem nahrání, aktuální zeleně
+        if (type.sends) {
+            val bundled = TvChoice.bundledVersion(this, type)
+            val old = TvChoice.outdated(this, type)
+            val current = TvChoice.upToDate(this, type)
+            when {
+                TvChoice.needsInstall(this, type) -> row(Theme.WARN, t("h_tv_app_none"), "htvapp", t("w_install"), { TvChoice.openInstall(this, type) })
+                old != null -> row(Theme.WARN, "PlayLingo " + t("h_ver_tv").replace("%s", old.first) + " · " + t("h_ver_new").replace("%s", old.second),
+                    "htvapp", t("w_install"), { TvChoice.openInstall(this, type) })
+                current != null -> row(Theme.OK, "PlayLingo " + t("h_ver_tv").replace("%s", current), "htvapp")
+                bundled != null -> row(Theme.MUTED, "PlayLingo " + t("h_ver_tv").replace("%s", "?"), "htvapp")
+            }
+        }
     }
 
     /** Smí PlayLingo běžet i při zhasnutém displeji (bez omezení šetřením baterie)? */
@@ -2024,7 +2035,10 @@ class MainActivity : Activity() {
     private fun remoteVersion(channel: UpdateCheck.Channel): UpdateCheck.Remote? = Updater.remoteVersion(channel)
 
     /** Na pozadí zjistí, jestli není ke stažení novější verze (se zapnutým zkušebním kanálem i v něm). */
+    private var lastUpdateCheck = 0L
+
     private fun checkForUpdate() {
+        lastUpdateCheck = android.os.SystemClock.elapsedRealtime()
         val test = Prefs.testChannel(this)
         scope.launch {
             val offer = kotlinx.coroutines.withContext(Dispatchers.IO) {
@@ -2126,6 +2140,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.6"
-    const val VERSION_CODE = 103
+    const val VERSION = "verze 0.97.7"
+    const val VERSION_CODE = 104
 }

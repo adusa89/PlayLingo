@@ -64,7 +64,6 @@ object I18n {
         "t_dict_add" to ("Přidat do slovníku" to "Pridať do slovníka"),
         "t_dict_del" to ("Kliknutím na záznam ho smažeš." to "Kliknutím na záznam ho zmažeš."),
         "upd_new" to ("Je k dispozici nová verze" to "K dispozícii je nová verzia"),
-        "upd_how" to ("Zvol Aktualizovat. Aplikace si novou verzi stáhne a televize se zeptá, jestli ji má nainstalovat. Spárování i nastavení zůstanou." to "Zvoľ Aktualizovať. Aplikácia si novú verziu stiahne a televízor sa opýta, či ju má nainštalovať. Spárovanie aj nastavenia zostanú."),
         "upd_btn" to ("Aktualizovat" to "Aktualizovať"),
         "upd_down" to ("Stahuji novou verzi" to "Sťahujem novú verziu"),
         "upd_inst" to ("Staženo. Potvrď instalaci v okně, které televize ukázala." to "Stiahnuté. Potvrď inštaláciu v okne, ktoré televízor zobrazil."),

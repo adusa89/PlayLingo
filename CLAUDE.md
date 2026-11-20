@@ -547,7 +547,13 @@ s anglickými podklady. Texty v televizi nejmenují značku (aplikace pro LG nem
   při ukončení ze strany PS5 důvod, při převzetí jiným zařízením `ls_other_device`), televize (Android TV =
   povolení pruhu; LG/Samsung = `TvChoice.short`, nenahraná / zastaralá aplikace s tlačítkem nahrání – jinak
   žádné tlačítko), síť (`h_net_…`, vždy zeleně), rychlost čtení, jazyk + offline/DeepL (chybějící balíček
-  s tlačítkem) a verze (i v televizi). Běh na pozadí (telefon, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) se
+  s tlačítkem) a verze.
+  Od 0.97.7: televize LG/Samsung = jen spojení („LG OLED55B7 · připojeno“ zeleně / „nepřipojeno“ oranžově,
+  `tv_st_off`); spojení drží `TvIdle` (v `TvChoice.kt`) i před Spustit, dokud je aplikace vidět (služba ho před
+  vlastním `TvSender` zavře). Bez připojené televize velký stav „Čeká na televizi“ (`st_wait_tv`), ne Připraveno.
+  Verze: řádek PlayLingo (aktuální zeleně, novější oranžově „· nová X“ s tlačítkem Aktualizovat v řádku a postupem
+  stahování pod ním – samostatná karta aktualizace není) a řádek PlayLingo v televizi (chybí / starší oranžově
+  s tlačítkem nahrání, aktuální zeleně). Na novou verzi se aplikace ptá i po návratu do ní (nejvýš jednou za 5 min). Běh na pozadí (telefon, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) se
   zeptá jednou při prvním Spustit (`ui_jednou`) a dál je jen v ⚙ Nastavení → Obecné, na Domů ne.
   Řádek konzole/televize OK = změna. Samostatný souhrnný řádek ani návody v textu tam už nejsou. Náhled obrazu
   je jen na stránce Konzole (s popiskem `pv_stale`, když obraz nechodí). „Zpět do hry (HDMI)“ jen na zařízení

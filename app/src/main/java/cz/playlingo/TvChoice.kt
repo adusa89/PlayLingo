@@ -133,3 +133,24 @@ object TvChoice {
     /** Popisek tlačítka k nahrání aplikace do televize daného typu. */
     fun installLabel(c: Context, type: TvType): String = c.tx(if (type == TvType.LG) "lg_open" else "ss_open")
 }
+
+/**
+ * Spojení s aplikací v televizi LG/Samsung i tehdy, když překlad neběží (jen dokud je PlayLingo vidět):
+ * Domů pak ukazuje skutečný stav „LG … · připojeno“ ještě před Spustit. Při spuštění překladu se
+ * zavře a port převezme služba ([TranslatorService] volá [stop] před vlastním TvSender).
+ */
+object TvIdle {
+    @Volatile private var sender: TvSender? = null
+
+    /** Kolik televizí je připojeno k čekajícímu spojení; null = neběží. */
+    val connected: Int? get() = sender?.takeIf { it.running }?.connected
+
+    @Synchronized fun ensure(c: android.content.Context) {
+        if (TranslatorService.running || !Prefs.tvSend(c)) { stop(); return }
+        if (sender?.running == true) return
+        val s = TvSender { }
+        sender = if (s.start()) s else null
+    }
+
+    @Synchronized fun stop() { sender?.stop(); sender = null }
+}

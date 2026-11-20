@@ -59,7 +59,6 @@ internal val I18N_PL: Map<String, String> = mapOf(
     "t_dict_add" to "Dodaj do słownika",
     "t_dict_del" to "Kliknij wpis, aby go usunąć.",
     "upd_new" to "Dostępna jest nowa wersja",
-    "upd_how" to "Wybierz Aktualizuj. Aplikacja pobierze nową wersję, a telewizor zapyta, czy ją zainstalować. Parowanie i ustawienia zostaną.",
     "upd_btn" to "Aktualizuj",
     "upd_down" to "Pobieram nową wersję",
     "upd_inst" to "Pobrano. Potwierdź instalację w oknie, które pokazał telewizor.",

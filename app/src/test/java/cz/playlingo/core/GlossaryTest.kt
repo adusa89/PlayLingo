@@ -153,7 +153,7 @@ class SupportTest {
         assertEquals("upd_space", UpdateCheck.problemKey(6))
         assertEquals("upd_fail", UpdateCheck.problemKey(1))
         // každý důvod má text ve všech jazycích (jinak by uživatel viděl jen klíč)
-        for (k in listOf("upd_cancel", "upd_sig", "upd_space", "upd_fail", "upd_net", "upd_how", "upd_down", "upd_inst", "upd_btn", "upd_test", "upd_done"))
+        for (k in listOf("upd_cancel", "upd_sig", "upd_space", "upd_fail", "upd_net", "upd_down", "upd_inst", "upd_btn", "upd_test", "upd_done"))
             for (lang in Lang.values()) assertTrue("$lang/$k", I18n.t(lang, k) != k)
     }
 }

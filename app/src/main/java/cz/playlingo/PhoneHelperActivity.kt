@@ -78,10 +78,15 @@ class PhoneHelperActivity : Activity() {
         if (web == null) render()
         // vývojářský režim televize LG: nejvýš jednou za hodinu se zeptat, kolik zbývá
         LgDevMode.refresh(this, false) { runOnUiThread { if (!isFinishing && web == null) render() } }
+        // i po návratu do aplikace se zeptat na novou verzi (nejvýš jednou za 5 minut)
+        if (android.os.SystemClock.elapsedRealtime() - lastUpdateCheck > 5 * 60_000L) checkForUpdate()
     }
+
+    private var lastUpdateCheck = 0L
 
     /** Na pozadí zjistí, jestli není ke stažení novější verze (se zapnutým zkušebním kanálem i v něm). */
     private fun checkForUpdate() {
+        lastUpdateCheck = android.os.SystemClock.elapsedRealtime()
         val test = Prefs.testChannel(this)
         Thread({
             val offer = Updater.offer(test)

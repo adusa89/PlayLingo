@@ -59,7 +59,6 @@ internal val I18N_HU: Map<String, String> = mapOf(
     "t_dict_add" to "Hozzáadás a szótárhoz",
     "t_dict_del" to "Kattints egy bejegyzésre a törléséhez.",
     "upd_new" to "Új verzió érhető el",
-    "upd_how" to "Válaszd a Frissítés gombot. Az alkalmazás letölti az új verziót, a tévé pedig megkérdezi, telepítse-e. A párosítás és a beállítások megmaradnak.",
     "upd_btn" to "Frissítés",
     "upd_down" to "Az új verzió letöltése",
     "upd_inst" to "Letöltve. Erősítsd meg a telepítést a tévé által megjelenített ablakban.",
