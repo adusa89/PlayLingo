@@ -193,6 +193,7 @@ class SamsungInstallActivity : Activity() {
 
         val target = focused?.let { content.findViewWithTag<View>(it) }
             ?: content.findViewWithTag<View>(if (b != null && !check.ok) "sssave" else "ssback")
+        ui.restoringFocus()   // po překreslení bez „pulzu“ vybraného tlačítka
         target?.requestFocus()
     }
 

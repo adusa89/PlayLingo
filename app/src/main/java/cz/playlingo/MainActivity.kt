@@ -513,6 +513,7 @@ class MainActivity : Activity() {
         }
         val target = focusedTag?.let { window.decorView.findViewWithTag<View>(it) }
             ?: window.decorView.findViewWithTag<View>("menu_${menuSection().name}")
+        ui.restoringFocus()   // stejné tlačítko znovu vybrané – bez „pulzu“
         target?.requestFocus()
     }
 
@@ -692,6 +693,7 @@ class MainActivity : Activity() {
 
         val target = focusedTag?.let { window.decorView.findViewWithTag<View>(it) }
             ?: window.decorView.findViewWithTag<View>(if (pairing) "pnext" else "wnext")
+        ui.restoringFocus()   // stejné tlačítko znovu vybrané – bez „pulzu“
         target?.requestFocus()
     }
 
