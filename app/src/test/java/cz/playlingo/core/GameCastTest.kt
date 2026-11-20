@@ -164,5 +164,12 @@ class GameCastTest {
         assertEquals(true, d.isHud("Trade) TTUS: wib Greater Lair Keyl"))
         assertEquals(false, d.isHud("Trade the gold for the key."))
         assertEquals(Gender.M, GameProfiles.of("gta6").cast.genderOf("J-dog"))
+        // barvy jmen z profilu (GTA VI: Jason žlutě i jako Jay, Lucia modře); ostatní jinou barvou
+        val sc = SpeakerColors(GameProfiles.of("gta6").colorsByKey)
+        assertEquals(SpeakerColors.PALETTE[1], sc.colorOf("LUCIA"))
+        assertEquals(SpeakerColors.PALETTE[0], sc.colorOf("Jason"))
+        assertEquals(SpeakerColors.PALETTE[0], sc.colorOf("Jay"))
+        val other = sc.colorOf("Aviator")
+        assertEquals(false, other == SpeakerColors.PALETTE[0] || other == SpeakerColors.PALETTE[1])
     }
 }

@@ -54,6 +54,8 @@ class SubtitleOverlay(
     private val barPad: Int = 1,
     /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky a texty hry), nebo vynechat (Jen titulky). */
     private val showPrompts: Boolean = true,
+    /** Pevné barvy postav z profilu hry ([cz.playlingo.core.GameProfile.colorsByKey]). */
+    private val speakerPreset: Map<String, Int> = emptyMap(),
     /**
      * Dostane každou změnu pruhu: text překladu a jeho řádky zvlášť s barvami jmen a volbami
      * ([TvSender.partsJson]) a vzhled pruhu pro televizi ([TvLook]), nebo null při schování. Tudy jdou titulky i do televize LG
@@ -76,7 +78,7 @@ class SubtitleOverlay(
     private val main = Handler(Looper.getMainLooper())
     private val density = host.resources.displayMetrics.density
     /** Každý mluvčí má svou barvu jména (po dobu čtení stálou). */
-    private val speakerColors = SpeakerColors()
+    private val speakerColors = SpeakerColors(speakerPreset)
     private val choiceColor = SpeakerColors.PALETTE[0]
     private val originalColor = Color.rgb(0xA8, 0xB0, 0xB8)
 

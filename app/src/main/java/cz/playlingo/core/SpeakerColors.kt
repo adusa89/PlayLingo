@@ -8,7 +8,13 @@ package cz.playlingo.core
  * ale tak, aby se nepotkala s barvou nikoho z posledních mluvčích. Všechny barvy jsou světlé,
  * dobře čitelné na černém pruhu, a liší se od bílého textu i šedého originálu.
  */
-class SpeakerColors {
+class SpeakerColors(
+    /**
+     * Pevné barvy postav z profilu hry ([GameProfile.colorsByKey]: zjednodušené jméno i přezdívky → barva), jako
+     * ve hře (GTA VI: Jason žlutě, Lucia modře). Ostatní postavy dostanou barvu z palety, jinou než tyto.
+     */
+    private val preset: Map<String, Int> = emptyMap(),
+) {
 
     companion object {
         /** Žlutá (dosavadní barva jmen), modrá, zelená, růžová, fialová, oranžová, tyrkysová. */
@@ -31,12 +37,15 @@ class SpeakerColors {
     @Synchronized fun colorOf(name: String): Int {
         val k = key(name)
         if (k.isEmpty()) return PALETTE[0]
+        preset[k]?.let { return it }
         known[k]?.let { return it }
-        val recent = known.values.toList().takeLast(PALETTE.size - 1).toSet()
-        val start = if (known.isEmpty()) 0 else Math.floorMod(k.hashCode(), PALETTE.size)
-        var color = PALETTE[start]
-        for (i in PALETTE.indices) {
-            val c = PALETTE[(start + i) % PALETTE.size]
+        // paleta bez barev, které mají postavy z profilu hry (ať se nepletou)
+        val palette = PALETTE.filter { it !in preset.values }.ifEmpty { PALETTE.toList() }
+        val recent = known.values.toList().takeLast(palette.size - 1).toSet()
+        val start = if (known.isEmpty()) 0 else Math.floorMod(k.hashCode(), palette.size)
+        var color = palette[start]
+        for (i in palette.indices) {
+            val c = palette[(start + i) % palette.size]
             if (c !in recent) { color = c; break }
         }
         known[k] = color

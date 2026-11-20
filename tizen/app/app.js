@@ -906,11 +906,12 @@
     }
     for (i = 0; i < tlacitka.length; i++) { pripoj(i); }
     el('zpet').addEventListener('click', function () { prejdi('domu'); });
-    // Při hře tlačítko Zpět nepřekáží; ukáže se jen na chvíli po pohybu ukazovátka.
-    document.addEventListener('mousemove', function () {
+    // Při hře se tlačítko Zpět neukazuje (majitel: rušilo, svítilo po každém pohybu ukazovátka) – Zpět je
+    // na ovladači. Se zapnutým ukazovátkem Magic Remote posílá televize OK jako kliknutí, ne jako klávesu 13:
+    // kliknutí při hře proto dělá totéž co OK (otevře nabídku vzhledu, v ní mění vybranou volbu). Od 1.5.6.
+    document.addEventListener('click', function () {
       if (strana !== 'hra') { return; }
-      ukazZpet(true);
-      zpetCasovac = setTimeout(function () { if (strana === 'hra') { ukazZpet(false); } }, 4000);
+      panelKlavesa(13, false);
     });
   })();
 
