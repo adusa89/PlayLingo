@@ -249,6 +249,9 @@ class SubtitleOverlay(
             val matched = if (matchOriginalSize) sizeKeeper.next(MatchSize.textPx(lineHeight, screenH)) else 0
             if (matched > 0) tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, matched.toFloat())
             else tv.textSize = textSize.toFloat()
+            // výška řádku zpět na běžnou: překlad menu (box) ji nastaví na rozestup položek a titulky po menu
+            // by jinak měly pruh vysoký jako řádek menu (0.97.42 – „titulky se občas zvětší“)
+            tv.setLineSpacing(0f, 1.08f)
             // okraje podle velikosti písma (dřív pevné) – menší písmo = nižší a užší pruh
             val em = tv.textSize
             val pad = Prefs.BAR_PADS[barPad.coerceIn(0, 3)]

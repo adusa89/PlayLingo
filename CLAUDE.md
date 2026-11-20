@@ -149,7 +149,7 @@ Neprůhlednost pruhu 0–100 % (`OPACITIES`: 0, 20, 40, 60, 80, 90, 100 na třec
 
 **Od 0.97.39 (aplikace v TV 1.5.10):** menu zleva řádek proti řádku – `MenuView.step` (rozestup položek ve hře, nejmenší rozdíl
 sousedních, `GameMenu.rowStep`) → výška řádku překladu = rozestup, písmo nejvýš 62 % řádku (Android `lineHeight` od API 28,
-TV `misto:[x,y,rozestup]`). V menu se čte každých 0,4 s, zavře se až po 4 čteních bez něj (`MenuTracker.MISSES`), `MENU|off|…`
+TV `misto:[x,y,rozestup]`). Po menu se výška řádku pruhu vrací (`setLineSpacing` v `SubtitleOverlay.show`, od 0.97.42 – dřív titulky po menu vypadaly větší). V menu se čte každých 0,4 s, zavře se až po 4 čteních bez něj (`MenuTracker.MISSES`), `MENU|off|…`
 v záznamu ukáže, co se přečetlo.
 
 **Menu hry od 0.97.36 (aplikace v TV 1.5.9):** překlad menu už není v pruhu dole – položky menu zleva **pod sebou hned vedle menu**,
