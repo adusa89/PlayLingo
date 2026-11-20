@@ -6,10 +6,14 @@ package cz.playlingo.core
  */
 internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
     "qk_row" to ("Tlačítko vzhledu titulků" to "Tlačidlo vzhľadu titulkov"),
+    // probouzení PlayStationu (Ps5Link.connectWhenAwake)
+    "ps_wake_row" to ("Probouzet PlayStation" to "Prebúdzať PlayStation"),
+    "ps_wake_desc" to ("PlayStation se zapne z klidového režimu na účtu, se kterým je PlayLingo spárované (druhý účet), ne na výběru účtu. Vypnuto: PlayStation se zapíná ovladačem na vlastním účtu a PlayLingo se připojí samo." to "PlayStation sa zapne z kľudového režimu na účte, s ktorým je PlayLingo spárované (druhý účet), nie na výbere účtu. Vypnuté: PlayStation sa zapína ovládačom na vlastnom účte a PlayLingo sa pripojí samo."),
+    "h_con_sleep" to ("v klidovém režimu" to "v kľudovom režime"),
     "qk_none" to ("nenastaveno" to "nenastavené"),
-    "qk_press" to ("Stiskni na ovladači tlačítko, které ve hře nepoužíváš (barevné, Info…). Při hře pak otevře nabídku vzhledu titulků." to "Stlač na ovládači tlačidlo, ktoré v hre nepoužívaš (farebné, Info…). Pri hre potom otvorí ponuku vzhľadu titulkov."),
-    "qk_bad" to ("Tohle tlačítko nejde – zkus barevné nebo Info." to "Toto tlačidlo nejde – skús farebné alebo Info."),
-    "qk_desc" to ("Jen Android TV: zvolené tlačítko na ovladači otevře při hře nabídku vzhledu (pozadí, písmo, poloha, originál) přímo přes obraz – bez odchodu z HDMI. Šipky mění hodnoty, Zpět nabídku zavře. OK to být nemůže, televize ho posílá do PlayStationu. Když tlačítko nereaguje, vypni a zapni PlayLingo v Usnadnění." to "Len Android TV: zvolené tlačidlo na ovládači otvorí pri hre ponuku vzhľadu (pozadie, písmo, poloha, originál) priamo cez obraz – bez odchodu z HDMI. Šípky menia hodnoty, Späť ponuku zavrie. OK to byť nemôže, televízor ho posiela do PlayStationu. Keď tlačidlo nereaguje, vypni a zapni PlayLingo v Zjednodušení ovládania."),
+    "qk_press" to ("Tlačítko na ovladači, které se ve hře nepoužívá (barevné, Info…) – při hře pak otevře nabídku vzhledu titulků." to "Tlačidlo na ovládači, ktoré sa v hre nepoužíva (farebné, Info…) – pri hre potom otvorí ponuku vzhľadu titulkov."),
+    "qk_bad" to ("Tohle tlačítko nejde použít · barevné nebo Info ano" to "Toto tlačidlo nejde použiť · farebné alebo Info áno"),
+    "qk_desc" to ("Jen Android TV: zvolené tlačítko na ovladači otevře při hře nabídku vzhledu (pozadí, písmo, poloha, originál) přímo přes obraz – bez odchodu z HDMI. Šipky mění hodnoty, Zpět nabídku zavře. OK to být nemůže, televize ho posílá do PlayStationu. Když tlačítko nereaguje, pomůže vypnout a zapnout PlayLingo v Usnadnění." to "Len Android TV: zvolené tlačidlo na ovládači otvorí pri hre ponuku vzhľadu (pozadie, písmo, poloha, originál) priamo cez obraz – bez odchodu z HDMI. Šípky menia hodnoty, Späť ponuku zavrie. OK to byť nemôže, televízor ho posiela do PlayStationu. Keď tlačidlo nereaguje, pomôže vypnúť a zapnúť PlayLingo v Zjednodušení ovládania."),
     "qk_title" to ("Vzhled titulků" to "Vzhľad titulkov"),
     "qk_hint" to ("▲▼ volba · ◀▶ změna · Zpět zavře" to "▲▼ voľba · ◀▶ zmena · Späť zavrie"),
     "qk_size_game" to ("podle hry" to "podľa hry"),
@@ -18,6 +22,9 @@ internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "ps_wake_row" to "Wake the PlayStation",
+        "ps_wake_desc" to "PlayLingo wakes the PlayStation from rest mode, but on the account it is paired with (the second account) – switch to your account on the console afterwards. Off: turn the PlayStation on with the controller on your account and PlayLingo connects by itself.",
+        "h_con_sleep" to "in rest mode",
         "qk_row" to "Subtitle look button",
         "qk_none" to "not set",
         "qk_press" to "Press a remote button you don’t use in games (a colour button, Info…). While playing it then opens the subtitle look menu.",
@@ -29,6 +36,9 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "This is how the translation will look.",
     ),
     Lang.PL to mapOf(
+        "ps_wake_row" to "Wybudzaj PlayStation",
+        "ps_wake_desc" to "PlayLingo wybudzi PlayStation z trybu spoczynku, ale na koncie, z którym jest sparowane (drugie konto) – na swoje konto przełączysz się potem na konsoli. Wyłączone: włącz PlayStation kontrolerem na swoim koncie, a PlayLingo połączy się samo.",
+        "h_con_sleep" to "w trybie spoczynku",
         "qk_row" to "Przycisk wyglądu napisów",
         "qk_none" to "nie ustawiono",
         "qk_press" to "Naciśnij przycisk pilota, którego nie używasz w grach (kolorowy, Info…). Podczas gry otworzy menu wyglądu napisów.",
@@ -40,6 +50,9 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Tak będzie wyglądać tłumaczenie napisów.",
     ),
     Lang.DE to mapOf(
+        "ps_wake_row" to "PlayStation aufwecken",
+        "ps_wake_desc" to "PlayLingo weckt die PlayStation aus dem Ruhemodus, aber mit dem gekoppelten Konto (zweites Konto) – zu deinem Konto wechselst du dann an der Konsole. Aus: Schalte die PlayStation mit dem Controller auf deinem Konto ein, PlayLingo verbindet sich von selbst.",
+        "h_con_sleep" to "im Ruhemodus",
         "qk_row" to "Taste für Untertitel-Aussehen",
         "qk_none" to "nicht festgelegt",
         "qk_press" to "Drücke eine Taste der Fernbedienung, die du im Spiel nicht nutzt (Farbtaste, Info…). Beim Spielen öffnet sie dann das Menü für das Untertitel-Aussehen.",
@@ -51,6 +64,9 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "So wird die Übersetzung aussehen.",
     ),
     Lang.HU to mapOf(
+        "ps_wake_row" to "PlayStation felébresztése",
+        "ps_wake_desc" to "A PlayLingo felébreszti a PlayStationt nyugalmi módból, de a párosított fiókkal (második fiók) – a saját fiókodra a konzolon válthatsz. Kikapcsolva: kapcsold be a PlayStationt a kontrollerrel a saját fiókodon, a PlayLingo magától csatlakozik.",
+        "h_con_sleep" to "nyugalmi módban",
         "qk_row" to "Feliratmegjelenés gombja",
         "qk_none" to "nincs beállítva",
         "qk_press" to "Nyomd meg a távirányító egy olyan gombját, amit játékban nem használsz (színes, Info…). Játék közben ez nyitja meg a felirat megjelenésének menüjét.",
@@ -62,6 +78,9 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Így fog kinézni a felirat fordítása.",
     ),
     Lang.UK to mapOf(
+        "ps_wake_row" to "Пробуджувати PlayStation",
+        "ps_wake_desc" to "PlayLingo пробудить PlayStation з режиму спокою, але на спареному обліковому записі (другий запис) – на свій запис перемкнешся потім на консолі. Вимкнено: увімкни PlayStation контролером на своєму записі, і PlayLingo підключиться саме.",
+        "h_con_sleep" to "у режимі спокою",
         "qk_row" to "Кнопка вигляду субтитрів",
         "qk_none" to "не задано",
         "qk_press" to "Натисни на пульті кнопку, яку не використовуєш у грі (кольорову, Info…). Під час гри вона відкриватиме меню вигляду субтитрів.",
@@ -73,6 +92,9 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Ось так виглядатиме переклад субтитрів.",
     ),
     Lang.ES to mapOf(
+        "ps_wake_row" to "Despertar la PlayStation",
+        "ps_wake_desc" to "PlayLingo despierta la PlayStation del modo de reposo, pero con la cuenta vinculada (la segunda cuenta); luego cambia a tu cuenta en la consola. Desactivado: enciende la PlayStation con el mando en tu cuenta y PlayLingo se conecta solo.",
+        "h_con_sleep" to "en reposo",
         "qk_row" to "Botón de aspecto de subtítulos",
         "qk_none" to "sin asignar",
         "qk_press" to "Pulsa un botón del mando que no uses en los juegos (de color, Info…). Al jugar abrirá el menú de aspecto de los subtítulos.",
@@ -84,6 +106,9 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Así se verá la traducción de los subtítulos.",
     ),
     Lang.FR to mapOf(
+        "ps_wake_row" to "Réveiller la PlayStation",
+        "ps_wake_desc" to "PlayLingo sort la PlayStation du mode repos, mais sur le compte associé (le second compte) – passe ensuite à ton compte sur la console. Désactivé : allume la PlayStation avec la manette sur ton compte et PlayLingo se connecte tout seul.",
+        "h_con_sleep" to "en veille",
         "qk_row" to "Touche d’aspect des sous-titres",
         "qk_none" to "non définie",
         "qk_press" to "Appuie sur une touche de la télécommande que tu n’utilises pas en jeu (couleur, Info…). En jeu, elle ouvrira le menu d’aspect des sous-titres.",
@@ -95,6 +120,9 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Voici à quoi ressemblera la traduction.",
     ),
     Lang.IT to mapOf(
+        "ps_wake_row" to "Risveglia la PlayStation",
+        "ps_wake_desc" to "PlayLingo risveglia la PlayStation dalla modalità riposo, ma sull’account associato (il secondo account) – poi passa al tuo account sulla console. Disattivato: accendi la PlayStation con il controller sul tuo account e PlayLingo si collega da solo.",
+        "h_con_sleep" to "in riposo",
         "qk_row" to "Tasto aspetto sottotitoli",
         "qk_none" to "non impostato",
         "qk_press" to "Premi un tasto del telecomando che non usi nei giochi (colorato, Info…). Durante il gioco aprirà il menu dell’aspetto dei sottotitoli.",

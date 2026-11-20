@@ -688,6 +688,11 @@ a pomocník LG (5 kroků). Nový postup o víc krocích = přidej `ui.steps`, no
   projde, i když to na skutečné konzoli nefunguje. Ověřit to umí jen uživatel na své televizi.
   Dva pokusy nehlásit se konzoli jako ovladač (0.34 „jen se dívat“, 0.38 „tichý režim“)
   se musely vrátit.
+- **Probouzení PS5 je volba, výchozí vypnutá** (od 0.97.18, `Prefs.ps5Wake`, ⚙ → Obecné „Probouzet PlayStation“):
+  probuzení přes síť zapne konzoli na spárovaném (druhém) účtu, ne na výběr účtu – to Remote Play neumí. Bez volby
+  `Ps5Link.connectWhenAwake` jen každých 8 s zjistí (hledání v síti, `standby`), jestli konzole spí; Domů a stav v TV
+  ukazují „PS5 · v klidovém režimu“ (`Ps5Link.asleep`, `h_con_sleep`) a po zapnutí ovladačem se připojí samo.
+  Nenalezená konzole = připojí se jako dřív. Ověřit umí jen majitel na skutečné PS5.
 - **Přihlašovací kód účtu na PS5** (4 číslice, `Prefs.ps5LoginPin`): políčko se od 0.86 ukáže jen,
   když o něj PlayStation při spojení požádal (`Ps5Link.needsLoginPin`) nebo když už je nějaký uložený.
 - **Hláška „Aplikace Remote Play je připojena“**: průvodce (u přípravy PS5) a Nápověda radí zapnout na

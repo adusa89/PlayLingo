@@ -203,7 +203,7 @@ object TvStatus {
             Console.XBOX -> if (XboxAccount.ready(c)) XboxAccount.consoleName(c) else null
         } ?: if (console == Console.XBOX) "Xbox" else "PS5"
         if (TranslatorService.running && !TranslatorService.demo) {
-            val (b, st) = when (TranslatorService.linkStatus().stage) {
+            val (b, st) = if (console == Console.PLAYSTATION && Ps5Link.asleep) "pozor" to c.tx("h_con_sleep") else when (TranslatorService.linkStatus().stage) {
                 cz.playlingo.core.LinkStatus.Stage.IMAGE -> "ok" to c.tx("tv_st_on")
                 cz.playlingo.core.LinkStatus.Stage.STALLED, cz.playlingo.core.LinkStatus.Stage.NO_IMAGE -> "pozor" to c.tx("h_con_noimg")
                 cz.playlingo.core.LinkStatus.Stage.FAILED -> "pozor" to c.tx("h_con_fail")

@@ -54,6 +54,12 @@ class Ps5Link(
          */
         @Volatile var endedByConsole: String? = null
             private set
+        /**
+         * PlayStation spí a PlayLingo ho nebudí (volba „Probouzet PlayStation“ vypnutá, výchozí od 0.97.18):
+         * čeká se, až ho hráč zapne ovladačem na svém účtu. Pro Domů a stav v TV („PS5 · spí – zapni ovladačem“).
+         */
+        @Volatile var asleep = false
+            private set
         /** Remote Play na PS5 teď používá jiné zařízení (stejný účet připojený jinde) – pro hlášku na Domů. */
         @Volatile var otherDevice = false
             private set
@@ -100,8 +106,34 @@ class Ps5Link(
         stopped = false
         endedByConsole = null
         otherDevice = false
-        exec.execute { connect() }
+        asleep = false
+        exec.execute { connectWhenAwake() }
     }
+
+    /**
+     * Budit se smí jen s volbou [Prefs.ps5Wake] – probuzení přes síť zapne konzoli na účtu, se kterým je
+     * PlayLingo spárované (druhý účet), a ne na výběr účtu. Bez volby: dokud konzole spí, jen se každých 8 s
+     * podívá (hledání v síti hlásí klidový režim) a připojí se, až ji hráč zapne.
+     */
+    private fun connectWhenAwake() {
+        if (stopped || session != null) return
+        if (!everConnected && !Prefs.ps5Wake(ctx) && sleeping()) {
+            if (!asleep) log("console in rest mode, waiting (wake off)")
+            asleep = true
+            state = Ps5.Link.WAITING
+            retry?.cancel(false)
+            retry = exec.schedule({ connectWhenAwake() }, 8000, TimeUnit.MILLISECONDS)
+            return
+        }
+        asleep = false
+        connect()
+    }
+
+    /** Konzole se v síti hlásí v klidovém režimu? (Nenalezená = nevíme → zkusí se připojit jako dřív.) */
+    private fun sleeping(): Boolean = try {
+        val mac = Ps5.hex(host.mac)
+        Ps5Pairing.discover(1500).firstOrNull { it.ip == host.ip || (mac.isNotEmpty() && it.id.equals(mac, ignoreCase = true)) }?.standby == true
+    } catch (_: Throwable) { false }
 
     private fun connect() {
         if (stopped || session != null) return
@@ -221,9 +253,9 @@ class Ps5Link(
             if (stopped) return@schedule
             // Budit konzoli jen na začátku (uživatel právě spustil překlad). Jakmile jednou běžela
             // a pak se odmlčela, nejspíš ji uživatel vypnul – a tu už aplikace znovu zapínat nesmí.
-            if (!everConnected && failures <= 2) wake()
+            if (!everConnected && failures <= 2 && Prefs.ps5Wake(ctx)) wake()
             if (failures == 2 || failures % 5 == 0) relocate()
-            connect()
+            connectWhenAwake()
         }, delay, TimeUnit.MILLISECONDS)
     }
 

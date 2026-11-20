@@ -836,7 +836,7 @@ class MainActivity : Activity() {
         val conName = consoleName() ?: if (console == Console.XBOX) "Xbox" else "PS5"
         if (running && !demoRun) {
             val ls = TranslatorService.linkStatus()
-            val (color, state) = when (ls.stage) {
+            val (color, state) = if (console == Console.PLAYSTATION && Ps5Link.asleep) Theme.WARN to t("h_con_sleep") else when (ls.stage) {
                 cz.playlingo.core.LinkStatus.Stage.IMAGE -> Theme.OK to t("tv_st_on")
                 cz.playlingo.core.LinkStatus.Stage.STALLED, cz.playlingo.core.LinkStatus.Stage.NO_IMAGE -> Theme.WARN to t("h_con_noimg")
                 cz.playlingo.core.LinkStatus.Stage.FAILED -> Theme.WARN to t("h_con_fail")
@@ -1677,6 +1677,13 @@ class MainActivity : Activity() {
     /** Obecné: konzole, televize (+ nahrání), jazyk aplikace, zařízení, zkušební verze, povolení (jen Android TV). */
     private fun settingsGeneral() {
         consoleRow("sconsole", 8)
+        // probouzení PlayStationu: zapne ho na spárovaném (druhém) účtu, proto výchozí vypnuto
+        if (Prefs.console(this) == Console.PLAYSTATION) {
+            add(tagged(ui.settingRow(t("ps_wake_row"), onOff(Prefs.ps5Wake(this))) {
+                if (Prefs.ps5Wake(this)) { Prefs.setPs5Wake(this, false); render(true) }
+                else confirmOn(t("ps_wake_row"), t("ps_wake_desc")) { Prefs.setPs5Wake(this, true); render(true) }
+            }, "ps5wake"), 8)
+        }
         // Typ televize (Android TV / LG / Samsung) – stejná nabídka jako ze souhrnného řádku na Domů.
         val type = Prefs.tvType(this)
         add(tagged(ui.settingRow(t("tv_type"), TvChoice.label(this, type)) {
@@ -1924,7 +1931,7 @@ class MainActivity : Activity() {
         // 8. volby v Nastavení (v Nastavení jsou jen názvy)
         chapters += Triple("hc8", null, {
             ui.card().apply {
-                listOf("s_test" to "s_test_desc", "qk_row" to "qk_desc", "s_quality" to "q_desc", "t_game" to "t_game_desc",
+                listOf("s_test" to "s_test_desc", "ps_wake_row" to "ps_wake_desc", "qk_row" to "qk_desc", "s_quality" to "q_desc", "t_game" to "t_game_desc",
                     "t_dict" to "t_dict_desc", "t_mode" to "t_offline_desc", "dl_toggle" to "dl_desc").forEachIndexed { i, (k, d) ->
                     addView(ui.text(t(k), 16f, Theme.TEXT, bold = true), ui.lp(top = if (i == 0) 0 else 14))
                     addView(ui.text(t(d), 15f, Theme.MUTED), ui.lp(top = 4))
@@ -2194,6 +2201,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.17"
-    const val VERSION_CODE = 114
+    const val VERSION = "verze 0.97.18"
+    const val VERSION_CODE = 115
 }
