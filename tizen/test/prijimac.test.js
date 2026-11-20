@@ -189,7 +189,7 @@ function zkus(platforma, verze, dalsi) {
       tv.stiskni(40); tv.stiskni(39);
       tv.stiskni(40); tv.stiskni(37);
       zmeny = tv.odeslano.filter(function (z) { return z.typ === 'zmen'; });
-      assert.deepStrictEqual(zmeny.map(function (z) { return z.klic + '=' + z.hodnota; }), ['pruhlednost=100', 'velikost=18', 'poloha=pres']);
+      assert.deepStrictEqual(zmeny.map(function (z) { return z.klic + '=' + z.hodnota; }), ['pruhlednost=100', 'velikost=12', 'poloha=pres']);
       tv.stiskni(platforma === 'tizen' ? 10009 : 461);
       assert.strictEqual(tv.prvky.panel.style.display, 'none', 'Zpět zavře nabídku');
       assert.strictEqual(tv.prvky.pruh.style.display, 'none', 'ukázka po zavření zmizí');

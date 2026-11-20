@@ -47,7 +47,7 @@ object TvLook {
             if (textLeft >= 0f && textRight > textLeft) sb.append(',').append(f(textLeft)).append(',').append(f(textRight))
             sb.append(']')
         }
-        original?.takeIf { it.isNotBlank() }?.let { sb.append(",\"original\":").append(TvSender.json(it.replace('\n', ' '))) }
+        original?.takeIf { it.isNotBlank() }?.let { sb.append(",\"original\":").append(TvSender.json(it)) }
         return sb.append('}').toString()
     }
 

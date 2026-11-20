@@ -240,7 +240,7 @@ object GameProfiles {
         f("Nicole Park", "Nicole"), m("Andrés de León", "Andrés"), f("Petra Navarro", "Petra"), f("Valentina"),
         m("Méndez", "Aldo Méndez", "Mendez"), f("Stefanie Gates", "Stefanie"), m("Manuel"), m("Kirk"), m("Kyle"),
         m("Pilot Pete", "Pete"), m("Wyman"), m("Benedict Halifax", "Benedict"), f("Evelyn Andrews", "Evelyn"),
-        m("El Martillo"), f("La Gata"), m("Mud Dog Mike"),
+        m("El Martillo"), f("La Gata"), m("Mud Dog Mike"), f("Andy"),   // Andy je žena (majitel ve hře, 20. 11. 2026)
     )
     /** Herní pojmy GTA VI s pevným překladem – jen ty, které se v 1. a 4. pádě nemění. */
     private val GTA6_TERMS = mapOf(
@@ -319,7 +319,7 @@ object GameProfiles {
         "Morgan", "Milton", "Ross", "Leviathan", "Afterlife", "Badlands", "Cutter", "Avery", "Scorpion", "Rhino",
         "Vulture", "Electro", "Kingpin", "Venom", "Boston", "Seattle", "Pittsburgh", "Manhattan", "Harlem",
         "Mandy", "Linda", "Joey", "Randy", "Kirk", "Kyle", "Moses", "Dunk", "Pete",
-        "Jay", "Loony", "BF", "Huevo", "Tomás", "Stefanie", "Méndez", "Mendez", "La Ola", "Lori", "Mia", "Kat", "Arnold",
+        "Andy", "Jay", "Loony", "BF", "Huevo", "Tomás", "Stefanie", "Méndez", "Mendez", "La Ola", "Lori", "Mia", "Kat", "Arnold",
         "Donnie", "Shirley", "Vicki", "Frankie", "Andrea", "Nicole", "Petra", "Valentina", "Manuel", "Benedict",
         "Delights", "Cheetah", "Elegy", "Moreau", "Salton", "Southwind", "Millport", "M7", "Kingfishers", "Final Chapter",
         "The Chamber", "Game", "Map", "Help", "Save", "Store", "Progress", "Brief", "Settings",

@@ -30,7 +30,7 @@ class TvLookTest {
 
     @Test fun originalAPismo() {
         val j = TvLook.json(ScreenLayout(), 100, 50, white, false, 0.8f, 0.9f, -1f, -1f, "He said \"no\"\nok")
-        assertTrue(j, j.contains("\"original\":\"He said \\\"no\\\" ok\""))
+        assertTrue(j, j.contains("\"original\":\"He said \\\"no\\\"\\nok\""))   // řádek = mluvčí (od 0.97.20)
         assertTrue(j, j.contains("\"text\":[0.8000,0.9000]"))
         assertEquals(50, TvLook.textPx(22, 0))
         assertEquals(40, TvLook.textPx(22, 40))

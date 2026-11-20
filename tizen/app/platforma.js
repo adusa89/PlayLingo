@@ -22,7 +22,7 @@
 (function () {
   'use strict';
 
-  var VERZE = '1.5.1';
+  var VERZE = '1.5.2';
   // Pořadové číslo požadavku na obraz: odpověď na starší (uživatel mezitím odešel) se zahodí.
   var obrazPokus = 0;
 

@@ -18,7 +18,7 @@ package cz.playlingo.core
 object TvSettings {
     /** Stejné hodnoty jako v Titulkách v telefonu (Prefs.OPACITIES, Prefs.TEXT_SIZES). */
     val OPACITIES = listOf(60, 80, 90, 100)
-    val TEXT_SIZES = listOf(18, 22, 26, 32, 40, 48)
+    val TEXT_SIZES = listOf(12, 15, 18, 22, 26, 32, 40, 48)
     /** Polohy, které jdou zvolit v televizi (vlastní poloha jen v telefonu). */
     val POSITIONS = linkedMapOf(
         "pres" to ScreenLayout.Position.OVER,

@@ -138,6 +138,11 @@ class GameCastTest {
         g.onText("We should go back to Cauldron Lake.")
         assertEquals("alanwake2", g.guess()?.id)
         assertEquals(Gender.F, GameProfiles.of("diablo4").cast.genderOf("LILITH"))
+        assertEquals(Gender.F, GameProfiles.of("gta6").cast.genderOf("ANDY"))
+        // slang „sick“ = skvělé, ne nemocný
+        assertEquals(true, OfflinePrep.standardize("You're looking sick, Lu.").contains("looking great"))
+        assertEquals(true, OfflinePrep.standardize("That's sick!").contains("awesome"))
+        assertEquals(true, OfflinePrep.standardize("I'm sick of this.").contains("sick of"))
         assertEquals("pevnost", GameProfiles.of("diablo4").termsFor(Lang.CS)["stronghold"])
     }
 }

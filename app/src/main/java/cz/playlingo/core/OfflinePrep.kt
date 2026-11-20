@@ -115,6 +115,9 @@ object OfflinePrep {
     private val IDIOMS: List<Pair<Regex, String>> = listOf(
         Regex("\\bhang on(?=\\s+a (second|sec|minute|moment)\\b|\\s*[.!,]|\\s*$)", RegexOption.IGNORE_CASE) to "wait",
         Regex("\\btake it easy\\b", RegexOption.IGNORE_CASE) to "calm down",
+        // slang: „looking sick“ / „that's sick“ = skvělé (překladač dával „vypadám nemocně“, GTA VI 20. 11. 2026)
+        Regex("\\blooking sick\\b", RegexOption.IGNORE_CASE) to "looking great",
+        Regex("\\b(that's|that is|so|pretty|real) sick\\b(?!\\s+(?:of|with|and tired))", RegexOption.IGNORE_CASE) to "$1 awesome",
         Regex("\\b(?:I(?: have|'ve got| got)? )?no idea\\b", RegexOption.IGNORE_CASE) to "I do not know",
         Regex("\\b(?:good|nice|great) job\\b", RegexOption.IGNORE_CASE) to "well done",
         Regex("\\bgot away\\b", RegexOption.IGNORE_CASE) to "ran away",

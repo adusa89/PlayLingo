@@ -173,9 +173,24 @@ class SubtitleOverlay(
             if (s.choice) sb.setSpan(AlignmentSpan.Standard(Layout.Alignment.ALIGN_NORMAL), lineStart, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         if (!original.isNullOrBlank()) {
+            // originál po mluvčích, jméno ve stejné barvě jako v překladu (od 0.97.20)
             val start = sb.length
-            sb.append('\n').append(original.replace('\n', ' '))
-            sb.setSpan(ForegroundColorSpan(originalColor), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            TextLogic.segments(original).forEach { s ->
+                sb.append('\n')
+                val ls = sb.length
+                if (s.speaker != null) {
+                    val name = TextLogic.normalizeName(s.speaker)
+                    sb.append(name).append(": ")
+                    val c = if (coloredSpeaker) colors[name] else null
+                    if (c != null) {
+                        sb.setSpan(ForegroundColorSpan(c), ls, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        sb.setSpan(StyleSpan(Typeface.BOLD), ls, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    } else sb.setSpan(ForegroundColorSpan(originalColor), ls, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                val bs = sb.length
+                sb.append(s.body)
+                sb.setSpan(ForegroundColorSpan(originalColor), bs, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
             sb.setSpan(RelativeSizeSpan(0.62f), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return sb
@@ -196,8 +211,11 @@ class SubtitleOverlay(
         onText?.let { send ->
             // televize LG/Samsung: stejný vzhled a poloha jako tady (obrazovka televize 1920×1080)
             val tvMatched = if (matchOriginalSize) tvSizeKeeper.next(MatchSize.textPx(lineHeight, TvLook.SCREEN_H)) else 0
+            // originál po mluvčích (řádek = jeden mluvčí) – televize podle jmen obarví jako překlad
+            val tvOriginal = original?.let { o -> TextLogic.segments(o).joinToString("\n") { s ->
+                (s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + s.body } }
             val look = TvLook.json(layout, opacityPercent, TvLook.textPx(textSize, tvMatched), textColor, bold,
-                textTop, textBottom, textLeft, textRight, original)
+                textTop, textBottom, textLeft, textRight, tvOriginal)
             send(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors), look)
         }
         main.post {

@@ -276,6 +276,11 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   posílal přes službu každé tlačítko. Změny přes `TranslatorService.quickChange` → `applyTvChange` (jako z TV LG),
   bez titulku ukázková věta (`quickSample`). Jen když běží překlad a aplikace není vidět. Funguje-li tlačítko při HDMI,
   záleží na výrobci TV – ověří jen majitel; po aktualizaci může být potřeba vypnout a zapnout službu v Usnadnění.
+- **Od 0.97.20 (aplikace v televizi 1.5.2):** velikosti písma 12 a 15 sp navíc (`Prefs.TEXT_SIZES`, `TvSettings.TEXT_SIZES`,
+  `VELIKOSTI` v `app.js` – měň najednou, hlídá `TvSettingsTest`; popisky `size_0`–`size_7`). Originál pod překladem je po
+  mluvčích (řádek = mluvčí, v `TvLook` s `
+`) a jméno má stejnou barvu jako v překladu (`SubtitleOverlay.format`,
+  `puvodniRadky` v `app.js`). Pruh v TV má zaoblené rohy. Barvy jmen přiděluje PlayLingo (`SpeakerColors`), z obrazu je nečte.
 - **Domů hlásí starou aplikaci v televizi** (`TvChoice.outdated`: ohlášená verze vs. `receiver-manifest.json`
   v APK, text `w_tv_old`), s tlačítkem k nahrání.
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →

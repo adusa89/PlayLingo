@@ -53,7 +53,7 @@
       pn_velikost: 'Velikost písma',
       pn_poloha: 'Poloha pruhu',
       pn_original: 'Ukazovat i originál',
-      pn_velikosti: ['Podle hry', 'Velmi malé', 'Malé', 'Střední', 'Velké', 'Velmi velké', 'Obří'],
+      pn_velikosti: ['Podle hry', 'Drobné', 'Velmi malé', 'Malé', 'Menší', 'Střední', 'Velké', 'Velmi velké', 'Obří'],
       pn_polohy: ['Přes titulky', 'Těsně nad titulkem', 'Nad oblastí čtení', 'Nahoře'],
       pn_vlastni: 'Vlastní (z telefonu)',
       pn_ano: 'Zapnuto',
@@ -92,7 +92,7 @@
       pn_velikost: 'Text size',
       pn_poloha: 'Bar position',
       pn_original: 'Show the original too',
-      pn_velikosti: ['Like the game', 'Very small', 'Small', 'Medium', 'Large', 'Very large', 'Huge'],
+      pn_velikosti: ['Like the game', 'Tiny', 'Very small', 'Small', 'Smaller', 'Medium', 'Large', 'Very large', 'Huge'],
       pn_polohy: ['Over the subtitles', 'Right above the subtitle', 'Above the reading area', 'At the top'],
       pn_vlastni: 'Custom (from the phone)',
       pn_ano: 'On',
@@ -322,20 +322,53 @@
   // Vzhled a poloha pruhu podle Nastavení v PlayLingu na Androidu (pole vzhled, viz core/TvLook.kt):
   // průhlednost, písmo, barva a poloha přes titulky / těsně nad titulkem / nad oblastí čtení / na pevném místě.
   // Bez pole vzhled (starší PlayLingo) zůstane pruh jako dřív – černý, dole přes celou šířku.
-  function vzhledPruhu(v) {
+  // Barva jména z částí titulku (casti) pro řádek originálu – stejné jméno, stejná barva.
+  function barvaPodleJmena(casti, jmeno) {
+    var i, k = String(jmeno).toLowerCase();
+    if (!casti || !casti.length) { return null; }
+    for (i = 0; i < casti.length; i++) {
+      if (casti[i] && casti[i].jmeno && String(casti[i].jmeno).toLowerCase() === k) { return barvaJmena(casti[i].barva); }
+    }
+    return null;
+  }
+
+  // Originál pod překladem po řádcích; jméno mluvčího v barvě jako v překladu (od 1.5.2).
+  function puvodniRadky(puvodni, text, casti) {
+    var radky = String(text).split('\n'), i, m, radek, kus, b;
+    for (i = 0; i < radky.length; i++) {
+      radek = document.createElement('div');
+      m = /^([^:]{1,40}):\s*(.*)$/.exec(radky[i]);
+      b = m ? barvaPodleJmena(casti, m[1]) : null;
+      if (m && b) {
+        kus = document.createElement('span');
+        kus.className = 'jmeno barevne';
+        kus.style.color = b;
+        kus.textContent = m[1] + ': ';
+        radek.appendChild(kus);
+        radek.appendChild(document.createTextNode(m[2]));
+      } else {
+        radek.textContent = radky[i];
+      }
+      puvodni.appendChild(radek);
+    }
+  }
+
+  function vzhledPruhu(v, casti) {
     var p = el('pruh'), t = el('titulek'), s = p.style;
     var W = 1920, H = 1080;
     var cteni, text, pres, maxW, w, h, top, stred, puvodni, x;
-    s.left = ''; s.top = ''; s.bottom = ''; s.width = ''; s.maxWidth = ''; s.minHeight = ''; s.background = '';
+    s.left = ''; s.top = ''; s.bottom = ''; s.width = ''; s.maxWidth = ''; s.minHeight = ''; s.background = ''; s.borderRadius = '';
     t.style.fontSize = ''; t.style.color = ''; t.style.fontWeight = ''; t.style.padding = '';
     if (!v || typeof v !== 'object' || p.style.display === 'none') { return; }
     if (typeof v.original === 'string' && v.original) {
       puvodni = document.createElement('div');
       puvodni.className = 'puvodni';
-      puvodni.textContent = v.original;
+      puvodniRadky(puvodni, v.original, casti);
       t.appendChild(puvodni);
     }
     s.background = 'rgba(0,0,0,' + (cislo(v.pozadi, 0, 100, 100) / 100) + ')';
+    // zaoblené rohy jako na Android TV (od 1.5.2)
+    s.borderRadius = '18px';
     t.style.fontSize = cislo(v.pismo, 16, 120, 50) + 'px';
     if (/^#[0-9A-Fa-f]{6}$/.test(String(v.barva || ''))) { t.style.color = v.barva; }
     if (v.tucne === true) { t.style.fontWeight = 'bold'; }
@@ -392,7 +425,7 @@
     var i, c, radek, kus, seznam = null;
     if (!casti || Object.prototype.toString.call(casti) !== '[object Array]' || !casti.length) {
       pruh(text);
-      vzhledPruhu(vzhled);
+      vzhledPruhu(vzhled, null);
       return;
     }
     t.textContent = '';
@@ -427,7 +460,7 @@
       }
     }
     el('pruh').style.display = 'flex';
-    vzhledPruhu(vzhled);
+    vzhledPruhu(vzhled, casti);
   }
 
   // ---- Vzhled titulků z ovladače (od 1.4.0) -----------------------------
@@ -435,7 +468,7 @@
   // ukáže je v malé nabídce (OK při hře) a o změnu požádá zprávou `zmen`; Android ji ověří, uloží
   // a pošle zpět nové hodnoty (viz core/TvSettings.kt). Hodnoty jsou stejné jako v telefonu.
   var PRUHLEDNOSTI = [60, 80, 90, 100];
-  var VELIKOSTI = [0, 18, 22, 26, 32, 40, 48];
+  var VELIKOSTI = [0, 12, 15, 18, 22, 26, 32, 40, 48];
   var POLOHY = ['pres', 'tesne', 'nad', 'nahore'];
   var nastaveni = null;
   var panelRadek = -1;
