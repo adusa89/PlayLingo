@@ -361,6 +361,8 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
 - Vložení klíče z telefonu: stejný server jako přihlášení (`LoginServer.forPage` + `LoginServer.Custom`,
   jednorázový klíč ve čtverečku), stránka `DeeplPage` v `core/Deepl.kt` (postup, odkaz na DeepL na nové
   kartě, políčko pro vložení – schránku stránka číst nesmí). Běží jen, dokud je vidět její čtvereček.
+  Na televizi bez klíče se od 0.95 čtvereček ukáže sám (v Nastavení i v kroku Kvalita překladu) – dlouhý klíč
+  se ovladačem psát nedá; ruční políčko je až po „Zavřít“ (`DeeplSection.manual`).
 - Se zapnutým DeepL ukazuje i karta „Režim překladu“ (Nastavení → Čtení a překlad) „Offline + DeepL“
   (`dl_mode_on`), zapnutý bez klíče `dl_mode_idle` – dřív tam stálo jen „Offline“ a mátlo to.
 - Překlad (`TranslatorService` → `improveWithDeepl`): offline překlad se ukáže hned, souběžně jde

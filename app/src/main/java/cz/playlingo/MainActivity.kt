@@ -451,7 +451,8 @@ class MainActivity : Activity() {
         val focusedTag = if (keepFocus) currentFocus?.tag else null
         if (!skipDraftSave) saveDrafts()
         syncLoginPage()
-        if (wizard >= 0 || section != Section.SETTINGS) deeplUi?.stopPage()
+        // stránka pro vložení klíče DeepL z telefonu běží jen, dokud je vidět (Nastavení nebo krok Kvalita překladu)
+        if (if (wizard >= 0) wizard != W_TRANSLATE else section != Section.SETTINGS) deeplUi?.stopPage()
         lastRunning = TranslatorService.running
         lastPaused = TranslatorService.paused
         lastLink = TranslatorService.linkState
@@ -1916,6 +1917,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.94"
-    const val VERSION_CODE = 94
+    const val VERSION = "verze 0.95"
+    const val VERSION_CODE = 95
 }

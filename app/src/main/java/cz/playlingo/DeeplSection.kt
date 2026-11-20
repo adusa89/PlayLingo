@@ -38,6 +38,8 @@ class DeeplSection(
     private var page: LoginServer? = null
     /** Uložený a funkční klíč je schovaný; „Změnit klíč“ ukáže zadávání znovu. */
     private var changing = false
+    /** Hráč zavřel čtvereček a chce klíč psát ručně – stránku pro telefon už sama neotvírat. */
+    private var manual = false
     private val main = Handler(Looper.getMainLooper())
 
     private fun t(k: String) = a.tx(k)
@@ -84,12 +86,15 @@ class DeeplSection(
         // výsledek ověření, jen když neříká totéž co řádek nad ním
         msg?.takeIf { it != shown }?.let { add(ui.text(it, 15f, msgColor), 8) }
 
+        // televize bez klíče: rovnou čtvereček pro telefon – dlouhý klíč se ovladačem psát nedá. Telefon otevře
+        // stránku s odkazem na DeepL, hráč tam klíč zkopíruje a vloží – všechno jen v telefonu.
+        if (Prefs.isTv(a) && !has && !manual && page == null) openPage(redraw = false)
         val url = pageUrl()
         if (url != null) {
             // vložení klíče z telefonu: čtvereček se stránkou z televize
             add(qrRow(url, t("dl_qr_text")), 10)
             add(ui.text(url, 14f, Theme.MUTED), 6)
-            add(ui.button(t("dl_qr_close")) { stopPage(); rerender() }.apply { tag = "dlqrclose" }, 10)
+            add(ui.button(t("dl_qr_close")) { manual = true; stopPage(); rerender() }.apply { tag = "dlqrclose" }, 10)
             return
         }
         // funkční uložený klíč: zadávání schované, jen Změnit / Ověřit / Odebrat
@@ -142,7 +147,7 @@ class DeeplSection(
         }, 10)
         val row = row()
         row.addView(ui.button(t(if (busy) "dl_checking" else "dl_key_save"), primary = true) { if (!busy) saveTyped() }.apply { tag = "dlsave" })
-        row.addView(ui.button(t("dl_key_phone")) { openPage() }.apply { tag = "dlphone" }, gap())
+        row.addView(ui.button(t("dl_key_phone")) { manual = false; openPage() }.apply { tag = "dlphone" }, gap())
         add(row, 10)
         if (key != null) {
             val row2 = row()
@@ -206,7 +211,7 @@ class DeeplSection(
         return PhoneLogin.pageUrl(PhoneLogin.Target(ip, s.port, s.key))
     }
 
-    private fun openPage() {
+    private fun openPage(redraw: Boolean = true) {
         if (page != null) return
         val server = LoginServer.forPage({ Prefs.uiLang(a) }, object : LoginServer.Custom {
             override fun get(path: String) = DeeplPage.page(Prefs.uiLang(a), DeeplPage.State.ASK, path)
@@ -229,9 +234,10 @@ class DeeplSection(
         }, log = { android.util.Log.i("TP_TEST", "DEEPL|page " + it) })
         if (!server.start() || NetInfo.homeAddress(a) == null) {
             server.stop()
+            manual = true   // bez domácí sítě to dokola nezkoušet; tlačítko „Z telefonu“ to zkusí znovu
             note(t("dl_qr_nolan"), Theme.WARN)
         } else page = server
-        rerender()
+        if (redraw) rerender()
     }
 
     /** Stránka pro telefon jen, dokud je vidět její čtvereček (volá se i při odchodu z Nastavení). */
