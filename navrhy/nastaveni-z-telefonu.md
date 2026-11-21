@@ -29,10 +29,30 @@ v telefonu – a televize se podle toho nastaví. Pro iPhone (a Android bez apli
 - **Co telefon za TV neudělá:** povolení pruhu v Usnadnění (musí se zapnout ovladačem v TV), stažení
   jazykového balíčku (stáhne si ho TV sama po změně jazyka).
 
-## Díly
+## Díly a stav (větev `nastaveni-z-telefonu`)
 
-1. `core/RemoteSetup.kt` – co se přenáší, tvar zpráv (JSON s typy hodnot), testy. ← hotovo jako první
-2. TV: server nastavení, přijetí změn (`Prefs` + `TranslatorService.ACTION_RELOAD`), čtvereček v ⚙ a v průvodci.
-3. Telefon: režim „Nastavuji TV“ (vlastní soubor nastavení, stažení z TV, průběžné posílání, pruh nahoře, odpojení).
-4. Web pro iPhone: průvodce + hlavní volby na stránce z TV.
-5. Nápověda, `NAVOD.md`, texty v 10 jazycích, zkouška v emulátoru.
+1. ✔ `core/RemoteSetup.kt` – co se přenáší (`transfers`), tvar zpráv (JSON s typy hodnot), odkaz
+   `playlingo://tv?h=&p=&k=&n=` a stránka z TV. Testy `RemoteSetupTest`.
+2. ✔ TV: `RemoteHost.kt` – `LoginServer.forPage` se stálým klíčem (`Prefs.remoteKey`, port 8766), běží
+   s otevřenou aplikací (`MainActivity.onResume`) i ve službě (`TranslatorService.onCreate`), jen
+   `RemoteHost.eligible` (ne telefon). POST `op=stav` → `RemoteSetup.snapshot`, `op=zmen&data=` →
+   `Prefs.applyRemote` + `ACTION_RELOAD` (jen běžící služba) + překreslení TV, `op=deepl&key=` → ověření
+   a `DeeplKey.save`. GET → stránka s tlačítkem do aplikace. ⚙ → Obecné → „Nastavit z telefonu“ (čtvereček).
+   Zbývá: čtvereček i v prvním kroku průvodce v TV.
+3. Telefon – návrh:
+   - Manifest: `PhoneHelperActivity` přijme i `playlingo://tv` → `RemoteClient.connect` (mimo hlavní vlákno
+     `op=stav`), uloží cíl (vlastní SharedPreferences `dalkove`: host, port, klíč, jméno TV, aktivní).
+   - `Prefs.p()` v režimu TV používá soubor `dalkove_tv` (ne `test_preklad`), aby telefon jako čtečka pro LG
+     o svoje nastavení nepřišel; příznak režimu držet v `@Volatile` proměnné (žádné čtení souboru při každém
+     `Prefs.…`). Stejně `DeeplKey` (`deepl` → `deepl_dalkove`) a klíč DeepL se místo uložení pošle `op=deepl`.
+   - Po spojení: soubor `dalkove_tv` vymazat a naplnit snímkem z TV (TV je hlavní), `tv_type` = Android TV,
+     `reader_device` = false. Posluchač `OnSharedPreferenceChangeListener` (silná reference v objektu) při
+     zápisu snímku vypnutý; jinak změna přenášené volby → po 400 ms `RemoteSetup.diff` proti naposledy
+     poslanému → `op=zmen`. Při chybě sítě pruh „TV nedostupná“ a nový pokus při další změně / po 10 s.
+   - Spárování PS5 v telefonu zapíše `ps5_host` do `dalkove_tv` → odejde do TV jako každá jiná volba.
+   - `MainActivity` v režimu TV: nahoře pruh „Nastavuji: <TV> · Odpojit“; Spustit / náhled / povolení pruhu
+     (Usnadnění, překrytí) / běh na pozadí / krok průvodce Zařízení se v telefonu neukazují (patří TV);
+     krok Zobrazení titulků jen věta „zapni v TV ovladačem“. Odpojit → zpět do `test_preklad`, pomocník.
+4. Web pro iPhone: na GET stránka s průvodcem (jazyk, hra, DeepL, přihlášení PlayStation přes `PhoneLogin`,
+   kód z PS5 – zde páruje TV, `Ps5Pairing` v TV) a vzhledem titulků; POST stejné `op=` jako aplikace.
+5. Nápověda, `NAVOD.md`, CLAUDE.md, zkouška v emulátoru (snímek čtverečku v ⚙), pak zvýšit verzi a do `main`.
