@@ -5,9 +5,22 @@ object DiagLog {
     private const val MAX = 300
     private val lines = ArrayDeque<String>()
 
+    /** Kolik řádků kdy přibylo (i těch, které už vypadly) – značka pro [since]. */
+    private var added = 0L
+
     @Synchronized fun add(line: String, now: Long = System.currentTimeMillis()) {
         lines.addLast("${now / 1000 % 100000} $line".take(300))
+        added++
         while (lines.size > MAX) lines.removeFirst()
+    }
+
+    /** Značka „teď“ pro [since] (záznam snímků: co přibylo od minulého snímku). */
+    @Synchronized fun mark(): Long = added
+
+    /** Řádky přidané od značky [mark] (ty, které ještě nevypadly), nejstarší první. */
+    @Synchronized fun since(mark: Long): List<String> {
+        val n = (added - mark).coerceIn(0L, lines.size.toLong()).toInt()
+        return lines.toList().takeLast(n)
     }
 
     @Synchronized fun dump(): String = lines.joinToString("\n")

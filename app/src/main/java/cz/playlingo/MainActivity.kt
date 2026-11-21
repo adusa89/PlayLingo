@@ -34,6 +34,7 @@ import cz.playlingo.core.Ps5
 import cz.playlingo.core.Ps5Host
 import cz.playlingo.core.UpdateCheck
 import cz.playlingo.core.SubtitleHistory
+import cz.playlingo.core.SnapBatches
 import cz.playlingo.core.TranslationProbe
 import cz.playlingo.core.TvSender
 import cz.playlingo.core.TvType
@@ -160,6 +161,7 @@ class MainActivity : Activity() {
             // (jen na stránce Konzole – Domů náhled nemá a překreslovat ho každé 3 s bylo zbytečné)
             val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 && section == Section.PS5 && "preview" in openGroups
             if ((changed || preview) && !typing && !pairBusy) render(keepFocus = true)
+            if (SnapRecorder.active || lastSnap) tickSnap(typing)
             main.postDelayed(this, 1000)
         }
     }
@@ -1981,6 +1983,39 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("rep_btn"), "›") { makeReport() }, "sreport"), 8)
         // záznam v domácí síti je taky ladění (od 0.97.15 tady, dřív samostatně v Experimentální)
         logShareRow()
+        snapRow()
+    }
+
+    /**
+     * „Záznam snímků“ (od 0.97.59, pro ladění, výchozí vypnuto): Start/Stop dávky snímků obrazovky hry s tím,
+     * co aplikace četla (SnapRecorder). Vývojář dávky stáhne přes záznam v domácí síti (ci/stahni-davky.ps1).
+     */
+    private fun snapRow() {
+        add(tagged(ui.settingRow(t("sn_row"), snapValue()) {
+            if (!SnapRecorder.toggle(this)) Toast.makeText(this, t("sn_need_run"), Toast.LENGTH_LONG).show()
+            render(true)
+        }, "snimky"), 8)
+        // jen když je skupina Ladění a hlášení otevřená (výpis složky, žádné čtení souborů)
+        val saved = SnapBatches.scan(SnapRecorder.root(this))
+        if (saved.isNotEmpty()) add(ui.text(t("sn_saved").replace("%b", saved.size.toString())
+            .replace("%c", saved.sumOf { it.snaps }.toString())
+            .replace("%m", ((saved.sumOf { it.bytes } + 524_287) / 1_048_576).toString()), 14f, Theme.MUTED), 6)
+    }
+
+    private fun snapValue(): String = if (SnapRecorder.active)
+        t("sn_on").replace("%n", SnapRecorder.batch.toString()).replace("%c", SnapRecorder.count.toString()) else t("off")
+
+    /** Ticker: počet snímků v řádku Záznam snímků bez překreslení stránky; zapnutí/vypnutí (i samo po 10 min) překreslí. */
+    private var lastSnap = false
+    private fun tickSnap(typing: Boolean) {
+        val on = SnapRecorder.active
+        if (on != lastSnap) {
+            lastSnap = on
+            if (section == Section.SETTINGS && !typing) render(keepFocus = true)
+        } else if (on) {
+            val row = window.decorView.findViewWithTag<View>("snimky") as? LinearLayout ?: return
+            (row.getChildAt(row.childCount - 1) as? android.widget.TextView)?.text = snapValue()
+        }
     }
 
     /**
