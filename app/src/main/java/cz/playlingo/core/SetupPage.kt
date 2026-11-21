@@ -98,8 +98,12 @@ object SetupPage {
             .append("<p id=\"off\" class=\"card bad\">").append(e("sp_off")).append("</p>")
             .append("<div class=\"card legend\">").append(e("acc_legend")).append("</div>")
         // Android: celé nastavení v PlayLingu v telefonu (vezme si současné nastavení TV, každá změna hned v TV)
-        if (appModeLink != null) sb.append("<div id=\"appmode\"><a class=\"btn\" href=\"").append(PhoneLogin.esc(intentLink(appModeLink, apkUrl)))
-            .append("\">").append(e("sp_app_mode")).append("</a><p class=\"muted\">").append(e("sp_app_mode_d")).append("</p></div>")
+        // dvě rovnocenné cesty (od 0.97.66, přání majitele): aplikace (jen Android) / prohlížeč – iPhone a počítač vidí rovnou prohlížeč
+        if (appModeLink != null) sb.append("<div class=\"card\" id=\"appmode\"><h2>").append(e("sp_how_h")).append("</h2>")
+            .append("<a class=\"btn\" href=\"").append(PhoneLogin.esc(intentLink(appModeLink, apkUrl))).append("\">").append(e("sp_app_mode"))
+            .append("</a><p class=\"muted\">").append(e("sp_app_mode_d")).append("</p>")
+            .append("<a class=\"btn plain\" href=\"#c1\" id=\"webgo\">").append(e("sp_web_go")).append("</a><p class=\"muted\">")
+            .append(e("sp_web_d")).append("</p></div>")
         // kde se co dělá: telefon / PS5 / TV (majitel: „lepší popis, kdy se kde přihlásit“)
         sb.append("<details class=\"card\"><summary>").append(e("sp_where_h")).append("</summary><p style=\"white-space:pre-line\">")
             .append(e("sp_where")).append("</p></details>")
@@ -186,6 +190,8 @@ object SetupPage {
         // zkratka pro iPhone: odkaz nese adresu téhle stránky (TV si ji zapamatuje stránka zkratky); na Androidu není potřeba
         "var sc=$('sc');if(sc){if(android)sc.style.display='none';else sc.href=sc.getAttribute('data-base')+'?tv='+encodeURIComponent(location.protocol+'//'+location.host+P)}" +
         // „Změnit“ u hotové části ji znovu otevře (jiný účet, znovu spárovat, jiný klíč DeepL) – do dalšího obnovení
+        // „Pokračovat v prohlížeči“ volbu schová (na této kartě) a posune na krok 1
+        "if($('webgo'))$('webgo').addEventListener('click',function(e){e.preventDefault();$('appmode').style.display='none';try{$('c1').scrollIntoView()}catch(x){}});" +
         "var acc=null,busy=false,openAcc=false,openPair=false,openDl=false;" +
         "function link(id,f){$(id).addEventListener('click',function(e){e.preventDefault();f();info()})}" +
         "function st(id,txt,cls){var e=$(id);e.textContent=txt;e.className='st '+cls}" +

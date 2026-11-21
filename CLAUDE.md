@@ -428,6 +428,12 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   (`SetupPage.scanLink`/`parseScanLink`) otevře `ScanCodeActivity` (bez vzhledu: povolení kamery → `LgScanActivity`
   `MODE_PS5` → POST `op=kod` → zavřít), iPhone jen nápověda „Skenovat text“ (`sp_scan_ios`). Řádek „Nastavit
   z telefonu“ (`remotePhoneRow`) je v ⚙ → Obecné i na stránce Konzole. Vzdálená pomoc z jiné sítě zatím ne (majitel).
+  **Od 0.97.66 (přání majitele – první setkání je vždy web):** úvodní stránka pomoci `pomoc/README.md` = **„Začít s PlayLingem“**
+  (`https://adusa89.github.io/PlayLingo/`): dvě otázky (TV: Android TV / LG / Samsung · na čem nastavuji: počítač / Android /
+  iPhone / jen ovladač), skript ukáže jen odpovídající cesty (`.cesta` s `data-tv` / `data-na`; bez JS všechny). LG/Samsung
+  vždy potřebují Android (čtečka) – bez něj stránka řekne proč. Na stránce z TV pro Android karta **„Jak pokračovat?“**
+  (`appmode`: „V aplikaci PlayLingo (Android)“ / „Pokračovat v prohlížeči“, texty `sp_how_h`, `sp_web_go`, `sp_web_d`).
+  `pomoc/android-tv.md#telefon` = nahrání z telefonu (ADB). Stránky se zveřejní až z `main`.
 - Zkouška v emulátoru umí ověřit jen stránku a posílání účtu, ne přihlášení u Sony. Jestli Sony
   pustí přihlášení uvnitř pomocníka na skutečném telefonu, umí ověřit jen uživatel.
 

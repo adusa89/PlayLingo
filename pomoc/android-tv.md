@@ -68,6 +68,21 @@ Downloader už potom nepotřebuješ – můžeš ho nechat, nebo odinstalovat. *
 v PlayLingu samy** (Domů → Aktualizovat). Při první aktualizaci se televize jednou zeptá na
 povolení instalace z PlayLinga – povol ho stejně jako výše u Downloaderu.
 
+<a id="telefon"></a>
+## Cesta z telefonu s Androidem (bez Downloaderu)
+
+1. Do telefonu nainstaluj PlayLingo: [PlayLingo.apk](https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk).
+2. **V TV jednou zapni ladění přes síť:** Nastavení → Systém → Informace → sedmkrát **Sestavení OS** („Nyní jste
+   vývojář“) → zpět → **Možnosti pro vývojáře** → zapni **Ladění USB** (případně **Ladění přes síť** / **ADB**).
+   Fire TV: Moje Fire TV → Možnosti pro vývojáře → **Ladění ADB**.
+3. V PlayLingu v telefonu zvol **Nahrát PlayLingo do Android TV**. Telefon TV v síti najde sám (nebo adresu TV
+   opiš z TV: Nastavení → Síť a internet).
+4. TV se zeptá **„Povolit ladění?“** – zaškrtni **Vždy povolit z tohoto počítače** a **OK**. PlayLingo se nahraje
+   a spustí. Pak můžeš ladění v TV zase vypnout – další verze se instalují z aplikace samy.
+
+Novější Google TV, které nabízejí jen **Bezdrátové ladění** s párovacím kódem, tahle cesta zatím neumí –
+použij Downloader výš.
+
 <a id="usb"></a>
 ## Cesta 2: USB flash disk
 

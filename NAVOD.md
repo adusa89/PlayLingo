@@ -4,6 +4,9 @@ Aplikace pro Android TV, boxy, Chromecast a projektory. Sama se po domácí sít
 k PlayStationu 5, přečte anglické titulky hry, přeloží je (offline, zdarma) a ukáže je
 v černém pruhu přes obraz. Hra jde do televize dál kabelem HDMI.
 
+**Nejrychlejší start:** https://adusa89.github.io/PlayLingo/ – vybereš svou TV a na čem nastavuješ (počítač,
+Android, iPhone, jen ovladač) a stránka ukáže jen kroky pro tebe.
+
 ## 1. APK
 Stáhni `PlayLingo.apk`:
 https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk
@@ -67,8 +70,9 @@ ukáže až krok Připojení konzole (bod 4).
    kroky už jen potvrdíš. Totéž kdykoli později – i u už nastavené TV – v ⚙ Nastavení → Obecné nebo na stránce
    Konzole → **Nastavit z telefonu**: stránka ukáže, co v TV už je, a u hotového nabídne **Změnit** / **Spárovat
    znovu** (jiný účet, nové spárování, jiný klíč DeepL).
-   - **Android s PlayLingem v telefonu:** nahoře **Nastavit vše v aplikaci PlayLingo** – aplikace v telefonu si
-     vezme současné nastavení TV a každá změna (vzhled titulků, hra, DeepL…) se hned projeví v TV.
+   - **Android:** nahoře volba **Jak pokračovat?** – **V aplikaci PlayLingo** (bez kopírování, číslo z PS5 kamerou,
+     celé nastavení TV včetně vzhledu titulků; bez aplikace ji tlačítko stáhne), nebo **Pokračovat v prohlížeči**
+     (nic se neinstaluje). iPhone a počítač vidí rovnou prohlížeč.
    - **Číslo z PS5 kamerou:** Android – **📷 Načíst číslo kamerou** (čtečka v PlayLingu v telefonu, číslo jde rovnou
      do TV); iPhone – podrž prst v políčku → **Skenovat text** a namiř na číslo.
    - **Kde se co dělá** (rozbalovací řádek na stránce i v TV): 📱 telefon jen přihlášení 🔵 účtem · 🎮 PS5 přepnout
