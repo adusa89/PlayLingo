@@ -424,7 +424,7 @@ class TranslatorService : Service() {
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
         prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
         // překlad menu hry jen se zapnutou volbou (od 0.97.57 výchozí vypnuto – majitel ho nechce)
-        menuSpec = if (Prefs.gameTexts(this) && Prefs.gameMenu(this)) cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).menuSpec else null
+        menuSpec = if (Prefs.gameMenu(this)) cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).menuSpec else null
         menuShown = false; menuKey = ""; menuWords.clear(); menuTracker = null
         coloredSpeaker = Prefs.coloredSpeaker(this)
         cz.playlingo.core.NameColor.profile = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey
@@ -470,7 +470,7 @@ class TranslatorService : Service() {
             objSizeSp = Prefs.objSize(this),
             objPosPercent = Prefs.objPos(this),
             objBgPercent = Prefs.objBg(this),
-            showPrompts = Prefs.gameTexts(this),
+            showPrompts = Prefs.gamePrompts(this),
             speakerPreset = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey,
             onText = sender?.let { s -> { text: String?, parts: String?, look: String? -> if (text == null) s.hide() else s.show(text, parts, look) } },
             onObjective = sender?.let { s -> { m: String -> s.sendObjective(m) } },
@@ -760,7 +760,7 @@ class TranslatorService : Service() {
 
     // ---------------- menu hry (od 0.97.34, zatím GTA VI) ----------------
 
-    /** Menu ke překladu z profilu hry (jen s „Rozsah čtení: Titulky a texty hry“); null = menu se nečte. */
+    /** Menu ke překladu z profilu hry (jen se zapnutým „Překlad menu hry“); null = menu se nečte. */
     @Volatile private var menuSpec: cz.playlingo.core.MenuSpec? = null
     private var menuCheckAt = 0L
     /** V pruhu je přeložené menu – titulky se mezitím nečtou (v menu žádné nejsou). */
@@ -1047,7 +1047,7 @@ class TranslatorService : Service() {
 
     /**
      * Úkol je samostatný pruh: ukáže se na místě anglického úkolu a drží se, dokud ho čtení vidí (titulek nad ním
-     * může mezitím zmizet). S „Jen titulky“ se úkol jen vyčlení z titulků a nepřekládá se.
+     * může mezitím zmizet). S vypnutým „Úkol pod titulky“ se úkol jen vyčlení z titulků a nepřekládá se.
      */
     private fun handleObjective(line: cz.playlingo.core.OcrLine?, x0: Int, y0: Int) {
         val top = line?.let { (y0 + it.top).toFloat() / capH } ?: -1f
@@ -1056,7 +1056,7 @@ class TranslatorService : Service() {
                 val l = line ?: return
                 val seq = ++objectiveSeq
                 val ov = overlay ?: return
-                if (!Prefs.gameTexts(this) || !Prefs.objectiveOn(this)) { ov.hideObjective(); return }
+                if (!Prefs.objectiveOn(this)) { ov.hideObjective(); return }
                 val box = floatArrayOf((x0 + l.left).toFloat() / capW, (y0 + l.top).toFloat() / capH,
                     (x0 + l.right).toFloat() / capW, (y0 + l.bottom).toFloat() / capH)
                 val lineH = TextLogic.fontSizeOf(l).toFloat() / capH

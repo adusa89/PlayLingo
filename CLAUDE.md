@@ -126,9 +126,16 @@ sloveso před jménem („Zavolal Andy“, jen když je jméno v angličtině po
 she/her v originálu (jen l-tvary na začátku věty / vedlejší věty, bez on/něj/jeho v překladu). Opatrně: ve sporných případech nic.
 
 **Zásada profilů her (přání majitele 20. 11. 2026):** univerzální chování (čte se jen pás s titulky) zůstává pro
-všechny hry, profil hry ho jen vylepšuje. Volba „rozsah čtení“ i u vybrané hry: **Jen titulky** = z profilu jen jména,
-rod, pojmy a co v titulcích přeskočit, jiná místa obrazovky se nečtou; **Titulky a texty hry** = navíc oblasti, které
-zná profil (GTA VI: prompty pro hráče pod titulky; Diablo IV: úkol, menu, tooltipy – `navrhy/preklad-menu.md`).
+všechny hry, profil hry ho jen vylepšuje. Z profilu se vždy berou jména, rod, pojmy a co v titulcích přeskočit. Další texty
+hry (jiná místa obrazovky) mají **od 0.97.58 každý vlastní přepínač** v Titulky → Hra, ukázaný jen u profilu, který ten text
+zná, a žádná obecná volba ho nepřebíjí (přání majitele): **Pokyny pod titulky** (`Prefs.gamePrompts`, klíč `game_prompts`,
+výchozí zapnuto), **Úkol pod titulky** (`objectiveOn`, `obj_on` zvlášť pro TV), **Překlad menu hry** (`gameMenu`, výchozí vypnuto).
+Klíče jsou společné pro všechny hry. Dřívější jediná volba „Rozsah čtení“ (`game_texts`, „Jen titulky“ / „Titulky a texty hry“)
+není; uložená hodnota se čte jen pro přechod (`core/GameScope.kt`, testy `GameScopeTest`): kdo měl „jen titulky“, má všechny
+tři vypnuté, dokud daný přepínač sám nepřepne (značky: uložený `game_prompts`, `obj_volba`, `game_menu_volba`).
+Rada k nastavení hry: `GameProfile.hint` (klíč textu; `<hint>` popisek řádku, `<hint>_val` hodnota, `<hint>_desc` dialog po OK
+a Nápověda → Hraní pro všechny hry s radou). GTA VI: „Ve hře: pozadí titulků · zapnout“ – bez pozadí titulků (Settings → UI →
+Subtitles & Captions → Background = Off) se nic nepřečte (tester 21. 11. 2026). Pro GTA V rada není (cestu v menu neznáme).
 Texty hry se nemíchají s replikami v pruhu. Bez profilu (univerzální) jen titulky.
 
 **Barva jména z obrazu (od 0.97.28, `core/NameColor.kt`):** po titulku se jménem služba (`askNameColor`) pošle čtečce
@@ -172,16 +179,16 @@ odfiltruje `GameScreen.menu`).**
 **Menu hry od 0.97.34 (zatím GTA VI, `core/GameMenu.kt`, testy `GameMenuTest`):** základ podle snímků majitele (`zaznamy/hra-…`) –
 menu otevřené zleva (Map / Game / Store / Help / Photo Studio / Settings), horní lišta Nastavení (Control Scheme … Account) a nadpis
 s popisem vybrané volby vpravo; jednotlivé volby Nastavení záměrně ne. `GameProfile.menuSpec` (`MenuSpec`: položky, záložky, pevné
-překlady cs/sk, jiné jazyky přes překladač). Služba (`checkMenu` v `tick`) jen když je „Titulky a texty hry“ a v pruhu není titulek:
+překlady cs/sk, jiné jazyky přes překladač). Služba (`checkMenu` v `tick`) jen se zapnutým „Překlad menu hry“ a když v pruhu není titulek:
 jednou za 1,5 s (v menu 0,7 s) `StreamReader.grabMenu` (horních 60 % obrazu, šedě, nejvýš 960 bodů, vlastní bitmapa – nezasahuje
 do čtení titulků) → OCR → `GameMenu.read`. Vybraná položka = výrazně světlejší řádek (bílý pruh, `meanGray`). Překlad se ukáže
 **v pruhu místo titulku** („Mapa · Hra · ▸ Obchod …“ a pod tím „Nadpis: popis“) – v menu titulky nejsou, takže funguje i v TV
 LG / Samsung beze změny aplikace v TV; dokud je menu vidět, titulky se nečtou. V záznamu `MENU|…`. Na skutečné hře neověřeno.
 
-**Texty hry od 0.97.25 (aplikace v TV 1.5.5):** volba Titulky → Hra → „Rozsah čtení“ (`Prefs.gameTexts`, výchozí titulky
-a texty hry). GTA (profil `prompts = true`): poslední krátký řádek bez mluvčího a bez interpunkce pod replikou je pokyn
-(`TextLogic.markPrompt`, `Segment.prompt`) – překládá se zvlášť, v pruhu menší šedý řádek, do TV `{"pokyn":true}`; s „jen
-titulky“ ho `SubtitleOverlay` vynechá. Diablo IV: chat se nečte (`GameProfile.skip`, regex v `Diablo4.SKIP`), mluvčí
+**Texty hry od 0.97.25 (aplikace v TV 1.5.5):** volba Titulky → Hra → „Pokyny pod titulky“ (od 0.97.58 `Prefs.gamePrompts`,
+do 0.97.57 součást „Rozsah čtení“). GTA (profil `prompts = true`): poslední krátký řádek bez mluvčího a bez interpunkce pod replikou je pokyn
+(`TextLogic.markPrompt`, `Segment.prompt`) – překládá se zvlášť, v pruhu menší šedý řádek, do TV `{"pokyn":true}`; s vypnutými
+pokyny ho `SubtitleOverlay` vynechá (`showPrompts`). Diablo IV: chat se nečte (`GameProfile.skip`, regex v `Diablo4.SKIP`), mluvčí
 „Jachal says:“ (`SPEAKER_SAYS`). Jason má i přezdívku J-dog.
 
 **Úkol pod titulky jako samostatný pruh (od 0.97.43, přání majitele, aplikace v TV 1.5.11):** u profilů s `prompts` (GTA)
@@ -190,13 +197,13 @@ titulky“ ho `SubtitleOverlay` vynechá. Diablo IV: chat se nečte (`GameProfil
 `core/Objective.kt` (`ObjectiveTracker`, testy `ObjectiveTest`): nový úkol = přeložit (offline, DeepL jako titulky), drobná chyba
 čtení = stejný, zmizí po 2 čteních bez něj. Služba `handleObjective` → `SubtitleOverlay.showObjective` (vlastní okno přes
 anglický úkol, písmo podle originálu) a do TV `{"typ":"ukol",…}` (`TvSender.objectiveMessage` / `sendObjective`). Nezávislé na
-mizení titulků; schová se v menu hry, při pauze a nové volbě. S „Jen titulky“ se úkol jen vyčlení a nepřekládá. Barevná slova
+mizení titulků; schová se v menu hry, při pauze a nové volbě. S vypnutým „Úkol pod titulky“ se úkol jen vyčlení a nepřekládá. Barevná slova
 úkolu od 0.97.50 jako pokus (Titulky → Hra → „Barevná slova úkolu“, `Prefs.objColors`, výchozí vypnuto → `TranslatorService.objectiveColors`):
 barva každého slova z obrazu (`askObjectiveColors`, žádosti v `StreamReader` jednou), kusy stejné barvy (`ObjectiveColors.runs`) se najdou
 v překladu doslova nebo přes samostatný překlad kusu (`locate`, české koncovky do 3 písmen), úkol se ukáže hned a po přečtení barev
 znovu s barvami; do TV `casti`. Testy `ObjectiveColorsTest`. **Poloha úkolu od 0.97.50** i těsně nad úkolem (-2), nad pruhem
 s titulky (-3, `lastBarTop`), nahoře (-4); **Pozadí úkolu** zvlášť (`Prefs.objBg`, -1 = jako titulky). V záznamu `OBJ|show|…` / `OBJ|hide`. Na skutečné hře neověřeno.
-**Volby úkolu (od 0.97.45)** v Titulkách → Hra (jen profil s `prompts` a „Titulky a texty hry“): Úkol pod titulky zapnout
+**Volby úkolu (od 0.97.45)** v Titulkách → Hra (jen profil s `prompts`; od 0.97.58 nezávisle na ostatních textech hry): Úkol pod titulky zapnout
 (`Prefs.objectiveOn`), Písmo úkolu (`objSize`, 0 = podle hry), Poloha úkolu (`objPos`, -1 = na místě ve hře, jinak střed
 v 0–100 % výšky; do TV jako úzké `misto` na zvolené výšce). Klíče `obj_on/obj_size/obj_pos` v `TvProfiles.KEYS`.
 **Fronta rychlých replik (od 0.97.46, přání majitele):** `core/ShowQueue.kt` (testy `ShowQueueTest`) – každý titulek je v pruhu
@@ -804,7 +811,7 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   Barevná jména ukáže „· profil hry“, naučená barva z obrazu má přednost), překlad menu (vlastní místo vedle menu) a úkol (vlastní
   volby). Vlastní slovník hráče přebije i jméno z profilu (`Glossary(userTerms)`, testy `GlossaryUserTest`).
   **Řádky jen když dávají smysl:** „Jen titulky“ (oblasti) bez automatiky, Přesnost čtení jen PS5, Tlačítko vzhledu jen s Usnadněním,
-  Zobrazení přes jiné aplikace jen bez Usnadnění, Rozsah čtení jen u her s úkolem/menu (`prompts` / `menuSpec`), Písmo úkolu
+  Zobrazení přes jiné aplikace jen bez Usnadnění, Pokyny a Úkol jen u her s `prompts`, Překlad menu jen s `menuSpec`, Písmo úkolu
   „podle hry“ / „jako titulky“ podle `matchSize`.
 - **Titulky** (od 0.97.1, `subtitlesPage`): nahoře jazyk překladu (zkouška `13_nabidka_jazyk` na něj míří
   šipkou vpravo + OK), pod ním rozbalovací skupiny Písmo / Pruh s překladem / Oblasti titulků

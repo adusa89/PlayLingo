@@ -59,7 +59,7 @@ class SubtitleOverlay(
     private val objPosPercent: Int = -1,
     /** Pozadí úkolu 0–100 % (-1 = jako pruh s titulky), od 0.97.50. */
     private val objBgPercent: Int = -1,
-    /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky a texty hry), nebo vynechat (Jen titulky). */
+    /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky → Hra → Pokyny pod titulky), nebo vynechat. */
     private val showPrompts: Boolean = true,
     /** Pevné barvy postav z profilu hry ([cz.playlingo.core.GameProfile.colorsByKey]). */
     private val speakerPreset: Map<String, Int> = emptyMap(),

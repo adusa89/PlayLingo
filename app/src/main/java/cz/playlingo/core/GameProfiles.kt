@@ -20,6 +20,11 @@ data class GameProfile(
     val colors: Map<String, Int> = emptyMap(),
     /** Základní menu hry k překladu (menu zleva, lišta Nastavení, popis volby – [GameMenu]); null = menu se nepřekládá. */
     val menuSpec: MenuSpec? = null,
+    /**
+     * Rada, jak hru nastavit, aby se titulky četly (od 0.97.58): klíč textu – `<hint>` popisek řádku v Titulky → Hra,
+     * `<hint>_val` hodnota, `<hint>_desc` delší vysvětlení (dialog po OK a Nápověda → Hraní). null = žádná rada.
+     */
+    val hint: String? = null,
 ) {
     /** Barvy pro [SpeakerColors]: zjednodušené jméno i všechny přezdívky postavy → barva. */
     val colorsByKey: Map<String, Int> by lazy {
@@ -362,7 +367,8 @@ object GameProfiles {
         GameProfile("rdr2", "Red Dead Redemption 2", RDR2, Rdr2.CAST, Rdr2.TERMS, Rdr2.HUD, Rdr2.MENU),
         // barvy jmen jako v titulcích GTA VI (majitel ve hře 20. 11. 2026): Jason žlutě, Lucia modře
         GameProfile("gta6", "Grand Theft Auto VI", GTA6, GTA6_CAST, GTA6_TERMS, GTA6_HUD, GTA6_MENU, prompts = true,
-            colors = mapOf("Jason" to SpeakerColors.PALETTE[0], "Lucia" to SpeakerColors.PALETTE[1]), menuSpec = GTA6_MENU_SPEC),
+            colors = mapOf("Jason" to SpeakerColors.PALETTE[0], "Lucia" to SpeakerColors.PALETTE[1]), menuSpec = GTA6_MENU_SPEC,
+            hint = "gp_bg_gta6"),
         // GTA V: Michael modře, Franklin zeleně, Trevor oranžově (barvy postav v titulcích hry)
         GameProfile("gta", "Grand Theft Auto V", Gta5.NAMES.distinct(), Gta5.CAST, Gta5.TERMS, Gta5.HUD, Gta5.MENU, prompts = true,
             colors = mapOf("Michael" to SpeakerColors.PALETTE[1], "Franklin" to SpeakerColors.PALETTE[2], "Trevor" to SpeakerColors.PALETTE[5])),
