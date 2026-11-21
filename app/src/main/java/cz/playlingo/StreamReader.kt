@@ -124,6 +124,66 @@ class StreamReader(private val width: Int, private val height: Int) {
         deliverColor(req, rgb, (System.nanoTime() - t0) / 1000)
     }
 
+    // ---------------- záznam snímků (SnapRecorder) ----------------
+
+    /** Čekající žádost o barevný snímek celé obrazovky (záznam snímků); null = nic – za snímek jen tahle kontrola. */
+    @Volatile private var stillWanted: ((Bitmap?) -> Unit)? = null
+
+    /** Vezme žádost o barevný snímek (nejvýš jednou). */
+    private fun takeStill(): ((Bitmap?) -> Unit)? {
+        if (stillWanted == null) return null
+        synchronized(colorRequests) { val s = stillWanted; stillWanted = null; return s }
+    }
+
+    /**
+     * Barevný snímek celé obrazovky (nanejvýš [maxW] široký) z nejbližšího snímku videa; čeká nejvýš [waitMs].
+     * null = dekodér barvy nedává (záložní cesta bez popisu obrázku) nebo nic nepřišlo – pak [still] (šedý).
+     * Volá jen záznam snímků, mimo hlavní vlákno.
+     */
+    fun colorStill(maxW: Int, waitMs: Long): Bitmap? {
+        val got = java.util.concurrent.atomic.AtomicReference<Bitmap?>(null)
+        val done = java.util.concurrent.CountDownLatch(1)
+        val late = java.util.concurrent.atomic.AtomicBoolean(false)
+        val cb: (Bitmap?) -> Unit = { b ->
+            if (late.get()) b?.recycle() else got.set(b)
+            done.countDown()
+        }
+        stillMaxW = maxW
+        synchronized(colorRequests) { stillWanted = cb }
+        val ok = try { done.await(waitMs, java.util.concurrent.TimeUnit.MILLISECONDS) } catch (_: InterruptedException) { false }
+        if (!ok) {
+            synchronized(colorRequests) { if (stillWanted === cb) stillWanted = null }
+            late.set(true)
+            got.getAndSet(null)?.let { return it }
+            return null
+        }
+        return got.get()
+    }
+    @Volatile private var stillMaxW = 1280
+
+    /** Barevný obraz zmenšený po celých krocích na nejvýš [maxW]; [y] čte jas, [u]/[v] barvu v polovičním rozlišení. */
+    private inline fun colorScaled(w: Int, h: Int, maxW: Int, y: (Int, Int) -> Int, u: (Int, Int) -> Int, v: (Int, Int) -> Int): Bitmap? = try {
+        // neceločíselný krok (nejbližší bod): 1920 bodů → 1280, ne 960
+        val ow = minOf(w, maxW); val oh = maxOf(1, (h.toLong() * ow / w).toInt())
+        val out = IntArray(ow * oh)
+        var o = 0
+        for (row in 0 until oh) {
+            val r = (row.toLong() * h / oh).toInt()
+            for (x in 0 until ow) {
+                val c = (x.toLong() * w / ow).toInt()
+                out[o++] = Yuv.pixel(y(c, r), u(c / 2, r / 2), v(c / 2, r / 2))
+            }
+        }
+        Bitmap.createBitmap(ow, oh, Bitmap.Config.ARGB_8888).also { it.setPixels(out, 0, ow, 0, 0, ow, oh) }
+    } catch (_: Throwable) { null }
+
+    /** Mřížka jasu posledního snímku pro porovnání (viz [cz.playlingo.core.SnapBatches.thumb]); null = obraz zatím není. */
+    fun thumb(): IntArray? = try {
+        synchronized(frameLock) {
+            if (frameW <= 0 || frameH <= 0) null else cz.playlingo.core.SnapBatches.thumb(yBuf, yStride, frameW, frameH)
+        }
+    } catch (_: Throwable) { null }
+
     /** Barevný náhled (poloviční velikost) – pro obrazovku aplikace a nastavení oblastí. */
     @Volatile var colorSnapshot: Bitmap? = null
         private set
@@ -322,6 +382,7 @@ class StreamReader(private val width: Int, private val height: Int) {
         decoded++
         val now = SystemClock.uptimeMillis()
         lastFrameAt = now
+        takeStill()?.invoke(null)    // tady barvy nejsou – záznam snímků vezme šedý
         if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) { lastColorAt = now; colorSnapshot = grayHalf() }
     }
 
@@ -382,6 +443,17 @@ class StreamReader(private val width: Int, private val height: Int) {
                     { x, r -> vB.get(r * vP.rowStride + x * vP.pixelStride).toInt() and 0xFF })
             } catch (_: Throwable) { deliverColor(req, null, 0) }
         }
+        takeStill()?.let { cb ->
+            val b = try {
+                val yP = img.planes[0]; val uP = img.planes[1]; val vP = img.planes[2]
+                val yB = yP.buffer; val uB = uP.buffer; val vB = vP.buffer
+                colorScaled(w, h, stillMaxW,
+                    { x, r -> yB.get(r * yP.rowStride + x * yP.pixelStride).toInt() and 0xFF },
+                    { x, r -> uB.get(r * uP.rowStride + x * uP.pixelStride).toInt() and 0xFF },
+                    { x, r -> vB.get(r * vP.rowStride + x * vP.pixelStride).toInt() and 0xFF })
+            } catch (_: Throwable) { null }
+            cb(b)
+        }
         // barevný náhled jen pro obrazovku aplikace – při hraní se nedělá
         if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) {
             lastColorAt = now
@@ -401,15 +473,20 @@ class StreamReader(private val width: Int, private val height: Int) {
         }
         decoded++
         lastFrameAt = SystemClock.uptimeMillis()
+        takeStill()?.invoke(null)
     }
 
     /**
      * Stojí o nový snímek? (Xbox: převod snímku WebRTC do paměti něco stojí, proto se dělá jen
      * tehdy, když čtečka předchozí už vzala, nebo je čas na barevný náhled.)
      */
+    /** Chtít každý snímek (otevřené menu hry, záznam snímků) – nastavuje služba. */
+    @Volatile var eager = false
+
     fun wantsFrame(): Boolean {
+        if (eager) return true
         if (UiState.visible && UiState.previewWanted && SystemClock.uptimeMillis() - lastColorAt > 1500) return true
-        if (colorPending) return true
+        if (colorPending || stillWanted != null) return true
         return synchronized(frameLock) { frameW == 0 || grabbedSerial == frameSerial }
     }
 
@@ -444,6 +521,12 @@ class StreamReader(private val width: Int, private val height: Int) {
                     { x, r -> u.get(r * uStride + x).toInt() and 0xFF },
                     { x, r -> v.get(r * vStride + x).toInt() and 0xFF })
             } catch (_: Throwable) { deliverColor(req, null, 0) }
+        }
+        takeStill()?.let { cb ->
+            cb(colorScaled(w, h, stillMaxW,
+                { x, r -> y.get(r * stride + x).toInt() and 0xFF },
+                { x, r -> u.get(r * uStride + x).toInt() and 0xFF },
+                { x, r -> v.get(r * vStride + x).toInt() and 0xFF }))
         }
         if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) {
             lastColorAt = now
@@ -544,6 +627,28 @@ class StreamReader(private val width: Int, private val height: Int) {
         if (b == null || b.width != w || b.height != h) { b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888); menuBmp = b }
         b.setPixels(menuArgb, 0, w, 0, 0, w, h)
         MenuCrop(b, menuArgb, 0, 0, w, h, w, (frameH / step))
+    }
+
+    private var sampleSerial = -1L
+
+    /**
+     * Průměrný jas (0–255) v každém obdélníku [rects] (vlevo, nahoře, vpravo, dole ve zlomcích obrazu) na posledním
+     * snímku – přímo z jasové roviny, bez bitmapy, nejvýš 24 × 4 bodů na obdélník (od 0.97.58: vybraná položka menu hry
+     * podle bílého pruhu na každém snímku). null = žádný nový snímek od minulého měření.
+     */
+    fun sampleGray(rects: List<FloatArray>): IntArray? = synchronized(frameLock) {
+        if (frameW <= 0 || frameH <= 0 || sampleSerial == frameSerial) return null
+        sampleSerial = frameSerial
+        IntArray(rects.size) { i ->
+            val r = rects[i]
+            val x0 = (r[0] * frameW).toInt().coerceIn(0, frameW - 1); val x1 = (r[2] * frameW).toInt().coerceIn(x0 + 1, frameW)
+            val y0 = (r[1] * frameH).toInt().coerceIn(0, frameH - 1); val y1 = (r[3] * frameH).toInt().coerceIn(y0 + 1, frameH)
+            val sx = maxOf(1, (x1 - x0) / 24); val sy = maxOf(1, (y1 - y0) / 4)
+            var s = 0L; var n = 0
+            var y = y0
+            while (y < y1) { val row = y * yStride; var x = x0; while (x < x1) { s += yBuf[row + x].toInt() and 0xFF; n++; x += sx }; y += sy }
+            if (n == 0) 0 else (s / n).toInt()
+        }
     }
 
     fun grab(left: Float, top: Float, right: Float, bottom: Float): Crop? = synchronized(frameLock) {

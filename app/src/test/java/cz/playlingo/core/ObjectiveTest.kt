@@ -20,6 +20,45 @@ class ObjectiveTest {
         assertEquals("Go to the safehouse.", p.objective?.text)
     }
 
+    /** Skutečné případy ze záznamu majitele (21. 11. 2026, GTA VI): druhá část titulku se brala jako úkol. */
+    @Test fun pokracovaniTitulkuNeniUkol() {
+        fun obj(a: String, b: String) = TextLogic.assemble(
+            listOf(block(line(a, 600)), block(line(b, 670))),
+            minLineHeight = 10, subtitlesOnly = true, screenCenterX = 950, centerTolerance = 300, objectives = true,
+        ).objective
+        assertNull(obj("Protester: Anyone who will join the fight for our Mother Earth and", "all her children,"))
+        assertNull(obj("Protester: Our sister, the orca, is trapped inside this aquarium,", "and we're gonna bring her back to the great Mother."))
+        assertNull(obj("Protester: we have a special fund just for these kinds of", "emergencies,"))
+        assertNull(obj("Security Guard: Get down from there now,", "or I'm calling the cops!"))
+        // úkol pod ukončenou větou zůstává úkolem
+        assertEquals("Follow Lucia", obj("JASON: Let's go.", "Follow Lucia")?.text)
+        // na naučeném místě úkolu: mluvčí (i s chybou čtení) a zvuk v závorkách úkol nejsou
+        val at = { t: String -> TextLogic.assemble(listOf(block(line(t, 670))), 10, true, 950, 300, objectives = true, objectiveTop = 670).objective }
+        assertNull(at("Protester: [pained] Ugh, my skin is starting to hurt!"))
+        assertNull(at("[thuddingl"))
+        assertEquals("Go to the safehouse.", at("Go to the safehouse.")?.text)
+    }
+
+    @Test fun ukolJenUplneDole() {
+        // stejné dva řádky, úkol by byl na 670 px – s pásem pro úkol od 680 px (výš = titulek) úkol není
+        fun obj(minTop: Int) = TextLogic.assemble(
+            listOf(block(line("JASON: Let's go.", 600)), block(line("Follow Lucia", 670))),
+            minLineHeight = 10, subtitlesOnly = true, screenCenterX = 950, centerTolerance = 300, objectives = true,
+            objectiveMinTop = minTop,
+        ).objective
+        assertNull(obj(680))
+        assertEquals("Follow Lucia", obj(650)?.text)
+    }
+
+    @Test fun tvarUkolu() {
+        assertTrue(TextLogic.objectiveShape("Take your shot"))
+        assertTrue(!TextLogic.objectiveShape("emergencies,"))
+        assertTrue(!TextLogic.objectiveShape("Or I'm calling the cops!"))
+        assertTrue(!TextLogic.objectiveShape("Security Guard: Get down"))
+        assertTrue(TextLogic.endsSentence("We need money."))
+        assertTrue(!TextLogic.endsSentence("for our Mother Earth and"))
+    }
+
     @Test fun dvouradkovyTitulekBezMezeryNeniUkol() {
         val p = TextLogic.assemble(
             listOf(block(line("We need to get out", 600), line("of here right now.", 636))),

@@ -303,6 +303,8 @@ object TextLogic {
         objectives: Boolean = false,
         /** Naučená horní hrana řádku s úkolem v pixelech oblasti (-1 = ještě nevíme) – pro úkol bez titulku nad ním. */
         objectiveTop: Int = -1,
+        /** Úkol leží jen v pásu úplně dole na obrazovce: horní hrana řádku aspoň tady (px oblasti; -1 = bez omezení). */
+        objectiveMinTop: Int = -1,
     ): Picked {
         if (screen.isMenu(blocks.flatMap { b -> b.lines.map { it.text } })) return Picked("", 0)
         val sorted = blocks.sortedBy { b -> b.lines.minOfOrNull { it.top } ?: Int.MAX_VALUE }
@@ -335,7 +337,7 @@ object TextLogic {
         }
         // 1b) řádek s úkolem (GTA): nejspodnější řádek, nad kterým je volný řádek – ke kterému titulku nepatří.
         //     Bez titulku nad ním se pozná podle místa, kde už úkol jednou byl ([objectiveTop]).
-        val objective = if (objectives) objectiveLine(kept.map { it.second }, objectiveTop) else null
+        val objective = if (objectives) objectiveLine(kept.map { it.second }, objectiveTop, objectiveMinTop) else null
         if (objective != null) kept.removeAll { it.second === objective }
         // 2) "jen titulky": texty daleko nad sebou k sobě nepatří (nadpis v menu + titulek dole).
         //    Bere se jen nejspodnější skupina – pruh pak zakryje jen titulek, ne půl obrazovky.
@@ -380,21 +382,53 @@ object TextLogic {
     }
 
     /**
-     * Není to angličtina? (Obsahuje písmena s diakritikou nebo jiné písmo, např. „Potřebujeme peníze“.)
-     * Takový text je skoro jistě náš vlastní překlad přečtený z obrazovky – nikdy se nepřekládá znovu.
+     * Vypadá text jako úkol pro hráče? Úkol v GTA je krátký pokyn s velkým písmenem na začátku („Take your shot“,
+     * „Follow Lucia“). Ne: začíná malým písmenem nebo spojkou (pokračování věty), končí čárkou/středníkem, má mluvčího
+     * „Jméno:“ (i s chybou čtení) nebo zvuk v hranatých závorkách („[thudding]“). Od 0.97.58 – do té doby se jako úkol
+     * brala druhá část dvouřádkového titulku a zůstávala viset (záznam majitele 21. 11. 2026).
      */
+    fun objectiveShape(text: String): Boolean {
+        val t = clean(text).trim()
+        val first = t.firstOrNull { it.isLetterOrDigit() } ?: return false
+        if (first.isLetter() && first.isLowerCase()) return false
+        if (t.endsWith(",") || t.endsWith(";")) return false
+        if ('[' in t || ']' in t) return false
+        if (SPEAKERISH.containsMatchIn(t)) return false
+        val w = t.split(Regex("\\s+")).firstOrNull()?.lowercase()?.trim(',', '.', '!', '?', '"', '“', '”')
+        if (w in CONTINUATIONS) return false
+        return true
+    }
+
+    /** Končí řádek větou (tečka, !, ?, …, uvozovka/závorka za nimi)? */
+    fun endsSentence(text: String): Boolean {
+        val t = clean(text).trim().trimEnd('"', '“', '”', '\'', ')', '’')
+        return t.isEmpty() || t.last() in ".!?…" || t.endsWith("..")
+    }
+
+    /** „Protester:“, „Security Guard:“ i přečtené s chybou – slovo/slova s velkým písmenem a dvojtečka na začátku. */
+    private val SPEAKERISH = Regex("^[A-Z][\\p{L}.'’ -]{0,30}:")
+    /** Spojky a slova, kterými v titulcích začíná pokračování věty na dalším řádku. */
+    private val CONTINUATIONS = setOf("and", "or", "but", "so", "because", "cause", "then", "that", "which", "who", "to", "of", "with", "for")
+
     /**
      * Řádek s úkolem z řádků, které prošly jako titulek: nejspodnější řádek bez mluvčího, nad nímž je mezera aspoň
      * 0,6 výšky řádku a nejvýš 2,5 (volný řádek mezi titulkem a úkolem), nebo – když nad ním nic není – ležící
-     * na naučeném místě úkolu ([objectiveTop], ± 0,7 výšky řádku).
+     * na naučeném místě úkolu ([objectiveTop], ± 0,7 výšky řádku). Od 0.97.58 jen pod [minTop] (pás úplně dole),
+     * jen v tvaru úkolu ([objectiveShape]) a jen pod ukončenou větou ([endsSentence]).
      */
-    fun objectiveLine(lines: List<OcrLine>, objectiveTop: Int = -1): OcrLine? {
+    fun objectiveLine(lines: List<OcrLine>, objectiveTop: Int = -1, minTop: Int = -1): OcrLine? {
         if (lines.isEmpty()) return null
         val last = lines.maxByOrNull { it.top } ?: return null
+        // úkol je v GTA vždy úplně dole na obrazovce – výš položený řádek je titulek (od 0.97.58)
+        if (minTop >= 0 && last.top < minTop) return null
         if (splitSpeaker(clean(last.text)).speaker != null || last.text.trim().startsWith(CHOICE_MARK.trim())) return null
         if (last.text.count { it.isLetter() } < 3) return null
+        if (!objectiveShape(last.text)) return null
         val h = last.height.coerceAtLeast(1)
         val nearest = lines.filter { it !== last && it.bottom <= last.top + h / 4 }.maxByOrNull { it.bottom }
+        // řádek nad ním nekončí větou → spodní řádek je pokračování téhož titulku, ne úkol
+        // („…our Mother Earth and“ / „all her children,“ – záznam majitele 21. 11. 2026, GTA VI)
+        if (nearest != null && !endsSentence(nearest.text)) return null
         if (nearest != null) {
             val gap = last.top - nearest.bottom
             val ref = maxOf(h, nearest.height)
@@ -405,11 +439,19 @@ object TextLogic {
         return if (alone && objectiveTop >= 0 && kotlin.math.abs(last.top - objectiveTop) <= 0.7f * h) last else null
     }
 
-    fun looksForeign(text: String): Boolean {
+    /**
+     * Text v jiném jazyce, než ze kterého se překládá (hra už je přeložená, nabídka konzole, šum)?
+     * U angličtiny stačí dvě písmena s diakritikou. U jiného jazyka titulků ([source]) diakritika
+     * patří k věci – za cizí se bere jen jiné písmo než latinka (azbuka, asijská písma…).
+     */
+    fun looksForeign(text: String, source: SourceLang = SourceLang.EN): Boolean {
         var n = 0
-        for (c in text) if (c.isLetter() && c.code > 0x7F) { n++; if (n >= 2) return true }
+        for (c in text) if (c.isLetter() && (if (source.english) c.code > 0x7F else !isLatin(c))) { n++; if (n >= 2) return true }
         return false
     }
+
+    private fun isLatin(c: Char): Boolean =
+        try { Character.UnicodeScript.of(c.code) == Character.UnicodeScript.LATIN } catch (_: Exception) { true }
 
     private val WORD = Regex("[\\p{L}\\p{N}]+(?:['’][\\p{L}]+)?")
 
@@ -480,7 +522,7 @@ object TextLogic {
      * Text psaný jen VELKÝMI písmeny převede na běžnou větu ("WE HAVE TO GO!" → "We have to go!").
      * Překladač si s velkými písmeny neporadí (bere je jako zkratky a jména). Jiný text nechá být.
      */
-    fun normalizeCase(text: String): String {
+    fun normalizeCase(text: String, english: Boolean = true): String {
         val letters = text.count { it.isLetter() }
         if (letters < 4 || text.any { it.isLowerCase() }) return text
         val sb = StringBuilder(text.lowercase())
@@ -491,7 +533,8 @@ object TextLogic {
                 if (start) { sb[i] = c.uppercaseChar(); start = false }
             } else if (c == '.' || c == '!' || c == '?' || c == '…') start = true
         }
-        return sb.toString().replace(LOWER_I, "I")
+        // samotné „i“ = anglické „I“ (jen u angličtiny – v italštině, polštině… je to jiné slovo)
+        return if (english) sb.toString().replace(LOWER_I, "I") else sb.toString()
     }
 
     /** Jméno psané velkými písmeny ukáže jako běžné jméno ("MARY-BETH" → "Mary-Beth"). */

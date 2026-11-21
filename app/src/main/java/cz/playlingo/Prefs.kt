@@ -11,6 +11,7 @@ import cz.playlingo.core.Lang
 import cz.playlingo.core.License
 import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.ScreenLayout
+import cz.playlingo.core.SourceLang
 import cz.playlingo.core.Ps5Host
 import cz.playlingo.core.TvType
 import cz.playlingo.core.UsageStats
@@ -44,7 +45,23 @@ object Prefs {
      */
     fun lang(c: Context): Lang = p(c).getString("lang", null)?.let { Lang.of(it) }
         ?: Lang.ui(p(c).getString("ui_lang", null))?.takeIf { it.isTarget } ?: Lang.CS
-    fun setLang(c: Context, v: Lang) { if (v.isTarget) p(c).edit().putString("lang", v.code).apply() }
+    fun setLang(c: Context, v: Lang) {
+        if (v.isTarget) p(c).edit().putString("lang", v.code).apply()
+        // stejný jazyk titulků jako jazyk překladu nejde – pak se překládá z angličtiny ([SourceLang.effective])
+        OfflineTranslator.source = sourceLang(c)
+    }
+
+    /**
+     * Z čeho se překládá (jazyk titulků ve hře, průvodce krok Jazyky a Titulky). Nový klíč `src_lang`,
+     * bez něj angličtina – dosavadní hráči nic nepoznají.
+     */
+    fun sourceLang(c: Context): SourceLang = SourceLang.effective(p(c).getString("src_lang", null), lang(c))
+    /** Jazyk překladu k zobrazení; s jiným jazykem titulků než angličtinou dvojice „Français → Čeština“. */
+    fun langPair(c: Context): String = sourceLang(c).let { if (it.english) lang(c).label else it.label + " → " + lang(c).label }
+    fun setSourceLang(c: Context, v: SourceLang) {
+        p(c).edit().putString("src_lang", v.code).apply()
+        OfflineTranslator.source = sourceLang(c)
+    }
 
     /**
      * Jazyk aplikace (nabídky, nápověda). Dokud ho uživatel nezvolil: kdo má zvolený jazyk překladu,
@@ -100,9 +117,23 @@ object Prefs {
      */
     fun origSp(c: Context): Int = p(c).getInt("orig_sp", 0).let { v -> if (v <= 0) 0 else TEXT_SIZES.minByOrNull { kotlin.math.abs(it - v) } ?: 0 }
     fun setOrigSp(c: Context, v: Int) = p(c).edit().putInt("orig_sp", v).apply()
-    /** Úkol pod titulky (GTA) jako samostatný pruh (od 0.97.45): zapnuto, písmo (0 = podle hry), poloha (-1 = na místě úkolu ve hře, jinak 0–100 % výšky). */
-    fun objectiveOn(c: Context) = bool(c, "obj_on", true)
-    fun setObjectiveOn(c: Context, v: Boolean) = setBool(c, "obj_on", v)
+    /**
+     * Texty hry navíc k titulkům (Titulky → Hra, od 0.97.59): každý má vlastní přepínač, žádná obecná volba ho nepřebije.
+     * Kdo měl do 0.97.57 „Rozsah čtení: jen titulky“ (`game_texts` = false), má je vypnuté, dokud některý sám nepřepne
+     * (značky `game_prompts` uložená / `obj_volba` / `game_menu_volba`) – viz [cz.playlingo.core.GameScope].
+     * Klíče jsou společné pro všechny hry; přepínače se ukazují jen u her, jejichž profil daný text zná.
+     */
+    private fun legacyTexts(c: Context): Boolean? = if (p(c).contains("game_texts")) bool(c, "game_texts", true) else null
+    /** Pokyny pro hráče pod titulky (GTA: „Take your shot“) – menší šedý řádek; výchozí zapnuto (jako dřív). */
+    fun gamePrompts(c: Context) = cz.playlingo.core.GameScope.resolve(legacyTexts(c), p(c).contains("game_prompts"), bool(c, "game_prompts", true))
+    fun setGamePrompts(c: Context, v: Boolean) = setBool(c, "game_prompts", v)
+    /** Překlad menu hry (GTA VI: Mapa, Hra, Nastavení…), od 0.97.57 volba – výchozí vypnuto (přání majitele). */
+    fun gameMenu(c: Context) = cz.playlingo.core.GameScope.resolve(legacyTexts(c), bool(c, "game_menu_volba", false), bool(c, "game_menu", false))
+    fun setGameMenu(c: Context, v: Boolean) { setBool(c, "game_menu", v); setBool(c, "game_menu_volba", true) }
+    /** Úkol pod titulky zapnutý (`obj_on` je zvlášť pro každou TV, značka `obj_volba` společná). */
+    fun objectiveOn(c: Context) = cz.playlingo.core.GameScope.resolve(legacyTexts(c), bool(c, "obj_volba", false), bool(c, "obj_on", true))
+    fun setObjectiveOn(c: Context, v: Boolean) { setBool(c, "obj_on", v); setBool(c, "obj_volba", true) }
+    /** Úkol pod titulky (GTA): písmo (0 = podle hry), poloha (-1 = na místě úkolu ve hře, jinak 0–100 % výšky). */
     fun objSize(c: Context): Int = p(c).getInt("obj_size", 0)
     fun setObjSize(c: Context, v: Int) = p(c).edit().putInt("obj_size", v).apply()
     /** -1 na místě ve hře, -2 těsně nad úkolem, -3 nad pruhem s titulky, -4 nahoře (od 0.97.50), jinak střed 0–100 %. */
@@ -209,12 +240,13 @@ object Prefs {
     fun setReaderDevice(c: Context, v: Boolean) = setBool(c, "reader_device", v)
 
     // ---- hra a slovník ----
-    /** Rozsah čtení u hry s profilem: true = titulky a texty hry (prompty…), false = jen titulky. Výchozí ano. */
-    fun gameTexts(c: Context): Boolean = bool(c, "game_texts", true)
-    fun setGameTexts(c: Context, v: Boolean) = setBool(c, "game_texts", v)
+    // `game_texts` (Rozsah čtení do 0.97.57) se už nenastavuje, čte se jen pro přechod – viz [gamePrompts].
 
     /** Okraj pruhu nad a pod textem 0–3 (násobek velikosti písma, viz [BAR_PADS]); výchozí 1. */
     val BAR_PADS = floatArrayOf(0.04f, 0.16f, 0.32f, 0.5f)
+    /** „Zakrýt celou oblast titulků“ v poloze Přes titulky (od 0.97.59, výchozí vypnuto – nové chování). */
+    fun coverAll(c: Context) = bool(c, "cover_all", false)
+    fun setCoverAll(c: Context, v: Boolean) = setBool(c, "cover_all", v)
     fun barPad(c: Context): Int = p(c).getInt("bar_pad", 1).coerceIn(0, 3)
     fun setBarPad(c: Context, v: Int) = p(c).edit().putInt("bar_pad", v.coerceIn(0, 3)).apply()
 
@@ -245,6 +277,13 @@ object Prefs {
     fun dismissGameGuess(c: Context) = p(c).edit().putString("game_guess_no", p(c).getString("game_guess", null)).remove("game_guess").apply()
     fun setGameGuess(c: Context, v: String?) = p(c).edit().apply { if (v == null) remove("game_guess") else putString("game_guess", v) }.apply()
 
+    /** Seznam her ze stránek: sám se ptá na novou verzi (nejvýš jednou za 6 h). Výchozí vypnuto – stáhne se jen po OK na řádku. */
+    fun gamesAuto(c: Context) = bool(c, "hry_auto", false)
+    fun setGamesAuto(c: Context, v: Boolean) = setBool(c, "hry_auto", v)
+    /** Kdy se naposledy zjišťovala verze seznamu her (ms, System.currentTimeMillis). */
+    fun gamesChecked(c: Context): Long = p(c).getLong("hry_kontrola", 0L)
+    fun setGamesChecked(c: Context, v: Long) = p(c).edit().putLong("hry_kontrola", v).apply()
+
     /** Vlastní slovník uživatele pro daný jazyk (anglicky → překlad). */
     fun userDict(c: Context, lang: Lang): LinkedHashMap<String, String> =
         Glossary.parseUser(p(c).getString("dict_${lang.code}", null))
@@ -259,13 +298,17 @@ object Prefs {
         val game = GameProfiles.of(gameId(c))
         val terms = LinkedHashMap(game.termsFor(lang))     // pojmy hry; vlastní slovník je přepíše
         for ((k, v) in user) if (Glossary.isSentence(k)) sentences[k] = v else terms[k] = v
-        return Glossary(game.names, terms, sentences, game.cast)
+        return Glossary(game.names, terms, sentences, game.cast, user.keys.filterNot { Glossary.isSentence(it) })
     }
 
     /** Otisk nastavení slovníku – když se změní, paměť překladů se smaže. */
     fun glossarySignature(c: Context): String =
         gameId(c) + "|" + lang(c).code + "|" + userDict(c, lang(c)).hashCode() + "|" +
-            GameProfiles.of(gameId(c)).let { it.names.hashCode() + 31 * it.termsFor(lang(c)).hashCode() }
+            GameProfiles.of(gameId(c)).let { it.names.hashCode() + 31 * it.termsFor(lang(c)).hashCode() } +
+            // stažený seznam her (postavy a rod se mohly změnit); s vestavěným podpis beze změny
+            GameProfiles.catalog.let { if (it.downloaded) "|hry" + it.version else "" } +
+            // jiný jazyk titulků → paměť překladů neplatí (u angličtiny podpis beze změny, paměť hráčům zůstane)
+            sourceLang(c).let { if (it.english) "" else "|" + it.code }
     fun savedGlossarySignature(c: Context): String = p(c).getString("gloss_sig", "") ?: ""
     fun setSavedGlossarySignature(c: Context, v: String) = p(c).edit().putString("gloss_sig", v).apply()
 

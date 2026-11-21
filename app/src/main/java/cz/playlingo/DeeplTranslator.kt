@@ -12,6 +12,7 @@ import cz.playlingo.core.Lang
 import cz.playlingo.core.Natural
 import cz.playlingo.core.QuickWords
 import cz.playlingo.core.Segment
+import cz.playlingo.core.SourceLang
 import cz.playlingo.core.TextLogic
 import cz.playlingo.core.TranslationCache
 import kotlinx.coroutines.Dispatchers
@@ -92,7 +93,8 @@ object DeeplTranslator {
         private set
     /** Měření tohoto běhu aplikace. */
     val stats = DeeplStats()
-    private val caches = ConcurrentHashMap<Lang, TranslationCache>()
+    /** Paměť výsledků podle dvojice jazyků („en>cs“). */
+    private val caches = ConcurrentHashMap<String, TranslationCache>()
     private val running = AtomicInteger(0)
 
     /** Nový nebo odebraný klíč: dřívější chyby (např. odmítnutý klíč) už neplatí. */
@@ -110,33 +112,35 @@ object DeeplTranslator {
         return DeeplKey.get(c)
     }
 
-    private fun cache(l: Lang) = caches.getOrPut(l) { TranslationCache(1500) }
+    private fun cache(s: SourceLang, l: Lang) = caches.getOrPut(s.code + ">" + l.code) { TranslationCache(1500) }
 
     /** Co se z titulku pošle do DeepL: části (index segmentu), jejich anglický text a text pro DeepL. */
     class Job(val key: String, val lang: Lang, val index: List<Int>, val bodies: List<String>, val sources: List<String>,
-              val glossary: Glossary? = null)
+              val glossary: Glossary? = null, val source: SourceLang = SourceLang.EN)
 
     /**
      * Rozdělí titulek na části stejně jako offline překlad ([TranslatorService.translateSegments]).
      * Jména mluvčích a odrážky voleb zůstávají; krátká slova ze slovníčku a ručně zadané věty
      * zůstanou z offline překladu (ty jsou přesné). null = nic k poslání.
      */
-    fun plan(key: String, lang: Lang, text: String, glossary: Glossary?): Job? {
+    fun plan(key: String, lang: Lang, text: String, glossary: Glossary?, source: SourceLang = SourceLang.EN): Job? {
         if (Deepl.target(lang) == null) return null
+        val en = source.english
         val idx = ArrayList<Int>(); val bodies = ArrayList<String>(); val src = ArrayList<String>()
         TextLogic.segments(text).forEachIndexed { i, s ->
-            val body = TextLogic.normalizeCase(s.body)
-            if (QuickWords.lookup(lang.code, body) != null) return@forEachIndexed
+            val body = TextLogic.normalizeCase(s.body, en)
+            // rychlá slovíčka jsou anglická – u jiného jazyka titulků se nepoužijí
+            if (en && QuickWords.lookup(lang.code, body) != null) return@forEachIndexed
             val input = TextLogic.forTranslator(body)
             if (glossary?.sentence(input) != null) return@forEachIndexed
-            idx += i; bodies += body; src += Deepl.source(input, glossary?.prepare(input))
+            idx += i; bodies += body; src += Deepl.source(input, glossary?.prepare(input, en))
         }
-        return if (idx.isEmpty()) null else Job(key, lang, idx, bodies, src, glossary)
+        return if (idx.isEmpty()) null else Job(key, lang, idx, bodies, src, glossary, source)
     }
 
     /** Překlady všech částí z paměti DeepL; null = aspoň jedna tam není. */
     fun cached(job: Job): List<String>? {
-        val c = cache(job.lang)
+        val c = cache(job.source, job.lang)
         return job.sources.map { c.get(it) ?: return null }
     }
 
@@ -150,9 +154,10 @@ object DeeplTranslator {
         job.index.forEachIndexed { k, i ->
             if (i !in out.indices) return@forEachIndexed
             val body = job.bodies[k]
-            val natural = if (job.lang == Lang.CS) Natural.czech(body, texts[k]) else texts[k]
+            // tykání podle anglického originálu – u jiného jazyka titulků se nemění nic
+            val natural = if (job.lang == Lang.CS && job.source.english) Natural.czech(body, texts[k]) else texts[k]
             // rod postav: DeepL mluvčího nevidí (posílá se jen text repliky)
-            val tr = job.glossary?.genders(job.lang, body, natural, out[i].speaker) ?: natural
+            val tr = job.glossary?.genders(job.lang, body, natural, out[i].speaker, job.source.english) ?: natural
             out[i] = out[i].copy(body = TextLogic.finishTranslation(body, tr))
         }
         return out
@@ -173,7 +178,7 @@ object DeeplTranslator {
         val b = backoff
         try {
             val (status, body) = http("POST", Deepl.translateUrl(job.key), job.key,
-                Deepl.requestJson(job.sources, Deepl.target(job.lang) ?: "CS"), 2000, 3500)
+                Deepl.requestJson(job.sources, Deepl.target(job.lang) ?: "CS", job.source.deepl), 2000, 3500)
             val ms = SystemClock.uptimeMillis() - t0
             val p = Deepl.problemFor(status)
             val texts = if (p == null) Deepl.parseTranslations(body, job.sources.size) else null
@@ -183,7 +188,7 @@ object DeeplTranslator {
                 Fetched(null, problem, ms, 0)
             } else {
                 b.onSuccess()
-                val c = cache(job.lang)
+                val c = cache(job.source, job.lang)
                 job.sources.forEachIndexed { i, s -> c.put(s, texts[i]) }
                 Fetched(texts, null, ms, Deepl.billedChars(job.sources))
             }

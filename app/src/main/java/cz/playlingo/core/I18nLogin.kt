@@ -41,11 +41,13 @@ internal val LOGIN_S: Map<String, Pair<String, String>> = mapOf(
     "hp_is_tv" to ("Tohle je TV nebo box" to "Toto je TV alebo box"),
     "hp_lg_btn" to ("Použít telefon pro TV LG" to "Použiť telefón pre TV LG"),
     "hp_back" to ("Pomocník pro přihlášení" to "Pomocník na prihlásenie"),
+    "hp_back_app" to ("Zpět do aplikace" to "Späť do aplikácie"),
     "hp_acc" to ("Účet PlayStation" to "Účet PlayStation"),
 )
 
 internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "hp_back_app" to "Back to the app",
         "pa_1_text" to "The PlayStation needs to know which account the TV connects with. This is found out by signing in to the PlayStation account. It is done on a phone, only once, and takes about two minutes.\n\nOpen the camera on your phone, point it at the square on the left and tap the link that appears. A PlayLingo page from this TV opens, so the phone must be on the same Wi-Fi. Then choose Continue here.",
         "pa_2_text" to "1. On the phone, sign in with the SECOND PlayStation account.\n2. When the page asks about a “passkey”, choose Remind Me Later.\n3. Copy the address of the empty “redirect” page and paste it on the PlayLingo page. The TV then continues by itself.",
         "pa_3_title" to "Not working? Type the code by hand",
@@ -84,6 +86,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_acc" to "PlayStation account",
     ),
     Lang.PL to mapOf(
+        "hp_back_app" to "Powrót do aplikacji",
         "pa_1_text" to "PlayStation musi wiedzieć, z którym kontem łączy się telewizor. Ustala się to przez zalogowanie na konto PlayStation. Robi się to w telefonie, tylko raz, i trwa około dwóch minut.\n\nOtwórz w telefonie aparat, skieruj go na kwadrat po lewej i stuknij link, który się pojawi. Otworzy się strona PlayLingo z tego telewizora, dlatego telefon musi być w tej samej sieci Wi-Fi. Potem wybierz tutaj Dalej.",
         "pa_2_text" to "1. Zaloguj się w telefonie DRUGIM kontem PlayStation.\n2. Gdy strona zapyta o „passkey”, wybierz Remind Me Later.\n3. Skopiuj adres pustej strony „redirect” i wklej go na stronie PlayLingo. Telewizor przejdzie dalej sam.",
         "pa_3_title" to "Nie działa? Przepisz kod ręcznie",
@@ -122,6 +125,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_acc" to "Konto PlayStation",
     ),
     Lang.DE to mapOf(
+        "hp_back_app" to "Zurück zur App",
         "pa_1_text" to "Die PlayStation muss wissen, mit welchem Konto sich der Fernseher verbindet. Das klärt sich durch die Anmeldung beim PlayStation-Konto. Das machst du am Handy, nur einmal, und es dauert etwa zwei Minuten.\n\nÖffne am Handy die Kamera, richte sie auf das Quadrat links und tippe auf den Link, der erscheint. Es öffnet sich die PlayLingo-Seite dieses Fernsehers, deshalb muss das Handy im selben WLAN sein. Wähle danach hier Weiter.",
         "pa_2_text" to "1. Melde dich am Handy mit dem ZWEITEN PlayStation-Konto an.\n2. Wenn die Seite nach einem „Passkey“ fragt, wähle Remind Me Later.\n3. Kopiere die Adresse der leeren Seite „redirect“ und füge sie auf der PlayLingo-Seite ein. Der Fernseher macht dann von selbst weiter.",
         "pa_3_title" to "Klappt es nicht? Code von Hand eingeben",
@@ -160,6 +164,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_acc" to "PlayStation-Konto",
     ),
     Lang.HU to mapOf(
+        "hp_back_app" to "Vissza az alkalmazásba",
         "pa_1_text" to "A PlayStationnek tudnia kell, melyik fiókkal csatlakozik a tévé. Ez a PlayStation-fiókba való bejelentkezéssel derül ki. Telefonon kell megtenni, csak egyszer, és körülbelül két percig tart.\n\nNyisd meg a telefonon a kamerát, irányítsd a bal oldali négyzetre, és koppints a megjelenő hivatkozásra. A tévé PlayLingo-oldala nyílik meg, ezért a telefonnak ugyanazon a Wi-Fi-hálózaton kell lennie. Utána itt válaszd a Tovább gombot.",
         "pa_2_text" to "1. Jelentkezz be a telefonon a MÁSODIK PlayStation-fiókkal.\n2. Ha az oldal „passkey” létrehozását kéri, válaszd a Remind Me Later gombot.\n3. Másold ki az üres „redirect” oldal címét, és illeszd be a PlayLingo-oldalon. A tévé ezután magától továbblép.",
         "pa_3_title" to "Nem megy? Írd be a kódot kézzel",
@@ -198,6 +203,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_acc" to "PlayStation-fiók",
     ),
     Lang.UK to mapOf(
+        "hp_back_app" to "Назад до застосунку",
         "pa_1_text" to "PlayStation має знати, з яким обліковим записом підключається телевізор. Це з'ясовується входом в обліковий запис PlayStation. Робиться це на телефоні, лише один раз, і займає близько двох хвилин.\n\nВідкрий на телефоні камеру, наведи її на квадрат ліворуч і торкнися посилання, яке з'явиться. Відкриється сторінка PlayLingo з цього телевізора, тому телефон має бути в тій самій мережі Wi-Fi. Потім вибери тут «Далі».",
         "pa_2_text" to "1. Увійди на телефоні ДРУГИМ обліковим записом PlayStation.\n2. Якщо сторінка запропонує «passkey», вибери Remind Me Later.\n3. Скопіюй адресу порожньої сторінки «redirect» і встав її на сторінці PlayLingo. Далі телевізор продовжить сам.",
         "pa_3_title" to "Не виходить? Введи код вручну",
@@ -236,6 +242,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_acc" to "Обліковий запис PlayStation",
     ),
     Lang.ES to mapOf(
+        "hp_back_app" to "Volver a la app",
         "pa_1_text" to "La PlayStation necesita saber con qué cuenta se conecta el televisor. Se averigua iniciando sesión en la cuenta de PlayStation. Se hace en el móvil, una sola vez, y lleva unos dos minutos.\n\nAbre la cámara del móvil, apunta al cuadrado de la izquierda y toca el enlace que aparezca. Se abrirá la página de PlayLingo de este televisor, por eso el móvil tiene que estar en la misma Wi-Fi. Después elige aquí Continuar.",
         "pa_2_text" to "1. Inicia sesión en el móvil con la SEGUNDA cuenta de PlayStation.\n2. Si la página te propone una «passkey», elige Remind Me Later.\n3. Copia la dirección de la página vacía «redirect» y pégala en la página de PlayLingo. El televisor sigue solo.",
         "pa_3_title" to "¿No funciona? Escribe el código a mano",
@@ -274,6 +281,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_acc" to "Cuenta de PlayStation",
     ),
     Lang.FR to mapOf(
+        "hp_back_app" to "Retour à l’app",
         "pa_1_text" to "La PlayStation doit savoir avec quel compte le téléviseur se connecte. On le détermine en se connectant au compte PlayStation. Cela se fait sur le téléphone, une seule fois, et prend environ deux minutes.\n\nOuvre l'appareil photo du téléphone, vise le carré à gauche et touche le lien qui apparaît. La page PlayLingo de ce téléviseur s'ouvre ; le téléphone doit donc être sur le même Wi-Fi. Choisis ensuite ici Continuer.",
         "pa_2_text" to "1. Connecte-toi sur le téléphone avec le DEUXIÈME compte PlayStation.\n2. Si la page propose une « passkey », choisis Remind Me Later.\n3. Copie l'adresse de la page vide « redirect » et colle-la sur la page PlayLingo. Le téléviseur continue ensuite tout seul.",
         "pa_3_title" to "Ça ne marche pas ? Saisis le code à la main",
@@ -312,6 +320,7 @@ internal val LOGIN_X: Map<Lang, Map<String, String>> = mapOf(
         "hp_acc" to "Compte PlayStation",
     ),
     Lang.IT to mapOf(
+        "hp_back_app" to "Torna all’app",
         "pa_1_text" to "La PlayStation deve sapere con quale account si collega il televisore. Lo si stabilisce accedendo all'account PlayStation. Si fa sul telefono, una sola volta, e richiede circa due minuti.\n\nApri la fotocamera del telefono, inquadra il quadrato a sinistra e tocca il link che compare. Si apre la pagina PlayLingo di questo televisore, quindi il telefono deve essere sulla stessa rete Wi-Fi. Poi scegli qui Continua.",
         "pa_2_text" to "1. Accedi sul telefono con il SECONDO account PlayStation.\n2. Se la pagina propone una «passkey», scegli Remind Me Later.\n3. Copia l'indirizzo della pagina vuota «redirect» e incollalo nella pagina PlayLingo. Il televisore poi prosegue da solo.",
         "pa_3_title" to "Non funziona? Scrivi il codice a mano",

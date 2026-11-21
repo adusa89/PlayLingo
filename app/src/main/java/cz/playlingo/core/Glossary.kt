@@ -16,7 +16,10 @@ class Glossary(
     sentences: Map<String, String> = emptyMap(),
     /** postavy hry s rodem – po překladu podle nich [CzechGender] opraví tvary */
     val cast: Cast = Cast.EMPTY,
+    /** Výrazy z vlastního slovníku hráče – mají přednost i před jménem z profilu hry (od 0.97.54). */
+    userTerms: Collection<String> = emptyList(),
 ) {
+    private val userKeys = userTerms.map { it.trim().lowercase() }.toHashSet()
     private val nameList = names.map { it.trim() }.filter { it.length >= 2 }.distinct()
     private val termMap = terms.entries
         .map { it.key.trim().lowercase() to it.value.trim() }
@@ -39,20 +42,22 @@ class Glossary(
      * Doladění hotového překladu jedné části titulku podle postav (rod mluvčího, osloveného
      * a postavy v textu). [source] je anglický originál části, [speaker] jméno mluvčího z titulku.
      */
-    fun genders(lang: Lang, source: String, translated: String, speaker: String?): String =
-        if (lang == Lang.CS) CzechGender.fix(cast, source, translated, speaker) else translated
+    fun genders(lang: Lang, source: String, translated: String, speaker: String?, english: Boolean = true): String =
+        // originál v jiném jazyce než angličtině se nečte (oslovení, she/her) – zůstane mluvčí a jméno v překladu
+        if (lang == Lang.CS) CzechGender.fix(cast, if (english) source else "", translated, speaker) else translated
 
     /** Ručně zadaný překlad celé věty, pokud existuje. */
     fun sentence(text: String): String? = sentenceMap[TextLogic.simplify(text)]
 
-    fun prepare(text: String): OfflinePrep.Prepared {
-        val plain = OfflinePrep.standardize(text)
+    fun prepare(text: String, english: Boolean = true): OfflinePrep.Prepared {
+        val plain = if (english) OfflinePrep.standardize(text) else text
         val r = rx ?: return OfflinePrep.Prepared(plain, plain, emptyList())
         val replacements = ArrayList<String>()
         val protectedText = r.replace(plain) { m ->
             val found = m.value
             // jméno zůstává, výraz se nahradí překladem
-            val out = termMap[found.lowercase()]?.takeIf { found !in nameList } ?: found
+            // vlastní slovník hráče přebije i jméno z profilu hry (chtěl ho přeložit jinak)
+            val out = termMap[found.lowercase()]?.takeIf { found !in nameList || found.lowercase() in userKeys } ?: found
             var idx = replacements.indexOf(out)
             if (idx < 0) { replacements.add(out); idx = replacements.size - 1 }
             "[${idx + 1}]"

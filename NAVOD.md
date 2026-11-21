@@ -27,29 +27,32 @@ Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nah
 
 ## 3. První nastavení (průvodce tě provede)
 
-Průvodce má 8 kroků, na každé obrazovce jedna věc. Na PlayStationu zatím nic nenastavuj – co je potřeba,
+Průvodce má 9 kroků, na každé obrazovce jedna věc. Na PlayStationu zatím nic nenastavuj – co je potřeba,
 ukáže až krok Připojení konzole (bod 4).
 
-1. **Zařízení:** na čem PlayLingo běží – Android TV nebo box s Androidem, nebo telefon či tablet
+1. **Jazyky:** jazyk aplikace (texty se hned přepnou) a **Překládat z** – v jakém jazyce jsou titulky
+   ve hře. Výchozí je angličtina; nabízejí se jen jazyky v latince (čtení obrazu jiné písmo neumí).
+   Obojí jde později změnit (jazyk aplikace v ⚙ Nastavení → Obecné, Překládat z v Titulkách).
+2. **Zařízení:** na čem PlayLingo běží – Android TV nebo box s Androidem, nebo telefon či tablet
    (ten jen čte a hotové titulky posílá do televize LG nebo Samsung, viz bod 8).
-2. **Konzole:** PlayStation 5, nebo Xbox (viz bod 7b).
-3. **Televize:** Android TV (pruh ukazuje toto zařízení), LG, nebo Samsung. U LG a Samsungu tu je tlačítko
+3. **Konzole:** PlayStation 5, nebo Xbox (viz bod 7b).
+4. **Televize:** Android TV (pruh ukazuje toto zařízení), LG, nebo Samsung. U LG a Samsungu tu je tlačítko
    pro nahrání aplikace do televize – můžeš ho přeskočit a nahrát ji později (Domů, Instalace).
    V telefonu průvodce sám hledá televizi v domácí síti: najde-li jen LG, nebo jen Samsung, rovnou ji
    předvybere a ukáže „✔ V síti · …“ (volbu jde změnit).
-4. **Jazyk:** jazyk překladu; počkej na stažení jazykového balíčku (jednou, asi 30 MB).
-5. **Lepší překlad (DeepL):** jedna věta proč a jeden čtvereček pro telefon – stránka v telefonu provede
-   registrací na DeepL, zkopírováním klíče i jeho vložením – viz bod 9. Bez klíče zvol **Přeskočit – zůstat u offline překladu**; DeepL
-   jde nastavit kdykoli později v Titulkách → Kvalita překladu. Po přijetí klíče se ukáže „✔ DeepL je
-   nastavený“ a Pokračovat.
-6. **Zobrazení titulků** (jen Android TV): zapni aplikaci v nastavení televize: Usnadnění →
+5. **Jazyk:** jazyk překladu; počkej na stažení jazykového balíčku (jednou, asi 30 MB).
+6. **Lepší překlad (DeepL):** jedna věta proč a jeden čtvereček pro telefon – stránka v telefonu provede
+   registrací na DeepL, zkopírováním klíče i jeho vložením – viz bod 9. Bez klíče zvol **Přeskočit – zůstat
+   u offline překladu**; DeepL jde nastavit kdykoli později v Titulkách → Kvalita překladu. Po přijetí klíče
+   se ukáže „✔ DeepL je nastavený“ a Pokračovat.
+7. **Zobrazení titulků** (jen Android TV): zapni aplikaci v nastavení televize: Usnadnění →
    PlayLingo → Zapnout. Po návratu do PlayLinga s povolením průvodce sám pokračuje. U LG a Samsungu jen
    krátké vysvětlení.
-7. **Připojení konzole:** spárování PlayStationu v šesti malých krocích – viz bod 4 (Xbox: bod 7b). Má
+8. **Připojení konzole:** spárování PlayStationu v šesti malých krocích – viz bod 4 (Xbox: bod 7b). Má
    jen tlačítka spárování a pod nimi malé **Spárovat později** (průvodce skočí na Hotovo). Co jde, udělá
    sám: zapnutou PS5 najde v síti hned na prvním kroku a přeskočí hledání; po napsání (nebo přečtení
    kamerou) osmimístného čísla z PS5 rovnou spáruje a po spárování přejde na Hotovo.
-8. **Hotovo:** jak se hraje; se spárovanou konzolí tlačítko Spustit.
+9. **Hotovo:** jak se hraje; se spárovanou konzolí tlačítko Spustit.
 
 Máš-li víc televizí LG nebo Samsung, pamatuje si PlayLingo vzhled titulků a oblasti pro každou zvlášť
 a přepne je samo podle televize, ke které se připojí (v Titulkách je nahoře vidět, pro kterou).
@@ -80,7 +83,7 @@ a hraješ jako vždy, se svými hrami. Druhý účet se jen „dívá“.
 **PS5 spáruje jen tehdy, když osmimístné číslo vyvolá na PS5 stejný uživatel, jakým se PlayLingo
 přihlásilo.** Proto aplikace účet nikdy nebere potichu a jeho jméno (Online ID) ukazuje až do konce.
 
-Aplikace tě provede šesti kroky, na každé obrazovce je jedna věc. V průvodci je nahoře „Krok 7 z 8“
+Aplikace tě provede šesti kroky, na každé obrazovce je jedna věc. V průvodci je nahoře „Krok 8 z 9“
 a pod ním malý podtitul „Spárování · 3 z 6“, na stránce Konzole pruh s dílky.
 
 1. **Zapni PlayStation.** Stejná domácí síť jako zařízení s PlayLingem (nejlépe obojí kabelem).
@@ -138,9 +141,22 @@ Když telefon sám čte pro televizi LG / Samsung, uložené účty nabídne kro
    (očíslované nebo zarovnané vlevo), ukáže je pruh jako seznam s odrážkami, každou přeloženou
    zvlášť. Menu hry a pokyny k ovládání se dál nepřekládají.
 
+**Co se u hry překládá navíc (Titulky → Hra):** titulky vždy. U her, jejichž profil to zná (zatím GTA), má každý další
+text vlastní přepínač: **Pokyny pod titulky** (krátký šedý řádek „Take your shot“ pod replikou), **Úkol pod titulky**
+(řádek úkolu jako samostatný pruh, s volbami písma, polohy a pozadí) a u GTA VI **Překlad menu hry** (výchozí vypnuto).
+Žádná jiná volba je nepřebíjí. Kdo měl do verze 0.97.57 „Rozsah čtení: jen titulky“, má je po aktualizaci vypnuté.
+
+**GTA VI: pozadí titulků musí být zapnuté.** Bez něj se text ztrácí v obraze a PlayLingo nic nepřečte. Ve hře:
+Settings → UI → Subtitles & Captions → Background – cokoli kromě Off. Připomíná to i řádek „Ve hře: pozadí titulků“
+v Titulky → Hra a Nápověda → Hraní.
+
 **Menu hry (zatím GTA VI, základ):** když otevřeš menu zleva (Mapa, Hra, Obchod, Nápověda, Fotostudio, Nastavení) nebo
 Nastavení hry, ukáže pruh přeložené položky – vybraná je se šipkou ▸ – a u Nastavení i přeložený nadpis a popis vybrané volby.
-Jednotlivé volby Nastavení se zatím nepřekládají. Funguje s profilem hry GTA VI a s Titulky → Hra → Rozsah čtení „Titulky a texty hry“.
+Jednotlivé volby Nastavení se zatím nepřekládají. Funguje s profilem hry GTA VI a se zapnutým Titulky → Hra → Překlad menu hry.
+
+**Seznam her:** jména, postavy a pojmy jednotlivých her se dají aktualizovat bez nové verze aplikace. V Titulky → Hra
+je řádek „Seznam her · verze N“ – OK zjistí, jestli není novější, a stáhne ho. Samo (nejvýš jednou za 6 hodin) jen se
+zapnutou volbou Nastavení → Experimentální → „Seznam her automaticky“. Zvolená hra se tím nikdy nemění.
 
 Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪, se nepřekládají.
 
@@ -155,6 +171,7 @@ Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪
 - **Účet na PS5 má přihlašovací kód** – PlayStation ho při spojení odmítne a na stránce PlayStation se objeví políčko pro kód (4 číslice); zadej ho tam.
 - **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.5, nebo ⚙ Nastavení → Obecné → Povolení) a v Titulcích nastav vzhled – pruh se při tom ukáže na zkoušku.
 - **Vzhled titulků během hry (Android TV)**: v ⚙ Nastavení → Obecné zvol „Tlačítko vzhledu titulků“ a stiskni tlačítko ovladače, které ve hře nepoužíváš (barevné, Info…). Při hře pak otevře nabídku vzhledu přímo přes obraz; šipky mění hodnoty, Zpět zavře. (V TV LG/Samsung je totéž pod OK při hře nebo v nabídce Vzhled titulků.)
+- **Anglický titulek vyčuhuje nad pruh nebo po stranách** (hlavně dvouřádkový) – v Titulky → Pruh s překladem nech polohu „Přes anglické titulky“ a zapni „Zakrýt celou oblast titulků“: pruh pak kryje celé místo, kde se titulky naposledy ukazovaly, ne jen právě přečtený řádek (Android TV i TV LG/Samsung s aplikací v TV od 1.5.14).
 - **Nic se nečte** – zapni ⚙ Nastavení → Experimentální → Ladění a hlášení → Diagnostický režim; uvidíš, co aplikace čte.
 - **Na PS5 pořád naskakuje „ovladač odpojen / účet připojen“** – s druhým účtem se připojuje i jiné zařízení
   (třeba aplikace PS Remote Play) a PS5 pak spojení přehazuje. Domů to od 0.97 napíše. Druhý účet ať slouží jen PlayLingu.
@@ -168,6 +185,7 @@ Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪
 - **Aplikace minule spadla** – po dalším spuštění to napíše na stránce Domů. Kdyby se to opakovalo, pošli hlášení (další bod).
 - **Hlášení chyby**: Instalace → Když něco nejde (nebo ⚙ Nastavení → Experimentální → Ladění a hlášení) → „Vytvořit hlášení chyby“ otevře přes celou obrazovku hlášení o stavu aplikace: verzi, televizi, stav spojení, poslední pád a poslední události. Stačí ho vyfotit (šipkami ▲▼ se posouvá, v telefonu prstem) a poslat. Hesla, klíče ani číslo účtu v něm nejsou. Delší verze se zároveň uloží do souboru, jehož cesta je na konci hlášení. Tlačítkem **Kopírovat** ho dáš do schránky, **Sdílet** ho pošle jako soubor (e-mailem, do chatu…). Na televizi nejjednodušší: tlačítko **Do telefonu** ukáže čtvereček – naskenuj ho telefonem (i iPhonem) na stejné Wi-Fi, stáhni hlášení a pošli ho autorovi chatem nebo e-mailem. Máš-li televizi LG nebo Samsung, je v hlášení i oddíl Televize – co se dělo v aplikaci v televizi.
 - **Záznam pro vývojáře v domácí síti**: ⚙ Nastavení → záložka Experimentální → Ladění a hlášení → „Zpřístupnit záznam v domácí síti“ → ZAP. Pod řádkem se ukáže adresa (např. `http://192.168.1.23:8789/zaznam?k=ab3k7m`), přes kterou si vývojář na počítači ve stejné síti stáhne celé hlášení (bez hesel, klíčů a čísla účtu). Po 2 hodinách se to samo vypne; jde to vypnout i hned.
+- **Záznam snímků (pro vývojáře)**: při běžícím překladu ⚙ Nastavení → Experimentální → Ladění a hlášení → „Záznam snímků“ → OK = Start. Aplikace ukládá snímky obrazovky hry (jen když se obraz změní, nejvýš asi jeden za sekundu) a k nim, co v tu chvíli četla. Ve hře udělej, co je potřeba ukázat (menu, úkol, dvouřádkové titulky…), a znovu OK = Stop. Každé Start…Stop je samostatná dávka (v řádku „Nahrává · dávka 3 · 42 snímků“). Se zapnutým záznamem v domácí síti jde Start/Stop i tlačítkem „● Snímky“ / „■ Snímky“ v notifikaci. Samo se zastaví po 10 minutách nebo se zastavením překladu; všechny dávky dohromady zaberou nejvýš 300 MB (nejstarší se mažou). Vývojář si je stáhne přes záznam v domácí síti.
 
 ## 7b. Xbox (Series X|S / One)
 PlayLingo umí číst titulky i z Xboxu. Hra jde do televize dál kabelem HDMI; PlayLingo si z Xboxu
@@ -278,15 +296,16 @@ Klíč je dlouhý (asi 40 znaků), proto ho do televize **nepíšeš** – zkop�
 Televize ukáže **jeden čtvereček**; naskenuj ho telefonem (Android i iPhone, stejná Wi‑Fi). Otevře se
 stránka „PlayLingo · DeepL“, která tě provede třemi kroky:
 
-1. **Účet DeepL API zdarma** (jen poprvé) – tlačítko vede rovnou na registraci s plánem **Developer**:
-   zadej e-mail a heslo, nech „Developer“ („Test out the API for free“) a zvol **Continue**. Plán je zdarma:
-   **1 000 000 znaků celkem**, každý měsíc se neobnovuje. Kdyby DeepL chtěl platební kartu, plán Developer
-   stejně nic nestojí (20. 11. 2026 kartu nechtěl). Pak **potvrď e-mail** odkazem, který ti DeepL pošle.
-   - Registraci otevři v prohlížeči, kde **nejsi přihlášený do DeepL** – nejjednodušší je soukromá karta
-     (iPhone: Safari → Panely → Soukromé; Android: Chrome → ⋮ → Nová anonymní karta). Jinak tě DeepL
-     přesměruje do Translatoru.
-   - **Máš DeepL jen na překládání (Translator)?** Ten účet klíč API nemá a přidat ho do něj nejde –
-     zaregistruj se **jiným e-mailem**.
+1. **Účet DeepL API zdarma** (jen poprvé) – tlačítko otevře ceník DeepL na záložce **API**
+   (https://www.deepl.com/pro#api). U plánu **Developer** klepni na **Vytvořte si účet zdarma**.
+   - **Nemáš účet DeepL:** zadej e-mail a heslo, zvol **Continue** a **potvrď e-mail** odkazem, který ti
+     DeepL pošle.
+   - **Máš účet DeepL, i jen na překládání (Translator):** nejdřív se na deepl.com **přihlas**, pak otevři
+     ceník → API a klepni na totéž tlačítko u Developeru – plán se **přidá k tvému účtu**, nový e-mail
+     není potřeba (ověřeno 21. 11. 2026).
+   - **Pozor:** odkazy „Získejte API klíč zdarma“ / „API zdarma“ v menu DeepL přihlášeného posílají zpátky
+     do Translatoru. Použij jen tlačítko u plánu Developer v ceníku.
+   - Plán je zdarma: **1 000 000 znaků celkem**, každý měsíc se neobnovuje. Platební kartu DeepL nechce.
 2. **Stránka s klíčem** – https://www.deepl.com/your-account/keys (záložka **API Keys & Limits**). Celý klíč
    se tam nezobrazuje: zkopíruj ho **ikonou kopírování** vedle klíče. Když tam klíč není, zvol **Create key**.
 3. **Vlož klíč** – vrať se na stránku „PlayLingo · DeepL“, **podrž prst v políčku → Vložit** a zvol
@@ -299,8 +318,9 @@ Ruční psaní ovladačem je jen záloha: **Napsat klíč ručně**. **Telefon j
 tlačítka **Otevřít DeepL**, **Otevřít stránku s klíčem** a políčko, kam klíč vložíš.
 
 ### Dobré vědět
-- **Mám DeepL, ale klíč nevidím / „Create key“ mě přesměruje do Translatoru:** účet jen pro DeepL
-  Translator klíč API nemá. Založ si **nový účet pro API s jiným e-mailem** (krok 1, v soukromé kartě).
+- **Mám DeepL, ale klíč nevidím / všechno mě přesměruje do Translatoru:** účet ještě nemá plán API.
+  Přihlas se, otevři https://www.deepl.com/pro#api a u plánu **Developer** klepni na **Vytvořte si účet
+  zdarma** – plán se přidá k účtu. Pak stránka s klíči → **Create key**.
 - **Registrace visí na „Security check“:** vypni VPN nebo blokování reklam (na iPhonu i Soukromý přenos
   iCloud), případně zkus jiný prohlížeč nebo mobilní data.
 - **Limit:** plán Developer má 1 000 000 znaků celkem (aplikace po ověření ukáže, kolik zbývá).

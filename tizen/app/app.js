@@ -395,7 +395,10 @@
     // šířka podle textu (ne přes celou obrazovku), nejvýš podle nastavení
     maxW = Math.round(W * cislo(v.sirka, 0.2, 1, 0.84));
     s.bottom = 'auto'; s.top = '0px'; s.left = '0px'; s.width = 'auto'; s.maxWidth = maxW + 'px';
-    if (pres) {
+    if (pres && text && v.kryt === true) {
+      // zakrýt celou oblast titulků (od 1.5.14): text = celé pole posledních titulků i s okrajem → pruh přesně tak vysoký
+      s.minHeight = Math.round(Math.max(0.02, Math.min(0.33, text[1] - text[0])) * H) + 'px';
+    } else if (pres) {
       // přes titulky: pruh aspoň tak vysoký, aby zakryl anglický text, nejvýš čtvrtina obrazovky
       x = text ? text[1] - text[0] : cteni[1] - cteni[0];
       s.minHeight = Math.min(Math.round(Math.max(0.02, Math.min(1, x + 0.024)) * H), H / 4) + 'px';
@@ -405,7 +408,7 @@
     // zaokrouhlit nahoru: o zlomek pixelu užší pruh by zalomil poslední slovo na další řádek
     w = p.getBoundingClientRect ? Math.ceil(p.getBoundingClientRect().width) : p.offsetWidth;
     w = w || maxW;
-    if (pres && text && text[3] > text[2]) { w = Math.max(w, Math.round((text[3] - text[2]) * W) + 40); }
+    if (pres && text && text[3] > text[2]) { w = Math.max(w, Math.round((text[3] - text[2]) * W) + (v.kryt === true ? 0 : 40)); }
     w = Math.max(160, Math.min(W, w));
     s.width = w + 'px';
     s.maxWidth = '';
@@ -569,6 +572,64 @@
     podpis = (z.id !== undefined ? '#' + String(z.id).substring(0, 20) + ': ' : '') + text.length + ' znaků' +
       (casti ? ', ' + casti.length + ' částí' : '');
     if (podpis !== ukolPodpis) { zapis('úkol ' + podpis); ukolPodpis = podpis; }
+  }
+
+  // ---- Popis volby Nastavení hry (od 1.5.13) ----------------------------
+  // Nadpis a popis vybrané volby v Nastavení hry (GTA VI vpravo) má vlastní prvek #menupopis přes anglický popis;
+  // v pruhu je mezitím jen vybraná záložka. Zpráva z Androidu
+  // {"typ":"menupopis","nadpis":…,"text":…,"misto":[vlevo,nahoře,vpravo,dole],"pismo":…,"pozadi":…,"barva":…}
+  // – text od levého horního rohu misto, zalomený na šířku misto, dole nejníž misto[3] (od 1.5.14 se písmo zmenší).
+  // Prázdný text i nadpis = schovat.
+  var POPIS_MAX = 600;
+
+  function popisSkryj() {
+    var u = el('menupopis');
+    if (!u) { return; }
+    u.style.display = 'none';
+    u.textContent = '';
+  }
+
+  function popisUkaz(z) {
+    var u = el('menupopis'), s, W = 1920, H = 1080, m, nadpis, text, n, w, h, barva, pismo, vyska, min;
+    if (!u) { return; }
+    s = u.style;
+    nadpis = String(z.nadpis || '').substring(0, 120);
+    text = String(z.text || '').substring(0, POPIS_MAX);
+    m = z.misto;
+    if ((!/\S/.test(text) && !/\S/.test(nadpis)) || !m || Object.prototype.toString.call(m) !== '[object Array]' || m.length < 4) {
+      popisSkryj();
+      return;
+    }
+    m = [cislo(m[0], 0, 1, -1), cislo(m[1], 0, 1, -1), cislo(m[2], 0, 1, -1), cislo(m[3], 0, 1, -1)];
+    if (m[0] < 0 || m[1] < 0 || m[2] <= m[0]) { popisSkryj(); return; }
+    u.textContent = '';
+    if (/\S/.test(nadpis)) {
+      n = document.createElement('b');
+      n.textContent = nadpis;
+      u.appendChild(n);
+      if (/\S/.test(text)) { u.appendChild(document.createTextNode('\n')); }
+    }
+    if (/\S/.test(text)) { u.appendChild(document.createTextNode(text)); }
+    barva = barvaJmena(z.barva);
+    s.color = barva || '#FFFFFF';
+    s.background = 'rgba(0,0,0,' + (cislo(z.pozadi, 0, 100, 90) / 100) + ')';
+    s.fontSize = cislo(z.pismo, 16, 120, 32) + 'px';
+    w = Math.max(200, Math.round((m[2] - m[0]) * W));
+    s.width = w + 'px';
+    s.left = Math.round(Math.max(0, Math.min(W - w, m[0] * W))) + 'px';
+    s.top = '0px';
+    s.display = 'block';
+    h = u.offsetHeight || 0;
+    // od 1.5.14: misto[3] = nejníž dole – když se text nevejde, písmo se zmenšuje (nejvýš na 60 %)
+    pismo = cislo(z.pismo, 16, 120, 32);
+    vyska = Math.round((m[3] - m[1]) * H);
+    min = pismo * 0.6;
+    while (m[3] > m[1] && h > vyska && pismo > min) {
+      pismo = pismo * 0.9;
+      s.fontSize = Math.round(pismo) + 'px';
+      h = u.offsetHeight || 0;
+    }
+    s.top = Math.round(Math.max(0, Math.min(H - h, m[1] * H))) + 'px';
   }
 
   // ---- Vzhled titulků z ovladače (od 1.4.0) -----------------------------
@@ -735,6 +796,7 @@
     panelZavri();
     pruh(null);
     ukolSkryj();
+    popisSkryj();
     P.skryjVstup();
     el('obraz').innerHTML = '';
     strana = kam;
@@ -820,6 +882,7 @@
     if (!prijem.pevna) { pamet('titulky', adresa); }
     pruh(null);
     ukolSkryj();
+    popisSkryj();
     stav.bezSite = false;
     stavKresli(true);
     ws.onerror = null;
@@ -844,6 +907,11 @@
       if (z.typ === 'ukol') {
         // úkol ve hře (od 1.5.11) – vlastní prvek, pruhu se netýká; bez odpovědi hotovo
         try { ukolUkaz(z); } catch (e) { zapis('úkol se nepodařilo ukázat'); ukolSkryj(); }
+        return;
+      }
+      if (z.typ === 'menupopis') {
+        // popis volby Nastavení hry (od 1.5.13) – vlastní prvek, pruhu se netýká; bez odpovědi hotovo
+        try { popisUkaz(z); } catch (e) { zapis('popis menu se nepodařilo ukázat'); popisSkryj(); }
         return;
       }
       if (z.typ === 'ukaz') {
@@ -876,6 +944,7 @@
       panelZavri();
       pruh(null);
       ukolSkryj();
+      popisSkryj();
       stavKresli(true);
       pozdeji(hledej, 2000);
     };

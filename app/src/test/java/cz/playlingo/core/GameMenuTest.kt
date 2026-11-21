@@ -2,6 +2,7 @@ package cz.playlingo.core
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** Rozložení podle snímků GTA VI majitele (20. 11. 2026, snímek 960 × 540). */
@@ -51,6 +52,75 @@ class GameMenuTest {
         val v = GameMenu.read(lines, w, h, spec)!!
         assertEquals(7, v.items.size)
         assertEquals(-1, v.selected)   // jeden řádek = vybraná záložka se nepozná
+    }
+
+    @Test fun tabsInOneLineWithWordBoxes() {
+        // skutečná poloha lišty na snímku 175541 (text 41–53 bodů z 540, tj. kolem 8 %), vybraný Controller bílý
+        fun wd(t: String, l: Int, r: Int, b: Int = 70) = MenuWord(t, l, 41, r, 53, b)
+        val words = listOf(wd("CONTROL", 49, 92), wd("SCHEME", 95, 128), wd("CONTROLLER", 146, 203, 215), wd("GAMEPLAY", 222, 268),
+            wd("DISPLAY", 286, 323), wd("UI", 341, 350), wd("CAMERA", 369, 405), wd("AUDIO", 423, 451))
+        val l = MenuLine(words.joinToString(" ") { it.text }, 49, 41, 451, 53, 90, words)
+        val head = MenuLine("HORIZONTAL LOOK SENSITIVITY", 591, 96, 777, 110, 90)
+        val b1 = MenuLine("The sensitivity of the horizontal camera speed when", 591, 134, 914, 147, 90)
+        val b2 = MenuLine("using R to look around.", 591, 153, 742, 166, 90)
+        val v = GameMenu.read(listOf(l, head, b1, b2), w, h, spec)!!
+        assertEquals("settings", v.kind)
+        assertEquals(7, v.items.size)
+        assertEquals(1, v.selected)   // s rámečky slov se pozná i ve spojeném řádku
+        assertEquals(146f / w, v.rects[1][0], 0.001f)
+        // vybraná záložka těsně nad lištou: spodní okraj pruhu nad horní hranou záložky, levý okraj u záložky
+        val (box, step) = GameMenu.tabPlace(v.rects[1])!!
+        val top = box.second - step * 0.25f
+        assertEquals(41f / h - 0.004f, top + step, 0.001f)
+        assertTrue(top >= 0f)
+        assertEquals(146f / w - 0.006f, box.first, 0.001f)
+        // překlad popisu pod anglický popis: vlevo u nadpisu (ne dál doleva), nahoře pod posledním řádkem, dole nejníž DESC_BOTTOM
+        val d = v.descBox!!
+        assertEquals(591f / w - 0.006f, d[0], 0.001f)
+        assertEquals(166f / h + 0.012f, d[1], 0.001f)
+        assertTrue(d[2] >= 0.97f)
+        assertEquals(GameMenu.DESC_BOTTOM, d[3], 0.001f)
+        // text ve sloupci pod popisem = dolní hranice; když pod popisem není místo, přes anglický popis jako dřív
+        val under = MenuLine("Reset to default", 600, 300, 700, 312, 90)
+        assertEquals(300f / h - 0.008f, GameMenu.read(listOf(l, head, b1, b2, under), w, h, spec)!!.descBox!![3], 0.001f)
+        val close = MenuLine("Reset", 700, 180, 760, 192, 90)
+        assertEquals(96f / h - 0.008f, GameMenu.read(listOf(l, head, b1, b2, close), w, h, spec)!!.descBox!![1], 0.001f)
+        assertEquals(13f / h, v.descLine, 0.001f)
+        assertEquals("The sensitivity of the horizontal camera speed when using R to look around.", v.description)
+    }
+
+    @Test fun pauseRectIsRightOfText() {
+        // „Settings“ končí na 96 bodech z 960 → měří se kousek bílého pruhu vpravo za textem (pruh je do ~27 %)
+        val r = GameMenu.pauseRect(MenuLine("Settings", 45, 297, 96, 311, 200), w, h)
+        assertTrue(r[0] > 96f / w && r[2] <= 0.25f)
+        assertEquals(297f / h, r[1], 0.001f)
+    }
+
+    @Test fun fastSelectionFromBrightness() {
+        val t = MenuTracker(spec)
+        val items = listOf("Map", "Game", "Store", "Help", "Photo Studio", "Settings")
+        fun read(sel: Int) = MenuView("pause", items, sel, tops = items.indices.map { 124 + it * 36 },
+            rects = items.indices.map { floatArrayOf(0.12f, (124f + it * 36) / h, 0.17f, (138f + it * 36) / h) })
+        t.update(read(5), grabbedAt = 1000L)
+        assertEquals(6, t.sampleRects().size)
+        // na novém snímku je bílý pruh u „Photo Studio“ → výběr hned, bez čtení
+        val r = t.fast(intArrayOf(45, 46, 44, 45, 210, 50), 1100L)
+        assertTrue(r.changed)
+        assertEquals(4, r.view!!.selected)
+        // nejasné měření (přechod) nic nemění
+        assertEquals(false, t.fast(intArrayOf(120, 110, 44, 45, 100, 50), 1150L).changed)
+        // čtení snímku pořízeného před měřením (výběr ještě na Settings) novější výběr nepřebije
+        assertEquals(4, t.update(read(5), grabbedAt = 1050L).view!!.selected)
+        // čtení novějšího snímku ano
+        assertEquals(3, t.update(read(3), grabbedAt = 1200L).view!!.selected)
+    }
+
+    @Test fun watchBandsDetectMovedBar() {
+        val a = IntArray(GameMenu.WATCH.size) { 60 }
+        val b = a.copyOf().also { it[3] = 200; it[4] = 60 }
+        assertTrue(GameMenu.watchChanged(a, b))
+        assertEquals(false, GameMenu.watchChanged(a, a.copyOf().also { it[2] = 80 }))
+        assertEquals(false, GameMenu.watchChanged(null, a))
     }
 
     @Test fun gameplayIsNotMenu() {

@@ -2,7 +2,6 @@ package cz.playlingo
 
 import android.util.Log
 import com.google.mlkit.common.model.DownloadConditions
-import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
@@ -11,6 +10,7 @@ import cz.playlingo.core.Lang
 import cz.playlingo.core.Natural
 import cz.playlingo.core.OfflinePrep
 import cz.playlingo.core.QuickWords
+import cz.playlingo.core.SourceLang
 import cz.playlingo.core.TextLogic
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.ConcurrentHashMap
@@ -18,35 +18,47 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Offline překlad Google ML Kit (angličtina → čeština, slovenština, polština, němčina…).
  * Zdarma a bez internetu. Jazykový model (cca 30 MB) se stáhne jen jednou při prvním použití.
+ * Jazyk titulků je [source] (volba „Překládat z“, výchozí angličtina); u jiného jazyka než
+ * angličtiny ML Kit stáhne i jeho balíček – `ensureModel` je pro celou dvojici.
  */
 object OfflineTranslator {
-    private val clients = ConcurrentHashMap<Lang, Translator>()
-    private val ready = ConcurrentHashMap<Lang, Boolean>()
+    /** Z čeho se překládá; nastavuje ho [Prefs] (při spuštění aplikace a po změně volby). */
+    @Volatile var source: SourceLang = SourceLang.EN
 
-    private fun client(lang: Lang): Translator = clients.getOrPut(lang) {
-        Translation.getClient(
-            TranslatorOptions.Builder()
-                .setSourceLanguage(TranslateLanguage.ENGLISH)
-                .setTargetLanguage(lang.code)
-                .build()
-        )
+    private val clients = ConcurrentHashMap<String, Translator>()
+    private val ready = ConcurrentHashMap<String, Boolean>()
+
+    /** Dvojice jazyků („en>cs“) – podle ní se drží překladač, připravenost i stahování. */
+    private fun pair(lang: Lang) = source.code + ">" + lang.code
+
+    private fun client(lang: Lang): Translator {
+        val s = source
+        return clients.getOrPut(s.code + ">" + lang.code) {
+            Translation.getClient(
+                TranslatorOptions.Builder()
+                    .setSourceLanguage(s.code)
+                    .setTargetLanguage(lang.code)
+                    .build()
+            )
+        }
     }
 
-    fun isReady(lang: Lang): Boolean = ready[lang] == true
+    fun isReady(lang: Lang): Boolean = ready[pair(lang)] == true
 
-    /** Jazyky, jejichž balíček se právě stahuje (pro ukazatel postupu; ML Kit procenta neříká). */
-    private val downloading = java.util.concurrent.ConcurrentHashMap.newKeySet<Lang>()
+    /** Dvojice jazyků, jejichž balíček se právě stahuje (pro ukazatel postupu; ML Kit procenta neříká). */
+    private val downloading = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
-    fun isDownloading(lang: Lang): Boolean = lang in downloading
+    fun isDownloading(lang: Lang): Boolean = pair(lang) in downloading
 
     fun ensureModel(lang: Lang, callback: (Boolean) -> Unit) {
+        val key = pair(lang)
         try {
-            downloading.add(lang)
+            downloading.add(key)
             client(lang).downloadModelIfNeeded(DownloadConditions.Builder().build())
-                .addOnSuccessListener { downloading.remove(lang); ready[lang] = true; callback(true) }
-                .addOnFailureListener { e -> downloading.remove(lang); Log.w("TestPreklad", "model", e); callback(false) }
+                .addOnSuccessListener { downloading.remove(key); ready[key] = true; callback(true) }
+                .addOnFailureListener { e -> downloading.remove(key); Log.w("TestPreklad", "model", e); callback(false) }
         } catch (e: Exception) {
-            downloading.remove(lang); Log.w("TestPreklad", "model", e); callback(false)
+            downloading.remove(key); Log.w("TestPreklad", "model", e); callback(false)
         }
     }
 
@@ -72,16 +84,20 @@ object OfflineTranslator {
      */
     suspend fun translate(lang: Lang, text: String, glossary: Glossary? = null): String {
         glossary?.sentence(text)?.let { return it }      // ručně zadaný překlad celé věty
-        val p = glossary?.prepare(text) ?: OfflinePrep.prepare(text)
+        val en = source.english
+        val p = glossary?.prepare(text, en) ?: OfflinePrep.prepare(text, en)
         if (p.names.isNotEmpty()) {
             OfflinePrep.finish(p, translateRaw(lang, p.protectedText))?.let { return natural(lang, text, it) }
         }
         return natural(lang, text, translateRaw(lang, p.plain))
     }
 
-    /** Doladění překladu, aby zněl přirozeně (zatím čeština: sjednocení oslovení na tykání). */
-    private fun natural(lang: Lang, source: String, translated: String): String =
-        if (lang == Lang.CS) Natural.czech(source, translated) else translated
+    /**
+     * Doladění překladu, aby zněl přirozeně (zatím čeština: sjednocení oslovení na tykání). Čte anglický
+     * originál (oslovení více lidí) – u jiného jazyka titulků se nemění nic.
+     */
+    private fun natural(lang: Lang, original: String, translated: String): String =
+        if (lang == Lang.CS && source.english) Natural.czech(original, translated) else translated
 
     /**
      * Celý titulek tak, jak ho překládá služba: po řádcích, jména mluvčích zůstávají, krátká slova
@@ -89,10 +105,11 @@ object OfflineTranslator {
      */
     suspend fun translateSubtitle(lang: Lang, text: String, glossary: Glossary? = null): String {
         val out = ArrayList<String>()
+        val en = source.english
         for (s in TextLogic.segments(text)) {
-            val body = TextLogic.normalizeCase(s.body)
-            val raw = QuickWords.lookup(lang.code, body) ?: translate(lang, TextLogic.forTranslator(body), glossary)
-            val tr = glossary?.genders(lang, body, raw, s.speaker) ?: raw
+            val body = TextLogic.normalizeCase(s.body, en)
+            val raw = (if (en) QuickWords.lookup(lang.code, body) else null) ?: translate(lang, TextLogic.forTranslator(body), glossary)
+            val tr = glossary?.genders(lang, body, raw, s.speaker, en) ?: raw
             out.add((s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + TextLogic.finishTranslation(body, tr))
         }
         return out.joinToString(" ")

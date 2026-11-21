@@ -19,6 +19,7 @@ import android.widget.Toast
 import cz.playlingo.core.DiagLog
 import cz.playlingo.core.LogServer
 import cz.playlingo.core.LogShare
+import cz.playlingo.core.SnapBatches
 import java.io.File
 
 /**
@@ -95,7 +96,7 @@ object NetLogShare {
         val code = LogShare.newCode()
         val until = now() + LogShare.DURATION_MS
         prefs(c).edit().putLong("until", until).putString("code", code).apply()
-        return if (start(c, code, until)) Result.OK else { disable(c); Result.FAILED }
+        return if (start(c, code, until)) { TranslatorService.refreshNotification(); Result.OK } else { disable(c); Result.FAILED }
     }
 
     @Synchronized fun disable(c: Context) {
@@ -104,6 +105,7 @@ object NetLogShare {
         server?.stop()
         server = null
         DiagLog.add("ZAZNAM|off")
+        TranslatorService.refreshNotification()   // tlačítko Záznam snímků v notifikaci zmizí
     }
 
     /** Po spuštění aplikace: bylo zapnuté a ještě nevypršelo → pustit znovu se stejným kódem. */
@@ -150,6 +152,9 @@ object NetLogShare {
             log = { DiagLog.add("ZAZNAM|$it") },
             lang = { Prefs.uiLang(ctx) },
             image = { TranslatorService.stillJpeg() },
+            // záznam snímků (⚙ → Ladění a hlášení → Záznam snímků): seznam dávek a ZIP jedné dávky
+            batches = { SnapBatches.json(SnapBatches.scan(SnapRecorder.root(ctx)), SnapRecorder.recording) },
+            batchDir = { n -> SnapBatches.find(SnapRecorder.root(ctx), n) },
         )
         // poslouchat jen na adrese domácí sítě (ne na mobilních datech); neznámá = všude, ptát se
         // stejně smí jen domácí síť (LogShare.allowedPeer)

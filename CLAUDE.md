@@ -30,6 +30,7 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
     prochází `core/CrashReport.kt` → `Redact` (žádné klíče, čísla účtu ani PIN)
   - `App.kt`, `CrashLog.kt` – zápis pádů do `pady.txt` (posledních pár) a upozornění po dalším spuštění
   - `Updater.kt` – aktualizace z aplikace (stažení nové verze a předání systému k instalaci)
+  - `GameListUpdate.kt` – stažení novějšího seznamu her ze stránek s pomocí (viz Seznam her ke stažení)
   - `LgInstallActivity.kt`, `LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt` – nahrání aplikace
     do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG);
     `LgScanActivity.kt` – adresa a Passphrase z obrazovky televize kamerou telefonu
@@ -126,9 +127,16 @@ sloveso před jménem („Zavolal Andy“, jen když je jméno v angličtině po
 she/her v originálu (jen l-tvary na začátku věty / vedlejší věty, bez on/něj/jeho v překladu). Opatrně: ve sporných případech nic.
 
 **Zásada profilů her (přání majitele 20. 11. 2026):** univerzální chování (čte se jen pás s titulky) zůstává pro
-všechny hry, profil hry ho jen vylepšuje. Volba „rozsah čtení“ i u vybrané hry: **Jen titulky** = z profilu jen jména,
-rod, pojmy a co v titulcích přeskočit, jiná místa obrazovky se nečtou; **Titulky a texty hry** = navíc oblasti, které
-zná profil (GTA VI: prompty pro hráče pod titulky; Diablo IV: úkol, menu, tooltipy – `navrhy/preklad-menu.md`).
+všechny hry, profil hry ho jen vylepšuje. Z profilu se vždy berou jména, rod, pojmy a co v titulcích přeskočit. Další texty
+hry (jiná místa obrazovky) mají **od 0.97.58 každý vlastní přepínač** v Titulky → Hra, ukázaný jen u profilu, který ten text
+zná, a žádná obecná volba ho nepřebíjí (přání majitele): **Pokyny pod titulky** (`Prefs.gamePrompts`, klíč `game_prompts`,
+výchozí zapnuto), **Úkol pod titulky** (`objectiveOn`, `obj_on` zvlášť pro TV), **Překlad menu hry** (`gameMenu`, výchozí vypnuto).
+Klíče jsou společné pro všechny hry. Dřívější jediná volba „Rozsah čtení“ (`game_texts`, „Jen titulky“ / „Titulky a texty hry“)
+není; uložená hodnota se čte jen pro přechod (`core/GameScope.kt`, testy `GameScopeTest`): kdo měl „jen titulky“, má všechny
+tři vypnuté, dokud daný přepínač sám nepřepne (značky: uložený `game_prompts`, `obj_volba`, `game_menu_volba`).
+Rada k nastavení hry: `GameProfile.hint` (klíč textu; `<hint>` popisek řádku, `<hint>_val` hodnota, `<hint>_desc` dialog po OK
+a Nápověda → Hraní pro všechny hry s radou). GTA VI: „Ve hře: pozadí titulků · zapnout“ – bez pozadí titulků (Settings → UI →
+Subtitles & Captions → Background = Off) se nic nepřečte (tester 21. 11. 2026). Pro GTA V rada není (cestu v menu neznáme).
 Texty hry se nemíchají s replikami v pruhu. Bez profilu (univerzální) jen titulky.
 
 **Barva jména z obrazu (od 0.97.28, `core/NameColor.kt`):** po titulku se jménem služba (`askNameColor`) pošle čtečce
@@ -155,6 +163,14 @@ ukáže i druhý řádek (ukázková anglická věta `pn_ukazka_orig`, `nahled(t
 (`TvSender.start(retry = true)`, každé 2 s) – po aktualizaci ho na okamžik držela obrazovka aplikace (`TvIdle`) a TV jen hledala.
 Neprůhlednost pruhu 0–100 % (`OPACITIES`: 0, 20, 40, 60, 80, 90, 100 na třech místech, od 0.97.30 / TV 1.5.7).
 
+**Menu hry od 0.97.58 (aplikace v TV 1.5.13):** vybraná položka se pozná **podle jasu na každém novém snímku**, ne až po čtení:
+`MenuView.rects` (menu zleva kousek pruhu vpravo za textem `pauseRect`, záložky rámeček z rámečků slov `MenuLine.words`) →
+`StreamReader.sampleGray` (jasová rovina, ≤ 24×4 bodů na položku, bez bitmapy) → `MenuTracker.fast` (výrazně nejsvětlejší = vybraná);
+čtení staršího snímku novější výběr nepřebije (`update(read, grabbedAt)`). OCR dál každých 0,4 s doplňuje položky, popis a zavření;
+v Nastavení posun bílého pruhu v seznamu voleb (`GameMenu.WATCH`) nebo jiná záložka spustí čtení hned. **Nastavení zvlášť:** v pruhu
+jen vybraná záložka těsně nad lištou (`GameMenu.tabPlace` → `box`+`step`), nadpis a popis vybrané volby ve vlastním okně přes anglický
+popis (`MenuView.descBox`, `SubtitleOverlay.showMenuDesc`, do TV `{"typ":"menupopis",…}` → `#menupopis` v `app.js`; starší TV ho přeskočí).
+Lišta se hledá do 12 % výšky (text je kolem 8 %). Na skutečné hře neověřeno.
 **Od 0.97.39 (aplikace v TV 1.5.10):** menu zleva řádek proti řádku – `MenuView.step` (rozestup položek ve hře, nejmenší rozdíl
 sousedních, `GameMenu.rowStep`) → výška řádku překladu = rozestup, písmo nejvýš 62 % řádku (Android `lineHeight` od API 28,
 TV `misto:[x,y,rozestup]`). Po menu se výška řádku pruhu vrací (`setLineSpacing` v `SubtitleOverlay.show`, od 0.97.42 – dřív titulky po menu vypadaly větší). V menu se čte každých 0,4 s, zavře se až po 4 čteních bez něj (`MenuTracker.MISSES`), `MENU|off|…`
@@ -166,19 +182,22 @@ pruh), lišta Nastavení v řádku pod anglickým popisem vpravo. Značka vybran
 položky se během otevřeného menu doplňují (čtečka občas některou vynechá), vybraná = ta jediná, která v čtení chybí (tmavé písmo na
 bílém pruhu se nepřečte), menu se zavře až po 2 čteních bez něj (neblikne); text se posílá jen při změně.
 
+**Překlad menu je od 0.97.57 volba Titulky → Hra → „Překlad menu hry“ (`Prefs.gameMenu`, klíč `game_menu`, výchozí vypnuto –
+majitel ho nechce, foto Nastavení GTA VI 21. 11. 2026); bez ní `menuSpec = null` a menu se vůbec nečte (titulky v menu hry dál
+odfiltruje `GameScreen.menu`).**
 **Menu hry od 0.97.34 (zatím GTA VI, `core/GameMenu.kt`, testy `GameMenuTest`):** základ podle snímků majitele (`zaznamy/hra-…`) –
 menu otevřené zleva (Map / Game / Store / Help / Photo Studio / Settings), horní lišta Nastavení (Control Scheme … Account) a nadpis
 s popisem vybrané volby vpravo; jednotlivé volby Nastavení záměrně ne. `GameProfile.menuSpec` (`MenuSpec`: položky, záložky, pevné
-překlady cs/sk, jiné jazyky přes překladač). Služba (`checkMenu` v `tick`) jen když je „Titulky a texty hry“ a v pruhu není titulek:
+překlady cs/sk, jiné jazyky přes překladač). Služba (`checkMenu` v `tick`) jen se zapnutým „Překlad menu hry“ a když v pruhu není titulek:
 jednou za 1,5 s (v menu 0,7 s) `StreamReader.grabMenu` (horních 60 % obrazu, šedě, nejvýš 960 bodů, vlastní bitmapa – nezasahuje
 do čtení titulků) → OCR → `GameMenu.read`. Vybraná položka = výrazně světlejší řádek (bílý pruh, `meanGray`). Překlad se ukáže
 **v pruhu místo titulku** („Mapa · Hra · ▸ Obchod …“ a pod tím „Nadpis: popis“) – v menu titulky nejsou, takže funguje i v TV
 LG / Samsung beze změny aplikace v TV; dokud je menu vidět, titulky se nečtou. V záznamu `MENU|…`. Na skutečné hře neověřeno.
 
-**Texty hry od 0.97.25 (aplikace v TV 1.5.5):** volba Titulky → Hra → „Rozsah čtení“ (`Prefs.gameTexts`, výchozí titulky
-a texty hry). GTA (profil `prompts = true`): poslední krátký řádek bez mluvčího a bez interpunkce pod replikou je pokyn
-(`TextLogic.markPrompt`, `Segment.prompt`) – překládá se zvlášť, v pruhu menší šedý řádek, do TV `{"pokyn":true}`; s „jen
-titulky“ ho `SubtitleOverlay` vynechá. Diablo IV: chat se nečte (`GameProfile.skip`, regex v `Diablo4.SKIP`), mluvčí
+**Texty hry od 0.97.25 (aplikace v TV 1.5.5):** volba Titulky → Hra → „Pokyny pod titulky“ (od 0.97.58 `Prefs.gamePrompts`,
+do 0.97.57 součást „Rozsah čtení“). GTA (profil `prompts = true`): poslední krátký řádek bez mluvčího a bez interpunkce pod replikou je pokyn
+(`TextLogic.markPrompt`, `Segment.prompt`) – překládá se zvlášť, v pruhu menší šedý řádek, do TV `{"pokyn":true}`; s vypnutými
+pokyny ho `SubtitleOverlay` vynechá (`showPrompts`). Diablo IV: chat se nečte (`GameProfile.skip`, regex v `Diablo4.SKIP`), mluvčí
 „Jachal says:“ (`SPEAKER_SAYS`). Jason má i přezdívku J-dog.
 
 **Úkol pod titulky jako samostatný pruh (od 0.97.43, přání majitele, aplikace v TV 1.5.11):** u profilů s `prompts` (GTA)
@@ -187,13 +206,13 @@ titulky“ ho `SubtitleOverlay` vynechá. Diablo IV: chat se nečte (`GameProfil
 `core/Objective.kt` (`ObjectiveTracker`, testy `ObjectiveTest`): nový úkol = přeložit (offline, DeepL jako titulky), drobná chyba
 čtení = stejný, zmizí po 2 čteních bez něj. Služba `handleObjective` → `SubtitleOverlay.showObjective` (vlastní okno přes
 anglický úkol, písmo podle originálu) a do TV `{"typ":"ukol",…}` (`TvSender.objectiveMessage` / `sendObjective`). Nezávislé na
-mizení titulků; schová se v menu hry, při pauze a nové volbě. S „Jen titulky“ se úkol jen vyčlení a nepřekládá. Barevná slova
+mizení titulků; schová se v menu hry, při pauze a nové volbě. S vypnutým „Úkol pod titulky“ se úkol jen vyčlení a nepřekládá. Barevná slova
 úkolu od 0.97.50 jako pokus (Titulky → Hra → „Barevná slova úkolu“, `Prefs.objColors`, výchozí vypnuto → `TranslatorService.objectiveColors`):
 barva každého slova z obrazu (`askObjectiveColors`, žádosti v `StreamReader` jednou), kusy stejné barvy (`ObjectiveColors.runs`) se najdou
 v překladu doslova nebo přes samostatný překlad kusu (`locate`, české koncovky do 3 písmen), úkol se ukáže hned a po přečtení barev
 znovu s barvami; do TV `casti`. Testy `ObjectiveColorsTest`. **Poloha úkolu od 0.97.50** i těsně nad úkolem (-2), nad pruhem
 s titulky (-3, `lastBarTop`), nahoře (-4); **Pozadí úkolu** zvlášť (`Prefs.objBg`, -1 = jako titulky). V záznamu `OBJ|show|…` / `OBJ|hide`. Na skutečné hře neověřeno.
-**Volby úkolu (od 0.97.45)** v Titulkách → Hra (jen profil s `prompts` a „Titulky a texty hry“): Úkol pod titulky zapnout
+**Volby úkolu (od 0.97.45)** v Titulkách → Hra (jen profil s `prompts`; od 0.97.58 nezávisle na ostatních textech hry): Úkol pod titulky zapnout
 (`Prefs.objectiveOn`), Písmo úkolu (`objSize`, 0 = podle hry), Poloha úkolu (`objPos`, -1 = na místě ve hře, jinak střed
 v 0–100 % výšky; do TV jako úzké `misto` na zvolené výšce). Klíče `obj_on/obj_size/obj_pos` v `TvProfiles.KEYS`.
 **Fronta rychlých replik (od 0.97.46, přání majitele):** `core/ShowQueue.kt` (testy `ShowQueueTest`) – každý titulek je v pruhu
@@ -231,6 +250,31 @@ V záznamu `READ|ocr=…ms|band=ŠxV` (nebo `band=cela`) – podle toho porovnat
 - Ulice ve všech hrách: `Glossary.STREET` (1–3 slova s velkým písmenem + Street/St/Avenue/Drive/Road…)
   nechá název v originále i bez seznamu; testy v `GlossaryTest.streetNamesStayInOriginal`.
 
+**Seznam her ke stažení (třetí aktualizace vedle aplikace a aplikace v TV, přání majitele 21. 11. 2026):** profily her jsou
+i jako data na stránkách s pomocí – `pomoc/hry/profily.json` + `pomoc/hry/verze.txt` (https://adusa89.github.io/PlayLingo/hry/…).
+Nová hra nebo oprava jmen tak nepotřebuje nové APK. Logika (rod, menu, úkol…) zůstává v kódu, seznam nese jen data a příznaky,
+které aplikace už umí (`pokyny`, `menuHry`, `rada` = klíč existujícího textu).
+- **Tvar** (`core/GameListJson.kt`, testy `GameListJsonTest`): `{"format":1,"verze":N,"minAppVerze":156,"bezneSlova":[…],"hry":[{"id",
+  "nazev","jmena","bezne","postavy":[{"jmeno","rod":"m|f","prezdivky"}],"pojmy":{"cs":{…}},"napisy","menu","preskocit":[{"vzor",
+  "velikost"}],"pokyny","barvy":{"Jason":"#AARRGGBB"},"menuHry":{"polozky","zalozky","preklady"},"rada"}]}`. `bezne` = jména, která
+  jsou i běžná slova (dřív `*_COMMON` v `AMBIGUOUS`), `bezneSlova` = ostatní běžná slova. Čtení je přísné: neplatná položka se
+  vynechá, neplatný celek / jiný `format` / `minAppVerze` vyšší než versionCode / přes 2 MB = seznam se nevezme (nikdy pád);
+  regulární výrazy nejvýš 200 znaků, rada jen s existujícími texty.
+- **V kódu:** `GameProfiles.BUILTIN` (vestavěný `GameCatalog`, verze `GameProfiles.VERSION`) zůstává zálohou; `GameProfiles.catalog`
+  je ten, podle kterého aplikace jede (`GAMES`, `ALL`, `UNIVERSAL`, `AMBIGUOUS`, `of` ho čtou – levně, vše spočítané v `GameCatalog`).
+  `GameListUpdate.kt`: uložený seznam (`filesDir/hry-profily.json`) se načte v `App.onCreate`, jen když je novější než vestavěný;
+  kontrola = `verze.txt`, novější → stáhnout, ověřit, uložit přes `.part` a `GameProfiles.use`. Volba hráče (`Prefs.gameId`) se
+  nemění – hra, která v seznamu chybí, jede s univerzálním profilem. Podpis slovníku (`Prefs.glossarySignature`) má se staženým
+  seznamem navíc `|hryN` (paměť překladů se obnoví), služba po novém seznamu sestaví znovu i `GameGuess`.
+- **Aplikace:** řádek Titulky → Hra „Seznam her · verze N“ (šedý; OK = zjistit hned; „stahuji…“, „aktualizováno na N“, texty `gl_…`
+  v `I18nGame.kt`). Samo (po otevření aplikace, nejvýš jednou za 6 h) jen s volbou ⚙ → Experimentální „Seznam her automaticky“
+  (`Prefs.gamesAuto`, klíč `hry_auto`, výchozí vypnuto). PC aplikace (`pc/`) jede jen s vestavěnými profily.
+- **Jak přidat hru / opravit jména:** uprav profil v `core/GameProfiles*.kt` → zvyš `GameProfiles.VERSION` → `gradlew -p ci/mistni-kontrola
+  seznamHer` (přepíše `pomoc/hry/`; bez zvýšení verze skončí chybou) → `gradlew -p ci/mistni-kontrola test` (test hlídá, že JSON
+  odpovídá kódu) → commit do `main` → workflow „Stránky s pomocí“ zveřejní (s `[skip ci]` ho spusť ručně) → aplikace si ho stáhnou.
+  Nové pole nebo nové chování = nový kód v aplikaci; pak zvyš `GameProfiles.MIN_APP` na versionCode té verze, ať ho starší aplikace nevezmou
+  (případně `GameListJson.FORMAT`). Hra s novou radou potřebuje nové texty → jen s novou verzí aplikace.
+
 **Ladění profilu ze hry (od 0.97.4):** záznam v síti má navíc `GET /snimek.jpg?k=…` (celý poslední snímek,
 šedý, nanejvýš 1280 px – `StreamReader.still`, čtení titulků neovlivní) a hlášení oddíly „titulky ze hry“
 (`SubtitleHistory`, originál → překlad) a „co aplikace četla v oblasti titulků“ (`core/ScreenReads.kt`: surový
@@ -238,6 +282,15 @@ text z OCR a co se z něj vzalo). Během hraní na PC: `.\ci\sbirej-hru.ps1 <adr
 (jen změněné) a záznam do `zaznamy\hra-<čas>\`. Podle toho se ladí `hud`, `menu`, jména a pojmy – ne odhadem.
 Jednodušší cesta je PlayLingo pro PC (`pc/`, hra v chiaki-ng) se zapnutým ⚙ → Ladění → Záznam hry do složky:
 barevné snímky celé hry a `zaznam.txt` s přečteným textem a polohou jdou rovnou do `zaznamy\pc-<čas>\` (viz `pc/CTI-ME.md`).
+**Záznam snímků po dávkách (od 0.97.59, přání majitele):** ⚙ → Experimentální → Ladění a hlášení → „Záznam snímků“ (výchozí
+vypnuto, jen při běžícím překladu; se zapnutým záznamem v síti i tlačítko „● Snímky“/„■ Snímky“ v notifikaci, `ACTION_SNAPS`).
+Každé Start…Stop = dávka `filesDir/snimky/davka-<n>-<HHmmss>/` (`snimek-0001.jpg`…, `index.txt`: čas, důvod, řádky `DiagLog`
+od minulého snímku – `DiagLog.mark/since` – a `CTENI:` ze `ScreenReads`, přes `Redact`). `SnapRecorder` = vlastní vlákno každých
+250 ms: `StreamReader.thumb` (mřížka 64×36) → `SnapPacer` (změna nejvýš 1×/s, velká změna po klidu hned) → `colorStill` (barevně
+≤ 1280 px z nejbližšího snímku, záložní dekodér a ukázka šedě přes `still`). Stop po 10 min / se službou; všechny dávky ≤ 300 MB
+(nejstarší se mažou). Vypnuté = nic za snímek (jen kontrola `stillWanted`). Logika a testy: `core/SnapBatches.kt`, `SnapBatchesTest`.
+Stažení na PC (záznam v síti zapnutý): `.\ci\stahni-davky.ps1 <IP> <kód>` (`-Davka 3`, `-Vse`) → `GET /davky?k=…` (JSON)
+a `GET /davka?k=…&n=3` (ZIP posílaný průběžně) → `zaznamy\davky-<čas>\davka-<n>-<HHmmss>\`; nahrávaná dávka se přeskočí.
 
 Zkouška na Android TV navíc nechá přeložit typické herní repliky (`core/TranslationProbe.kt`)
 a uloží je do `preklad.txt` ve větvích s výsledky – podle něj se ladí přirozenost překladu.
@@ -371,6 +424,18 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   `SubtitleOverlay.show` ze stejných hodnot jako pruh na Android TV; televize (`vzhledPruhu` v `app.js`)
   pruh položí stejnými pravidly jako `ScreenLayout`. Do té doby televize kreslila pruh pořád stejně
   (černý, dole) bez ohledu na Nastavení. Písmo: sp × 50/22 = px na obrazovce 1080.
+- **Lepší krytí „Přes titulky“ (od 0.97.56, tester: občas vyčuhoval anglický text):** `core/CoverBox` (testy `CoverBoxTest`)
+  přidá kolem rámečku z OCR okraj (1,2 % výšky nahoře/dole, 2 % šířky vlevo/vpravo – obrys, stín a krajní písmena z rámečku
+  vyčuhují) a během souvislého rozhovoru plochu jen zvětšuje (po schování pruhu `reset`). `SubtitleOverlay.show` posílá
+  rozšířenou plochu i do TV (`TvLook.text`), takže kryje lépe i se starší aplikací v TV. Poloha „těsně nad“ se nemění.
+- **Zakrýt celou oblast titulků (od 0.97.59, přání majitele, aplikace v TV 1.5.14):** volba v Titulky → Pruh s překladem jen u polohy
+  Přes titulky (`Prefs.coverAll`, klíč `cover_all` v `TvProfiles.KEYS`, výchozí vypnuto, popis v `confirmOn`, texty `l_cover_all…`
+  v `I18nQuick.kt`). `core/CoverArea` (testy `CoverAreaTest`, jedna sdílená instance `SubtitleOverlay.coverArea`) kryje obálku
+  posledních titulků místo právě přečteného řádku: nejvýš 12 titulků za 90 s, jen ty svisle do 0,12 od právě zobrazeného, odlehlá
+  krajní hrana staršího titulku (dál než 2,5 výšky řádku, vodorovně 0,2) se nebere, právě zobrazený vždy; okraj 1,2 % / 2 %,
+  jen v oblasti čtení (+ okraj), výška nejvýš 0,3 (jinak jen právě zobrazený); během rozhovoru (pauza pod 10 s) jen roste.
+  Oblast čtení (hledání) se nemění. Pruh na Android TV přesně tak vysoký (strop 33 % místo čtvrtiny) a široký aspoň jako obálka;
+  do TV `text` = obálka + `"kryt":true` (TV bez dalšího okraje a stropu čtvrtiny; starší TV kryje `text` jako „pres“).
 - **Poloha „Těsně nad anglickým titulkem“** (od 0.88, `ScreenLayout.hug`, `Position.ABOVE_TEXT`, v televizi
   `poloha: "tesne"`, aplikace v televizi 1.3.1): pruh jde těsně nad nalezený anglický řádek. „Nad oblastí
   čtení“ (`ABOVE`) stojí na místě nad celou oblastí. V uloženém rozložení je to 7. číslo = 2 (starší verze
@@ -445,7 +510,8 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   ohlášení drží v `TvSender.lastSeen` (`TvAnnounce`); podle něj Domů a průvodce Samsung poznají,
   co v televizi běží.
 - Telefon: pomocník (`PhoneHelperActivity`) má od 0.63 tlačítko „Použít telefon pro televizi LG“
-  a vedle něj „… Samsung“. Zapne `Prefs.forceTv` a nastaví typ televize, předá už ověřený účet do párování a otevře celou
+  a vedle něj „… Samsung“ (z celé aplikace zpět: ⚙ → Obecné → Pomocník pro přihlášení otevře pomocníka s `EXTRA_FROM_APP` –
+  od 0.97.55 nahoře „‹ Zpět do aplikace“ a Zpět telefonu vrací do aplikace, `forceTv` se nemění; dřív cesta zpět nebyla). Zapne `Prefs.forceTv` a nastaví typ televize, předá už ověřený účet do párování a otevře celou
   aplikaci. Jestli se celá aplikace dá na telefonu pohodlně ovládat, umí ověřit jen uživatel.
 - **Nahrání do televize z Androidu** (přehled ve `webos/CTI-ME.md`): tlačítko „Nahrát PlayLingo do
   televize LG“ v průvodci (krok Televize), v Nastavení, upozornění na Domů (typ LG, dokud se televize
@@ -583,9 +649,12 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   v síti). Řádek jazyka na Domů, řádek Režim překladu (⚙ → Čtení a překlad) a Nápověda kap. 4 vedou do Titulků
   s otevřenou skupinou (`openQuality()`). Jedna instance `deeplSection()` (drží rozepsaný klíč).
 - **Cesta ke klíči ve třech krocích** (`keySteps`): televize = od 0.97.57 **jen jeden čtvereček** (`phoneQr`) na stránku
-  z televize (`DeeplPage` – v telefonu provede 1. registrací `Deepl.SIGNUP_URL`, 2. stránkou s klíči `KEYS_URL` i 3. vložením,
-  s dlouhým vysvětlením `dl_howto`), vedle něj krátké body `dl_tv_scan`, `dl_tv_1`–`3`, `dl_tv_where`, „⏳ Čekám na klíč
-  z telefonu…“ a malé „Napsat klíč ručně“ (`manual`). Do 0.97.56 tři čtverečky vedle sebe a odstavec – majitel: „těžko říct k čemu“. Telefon / tablet (ne
+  z televize (`DeeplPage` – v telefonu provede 1. ceníkem na záložce API `Deepl.SIGNUP_URL`, 2. stránkou s klíči `KEYS_URL`
+  i 3. vložením, s dlouhým vysvětlením `dl_howto`), vedle něj krátké body `dl_tv_scan`, `dl_tv_1`–`3`, `dl_tv_where`,
+  „⏳ Čekám na klíč z telefonu…“ a malé „Napsat klíč ručně“ (`manual`). Do 0.97.56 tři čtverečky vedle sebe a odstavec –
+  majitel: „těžko říct k čemu“. `Deepl.SIGNUP_URL` = `https://www.deepl.com/pro#api` (od 0.97.61; tlačítko u Developeru
+  nepřihlášeného pošle na registraci, přihlášenému – i s účtem jen pro Translator – přidá plán k účtu. Přímá registrace
+  `/signup?…&productId=api-developer` přihlášeného přesměruje do Translatoru, proto ne; ověřeno majitelem 21. 11. 2026). Telefon / tablet (ne
   `Prefs.isTv`) = tlačítka Otevřít DeepL / Otevřít stránku s klíčem a políčko. Stránka pro telefon má stejné 3 kroky.
   První uložený klíč DeepL rovnou zapne (`store`). Průvodce: bez klíče hlavní tlačítko „Přeskočit – zůstat u offline
   překladu“ (`wnext`) a Zpět (bez Přeskočit průvodce), s klíčem „✔ DeepL je nastavený“ a Pokračovat.
@@ -642,7 +711,7 @@ Obsah = celé hlášení o stavu (`DiagReport.build` → `parts`): aplikace a za
 (`pady.txt`), záznam událostí `udalosti.txt`, události z paměti, spojení s PlayStationem a záznam
 z televize. Vše prochází `Redact` s `DiagReport.secrets` (i v JSON). Server (`core/LogShare.kt`:
 `LogShare` rozhodování s testy `LogShareTest`, `LogServer` sockety podle `LoginServer`) umí jen
-`GET /zaznam?k=…` a `/zaznam.json?k=…`, odpovídá jen loopbacku a privátním adresám, nic nepřijímá.
+`GET /zaznam?k=…` a `/zaznam.json?k=…` (a `/hlaseni`, `/snimek.jpg`, `/davky`, `/davka` – viz Ladění profilu ze hry), odpovídá jen loopbacku a privátním adresám, nic nepřijímá.
 Konec platnosti a kód jsou uložené (`NetLogShare`, vlastní SharedPreferences `zaznam_sit`), takže po
 pádu a novém spuštění běží dál se stejným kódem, ale jen do konce 2 hodin.
 
@@ -691,6 +760,12 @@ Aplikace má dvě na sobě nezávislá nastavení jazyka (`core/Lang.kt`):
 - **jazyk aplikace** (`Prefs.uiLang`, Nastavení a pomocník v telefonu) – nabídky a nápověda;
   všech deset jazyků včetně angličtiny. Texty na obrazovce ber vždy přes `tx()` / `Prefs.uiLang`,
   nikdy podle jazyka překladu.
+- **z čeho se překládá** („Překládat z“, `Prefs.sourceLang`, klíč `src_lang`, `core/SourceLang.kt`, testy `SourceLangTest`;
+  průvodce krok Jazyky a Titulky pod jazykem překladu) – jazyk titulků ve hře, výchozí angličtina (bez klíče = jako dřív).
+  Jen latinka (OCR ML Kit), kterou umí ML Kit Translate i DeepL jako zdroj; stejný jako jazyk překladu = angličtina
+  (`SourceLang.effective`). Překladač ji má v `OfflineTranslator.source` (nastavuje `App`/`Prefs`, balíček pro dvojici).
+  Anglické úpravy (`OfflinePrep.standardize`/`IDIOMS`, `QuickWords`, `Natural`, rod podle originálu, „i“ → „I“
+  v `normalizeCase`, `looksForeign` na diakritiku) běží jen u angličtiny – nový anglický kousek hlídej `SourceLang.english`.
 
 Kdo si jazyk aplikace nezvolil, má ji v jazyce překladu (tak to bylo do 0.63); nová instalace se
 řídí jazykem zařízení a pro jazyk, který aplikace neumí, je anglicky. Další jazyk překladu, pro
@@ -749,6 +824,10 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   při zhasnutém displeji…“ – Wi-Fi 2,4 GHz je prostě zelený řádek „Síť: Wi-Fi 2,4 GHz“).
 - **Vysvětlení patří do Nápovědy** (kapitoly v `help()`), popis volby do **dialogu při jejím zapnutí**
   (`confirmOn` v MainActivity) – ne jako šedý text mezi řádky.
+- **Rozbalená skupina = odsazená karta (od 0.97.53, přání majitele):** obsah otevřené skupiny jde do tmavší odsazené karty se
+  žlutou čarou vlevo (`openNest` / `closeNests` v MainActivity; `add()` přidává do poslední otevřené karty, karta končí dalším nadpisem
+  skupiny nebo koncem stránky; vnořená „Postavy, místa a pojmy“ s `inner = true`). Po rozbalení (`toggled`) se karta plynule zjeví
+  a stránka se posune na nadpis. Novou rozbalovací skupinu dělej přes `group()` nebo stejně (`closeNests` před nadpisem, `openNest` po něm).
 - **Související volby do rozbalovacích skupin** po vzoru Nápovědy (`settingRow` s ▼/▲, barevná šipka) –
   majitel Nápovědu v tomhle stylu výslovně chválil. Akce jako „Nastavit oblasti“ jsou řádky ve stejném
   stylu (s „›“), ne velká žlutá tlačítka; velké žluté je jen hlavní akce stránky (Spustit, Spárovat).
@@ -764,20 +843,21 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
 
 ## Obrazovky a průvodce
 
-- **Menu** (`Section` v MainActivity, v tomto pořadí): Domů, Konzole (nadpis stránky PlayStation /
-  Xbox), Titulky (vzhled, jazyk překladu, oblasti), Nápověda a jako poslední **⚙ Nastavení** – to není
+- **Menu** (`Section` v MainActivity, v tomto pořadí; od 0.97.52 Titulky před Konzolí – přání majitele): Domů, Titulky
+  (vzhled, jazyk překladu, oblasti), Konzole (nadpis stránky PlayStation / Xbox), Nápověda a jako poslední **⚙ Nastavení** – to není
   v řadě menu, ale ozubené kolo vidět pořád (`gear`): v telefonu vpravo nahoře v liště, na televizi dole
   v levém sloupci (pořád poslední položka při procházení šipkou dolů – zkouška `07_menu_4`). Historie se
   otevírá z Nastavení (záložka Čtení a překlad).
 - **Licence a platby jsou zatím skryté** (`SHOW_LICENSE = false` v MainActivity, odkryjí se při vydání):
   ukáže se jen, když zkušební doba skončila (`!canRun`), jinak by hráč nevěděl, proč aplikace nejde.
-- **Průvodce prvním spuštěním** (`wizardSteps`, indexy `W_…`): Zařízení (Android TV/box, nebo
+- **Průvodce prvním spuštěním** (`wizardSteps`, indexy `W_…`): Jazyky (přání majitele 21. 11. 2026: první krok, `W_LANGS` –
+  úvodní věta, řádek Jazyk aplikace (hned přepne texty) a Překládat z (`sourceRow`)) → Zařízení (Android TV/box, nebo
   telefon/tablet jako čtečka pro LG/Samsung, `Prefs.readerDevice`; výchozí podle
   `NetInfo.isHandheld`; samo nic nepřepíná – pomocník v telefonu se dál řídí `Prefs.forceTv`) →
   Konzole → Televize (u LG/Samsungu tlačítko nahrání) → Jazyk překladu → Kvalita překladu (od 0.94,
   `W_TRANSLATE`, od 0.97.28 „Lepší překlad (DeepL)“ bez volby DeepL / offline – rovnou věta proč, čtverečky a čekání na
   klíč, viz DeepL) → Zobrazení titulků (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
-  **Připojení konzole (od 0.97.28):** nahoře jen „Krok 7 z 8“, spárování místo druhého pruhu malý podtitul
+  **Připojení konzole (od 0.97.28):** nahoře jen „Krok 8 z 9“, spárování místo druhého pruhu malý podtitul
   „Spárování · 3 z 6“ (`pg_sub`, tag `psub`; mimo průvodce dál pruh `ui.steps`). Jedna řada tlačítek – ta ze spárování
   (`pnext`, `pback`; v kroku 1 spárování vede Zpět na předchozí krok průvodce) a pod ní malé „Spárovat později“
   (`wlater`, skočí na Hotovo); u Xboxu (`XboxForm`) navíc malé Zpět. Vnější Pokračovat/Zpět/Přeskočit průvodce
@@ -811,6 +891,13 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   Řádek konzole/televize OK = změna. Samostatný souhrnný řádek ani návody v textu tam už nejsou. Náhled obrazu
   je jen na stránce Konzole (tlačítko Spustit tam od 0.97.13 není – jen na Domů, telefon i Android TV) (s popiskem `pv_stale`, když obraz nechodí). „Zpět do hry (HDMI)“ jen na zařízení
   v televizi (`Prefs.isTv`); telefon jako čtečka má jen Pozastavit a Zastavit. Jednorázové volby na Domů nepatří.
+- **Profil hry vs. obecné volby (od 0.97.54, přání majitele):** skupina Hra je v Titulkách hned pod jazykem (před Písmem,
+  Pruhem a Oblastmi). Profil u běžných titulků nemění písmo, polohu, šířku ani oblast čtení; přebíjí jen: barvy postav (řádek
+  Barevná jména ukáže „· profil hry“, naučená barva z obrazu má přednost), překlad menu (vlastní místo vedle menu) a úkol (vlastní
+  volby). Vlastní slovník hráče přebije i jméno z profilu (`Glossary(userTerms)`, testy `GlossaryUserTest`).
+  **Řádky jen když dávají smysl:** „Jen titulky“ (oblasti) bez automatiky, Přesnost čtení jen PS5, Tlačítko vzhledu jen s Usnadněním,
+  Zobrazení přes jiné aplikace jen bez Usnadnění, Pokyny a Úkol jen u her s `prompts`, Překlad menu jen s `menuSpec`, Písmo úkolu
+  „podle hry“ / „jako titulky“ podle `matchSize`.
 - **Titulky** (od 0.97.1, `subtitlesPage`): nahoře jazyk překladu (zkouška `13_nabidka_jazyk` na něj míří
   šipkou vpravo + OK), pod ním rozbalovací skupiny Písmo / Pruh s překladem / Oblasti titulků
   (`lookOpen`) a dole řádek Obnovit vzhled. Automatika oblastí ukáže popis v dialogu jen při zapnutí.
@@ -878,9 +965,9 @@ jen podtitul „Spárování · 3 z 6“, ať nejsou dva pruhy nad sebou) a pomo
   `result.txt` má být `aktualizace_nahrazeno` aspoň 1.
 - Pořadí položek menu a kroků průvodce – skript se jimi prokliká naslepo šipkami (viz Obrazovky
   a průvodce). Na každém kroku průvodce je po vykreslení vybrané tlačítko Pokračovat (`wnext`, u párování
-  `pnext`), takže OK posune dál. Snímky průvodce: `01_pruvodce_zarizeni`, `01b_…konzole`,
+  `pnext`), takže OK posune dál. Snímky průvodce: `00_pruvodce_jazyky`, `01_pruvodce_zarizeni`, `01b_…konzole`,
   `01c_…televize`, `03_…jazyk`, `03b_…po_stazeni`, `03c_…preklad`, `02_…povoleni`, `04_…ps5_krok1`, `04b_…hledani`;
-  stránky menu `07_menu_1`–`4` (Konzole, Titulky, Nápověda, Nastavení).
+  stránky menu `07_menu_1`–`4` (od 0.97.52 Titulky, Konzole, Nápověda, Nastavení).
 - Zbytky starého názvu „TestPreklad“ (značka logu, `rootProject.name`, názvy souborů
   v sestavování, `TestPreklad.apk` ve vydání, sůl odemykacího kódu v `License.kt`).
   Nepřejmenovávej je: visí na nich zkouška, odkaz ve starších verzích a platnost kódů.

@@ -22,10 +22,11 @@ adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null || tru
 adb logcat -c
 
 # 1) první spuštění: průvodce krok za krokem (OK = Pokračovat; pořadí kroků v MainActivity.wizardSteps:
-#    zařízení, konzole, televize, jazyk překladu, lepší překlad (DeepL – OK = Přeskočit, zůstat u offline), povolení pruhu,
+#    jazyky (jazyk aplikace a „Překládat z“), zařízení, konzole, televize, jazyk překladu, lepší překlad (DeepL – OK = Přeskočit, zůstat u offline), povolení pruhu,
 #    připojení konzole (jedna řada tlačítek, OK = Pokračovat spárování `pnext`), hotovo)
 adb shell am start -n $PKG/.MainActivity
-sleep 10; shot 01_pruvodce_zarizeni
+sleep 10; shot 00_pruvodce_jazyky
+key 23; sleep 2; shot 01_pruvodce_zarizeni
 key 23; sleep 2; shot 01b_pruvodce_konzole
 key 23; sleep 2; shot 01c_pruvodce_televize
 key 23; sleep 2; shot 03_pruvodce_jazyk
@@ -110,9 +111,9 @@ fi
 adb shell am start -n $PKG/.MainActivity --ez trtest true
 for i in $(seq 1 60); do sleep 3; adb logcat -d | grep -q "TP_TEST.*TR|done" && break; done
 
-# 7) nabídka se seznamem (jazyk): stránka Titulky → první řádek → OK
+# 7) nabídka se seznamem (jazyk): stránka Titulky (od 0.97.52 hned pod Domů) → první řádek → OK
 adb shell am start -n $PKG/.MainActivity --ez nowizard true
-sleep 2; key 20; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk
+sleep 2; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk
 key 4; sleep 1
 
 # 8) jiné rozlišení obrazovky televize: 720p. Pruh se má i tam postavit přesně na titulek.

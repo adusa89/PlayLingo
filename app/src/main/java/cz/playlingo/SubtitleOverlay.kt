@@ -59,8 +59,10 @@ class SubtitleOverlay(
     private val objPosPercent: Int = -1,
     /** Pozadí úkolu 0–100 % (-1 = jako pruh s titulky), od 0.97.50. */
     private val objBgPercent: Int = -1,
-    /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky a texty hry), nebo vynechat (Jen titulky). */
+    /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky → Hra → Pokyny pod titulky), nebo vynechat. */
     private val showPrompts: Boolean = true,
+    /** „Zakrýt celou oblast titulků“ (poloha Přes titulky): pruh přes celé pole posledních titulků ([cz.playlingo.core.CoverArea]). */
+    private val coverAll: Boolean = false,
     /** Pevné barvy postav z profilu hry ([cz.playlingo.core.GameProfile.colorsByKey]). */
     private val speakerPreset: Map<String, Int> = emptyMap(),
     /**
@@ -71,12 +73,17 @@ class SubtitleOverlay(
     private val onText: ((String?, String?, String?) -> Unit)? = null,
     /** Úkol pod titulky pro televizi LG/Samsung – hotová zpráva [TvSender.objectiveMessage] (od 0.97.43). */
     private val onObjective: ((String) -> Unit)? = null,
+    /** Popis volby Nastavení hry pro televizi LG/Samsung – hotová zpráva [TvSender.menuDescMessage] (od 0.97.58). */
+    private val onMenuDesc: ((String) -> Unit)? = null,
 ) {
     companion object {
         private const val TAG = "TestPreklad"
 
         /** Dá se teď vůbec něco zobrazit přes jiné aplikace? */
         fun canShow(c: Context): Boolean = TitulkyAccessibility.instance != null || Settings.canDrawOverlays(c)
+
+        /** Pole posledních titulků – sdílené, ať ho nová instance po změně nastavení nezačíná znovu. */
+        val coverArea = cz.playlingo.core.CoverArea()
     }
 
     private val a11y = TitulkyAccessibility.instance
@@ -100,6 +107,9 @@ class SubtitleOverlay(
     /** Samostatný pruh s úkolem pod titulky (GTA) – nezávislý na pruhu s titulkem (od 0.97.43). */
     @Volatile private var objView: TextView? = null
     @Volatile private var objParams: WindowManager.LayoutParams? = null
+    /** Nadpis a popis vybrané volby Nastavení hry – vlastní okno přes anglický popis, vedle pruhu se záložkou (od 0.97.58). */
+    @Volatile private var descView: TextView? = null
+    @Volatile private var descParams: WindowManager.LayoutParams? = null
     @Volatile private var layout: ScreenLayout = layout
     private val textSize = textSizeSp
     private val sizeKeeper = SizeKeeper()
@@ -114,6 +124,7 @@ class SubtitleOverlay(
     /** Je pruh právě zobrazený? */
     @Volatile var isShown = false
         private set
+    private val coverBox = cz.playlingo.core.CoverBox()
 
     init {
         main.post {
@@ -153,6 +164,22 @@ class SubtitleOverlay(
             }
             val olp = params(WindowManager.LayoutParams.WRAP_CONTENT)
             if (add(ov, olp)) { objView = ov; objParams = olp }
+
+            // popis volby Nastavení hry: text zarovnaný vlevo, šířka sloupce popisu ve hře
+            val dv = TextView(host).apply {
+                setTextColor(textColor)
+                gravity = Gravity.START or Gravity.TOP
+                typeface = Typeface.create("sans-serif-medium", if (bold) Typeface.BOLD else Typeface.NORMAL)
+                setShadowLayer(3f, 0f, 1f, Color.BLACK)
+                setLineSpacing(0f, 1.1f)
+                background = GradientDrawable().apply {
+                    setColor(Color.argb(maxOf(bgAlpha, 200), 0, 0, 0))
+                    cornerRadius = dp(8).toFloat()
+                }
+                visibility = View.GONE
+            }
+            val dlp0 = params(WindowManager.LayoutParams.WRAP_CONTENT)
+            if (add(dv, dlp0)) { descView = dv; descParams = dlp0 }
 
             if (showDebug) {
                 val dv = TextView(host).apply {
@@ -255,8 +282,8 @@ class SubtitleOverlay(
      * v režimu "přes titulky" se pruh položí přesně přes něj.
      */
     fun show(
-        allSegments: List<Segment>, original: String?, textTop: Float, textBottom: Float,
-        textLeft: Float = -1f, textRight: Float = -1f,
+        allSegments: List<Segment>, original: String?, rawTop: Float, rawBottom: Float,
+        rawLeft: Float = -1f, rawRight: Float = -1f,
         /** Výška řádku originálu jako zlomek výšky obrazu (0 = neznámá). */
         lineHeight: Float = 0f,
         /** Pevné místo (levý horní roh ve zlomcích obrazu, text vlevo) – překlad menu hry vedle menu (od 0.97.36). */
@@ -264,6 +291,20 @@ class SubtitleOverlay(
         /** Rozestup řádků menu ve hře (zlomek výšky) – každý řádek překladu ve výšce své položky (od 0.97.40). */
         step: Float = 0f,
     ) {
+        // „přes titulky“: zakrýt anglický text i s okrajem a v rozhovoru se nezmenšovat (CoverBox, od 0.97.56) –
+        // rozšířená plocha jde i do TV LG/Samsung, takže kryje lépe i se stávající aplikací v TV
+        if (!isShown) coverBox.reset()
+        // volba „Zakrýt celou oblast titulků“ (od 0.97.59): celé pole, kde titulky naposledy byly, ne jen tenhle řádek
+        val all = coverAll && layout.cover && box == null && rawTop >= 0f
+        val cb = when {
+            all -> coverArea.next(rawTop, rawBottom, rawLeft, rawRight, layout.read, android.os.SystemClock.uptimeMillis())
+            layout.cover && box == null -> coverBox.next(rawTop, rawBottom, rawLeft, rawRight)
+            else -> null
+        }
+        val textTop = cb?.get(0) ?: rawTop
+        val textBottom = cb?.get(1) ?: rawBottom
+        val textLeft = cb?.get(2) ?: rawLeft
+        val textRight = cb?.get(3) ?: rawRight
         isShown = true
         val segments = if (showPrompts) allSegments else allSegments.filter { !it.prompt }
         val colors = if (coloredSpeaker) speakerColors.colorsFor(segments) else emptyMap()
@@ -277,7 +318,7 @@ class SubtitleOverlay(
             val tvMain = TvLook.textPx(textSize, tvMatched)
             val origPercent = if (origSp > 0) Math.round(TvLook.textPx(origSp, 0) * 100f / tvMain) else 62
             val look = TvLook.json(layout, opacityPercent, tvMain, textColor, bold,
-                textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box, step, origPercent = origPercent)
+                textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box, step, origPercent = origPercent, coverAll = all)
             send(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors), look)
         }
         main.post {
@@ -302,7 +343,12 @@ class SubtitleOverlay(
             val tTop = if (hasText) textTop else l.read.top
             val tBottom = if (hasText) textBottom else l.read.bottom
             // v režimu "přes titulky" pruh zakryje anglický text, ale nikdy není vyšší než čtvrtina obrazovky
-            tv.minHeight = if (l.cover && box == null) (l.coverHeight(tTop, tBottom) * screenH).toInt().coerceAtMost(screenH / 4) else 0
+            tv.minHeight = when {
+                // celé pole titulků: plocha už má okraj, pruh přesně tak vysoký (nejvýš 30 % + okraj, hlídá CoverArea)
+                all && hasText -> ((tBottom - tTop) * screenH).toInt().coerceAtMost((screenH * 0.33f).toInt())
+                l.cover && box == null -> (l.coverHeight(tTop, tBottom) * screenH).toInt().coerceAtMost(screenH / 4)
+                else -> 0
+            }
             // Šířka pruhu podle textu: jen tak široký, aby se vešel překlad a zakryla se angličtina
             // (ne pruh přes celou obrazovku).
             val hasSpan = hasText && textLeft >= 0f && textRight > textLeft
@@ -311,7 +357,7 @@ class SubtitleOverlay(
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
             )
             var width = tv.measuredWidth
-            if (l.cover && hasSpan) width = max(width, ((textRight - textLeft) * screenW).toInt() + dp(20))
+            if (l.cover && hasSpan) width = max(width, ((textRight - textLeft) * screenW).toInt() + if (all) 0 else dp(20))
             width = width.coerceIn(dp(80), screenW)
             tv.measure(
                 View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
@@ -418,12 +464,62 @@ class SubtitleOverlay(
         }
     }
 
+    /**
+     * Ukáže přeložený nadpis a popis vybrané volby Nastavení hry pod anglickým popisem: [box] = vlevo, nahoře, vpravo,
+     * nejníž dole (zlomky obrazu; text od levého horního rohu, zalomený na šířku boxu, písmo se zmenší, když se nevejde), [lineHeight] = výška řádku popisu ve hře
+     * (zlomek výšky; písmo podle něj, nejvýš jako titulky). Pozadí aspoň 80 %, ať anglický text pod ním neplete.
+     */
+    fun showMenuDesc(title: String?, text: String?, box: FloatArray, lineHeight: Float) {
+        val tvMax = TvLook.textPx(textSize, 0)
+        val tvPx = if (lineHeight > 0f) Math.round(lineHeight * TvLook.SCREEN_H * 1.1f).coerceIn(22, tvMax.coerceAtLeast(22)) else tvMax
+        onMenuDesc?.invoke(TvSender.menuDescMessage(title, text, box, tvPx, maxOf(opacityPercent, 80), SpeakerColors.hex(textColor)))
+        val sb = SpannableStringBuilder()
+        if (!title.isNullOrBlank()) {
+            sb.append(title)
+            sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        if (!text.isNullOrBlank()) { if (sb.isNotEmpty()) sb.append('\n'); sb.append(text) }
+        main.post {
+            val v = descView ?: return@post
+            val lp = descParams ?: return@post
+            val maxPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, textSize.toFloat(), host.resources.displayMetrics)
+            val px = if (lineHeight > 0f) (lineHeight * screenH * 1.1f).coerceIn(0.02f * screenH, maxOf(maxPx, 0.02f * screenH)) else maxPx
+            v.setTextSize(TypedValue.COMPLEX_UNIT_PX, px)
+            val em = v.textSize
+            v.setPadding((em * 0.5f).toInt(), (em * 0.3f).toInt(), (em * 0.5f).toInt(), (em * 0.35f).toInt())
+            v.text = sb
+            val w = ((box[2] - box[0]) * screenW).toInt().coerceIn(dp(120), screenW)
+            lp.width = w
+            lp.x = (box[0] * screenW).toInt().coerceIn(0, maxOf(0, screenW - w))
+            // od 0.97.59: box[3] = nejníž dole; když se text nevejde, písmo se zmenšuje (nejvýš na 60 %)
+            val room = ((box[3] - box[1]) * screenH).toInt()
+            var size = px
+            while (true) {
+                v.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+                if (v.measuredHeight <= room || size <= px * 0.6f) break
+                size *= 0.9f
+                v.setTextSize(TypedValue.COMPLEX_UNIT_PX, size)
+                val e = v.textSize
+                v.setPadding((e * 0.5f).toInt(), (e * 0.3f).toInt(), (e * 0.5f).toInt(), (e * 0.35f).toInt())
+            }
+            lp.y = (box[1] * screenH).toInt().coerceIn(0, maxOf(0, screenH - v.measuredHeight))
+            v.visibility = View.VISIBLE
+            try { wm.updateViewLayout(v, lp) } catch (_: Exception) {}
+        }
+    }
+
+    fun hideMenuDesc() {
+        onMenuDesc?.invoke(TvSender.menuDescMessage(null, null))
+        main.post { descView?.visibility = View.GONE }
+    }
+
     fun hideObjective() {
         onObjective?.invoke(TvSender.objectiveMessage(null))
         main.post { objView?.visibility = View.GONE }
     }
 
     fun hide() {
+        if (isShown && coverAll) coverArea.hidden(android.os.SystemClock.uptimeMillis())
         isShown = false
         onText?.invoke(null, null, null)
         main.post { bar?.visibility = View.GONE }
@@ -438,9 +534,10 @@ class SubtitleOverlay(
         isShown = false
         onText?.invoke(null, null, null)
         onObjective?.invoke(TvSender.objectiveMessage(null))
+        onMenuDesc?.invoke(TvSender.menuDescMessage(null, null))
         main.post {
-            listOfNotNull(bar, debugView, objView).forEach { v -> try { wm.removeView(v) } catch (_: Exception) {} }
-            bar = null; barParams = null; debugView = null; objView = null; objParams = null
+            listOfNotNull(bar, debugView, objView, descView).forEach { v -> try { wm.removeView(v) } catch (_: Exception) {} }
+            bar = null; barParams = null; debugView = null; objView = null; objParams = null; descView = null; descParams = null
         }
     }
 }

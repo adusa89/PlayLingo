@@ -59,16 +59,18 @@ class MainActivity : Activity() {
         private const val REQ_PS5_CAMERA = 1004
         private const val REQ_PS5_IP_SCAN = 1005
         // kroky průvodce prvním spuštěním (pořadí = pořadí v menu průvodce; zkouška jím prochází naslepo)
-        private const val W_DEVICE = 0
-        private const val W_CONSOLE = 1
+        /** Jazyky: jazyk aplikace a z čeho se překládá – hned při prvním spuštění (přání majitele, 21. 11. 2026). */
+        private const val W_LANGS = 0
+        private const val W_DEVICE = 1
+        private const val W_CONSOLE = 2
         /** Licence a platby v aplikaci: zatím skryté, odkryjí se při vydání (true). */
         private const val SHOW_LICENSE = false
-        private const val W_TV = 2
-        private const val W_LANG = 3
+        private const val W_TV = 3
+        private const val W_LANG = 4
         /** Kvalita překladu: jen offline, nebo DeepL s vlastním klíčem (od 0.94). */
-        private const val W_TRANSLATE = 4
-        private const val W_PERM = 5
-        private const val W_PAIR = 6
+        private const val W_TRANSLATE = 5
+        private const val W_PERM = 6
+        private const val W_PAIR = 7
     }
 
     /**
@@ -77,7 +79,8 @@ class MainActivity : Activity() {
      * z Nastavení, v menu není.
      */
     private enum class Section(val key: String, val menuKey: String = key) {
-        HOME("m_home"), PS5("m_ps5", "c_console"), LOOK("m_look"), HELP("m_help"),
+        // pořadí = pořadí v menu; od 0.97.52 Titulky před Konzolí (přání majitele) – zkouška v emulátoru na něm stojí
+        HOME("m_home"), LOOK("m_look"), PS5("m_ps5", "c_console"), HELP("m_help"),
         SETTINGS("m_settings"), HISTORY("m_history")
     }
 
@@ -175,6 +178,7 @@ class MainActivity : Activity() {
             // (jen na stránce Konzole – Domů náhled nemá a překreslovat ho každé 3 s bylo zbytečné)
             val preview = TranslatorService.running && ticks % 3 == 0 && wizard < 0 && section == Section.PS5 && "preview" in openGroups
             if ((changed || preview) && !typing && !pairBusy) render(keepFocus = true)
+            if (SnapRecorder.active || lastSnap) tickSnap(typing)
             main.postDelayed(this, 1000)
         }
     }
@@ -256,7 +260,7 @@ class MainActivity : Activity() {
                 Prefs.setWizardDone(this, true); wizard = -1; section = it; render(); return
             }
         }
-        // Zkouška rozložení průvodce: rovnou na daný krok (0 = Zařízení).
+        // Zkouška rozložení průvodce: rovnou na daný krok (0 = Jazyky, 1 = Zařízení).
         if (debuggable && i?.hasExtra("wizard") == true) {
             wizard = i.getIntExtra("wizard", 0).coerceIn(0, wizardSteps.size - 1); render(); return
         }
@@ -332,6 +336,8 @@ class MainActivity : Activity() {
         // po návratu do aplikace se zeptá i na novou verzi (dřív jen při spuštění – nová verze se pak
         // ukázala až po zavření a otevření aplikace); nejvýš jednou za 5 minut
         if (android.os.SystemClock.elapsedRealtime() - lastUpdateCheck > 5 * 60_000L) checkForUpdate()
+        // seznam her: jen se zapnutou volbou „Seznam her automaticky“, nejvýš jednou za 6 h
+        checkGameList(manual = false)
     }
 
     override fun onPause() {
@@ -404,9 +410,9 @@ class MainActivity : Activity() {
     /** Zpět k pomocníkovi pro přihlášení (telefon, na kterém byla omylem nebo dočasně otevřená celá aplikace). */
     private fun backToPhoneHelper() {
         if (TranslatorService.running) stopService(Intent(this, TranslatorService::class.java))
-        Prefs.setForceTv(this, false)
-        startActivity(Intent(this, PhoneHelperActivity::class.java))
-        finish()
+        // od 0.97.55: aplikace zůstává pod pomocníkem a režim celé aplikace se nemění – Zpět (tlačítko v pomocníkovi
+        // i telefonu) vede zpátky; dřív se aplikace zavřela, telefon přepnul na „jen pomocník“ a cesta zpět nebyla
+        startActivity(Intent(this, PhoneHelperActivity::class.java).putExtra(PhoneHelperActivity.EXTRA_FROM_APP, true))
     }
 
     private fun buildShell() {
@@ -521,7 +527,7 @@ class MainActivity : Activity() {
         content.setPadding(content.paddingLeft, if (pin) ui.dp(8) else contentTop, content.paddingRight, content.paddingBottom)
         if (wizard >= 0) { renderWizard(focusedTag); return }
         renderMenu()
-        content.removeAllViews()
+        content.removeAllViews(); closeNests()
         // nadpis stránky jen u Historie – ostatní stránky mají název v menu (přání majitele, od 0.97.6)
         if (section == Section.HISTORY) content.addView(ui.text(ct(section.key), 30f, Theme.TEXT, bold = true))
         when (section) {
@@ -543,10 +549,11 @@ class MainActivity : Activity() {
     // ======================= PRŮVODCE PRVNÍM SPUŠTĚNÍM =======================
 
     /**
-     * Názvy kroků průvodce: zařízení, konzole, televize, jazyk překladu, povolení pruhu, spárování
-     * konzole, hotovo (indexy W_…). Jednorázové volby jdou později změnit v Nastavení.
+     * Názvy kroků průvodce: jazyky (aplikace a titulků), zařízení, konzole, televize, jazyk překladu,
+     * lepší překlad, povolení pruhu, spárování konzole, hotovo (indexy W_…). Jednorázové volby jdou
+     * později změnit v Nastavení.
      */
-    private val wizardSteps = listOf("wz_dev", "c_console", "wz_tv", "wz_s2", "wz_tr_step", "wz_s1", "wz_s3", "wz_s4")
+    private val wizardSteps = listOf("wz_langs", "wz_dev", "c_console", "wz_tv", "wz_s2", "wz_tr_step", "wz_s1", "wz_s3", "wz_s4")
 
     /** Volba v průvodci: řádek s názvem a popisem; vybraná je zlatá a s fajfkou. */
     private fun option(title: String, desc: String?, selected: Boolean, tag: String, onPick: () -> Unit) {
@@ -583,7 +590,7 @@ class MainActivity : Activity() {
                 addView(ui.text(ct(key), 16f, if (active) Theme.ACCENT else if (i < wizard) Theme.TEXT else Theme.MUTED, bold = active))
             }, menuLp())
         }
-        content.removeAllViews()
+        content.removeAllViews(); closeNests()
         content.addView(ui.text(t("wz_title"), 15f, Theme.ACCENT, bold = true))
         // kolik kroků zbývá (v telefonu není vidět levý seznam kroků)
         content.addView(ui.steps(wizard + 1, wizardSteps.size, steps(wizard + 1, wizardSteps.size)), ui.lp(top = 8))
@@ -592,8 +599,23 @@ class MainActivity : Activity() {
         val lang = Prefs.lang(this)
         var nextLabel = t("wz_next")
         when (wizard) {
-            W_DEVICE -> {
+            // Jazyky: jazyk aplikace (texty se hned přepnou) a z čeho se překládá (jazyk titulků ve hře)
+            W_LANGS -> {
                 add(ui.text(t("wz_intro"), 17f, Theme.MUTED), 12)
+                val uiLang = Prefs.uiLang(this)
+                add(tagged(ui.settingRow(t("l_ui_lang"), uiLang.label) {
+                    val all = cz.playlingo.core.Lang.values().toList()
+                    choose(t("l_ui_lang"), all.map { it.label }, all.indexOf(uiLang)) { i ->
+                        Prefs.setUiLang(this, all[i])
+                        // jazyk překladu, který hráč ještě nezvolil, jde s jazykem aplikace → i dvojice jazyků
+                        OfflineTranslator.source = Prefs.sourceLang(this)
+                        applyToService(); buildShell(); render()
+                        window.decorView.findViewWithTag<View>("wuilang")?.requestFocus()
+                    }
+                }, "wuilang"), 18)
+                sourceRow("wsrc", 8)
+            }
+            W_DEVICE -> {
                 add(ui.text(t("wz_dev_q"), 20f, Theme.TEXT, bold = true), 18)
                 val reader = Prefs.readerDevice(this)
                 option(t("dev_tv"), t("dev_tv_d"), !reader, "wdevtv") { setReader(false); render(true) }
@@ -641,7 +663,7 @@ class MainActivity : Activity() {
                     }
                 }, "wlang"), 16)
                 add(ui.card().apply {
-                    addView(ui.checkRow(ok, false, t("chk_model") + " (${lang.label})", t("ok"), null, null))
+                    addView(ui.checkRow(ok, false, t("chk_model") + " (${Prefs.langPair(this@MainActivity)})", t("ok"), null, null))
                     if (!ok) addView(ui.text(busyText ?: t("prep_model"), 15f, Theme.WARN), ui.lp(top = 6))
                     // stahování jazykového balíčku (asi 30 MB): pruh běhá, dokud ML Kit neskončí
                     if (!ok && OfflineTranslator.isDownloading(lang)) addView(ui.progress(null), ui.lp(h = ui.dp(10), top = 8))
@@ -727,7 +749,56 @@ class MainActivity : Activity() {
         render()
     }
 
-    private fun add(v: View, top: Int = 12) = content.addView(v, ui.lp(top = top))
+    private fun add(v: View, top: Int = 12) = target().addView(v, ui.lp(top = top))
+
+    // ---- rozbalené skupiny jako odsazená karta (od 0.97.53, přání majitele: nepoznal, co je podmenu) ----
+
+    /** Otevřené karty podmenu (vnořené: Hra → Postavy, místa a pojmy); řádky přidané přes [add] jdou do poslední. */
+    private val nests = ArrayList<LinearLayout>()
+    /** Nadpis skupiny, kterou hráč právě rozbalil – její karta se plynule zjeví a stránka se posune na nadpis. */
+    private var justOpened: String? = null
+
+    private fun target(): LinearLayout = nests.lastOrNull() ?: content
+
+    /**
+     * Obsah rozbalené skupiny pod nadpisem [tag]: odsazená tmavší karta se žlutou čarou vlevo. Platí do dalšího
+     * nadpisu skupiny ([closeNests]) nebo konce stránky; [inner] = karta uvnitř karty.
+     */
+    private fun openNest(tag: String, inner: Boolean = false) {
+        if (!inner) closeNests()
+        val body = ui.vbox().apply { setPadding(ui.dp(12), ui.dp(2), 0, ui.dp(10)) }
+        val wrap = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            clipChildren = false; clipToPadding = false
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(android.graphics.Color.rgb(0x13, 0x16, 0x1C)); cornerRadius = ui.dp(12).toFloat()
+            }
+            addView(View(this@MainActivity).apply {
+                background = android.graphics.drawable.GradientDrawable().apply { setColor(Theme.ACCENT); cornerRadius = ui.dp(2).toFloat() }
+            }, LinearLayout.LayoutParams(ui.dp(3), LinearLayout.LayoutParams.MATCH_PARENT).apply { topMargin = ui.dp(8); bottomMargin = ui.dp(8) })
+            addView(body, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        target().addView(wrap, ui.lp(top = 4).apply { leftMargin = ui.dp(18) })
+        nests.add(body)
+        if (justOpened == tag) {
+            justOpened = null
+            wrap.alpha = 0f; wrap.translationY = -ui.dp(8).toFloat()
+            wrap.animate().alpha(1f).translationY(0f).setDuration(180).start()
+            // nadpis nahoru (s kouskem místa nad ním), ať je vidět, že obsah pod ním patří k němu
+            pageScroll?.post {
+                val sv = pageScroll ?: return@post
+                val head = content.findViewWithTag<View>(tag) ?: return@post
+                val r = android.graphics.Rect(); head.getDrawingRect(r)
+                try { (sv.getChildAt(0) as? android.view.ViewGroup)?.offsetDescendantRectToMyCoords(head, r) } catch (_: Exception) { return@post }
+                sv.smoothScrollTo(0, (r.top - ui.dp(16)).coerceAtLeast(0))
+            }
+        }
+    }
+
+    private fun closeNests() = nests.clear()
+
+    /** Rozbalit / sbalit: zapamatovat, který nadpis se právě otevřel (animace a posun na něj). */
+    private fun toggled(tag: String, opening: Boolean) { justOpened = if (opening) tag else null }
 
     private fun <V : View> tagged(v: V, tag: String): V { v.tag = tag; return v }
 
@@ -907,9 +978,9 @@ class MainActivity : Activity() {
                 TranslatorService.videoSize.takeIf { it.isNotEmpty() }?.let { " · $it" }.orEmpty(), "hspeed")
         }
         // překlad: jazyk, offline / DeepL, chybějící balíček
-        val tl = Prefs.lang(this)
-        if (!modelOk) row(Theme.WARN, t("w_model").replace("%s", tl.label), "hmodel", t("download"), { downloadModel() })
-        else row(Theme.OK, tl.label + " · " + t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline"), "hmodel", onClick = { openQuality() })
+        val pair = Prefs.langPair(this)
+        if (!modelOk) row(Theme.WARN, t("w_model").replace("%s", pair), "hmodel", t("download"), { downloadModel() })
+        else row(Theme.OK, pair + " · " + t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline"), "hmodel", onClick = { openQuality() })
         // hra: vybraný profil zeleně; titulky ukazují na jinou hru → oranžově s Přepnout (GameGuess, nic se nepřepíná samo).
         // S univerzálním profilem a bez odhadu řádek není.
         val game = GameProfiles.of(Prefs.gameId(this))
@@ -1152,7 +1223,7 @@ class MainActivity : Activity() {
         val name = accName()
         val key = when (step) { 0 -> "pg_0"; 1 -> "pg_2"; 2 -> "pa_1"; 3 -> "pa_2"; 4 -> "pa_3"; 6 -> "pg_1"; 7 -> "pg_acc"; else -> "pg_4" }
         val pos = when (step) { 0 -> 1; 1 -> 2; 7 -> 3; 2, 3, 4 -> 4; 6 -> 5; else -> 6 }
-        // kolikátý krok spárování: v průvodci jen malý podtitul (nahoře už je „Krok 7 z 8“), jinde pruh na dílky
+        // kolikátý krok spárování: v průvodci jen malý podtitul (nahoře už je „Krok 8 z 9“), jinde pruh na dílky
         if (wizard == W_PAIR) add(tagged(ui.text(t("pg_sub").replace("%1", pos.toString()).replace("%2", "6"), 14f, Theme.MUTED), "psub"), 10)
         else add(ui.steps(pos, 6, steps(pos, 6)), 16)
         add(ui.text(t("${key}_title"), 22f, Theme.TEXT, bold = true), 2)
@@ -1520,6 +1591,23 @@ class MainActivity : Activity() {
 
     // ======================= VZHLED =======================
 
+    /**
+     * Řádek „Překládat z“ – jazyk titulků ve hře (průvodce krok Jazyky a stránka Titulky pod jazykem překladu).
+     * Nabízí jen jazyky v latince, které umí offline překladač i DeepL ([cz.playlingo.core.SourceLang]).
+     */
+    private fun sourceRow(tag: String, top: Int) {
+        val cur = Prefs.sourceLang(this)
+        add(tagged(ui.settingRow(t("l_src_lang"), cur.label) {
+            val all = cz.playlingo.core.SourceLang.offered(Prefs.lang(this))
+            choose(t("l_src_lang"), all.map { it.label }, all.indexOf(cur)) { i ->
+                Prefs.setSourceLang(this, all[i])
+                // jiný jazyk titulků = jiný jazykový balíček (stáhne se jednou)
+                OfflineTranslator.ensureModel(Prefs.lang(this)) { runOnUiThread { if (wizard >= 0 || section == Section.HOME) render(true) } }
+                applyToService(); render(true)
+            }
+        }, tag), top)
+    }
+
     /** Řádek s výběrem jazyka překladu (stránka Titulky; v průvodci krok Jazyk překladu). */
     private fun langRow(tag: String, top: Int) {
         add(tagged(ui.settingRow(t("l_lang"), Prefs.lang(this).label) {
@@ -1541,6 +1629,21 @@ class MainActivity : Activity() {
         choose(t("gp_profile"), games.map { gameTitle(it) }, games.indexOf(game)) { i ->
             Prefs.setGameId(this, games[i].id); applyToService(); render(true)
         }
+    }
+
+    /**
+     * Seznam her ze stránek: [manual] = OK na řádku (vždy), jinak jen automaticky se zapnutou volbou a nejvýš
+     * jednou za 6 h. Po novém seznamu se službě znovu načte nastavení (slovník, postavy) a stránka překreslí.
+     */
+    private fun checkGameList(manual: Boolean) {
+        val done: (Boolean) -> Unit = { changed ->
+            runOnUiThread {
+                if (isFinishing) return@runOnUiThread
+                if (changed) applyToService()
+                if (section == Section.LOOK || changed) render(true)
+            }
+        }
+        if (manual) { GameListUpdate.check(this, done); render(true) } else GameListUpdate.maybeAuto(this, done)
     }
 
     /** Rozbalený seznam postav, míst a pojmů profilu hry. */
@@ -1565,12 +1668,28 @@ class MainActivity : Activity() {
                 } catch (_: Exception) {}
             }, "gameguess"), 8)
         }
-        // rozsah čtení: jen titulky, nebo i texty hry z profilu (prompty v GTA…)
-        if (game.id != "all") add(tagged(ui.settingRow(t("gp_scope"), t(if (Prefs.gameTexts(this)) "gp_scope_all" else "gp_scope_subs")) {
-            Prefs.setGameTexts(this, !Prefs.gameTexts(this)); applyToService(); render(true)
-        }, "gamescope"), 8)
-        // úkol pod titulky (GTA): zapnout, písmo, poloha – jen s „Titulky a texty hry“ (od 0.97.45)
-        if (game.prompts && Prefs.gameTexts(this)) {
+        // rada, jak hru nastavit, aby se titulky četly (GTA VI: pozadí titulků) – OK = vysvětlení v dialogu
+        game.hint?.let { h ->
+            add(tagged(ui.settingRow(t(h), t(h + "_val") + " ›", Theme.MUTED) {
+                try {
+                    AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                        .setTitle(t(h)).setMessage(t(h + "_desc"))
+                        .setPositiveButton(android.R.string.ok) { d, _ -> d.dismiss() }
+                        .show()
+                } catch (_: Exception) {}
+            }, "gamehint"), 8)
+        }
+        // co se překládá navíc k titulkům: každý text hry má vlastní přepínač (od 0.97.59, dřív jedna volba „Rozsah čtení“);
+        // ukáže se jen u her, jejichž profil ten text zná
+        if (game.prompts) add(tagged(ui.settingRow(t("gp_prompts"), onOff(Prefs.gamePrompts(this))) {
+            Prefs.setGamePrompts(this, !Prefs.gamePrompts(this)); applyToService(); render(true)
+        }, "gameprompts"), 8)
+        // překlad menu hry: jen u her, které ho umí; výchozí vypnuto
+        if (game.menuSpec != null) add(tagged(ui.settingRow(t("gp_menu"), onOff(Prefs.gameMenu(this))) {
+            Prefs.setGameMenu(this, !Prefs.gameMenu(this)); applyToService(); render(true)
+        }, "gamemenu"), 8)
+        // úkol pod titulky (GTA): zapnout, písmo, poloha, pozadí, barvy (od 0.97.45)
+        if (game.prompts) {
             val on = Prefs.objectiveOn(this)
             add(tagged(ui.settingRow(t("obj_row"), onOff(on)) {
                 Prefs.setObjectiveOn(this, !on); applyToService(); render(true)
@@ -1578,8 +1697,10 @@ class MainActivity : Activity() {
             if (on) {
                 val sz = Prefs.objSize(this)
                 val sizes = listOf(0) + Prefs.TEXT_SIZES.toList()
-                add(tagged(ui.settingRow(t("obj_size"), if (sz == 0) t("qk_size_game") else sz.toString()) {
-                    choose(t("obj_size"), sizes.map { if (it == 0) t("qk_size_game") else it.toString() }, sizes.indexOf(sz).coerceAtLeast(0)) { i ->
+                // „podle hry“ jen když i titulky jdou podle hry, jinak „jako titulky“
+                val autoLabel = t(if (Prefs.matchSize(this)) "qk_size_game" else "obj_bg_same")
+                add(tagged(ui.settingRow(t("obj_size"), if (sz == 0) autoLabel else sz.toString()) {
+                    choose(t("obj_size"), sizes.map { if (it == 0) autoLabel else it.toString() }, sizes.indexOf(sz).coerceAtLeast(0)) { i ->
                         Prefs.setObjSize(this, sizes[i]); applyToService(); render(true)
                     }
                 }, "objsize"), 8)
@@ -1612,8 +1733,19 @@ class MainActivity : Activity() {
                 }, "objcolors"), 8)
             }
         }
-        add(tagged(ui.settingRow(t("gp_list"), if (gameListOpen) "▲" else "▼") { gameListOpen = !gameListOpen; render(true) }, "gamelist"), 8)
+        // seznam her ze stránek (třetí aktualizace): stav z paměti, OK = zjistit hned
+        val glVer = GameProfiles.catalog.version
+        val glState = GameListUpdate.state
+        add(tagged(ui.settingRow(t("gl_row"), when (glState) {
+            GameListUpdate.State.CHECKING -> t("gl_busy")
+            GameListUpdate.State.UPDATED -> String.format(t("gl_new"), glVer)
+            GameListUpdate.State.CURRENT -> String.format(t("gl_current"), glVer)
+            GameListUpdate.State.FAILED -> String.format(t("gl_fail"), glVer)
+            GameListUpdate.State.IDLE -> String.format(t("gl_ver"), glVer)
+        }, Theme.MUTED) { checkGameList(manual = true) }, "gamelistver"), 8)
+        add(tagged(ui.settingRow(t("gp_list"), if (gameListOpen) "▲" else "▼") { gameListOpen = !gameListOpen; toggled("gamelist", gameListOpen); render(true) }, "gamelist"), 8)
         if (!gameListOpen) return
+        openNest("gamelist", inner = true)
         add(ui.text(t("t_game_desc") + " " + t("t_game_deepl"), 14f, Theme.MUTED), 8)
         if (game.id == "all") {
             add(ui.text(String.format(t("gp_universal"), game.names.size, game.characters.size), 15f), 8)
@@ -1667,10 +1799,12 @@ class MainActivity : Activity() {
      */
     private fun group(id: String, title: String, top: Int = 8): Boolean {
         val open = id in openGroups
+        closeNests()
         add(tagged(ui.settingRow(title, if (open) "▲" else "▼") {
             if (!openGroups.remove(id)) openGroups.add(id)
-            render(true)
+            toggled("grp_$id", id in openGroups); render(true)
         }, "grp_$id"), top)
+        if (open) openNest("grp_$id")
         return open
     }
 
@@ -1685,23 +1819,25 @@ class MainActivity : Activity() {
      */
     private fun subtitlesPage() {
         langRow("lang", 16)
+        sourceRow("srclang", 8)
         // Kvalita překladu (DeepL) hned pod jazykem překladu (od 0.97.28, dřív Nastavení → Experimentální)
         val dlOpen = lookOpen == LOOK_DEEPL
         add(tagged(ui.settingRow(t("wz_tr"), t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline") + if (dlOpen) "  ▲" else "  ▼") {
-            lookOpen = if (dlOpen) -1 else LOOK_DEEPL; render(true)
+            lookOpen = if (dlOpen) -1 else LOOK_DEEPL; toggled("lkdl", !dlOpen); render(true)
         }, "lkdl"), 8)
-        if (dlOpen) deeplSection().build(content)
+        if (dlOpen) { openNest("lkdl"); deeplSection().build(target()); closeNests() }
+        // hra hned pod jazykem (od 0.97.54, přání majitele): profil hry je vidět dřív než obecné volby, které doplňuje
         val groups = listOf<Pair<String, () -> Unit>>(
+            "t_game" to { gameGroup() },
             "lk_text" to { lookText() },
             "lk_bar" to { lookBar() },
             "m_zones" to { lookZones() },
-            // hra (profil, odhad z titulků, postavy a jména) patří k titulkům, ne do Nastavení (od 0.97.15)
-            "t_game" to { gameGroup() },
         )
         groups.forEachIndexed { i, (key, build) ->
             val open = lookOpen == i
-            add(tagged(ui.settingRow(t(key), if (open) "▲" else "▼") { lookOpen = if (open) -1 else i; render(true) }, "lk$i"), if (i == 0) 14 else 8)
-            if (open) build()
+            closeNests()
+            add(tagged(ui.settingRow(t(key), if (open) "▲" else "▼") { lookOpen = if (open) -1 else i; toggled("lk$i", !open); render(true) }, "lk$i"), if (i == 0) 14 else 8)
+            if (open) { openNest("lk$i"); build(); closeNests() }
         }
         add(tagged(ui.settingRow(t("l_reset"), "↺", Theme.MUTED) {
             Prefs.setTextSize(this, Prefs.DEFAULT_TEXT_SIZE); Prefs.setOpacity(this, 100); Prefs.setTextColorIndex(this, 0)
@@ -1756,7 +1892,9 @@ class MainActivity : Activity() {
                 }
             }, "origsize"), 6)
         }
-        add(tagged(ui.settingRow(t("l_speaker"), onOff(Prefs.coloredSpeaker(this))) {
+        // profil hry má barvy postav (GTA: Jason žlutě, Lucia modře) – je vidět, odkud barvy jsou
+        val profColors = Prefs.coloredSpeaker(this) && GameProfiles.of(Prefs.gameId(this)).colors.isNotEmpty()
+        add(tagged(ui.settingRow(t("l_speaker"), onOff(Prefs.coloredSpeaker(this)) + if (profColors) " · " + t("gp_mark") else "") {
             Prefs.setColoredSpeaker(this, !Prefs.coloredSpeaker(this)); applyToService(); render(true); showDemo()
         }, "speaker"), 6)
     }
@@ -1781,6 +1919,11 @@ class MainActivity : Activity() {
                 }
             }
         }, "pos"), 6)
+        // „Přes titulky“: pruh přes celé pole, kde titulky naposledy byly (i dvouřádkové), ne jen přes právě přečtený řádek
+        if (lay.position == cz.playlingo.core.ScreenLayout.Position.OVER) add(tagged(ui.settingRow(t("l_cover_all"), onOff(Prefs.coverAll(this))) {
+            if (Prefs.coverAll(this)) { Prefs.setCoverAll(this, false); applyToService(); render(true) }
+            else confirmOn(t("l_cover_all"), t("l_cover_all_desc")) { Prefs.setCoverAll(this, true); applyToService(); render(true) }
+        }, "coverall"), 6)
         val widthPct = Math.round(lay.barWidth * 100)
         add(tagged(ui.settingRow(t("l_width"), "$widthPct %") {
             choose(t("l_width"), Prefs.BAR_WIDTHS.map { "$it %" }, Prefs.BAR_WIDTHS.indexOf(widthPct)) { i ->
@@ -1821,7 +1964,8 @@ class MainActivity : Activity() {
             if (Prefs.autoZone(this)) { Prefs.setAutoZone(this, false); applyToService(); render(true) }
             else confirmOn(t("z_auto"), t("z_auto_desc")) { Prefs.setAutoZone(this, true); applyToService(); render(true) }
         }, "zauto"), 6)
-        add(tagged(ui.settingRow(t("z_only_subs"), onOff(Prefs.onlySubtitles(this))) {
+        // s automatikou se čtou vždy jen titulky – volba by nic neměnila (od 0.97.54 schovaná)
+        if (!Prefs.autoZone(this)) add(tagged(ui.settingRow(t("z_only_subs"), onOff(Prefs.onlySubtitles(this))) {
             Prefs.setOnlySubtitles(this, !Prefs.onlySubtitles(this)); applyToService(); render(true)
         }, "onlysubs"), 6)
         add(tagged(ui.settingRow(t("z_calibrate"), "›") { startActivity(Intent(this, CalibrationActivity::class.java)) }, "calib"), 6)
@@ -1981,7 +2125,8 @@ class MainActivity : Activity() {
             }, "a11y"), 8)
             // tlačítko ovladače pro rychlou nabídku vzhledu při hře (QuickLook, jen Android TV)
             val qk = Prefs.quickKey(this)
-            add(tagged(ui.settingRow(t("qk_row"), if (qk == 0) t("qk_none") else QuickLook.keyName(qk), if (qk == 0) Theme.MUTED else Theme.ACCENT) {
+            // tlačítka chytá služba Usnadnění – bez ní volba nefunguje (od 0.97.54 schovaná)
+            if (a11yOn) add(tagged(ui.settingRow(t("qk_row"), if (qk == 0) t("qk_none") else QuickLook.keyName(qk), if (qk == 0) Theme.MUTED else Theme.ACCENT) {
                 learnQuickKey()
             }, "quickkey"), 8)
             // stav vlevo nahoře přes hru (StatusPanel): vypnuto (výchozí) / dynamicky / vždy
@@ -1991,7 +2136,8 @@ class MainActivity : Activity() {
                 choose(t("so_row"), modes, sm) { i -> Prefs.setStatusMode(this, i); render(true) }
             }, "statusov"), 8)
             val ovOn = Settings.canDrawOverlays(this)
-            add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
+            // „zobrazení přes jiné aplikace“ je jen záloha, když Usnadnění neběží
+            if (!a11yOn) add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
                 openOverlaySettings()
             }, "overlay"), 8)
         }
@@ -2002,7 +2148,8 @@ class MainActivity : Activity() {
     private fun settingsRead() {
         val q = Prefs.readQuality(this)
         val qKeys = listOf("auto", "std", "high")
-        add(tagged(ui.settingRow(t("s_quality"), t("q_$q")) {
+        // přesnost čtení = rozlišení obrazu z PlayStationu; Xbox ji nepoužívá
+        if (Prefs.console(this) == Console.PLAYSTATION) add(tagged(ui.settingRow(t("s_quality"), t("q_$q")) {
             choose(t("s_quality"), qKeys.map { t("q_$it") }, qKeys.indexOf(q)) { i ->
                 Prefs.setReadQuality(this, qKeys[i])
                 // jiné rozlišení obrazu z konzole = spojení je potřeba navázat znovu
@@ -2021,6 +2168,40 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("rep_btn"), "›") { makeReport() }, "sreport"), 8)
         // záznam v domácí síti je taky ladění (od 0.97.15 tady, dřív samostatně v Experimentální)
         logShareRow()
+        snapRow()
+    }
+
+    /**
+     * „Záznam snímků“ (od 0.97.59, pro ladění, výchozí vypnuto): Start/Stop dávky snímků obrazovky hry s tím,
+     * co aplikace četla (SnapRecorder). Vývojář dávky stáhne přes záznam v domácí síti (ci/stahni-davky.ps1).
+     */
+    private fun snapRow() {
+        add(tagged(ui.settingRow(t("sn_row"), snapValue()) {
+            if (!SnapRecorder.toggle(this)) Toast.makeText(this, t("sn_need_run"), Toast.LENGTH_LONG).show()
+            render(true)
+        }, "snimky"), 8)
+        // souhrn uložených dávek se počítá na pozadí (procházení složek), po spočítání se stránka překreslí
+        val saved = SnapRecorder.summary
+        if (saved == null) SnapRecorder.refreshSummary(this) { if (section == Section.SETTINGS) render(keepFocus = true) }
+        else if (saved.first > 0) add(ui.text(t("sn_saved").replace("%b", saved.first.toString())
+            .replace("%c", saved.second.toString())
+            .replace("%m", ((saved.third + 524_287) / 1_048_576).toString()), 14f, Theme.MUTED), 6)
+    }
+
+    private fun snapValue(): String = if (SnapRecorder.active)
+        t("sn_on").replace("%n", SnapRecorder.batch.toString()).replace("%c", SnapRecorder.count.toString()) else t("off")
+
+    /** Ticker: počet snímků v řádku Záznam snímků bez překreslení stránky; zapnutí/vypnutí (i samo po 10 min) překreslí. */
+    private var lastSnap = false
+    private fun tickSnap(typing: Boolean) {
+        val on = SnapRecorder.active
+        if (on != lastSnap) {
+            lastSnap = on
+            if (section == Section.SETTINGS && !typing) render(keepFocus = true)
+        } else if (on) {
+            val row = window.decorView.findViewWithTag<View>("snimky") as? LinearLayout ?: return
+            (row.getChildAt(row.childCount - 1) as? android.widget.TextView)?.text = snapValue()
+        }
     }
 
     /**
@@ -2052,6 +2233,11 @@ class MainActivity : Activity() {
             if (Prefs.fastRead(this)) { Prefs.setFastRead(this, false); applyToService(); render(true) }
             else confirmOn(t("fr_row"), t("fr_desc")) { Prefs.setFastRead(this, true); applyToService(); render(true) }
         }, "fastread"), 8)
+        // seznam her ze stránek sám jednou za 6 h (výchozí vypnuto – ručně jde vždy z Titulky → Hra)
+        add(tagged(ui.settingRow(t("gl_auto"), onOff(Prefs.gamesAuto(this))) {
+            if (Prefs.gamesAuto(this)) { Prefs.setGamesAuto(this, false); render(true) }
+            else confirmOn(t("gl_auto"), t("gl_auto_desc")) { Prefs.setGamesAuto(this, true); checkGameList(manual = false); render(true) }
+        }, "gamesauto"), 8)
         // DeepL je od 0.97.28 v Titulkách → Kvalita překladu (už ne pokus)
         settingsDiag()
     }
@@ -2197,7 +2383,10 @@ class MainActivity : Activity() {
             body("hc5_text").apply { button(ct("m_ps5"), "hpair") { section = Section.PS5; render() } }
         })
         // 6. hraní
-        chapters += Triple("hc6", null, { body(if (tv == TvType.ANDROID) "hc6_android" else "hc6_tv") })
+        // + rady k nastavení her z profilů (GTA VI: pozadí titulků) – pro všechny hry, i když je vybraný univerzální profil
+        chapters += Triple("hc6", null, {
+            body(*(listOf(if (tv == TvType.ANDROID) "hc6_android" else "hc6_tv") + GameProfiles.GAMES.mapNotNull { g -> g.hint?.let { it + "_desc" } }).toTypedArray())
+        })
         // 7. když něco nejde
         chapters += Triple("hc7", null, {
             ui.card().apply {
@@ -2223,9 +2412,9 @@ class MainActivity : Activity() {
             val mark = when (done) { true -> "✔  "; false -> "○  "; null -> "" }
             // šipka: zeleně hotovo, žlutě ještě udělat, šedě kapitola bez stavu (Hraní, Když něco nejde…)
             add(tagged(ui.settingRow(mark + t(key), if (open) "▲" else "▼", when (done) { true -> Theme.OK; false -> Theme.ACCENT; null -> Theme.MUTED }) {
-                helpOpen = if (open) -1 else i; render(true)
+                helpOpen = if (open) -1 else i; toggled("hc$i", !open); render(true)
             }, "hc$i"), if (i == 0) 16 else 8)
-            if (open) add(make(), 6)
+            if (open) { openNest("hc$i"); add(make(), 6); closeNests() }
         }
         add(tagged(ui.button(t("wz_again")) { wizard = 0; render() }, "wagain"), 20)
         add(ui.text("PlayLingo · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 24)
@@ -2481,6 +2670,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.57"
-    const val VERSION_CODE = 154
+    const val VERSION = "verze 0.97.62"
+    const val VERSION_CODE = 159
 }

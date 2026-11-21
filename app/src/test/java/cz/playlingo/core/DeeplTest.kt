@@ -182,10 +182,11 @@ class DeeplTest {
         assertTrue(ask.contains("action=\"/p/abcdefgh\""))
         assertTrue(ask.contains("name=\"key\""))
         // DeepL se otevírá obyčejným odkazem na nové kartě (iPhone i Android) ve třech krocích:
-        // 1. registrace (plán Developer), 2. stránka s klíči (ikona kopírování), 3. vložit klíč
+        // 1. ceník API (plán Developer), 2. stránka s klíči (ikona kopírování), 3. vložit klíč
         assertTrue(ask.contains("target=\"_blank\" rel=\"noopener\" href=\"${PhoneLogin.esc(Deepl.SIGNUP_URL)}\""))
         assertTrue(ask.contains("href=\"${Deepl.KEYS_URL}\""))
-        assertTrue(Deepl.SIGNUP_URL.contains("productId=api-developer"))
+        // ceník na záložce API, ne přímá registrace (ta přihlášeného přesměruje do Translatoru)
+        assertTrue(Deepl.SIGNUP_URL.endsWith("/pro#api"))
         assertTrue(ask.indexOf(I18n.t(Lang.CS, "dl_s1")) in 0 until ask.indexOf(I18n.t(Lang.CS, "dl_s2")))
         assertTrue(ask.indexOf(I18n.t(Lang.CS, "dl_s2")) < ask.indexOf(I18n.t(Lang.CS, "dl_s3_here")))
         assertTrue(ask.contains("API Keys &amp; Limits"))
