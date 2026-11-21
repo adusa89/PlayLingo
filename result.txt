@@ -1,0 +1,135 @@
+prelozenych_titulku=18 ruznych_titulku=15/15 pady=0 dekodovano_snimku=1360 pomocnik=9 odkaz_z_televize=7 cela_aplikace=1
+VYSLEDEK=OK
+11-21 17:37:24.399 I/TP_TEST ( 3745): HELPER|start
+11-21 17:37:33.572 I/TP_TEST ( 3745): HELPER|link ok
+11-21 17:37:42.823 I/TP_TEST ( 4753): HELPER|start
+11-21 17:37:43.113 I/TP_TEST ( 4753): HELPER|link ok
+11-21 17:37:51.705 I/TP_TEST ( 5066): HELPER|start
+11-21 17:37:51.857 I/TP_TEST ( 5066): HELPER|link ok
+11-21 17:38:01.004 I/TP_TEST ( 5263): HELPER|start
+11-21 17:38:01.169 I/TP_TEST ( 5263): HELPER|link ok
+11-21 17:38:10.676 I/TP_TEST ( 5553): HELPER|start
+11-21 17:38:11.068 I/TP_TEST ( 5553): HELPER|link ok
+11-21 17:38:18.915 I/TP_TEST ( 5691): HELPER|start
+11-21 17:38:19.131 I/TP_TEST ( 5691): HELPER|link ok
+11-21 17:38:28.134 I/TP_TEST ( 6168): HELPER|start
+11-21 17:38:28.634 I/TP_TEST ( 6168): HELPER|link ok
+11-21 17:38:33.262 I/TP_TEST ( 6168): HELPER|start
+11-21 17:38:37.607 I/TP_TEST ( 6267): HELPER|start
+11-21 17:38:37.750 I/TP_TEST ( 6267): HELPER|lg mode
+11-21 17:39:13.270 I/TP_TEST ( 6550): PAIR|discover nets=10.0.2.15/8 10.0.2.16/24 → 
+11-21 17:39:20.394 I/TP_TEST ( 6550): LOGIN|page on port 8765
+11-21 17:39:26.721 I/TP_TEST ( 6550): LOGIN|page closed
+11-21 17:40:00.032 I/TP_TEST ( 6966): PAIR|discover nets=10.0.2.15/8 10.0.2.16/24 → 
+11-21 17:40:09.814 I/TP_TEST ( 6966): LOGIN|page on port 8765
+11-21 17:40:16.299 I/TP_TEST ( 6966): LOGIN|page closed
+11-21 17:40:49.824 I/TP_TEST ( 7243): PAIR|discover nets=10.0.2.15/8 10.0.2.16/24 → 
+11-21 17:40:59.596 I/TP_TEST ( 7243): LOGIN|page on port 8765
+11-21 17:41:06.089 I/TP_TEST ( 7243): LOGIN|page closed
+11-21 17:41:40.324 I/TP_TEST ( 7490): PAIR|discover nets=10.0.2.15/8 10.0.2.16/24 → 
+11-21 17:41:50.408 I/TP_TEST ( 7490): LOGIN|page on port 8765
+11-21 17:41:57.088 I/TP_TEST ( 7490): LOGIN|page closed
+11-21 17:42:30.883 I/TP_TEST ( 7780): PAIR|discover nets=10.0.2.15/8 10.0.2.16/24 → 
+11-21 17:42:40.621 I/TP_TEST ( 7780): LOGIN|page on port 8765
+11-21 17:42:47.130 I/TP_TEST ( 7780): LOGIN|page closed
+11-21 17:43:20.963 I/TP_TEST ( 8038): PAIR|discover nets=10.0.2.15/8 10.0.2.16/24 → 
+11-21 17:43:31.004 I/TP_TEST ( 8038): LOGIN|page on port 8765
+11-21 17:43:37.653 I/TP_TEST ( 8038): LOGIN|page closed
+11-21 17:43:54.935 I/TP_TEST ( 8427): NET|připojeno WIFI_24
+11-21 17:43:55.016 I/TP_TEST ( 8427): A11Y|true
+11-21 17:43:55.026 I/TP_TEST ( 8427): START|video=1920x1080|interval=50|screen=1080x2400|eco=false|decoder=c2.goldfish.h264.decoder (přímý výstup)|lib=ok 1280x720@30 10000kb
+11-21 17:43:55.245 I/TP_TEST ( 8427): TV|tv cannot listen – port 8787 obsazený, zkusím znovu
+11-21 17:43:55.249 I/TP_TEST ( 8427): NET|Wi-Fi na 2,4 GHz (2437 MHz, signál -50 dBm)
+11-21 17:43:55.250 I/TP_TEST ( 8427): VIDEO|fed=0|decoded=0|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:55.252 I/TP_TEST ( 8427): SOURCE|demo
+11-21 17:43:55.362 I/TP_TEST ( 8427): MODEL|cs|ok|pokus=1
+11-21 17:43:57.246 I/TP_TEST ( 8427): TV|tv on port 8787
+11-21 17:43:57.246 I/TP_TEST ( 8427): TV|tv port otevřen napodruhé
+11-21 17:43:57.530 I/TP_TEST ( 8427): WARM|cs|první=2110ms|další=58ms
+11-21 17:44:00.599 I/TP_TEST ( 8427): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:44:00.599 I/TP_TEST ( 8427): LAT|5347ms|ocr=3963ms
+11-21 17:44:00.715 I/TP_TEST ( 8427): VIDEO|fed=49|decoded=48|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=49 raw=false err=null
+11-21 17:44:00.719 I/TP_TEST ( 8427): PERF|čtení=1|průměr=3963ms|poslední=3963ms|titulků=1|video=1920x1080|oblast=33%|paměť=24+110MB|wifi=2437MHz/-50dBm
+11-21 17:44:04.382 I/TP_TEST ( 8427): COLOR|Marek|-|us=34396
+11-21 17:44:08.088 I/TP_TEST ( 8427): COLOR|Marek|-|us=20036
+11-21 17:44:08.140 I/TP_TEST ( 8427): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:44:08.140 I/TP_TEST ( 8427): LAT|5388ms|ocr=3600ms
+11-21 17:44:08.143 I/TP_TEST ( 8427): ZONE|learned 0.72-1.0
+11-21 17:44:08.254 I/TP_TEST ( 8427): VIDEO|fed=124|decoded=123|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=124 raw=false err=null
+11-21 17:44:12.450 I/TP_TEST ( 8427): COLOR|Jonas|-|us=40531
+11-21 17:44:16.165 I/TP_TEST ( 8427): COLOR|Jonas|-|us=5005
+11-21 17:44:16.218 I/TP_TEST ( 8427): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:44:16.218 I/TP_TEST ( 8427): LAT|5966ms|ocr=3611ms
+11-21 17:44:16.332 I/TP_TEST ( 8427): VIDEO|fed=202|decoded=200|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=202 raw=false err=null
+11-21 17:44:24.052 I/TP_TEST ( 8427): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:44:24.052 I/TP_TEST ( 8427): LAT|300ms|ocr=3934ms
+11-21 17:44:24.162 I/TP_TEST ( 8427): VIDEO|fed=279|decoded=277|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=279 raw=false err=null
+11-21 17:44:27.736 I/TP_TEST ( 8427): COLOR|Silas|-|us=3464
+11-21 17:44:27.737 I/TP_TEST ( 8427): HIDE
+11-21 17:44:31.858 I/TP_TEST ( 8427): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:44:31.859 I/TP_TEST ( 8427): LAT|606ms|ocr=3964ms
+11-21 17:44:31.965 I/TP_TEST ( 8427): VIDEO|fed=357|decoded=355|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=357 raw=false err=null
+11-21 17:44:31.967 I/TP_TEST ( 8427): PERF|čtení=9|průměr=3787ms|poslední=3964ms|titulků=5|video=1920x1080|oblast=27%|paměť=23+124MB|wifi=2437MHz/-50dBm
+11-21 17:44:35.688 I/TP_TEST ( 8427): COLOR|Mira|-|us=4573
+11-21 17:44:35.689 I/TP_TEST ( 8427): HIDE
+11-21 17:44:39.592 I/TP_TEST ( 8427): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:44:39.592 I/TP_TEST ( 8427): LAT|840ms|ocr=3765ms
+11-21 17:44:39.702 I/TP_TEST ( 8427): VIDEO|fed=435|decoded=433|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=435 raw=false err=null
+11-21 17:44:43.368 I/TP_TEST ( 8427): COLOR|Tobin|-|us=5686
+11-21 17:44:43.369 I/TP_TEST ( 8427): HIDE
+11-21 17:44:46.917 I/TP_TEST ( 8427): SHOW|WE HAVE TO GET OUT OF HERE!|Musíme se odsud dostat!
+11-21 17:44:46.917 I/TP_TEST ( 8427): LAT|665ms|ocr=3414ms
+11-21 17:44:47.022 I/TP_TEST ( 8427): VIDEO|fed=507|decoded=505|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=507 raw=false err=null
+11-21 17:44:50.793 I/TP_TEST ( 8427): HIDE
+11-21 17:44:54.710 I/TP_TEST ( 8427): SHOW|Wait|Počkej
+11-21 17:44:54.710 I/TP_TEST ( 8427): LAT|958ms|ocr=3814ms
+11-21 17:44:54.814 I/TP_TEST ( 8427): VIDEO|fed=584|decoded=582|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=584 raw=false err=null
+11-21 17:44:58.731 I/TP_TEST ( 8427): HIDE
+11-21 17:45:02.673 I/TP_TEST ( 8427): SHOW|[Old Kessler You two were never supposed to meet.|[Old Kessler, kterého jste se nikdy neměli setkat.
+11-21 17:45:02.673 I/TP_TEST ( 8427): LAT|1420ms|ocr=3775ms
+11-21 17:45:02.787 I/TP_TEST ( 8427): VIDEO|fed=664|decoded=662|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=664 raw=false err=null
+11-21 17:45:02.788 I/TP_TEST ( 8427): PERF|čtení=17|průměr=3759ms|poslední=3775ms|titulků=9|video=1920x1080|oblast=27%|paměť=27+125MB|wifi=2437MHz/-50dBm
+11-21 17:45:06.413 I/TP_TEST ( 8427): HIDE
+11-21 17:45:10.693 I/TP_TEST ( 8427): SHOW|Mira: III take the left door. Tobin: Then I'm going right.|Mira: III Vezmi levé dveře. Tobin: Pak jdu v pořádku.
+11-21 17:45:10.693 I/TP_TEST ( 8427): LAT|441ms|ocr=4106ms
+11-21 17:45:10.802 I/TP_TEST ( 8427): VIDEO|fed=744|decoded=743|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=744 raw=false err=null
+11-21 17:45:14.566 I/TP_TEST ( 8427): COLOR|Mira|-|us=6850
+11-21 17:45:14.613 I/TP_TEST ( 8427): SHOW|Lena: Keep your voice down, they can hear us.|Lena: Mluv tiše, slyší nás.
+11-21 17:45:14.613 I/TP_TEST ( 8427): LAT|4361ms|ocr=3759ms
+11-21 17:45:18.695 I/TP_TEST ( 8427): COLOR|Lena|-|us=1643
+11-21 17:45:18.798 I/TP_TEST ( 8427): VIDEO|fed=824|decoded=822|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=824 raw=false err=null
+11-21 17:45:22.609 I/TP_TEST ( 8427): COLOR|Lena|-|us=2568
+11-21 17:45:22.652 I/TP_TEST ( 8427): SHOW|I don't think anyone has been here for years.|Nemyslím si, že by tu někdo byl roky.
+11-21 17:45:22.653 I/TP_TEST ( 8427): LAT|4900ms|ocr=3807ms
+11-21 17:45:26.999 I/TP_TEST ( 8427): VIDEO|fed=906|decoded=904|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=906 raw=false err=null
+11-21 17:45:30.747 I/TP_TEST ( 8427): SHOW|Davor: Hand me the lantern and stay close.|Davor: Dej mi lucernu a zůstat blízko.
+11-21 17:45:30.747 I/TP_TEST ( 8427): LAT|5495ms|ocr=3704ms
+11-21 17:45:34.311 I/TP_TEST ( 8427): COLOR|Davor|-|us=876
+11-21 17:45:34.417 I/TP_TEST ( 8427): VIDEO|fed=979|decoded=977|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=979 raw=false err=null
+11-21 17:45:34.418 I/TP_TEST ( 8427): PERF|čtení=25|průměr=3779ms|poslední=3456ms|titulků=13|video=1920x1080|oblast=27%|paměť=30+128MB|wifi=2437MHz/-50dBm
+11-21 17:45:38.097 I/TP_TEST ( 8427): COLOR|Davor|#7491A5|us=1840
+11-21 17:45:38.136 I/TP_TEST ( 8427): SHOW|Lena: The bridge is out, we have to swim.|Lena: Most je zničen, musíme plavat.
+11-21 17:45:38.136 I/TP_TEST ( 8427): LAT|5383ms|ocr=3675ms
+11-21 17:45:42.133 I/TP_TEST ( 8427): COLOR|Lena|-|us=2522
+11-21 17:45:42.236 I/TP_TEST ( 8427): VIDEO|fed=1057|decoded=1055|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1057 raw=false err=null
+11-21 17:45:45.800 I/TP_TEST ( 8427): COLOR|Lena|-|us=2058
+11-21 17:45:45.808 I/TP_TEST ( 8427): SHOW|Davor: Run for the gate!|Davor: Utíkej k bráně!
+11-21 17:45:45.808 I/TP_TEST ( 8427): LAT|5556ms|ocr=3561ms
+11-21 17:45:49.848 I/TP_TEST ( 8427): COLOR|Davor|-|us=4730
+11-21 17:45:49.950 I/TP_TEST ( 8427): VIDEO|fed=1135|decoded=1133|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1135 raw=false err=null
+11-21 17:45:54.059 I/TP_TEST ( 8427): COLOR|Davor|-|us=3373
+11-21 17:45:54.155 I/TP_TEST ( 8427): SHOW|Kessler: So, what will it be? • I'll take the job. • Tell me more about the pay. • Not interested.|Kessler: Co to bude? Vezmu si práci. Řekni mi více o mzdě. Nezajímá.
+11-21 17:45:54.155 I/TP_TEST ( 8427): LAT|402ms|ocr=4100ms
+11-21 17:45:57.913 I/TP_TEST ( 8427): COLOR|Kessler|-|us=2179
+11-21 17:45:57.913 I/TP_TEST ( 8427): HIDE
+11-21 17:45:58.014 I/TP_TEST ( 8427): VIDEO|fed=1214|decoded=1212|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1214 raw=false err=null
+11-21 17:46:01.613 I/TP_TEST ( 8427): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:46:01.613 I/TP_TEST ( 8427): LAT|361ms|ocr=3594ms
+11-21 17:46:05.349 I/TP_TEST ( 8427): COLOR|Marek|-|us=3305
+11-21 17:46:05.349 I/TP_TEST ( 8427): HIDE
+11-21 17:46:05.451 I/TP_TEST ( 8427): VIDEO|fed=1288|decoded=1287|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1288 raw=false err=null
+11-21 17:46:05.452 I/TP_TEST ( 8427): PERF|čtení=33|průměr=3772ms|poslední=3618ms|titulků=17|video=1920x1080|oblast=27%|paměť=35+131MB|wifi=2437MHz/-50dBm
+11-21 17:46:08.834 I/TP_TEST ( 8427): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:46:08.834 I/TP_TEST ( 8427): LAT|82ms|ocr=3376ms
+11-21 17:46:12.997 I/TP_TEST ( 8427): COLOR|Jonas|-|us=4464
+11-21 17:46:13.099 I/TP_TEST ( 8427): VIDEO|fed=1363|decoded=1360|1920x1080|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1363 raw=false err=null
