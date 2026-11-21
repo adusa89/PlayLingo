@@ -6,14 +6,17 @@
 #
 #   powershell -File pc\priprava.ps1 [-Jazyk cs]
 #   -BezSestaveni   jen knihovny a model (tak ji spouští okno aplikace – sestavená už je)
-param([string]$Jazyk = "cs", [switch]$BezSestaveni)
+#   -Python CESTA   Python s knihovnami už je (balíček ke stažení PlayLingo-PC.zip) – stáhne se jen model
+param([string]$Jazyk = "cs", [switch]$BezSestaveni, [string]$Python = "")
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 $slozka = "$env:LOCALAPPDATA\PlayLingoTools"
 New-Item -ItemType Directory -Force "$slozka\modely" | Out-Null
 
-if (-not (Test-Path "$slozka\venv\Scripts\python.exe")) { python -m venv "$slozka\venv" }
-& "$slozka\venv\Scripts\python.exe" -m pip install -q ctranslate2 subword-nmt sacremoses rapidocr-onnxruntime pillow
+if (-not $Python) {
+    if (-not (Test-Path "$slozka\venv\Scripts\python.exe")) { python -m venv "$slozka\venv" }
+    & "$slozka\venv\Scripts\python.exe" -m pip install -q ctranslate2 subword-nmt sacremoses rapidocr-onnxruntime pillow
+}
 
 $model = "$slozka\modely\en_$Jazyk"
 if (-not (Test-Path $model)) {

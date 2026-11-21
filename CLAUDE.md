@@ -70,7 +70,10 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   pošle do televize LG. Základ budoucí aplikace pro Windows / handheld: hráč hraje v chiaki-ng na
   hlavním účtu, PlayLingo se ke konzoli nepřipojuje. Texty zatím jen česky. Překládá se proti téže složce `core` jako aplikace,
   takže změna v `core` se týká i jí – po úpravě `core` ověř i `gradlew -p pc installDist`.
-  Do APK se nedostane a sestavení na GitHubu o ní neví.
+  Do APK se nedostane. **Balíček ke stažení** `PlayLingo-PC.zip` (Java a Python s knihovnami uvnitř, `PlayLingo.exe`) skládá
+  a zkouší `.github/workflows/pc.yml` (Windows) při změně `pc/` nebo `core`; z větve artefakt běhu, z `main` vydání `pc`, návod
+  pro hráče `pomoc/pc.md`. Pushe jen do `pc/` a `navrhy/` APK nesestavují (`paths-ignore` v `build.yml`) – proto u nich `[skip ci]`
+  nepsat (přeskočil by i balíček). **Čtečka pro TV** (⚙ → Použití): počítač místo Androidu čte pro TV LG/Samsung, 🔵 účtem.
 
 ## Sestavení a zkouška
 
@@ -801,8 +804,8 @@ seznam ukončení ze strany PS5 je v hlášení („PlayStation ukončil spojen�
 - `navrhy/preklad-menu.md` – překlad menu a UI hry (box s přeloženým menu vedle originálu, zvýraznění vybrané
   položky, tooltipy v Diablu IV). Schváleno majitelem jako samostatná session po profilu Diablo IV; nezačato.
 - `navrhy/ctecka-pc-mac.md` – počítač (Windows, později Mac) jako čtečka pro TV LG/Samsung místo Androidu, hlavně pro
-  hráče s iPhonem (přání majitele 21. 11. 2026). Díl 1 (režim „Čtečka pro TV“ v `pc/`, viz `pc/CTI-ME.md`) hotový, neověřený na Windows; balíček ke stažení, Mac
-  a nabídka na webu „Začít s PlayLingem“ potom.
+  hráče s iPhonem (přání majitele 21. 11. 2026). Díl 1 (režim „Čtečka pro TV“ v `pc/`) a díl 2 (balíček `PlayLingo-PC.zip`, `pc.yml`) hotové, na Windows s PS5 neověřené;
+  nabídka na webu „Začít s PlayLingem“ (LG/Samsung + počítač/iPhone → `pomoc/pc.md`) se zveřejní z `main`. Mac zbývá.
 
 ## Stránky s pomocí (`pomoc/`)
 

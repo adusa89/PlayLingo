@@ -2,6 +2,11 @@ name: Sestavit APK
 
 on:
   push:
+    # změny jen v PlayLingu pro PC (sestavuje pc.yml) a v návrzích APK nemění
+    paths-ignore:
+      - "pc/**"
+      - "navrhy/**"
+      - ".github/workflows/pc.yml"
   workflow_dispatch:
 
 permissions:

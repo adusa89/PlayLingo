@@ -20,12 +20,12 @@ Kdo má jen iPhone, dnes čtečku nemá. Počítač, který je doma stejně zapn
    Ověří jen majitel: Windows + PS5 + TV LG.
 2. **Balíček ke stažení pro Windows** – dnes `pc/` běží z repozitáře (Java 17 + Python). Pro hráče: ZIP / instalátor
    ve vydání (`PlayLingo-PC.zip`: Java z jlink, vložený Python s RapidOCR a modelem překladu, chiaki-ng se stáhne sám),
-   sestavený na GitHubu (`windows-latest`). Teprve s ním má smysl čtečku nabízet lidem.
+   sestavený na GitHubu (`windows-latest`). **Hotovo:** `.github/workflows/pc.yml`, vydání `pc` z `main`, návod `pomoc/pc.md`.
 3. **Mac** – stejný Kotlin a Python, jiné jsou: snímek okna (ScreenCaptureKit / Quartz přes pyobjc, povolení
    „Nahrávání obrazovky“), spárování chiaki-ng (plist místo registru Windows), uložení klíče DeepL (Klíčenka místo DPAPI),
    balíček .app. Bez Macu se nedá vyzkoušet – potřeba někoho s Macem (majitel / tester).
 4. **Nabídka na webu „Začít s PlayLingem“** (`pomoc/README.md`): u LG/Samsung + iPhone místo „bez Androidu to nejde“
-   i „Čtečka v počítači (zkušební)“ s odkazem na stažení – až po dílu 2 (a 1 ověřeném).
+   i „Čtečka v počítači (zkušební)“ s odkazem na stažení. **Hotovo** (zveřejní se z `main`).
 
 ## Otevřené otázky
 

@@ -914,6 +914,8 @@ private class Aplikace {
             ProcessBuilder(
                 "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", Nastroje.priprava.path,
                 "-Jazyk", nast.jazyk, "-BezSestaveni",
+                // balíček ke stažení má Python s knihovnami s sebou – příprava pak stáhne jen překladový model
+                *(if (Nastroje.pribaleny.exists()) arrayOf("-Python", Nastroje.pribaleny.path) else emptyArray()),
             ).redirectErrorStream(true).start()
         }.getOrElse { zapis("Příprava se nespustila: ${it.message}"); pripravaChyba = true; obnovDomu(); return }
         priprava = p

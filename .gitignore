@@ -19,3 +19,6 @@ tizen/**/*.wgt
 
 # záznamy stažené ze zařízení (ci/stahni-zaznam.ps1)
 zaznamy/
+
+# Python
+__pycache__/

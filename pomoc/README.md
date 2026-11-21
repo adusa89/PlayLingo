@@ -92,13 +92,25 @@ TV Samsung si obraz hry sama nepřečte – čte a překládá **PlayLingo v tel
 3. Při hraní: v TV spustit PlayLingo, v telefonu **Spustit**.
 </div>
 
-<div class="cesta" data-tv="lg samsung" data-na="pc iphone tv" markdown="1">
+<div class="cesta" data-tv="lg samsung" data-na="pc iphone" markdown="1">
 
-### LG / Samsung bez telefonu s Androidem
-TV LG a Samsung si obraz hry samy nepřečtou – číst a překládat musí **telefon s Androidem** nebo box s Android TV
-(připojený k téže TV). iPhone ani počítač to zatím neumí. Stačí i starší telefon s Androidem 8 nebo novějším –
-pak platí cesta „📱 Android“ výš. (TV Samsung jde z počítače nahrát i přes [Apps2Samsung pro počítač](samsung.md#pocitac),
-číst ale musí Android.)
+### LG / Samsung + 💻 počítač s Windows (zkušební)
+TV LG a Samsung si obraz hry samy nepřečtou – čte a překládá zařízení vedle nich. Bez telefonu s Androidem to může
+být **počítač s Windows** ve stejné síti (iPhone čtečkou být nemůže, poslouží k přihlášení):
+
+1. **[PlayLingo pro PC](pc.md)** – stáhnout ZIP, spustit PlayLingo.exe, ⚙ → Použití → **Čtečka pro TV**.
+2. **PS5:** v PlayLingu na PC Spárovat – 🔵 účet pro PlayLingo (přihlášení telefonem přes čtvereček) a osmimístné číslo z PS5.
+3. **PlayLingo do TV:** [LG](lg.md) / [Samsung – Apps2Samsung pro počítač](samsung.md#pocitac).
+4. **Spustit** na PC a PS5 zapnout ovladačem.
+
+S telefonem s Androidem (stačí i starší, Android 8+) je to jednodušší – cesta „📱 Android“.
+</div>
+
+<div class="cesta" data-tv="lg samsung" data-na="tv" markdown="1">
+
+### LG / Samsung jen s ovladačem
+TV LG a Samsung si obraz hry samy nepřečtou – číst a překládat musí **telefon s Androidem** (stačí i starší,
+Android 8+), box s Android TV nebo [počítač s Windows](pc.md) ve stejné síti. Pak platí jejich cesta výš.
 </div>
 
 <script>
@@ -141,6 +153,7 @@ pak platí cesta „📱 Android“ výš. (TV Samsung jde z počítače nahrát
 - [Televize LG – vývojářský režim](lg.md)
 - [Televize Samsung](samsung.md)
 - [Telefon (Android i iPhone)](telefon.md) · [iPhone: zkratka PlayLingo](zkratka.md)
+- [Počítač s Windows – čtečka pro TV LG / Samsung (zkušební)](pc.md)
 - [Xbox](xbox.md)
 - [DeepL – lepší překlad](deepl.md)
 
@@ -153,4 +166,5 @@ opraví se odkaz tady a aplikace se měnit nemusí.
 on Android TV”), start it and choose **Set up with a phone or computer** – a page with the 🔵 PlayLingo account sign-in,
 the PS5 eight-digit number and the DeepL key opens on your phone or in a computer browser on the same network.
 **LG / Samsung**: the TV cannot read the game picture itself – an **Android phone** with PlayLingo reads and translates
-and sends the lines to the TV (iPhone and computer cannot do that yet).*
+and sends the lines to the TV; without one, a **Windows PC** can be the reader ([PlayLingo for PC](pc.md), experimental).
+An iPhone cannot read, it only helps with the sign-in.*

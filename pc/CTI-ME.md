@@ -12,6 +12,17 @@ z okna. Druhý účet ani přihlášení přes telefon tu nejsou potřeba. Zatí
 Druhé použití (⚙ → **Použití → Čtečka pro TV**): PC místo telefonu s Androidem jako čtečka pro TV LG /
 Samsung – hra běží na PS5 v TV, PC se připojí druhým účtem a posílá překlad do TV. Viz oddíl Čtečka pro TV.
 
+## Balíček ke stažení (pro hráče)
+
+`PlayLingo-PC.zip` skládá na GitHubu `.github/workflows/pc.yml` (Windows, při každé změně `pc/` nebo `core`):
+`PlayLingo.exe` s vlastní Javou (jpackage), ve složce `app` jary, `cteni.py`, `priprava.ps1` a **vložený Python 3.12
+s knihovnami** (`app\python`, RapidOCR, CTranslate2…). Nic se neinstaluje; aplikace pozná přibalený Python
+(`Nastroje.pribaleny`) a Připravit pak stáhne jen překladový model (`priprava.ps1 -Python`). Běh balíček vyzkouší:
+přibalený Python přečte a přeloží ukázkový titulek (`zkouska_balicku.py`) a okno uloží snímky stránek (artefakt
+`snimky-pc`). Z větve je balíček jen artefakt běhu (Actions), z `main` vydání **`pc`**
+(`releases/download/pc/PlayLingo-PC.zip`) – na něj vede návod pro hráče `pomoc/pc.md`. Pushe jen do `pc/`
+a `navrhy/` APK nesestavují (`paths-ignore` v `build.yml`), takže tady `[skip ci]` netřeba – ten by přeskočil i balíček.
+
 ## Spuštění
 
 **Dvojklik na `pc\PlayLingo.cmd`** otevře okno aplikace (při prvním spuštění a po změně kódu se

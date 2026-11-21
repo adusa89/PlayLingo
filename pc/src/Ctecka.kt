@@ -50,9 +50,12 @@ const val CEKA_NA_OKNO = "pid:0"
 /** Kde leží nástroje z přípravy (`priprava.ps1`) a soubory čtečky. */
 object Nastroje {
     val slozka = File(System.getenv("LOCALAPPDATA") ?: System.getProperty("user.home"), "PlayLingoTools")
-    val python = File(slozka, "venv/Scripts/python.exe")
-    /** Složka `pc` v repozitáři – nastavuje ji spouštěcí skript. */
+    /** Složka `pc` v repozitáři – nastavuje ji spouštěcí skript; v balíčku ke stažení složka `app` vedle PlayLingo.exe. */
     val pc = File(System.getProperty("playlingo.pc", "."))
+    /** Python s knihovnami přibalený v balíčku ke stažení (`PlayLingo-PC.zip`, `.github/workflows/pc.yml`). */
+    val pribaleny = File(pc, "python/python.exe")
+    /** Přibalený Python, jinak prostředí z přípravy (`priprava.ps1`, potřebuje nainstalovaný Python). */
+    val python: File get() = if (pribaleny.exists()) pribaleny else File(slozka, "venv/Scripts/python.exe")
     val pomocnik = File(pc, "cteni.py")
     val priprava = File(pc, "priprava.ps1")
     val chyby = File(slozka, "cteni-chyby.txt")
