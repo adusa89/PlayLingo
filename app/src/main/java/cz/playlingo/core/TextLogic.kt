@@ -30,6 +30,11 @@ data class Picked(
     val left: Int = -1, val right: Int = -1,
     /** Velikost písma titulku v pixelech (0, když nic), odhadnutá z výšky řádků – podle ní se řídí velikost písma překladu. */
     val lineHeight: Int = 0,
+    /**
+     * Řádek s úkolem pod titulky (GTA: nejspodnější řádek oddělený od titulků volným řádkem), vyčleněný
+     * z titulků – ukazuje se zvlášť ([ObjectiveTracker]). V pixelech oblasti; null = žádný.
+     */
+    val objective: OcrLine? = null,
 )
 
 /**
@@ -290,6 +295,10 @@ object TextLogic {
         maxLineHeight: Int = Int.MAX_VALUE,
         /** Hlášky a menu podle profilu hry ([GameProfile.screen]). */
         screen: GameScreen = GameScreen.EMPTY,
+        /** Vyčlenit řádek s úkolem pod titulky ([Picked.objective]) – jen hry, jejichž profil to má. */
+        objectives: Boolean = false,
+        /** Naučená horní hrana řádku s úkolem v pixelech oblasti (-1 = ještě nevíme) – pro úkol bez titulku nad ním. */
+        objectiveTop: Int = -1,
     ): Picked {
         if (screen.isMenu(blocks.flatMap { b -> b.lines.map { it.text } })) return Picked("", 0)
         val sorted = blocks.sortedBy { b -> b.lines.minOfOrNull { it.top } ?: Int.MAX_VALUE }
@@ -320,6 +329,10 @@ object TextLogic {
                 }
                 .forEach { kept.add(bi to it) }
         }
+        // 1b) řádek s úkolem (GTA): nejspodnější řádek, nad kterým je volný řádek – ke kterému titulku nepatří.
+        //     Bez titulku nad ním se pozná podle místa, kde už úkol jednou byl ([objectiveTop]).
+        val objective = if (objectives) objectiveLine(kept.map { it.second }, objectiveTop) else null
+        if (objective != null) kept.removeAll { it.second === objective }
         // 2) "jen titulky": texty daleko nad sebou k sobě nepatří (nadpis v menu + titulek dole).
         //    Bere se jen nejspodnější skupina – pruh pak zakryje jen titulek, ne půl obrazovky.
         var used: List<Pair<Int, OcrLine>> = kept
@@ -333,12 +346,13 @@ object TextLogic {
             }
             used = byTop.subList(start, byTop.size)
         }
-        if (used.isEmpty()) return Picked("", 0)
+        if (used.isEmpty()) return Picked("", 0, objective = objective)
         val ls = used.map { it.second }
         fun picked(text: String) = Picked(
             text, ls.size,
             ls.minOf { it.top }, ls.maxOf { it.bottom }, ls.minOf { it.left }, ls.maxOf { it.right },
             lineHeight = ls.map { fontSizeOf(it) }.sorted()[ls.size / 2],
+            objective = objective,
         )
         // volby odpovědí: každá zvlášť, ne slité do jednoho odstavce
         if (subtitlesOnly) choiceText(ls)?.let { return picked(it) }
@@ -354,10 +368,10 @@ object TextLogic {
             if (cur.isNotEmpty()) parts.add(cur)
         }
         // samotné jméno bez textu není titulek
-        if (parts.all { SPEAKER_ONLY.matches(it) }) return Picked("", 0)
+        if (parts.all { SPEAKER_ONLY.matches(it) }) return Picked("", 0, objective = objective)
         val text = mergeSpeakerLines(parts).joinToString("\n").trim()
         // "jen titulky": položky menu, nápisy a šum se nepřekládají – jen to, co vypadá jako replika
-        if (subtitlesOnly && !looksLikeDialogue(text)) return Picked("", 0)
+        if (subtitlesOnly && !looksLikeDialogue(text)) return Picked("", 0, objective = objective)
         return picked(text)
     }
 
@@ -365,6 +379,28 @@ object TextLogic {
      * Není to angličtina? (Obsahuje písmena s diakritikou nebo jiné písmo, např. „Potřebujeme peníze“.)
      * Takový text je skoro jistě náš vlastní překlad přečtený z obrazovky – nikdy se nepřekládá znovu.
      */
+    /**
+     * Řádek s úkolem z řádků, které prošly jako titulek: nejspodnější řádek bez mluvčího, nad nímž je mezera aspoň
+     * 0,6 výšky řádku a nejvýš 2,5 (volný řádek mezi titulkem a úkolem), nebo – když nad ním nic není – ležící
+     * na naučeném místě úkolu ([objectiveTop], ± 0,7 výšky řádku).
+     */
+    fun objectiveLine(lines: List<OcrLine>, objectiveTop: Int = -1): OcrLine? {
+        if (lines.isEmpty()) return null
+        val last = lines.maxByOrNull { it.top } ?: return null
+        if (splitSpeaker(clean(last.text)).speaker != null || last.text.trim().startsWith(CHOICE_MARK.trim())) return null
+        if (last.text.count { it.isLetter() } < 3) return null
+        val h = last.height.coerceAtLeast(1)
+        val nearest = lines.filter { it !== last && it.bottom <= last.top + h / 4 }.maxByOrNull { it.bottom }
+        if (nearest != null) {
+            val gap = last.top - nearest.bottom
+            val ref = maxOf(h, nearest.height)
+            if (gap >= 0.6f * ref && gap <= 2.5f * ref) return last
+        }
+        // bez titulku nad ním (nebo daleko nad ním): jen na místě, kde úkol už byl
+        val alone = nearest == null || last.top - nearest.bottom > 2.5f * maxOf(h, nearest.height)
+        return if (alone && objectiveTop >= 0 && kotlin.math.abs(last.top - objectiveTop) <= 0.7f * h) last else null
+    }
+
     fun looksForeign(text: String): Boolean {
         var n = 0
         for (c in text) if (c.isLetter() && c.code > 0x7F) { n++; if (n >= 2) return true }

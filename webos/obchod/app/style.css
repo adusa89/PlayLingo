@@ -110,6 +110,27 @@ h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; 
 /* pokyn pro hráče pod replikou (GTA „Take your shot“) – menší a šedý */
 #titulek .pokyn { font-size: 0.75em; color: #A8B0B8; }
 
+/* Úkol ve hře (od 1.5.11, GTA VI dole pod titulky) – vlastní prvek, na pruhu nezávislý.
+   Poloha, písmo a pozadí přijdou z Androidu (ukolUkaz v app.js); šířka podle textu, nejvýš 90 %. */
+#ukol {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  box-sizing: border-box;
+  max-width: 1728px;
+  padding: 0.16em 0.6em 0.2em;
+  font-size: 40px;
+  line-height: 1.25;
+  color: #FFFFFF;
+  text-align: center;
+  white-space: pre-line;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 18px;
+  text-shadow: 0 0 3px #000000, 0 0 6px #000000, 0 2px 4px #000000;
+}
+
 #zpet {
   display: none;
   position: absolute;

@@ -6,7 +6,8 @@
  * platformou a verzí (zpráva „pripojeno“), ukáže obyčejný text i řádky `casti`, použije vzhled pruhu
  * z Androidu (pole `vzhled`) a odpoví „hotovo“,
  * pošle svůj záznam událostí (zpráva „zaznam“, bez textu titulků) a že nabídka Vzhled titulků
- * (OK při hře) posílá žádosti „zmen“.
+ * (OK při hře) posílá žádosti „zmen“, a že úkol ve hře (zpráva „ukol“, od 1.5.11) má vlastní prvek,
+ * který skrytí pruhu neschová.
  * Na Samsungu navíc, že se obraz ze vstupu HDMI pustí přes tizen.tvwindow pod stránku.
  */
 'use strict';
@@ -175,8 +176,51 @@ function zkus(platforma, verze, dalsi) {
       // bez pole vzhled (starší PlayLingo) je pruh zase výchozí: černý a dole
       assert.strictEqual(tv.prvky.pruh.style.background, '');
       assert.strictEqual(tv.prvky.pruh.style.top, '');
+      // úkol ve hře (od 1.5.11): vlastní prvek #ukol uprostřed obdélníku anglického úkolu, na pruhu nezávislý
+      ws.onmessage({ data: JSON.stringify({ typ: 'ukol', text: 'Jdi do úkrytu.', misto: [0.3, 0.9, 0.7, 0.95], pismo: 40, pozadi: 90, barva: '#FFFFFF' }) });
+      var ukol = tv.prvky.ukol;
+      assert.strictEqual(ukol.style.display, 'block', 'úkol je vidět');
+      assert.strictEqual(ukol.textContent, 'Jdi do úkrytu.');
+      assert.strictEqual(ukol.style.fontSize, '40px');
+      assert.strictEqual(ukol.style.background, 'rgba(0,0,0,0.9)');
+      assert.strictEqual(ukol.style.color, '#FFFFFF');
+      // napodobený prohlížeč neměří šířku → 90 % obrazovky (1728 px) se středem na 0,5; výška 150 px se středem na 0,925
+      assert.strictEqual(ukol.style.left, Math.round(0.5 * 1920 - 1728 / 2) + 'px');
+      assert.strictEqual(ukol.style.top, Math.round(0.925 * 1080 - 75) + 'px');
+      assert.strictEqual(tv.prvky.titulek.textContent.indexOf('úkrytu'), -1, 'úkol nejde do pruhu');
+      // skrytí pruhu úkol neschová
       ws.onmessage({ data: '{"typ":"skryj","id":3}' });
       assert.strictEqual(tv.prvky.pruh.style.display, 'none');
+      assert.strictEqual(ukol.style.display, 'block', 'skrytí pruhu neschová úkol');
+      // barevné kusy (casti): span s barvou, null = výchozí; cizí barva i nesmyslné misto se zahodí
+      ws.onmessage({ data: JSON.stringify({ typ: 'ukol', text: 'Jdi do úkrytu.', misto: ['x', 2, null], barva: 'red;x', casti: [
+        { text: 'Jdi do ', barva: null }, { text: 'úkrytu', barva: '#FFD200' }, { text: '.', barva: 'url(x)' }] }) });
+      assert.strictEqual(ukol.children.length, 3);
+      assert.strictEqual(ukol.textContent, 'Jdi do úkrytu.');
+      assert.strictEqual(ukol.children[0].style.color, undefined);
+      assert.strictEqual(ukol.children[1].style.color, '#FFD200');
+      assert.strictEqual(ukol.children[2].style.color, undefined, 'cizí barva se do stylu nedostane');
+      assert.strictEqual(ukol.style.color, '#FFFFFF', 'neplatná barva = bílá');
+      assert.strictEqual(ukol.style.top, Math.round(0.9 * 1080 - 75) + 'px', 'bez platného misto dole uprostřed');
+      // titulek po úkolu: pruh se ukáže a úkol zůstane
+      ws.onmessage({ data: JSON.stringify({ typ: 'ukaz', id: 7, text: 'Rychle!' }) });
+      assert.strictEqual(tv.prvky.pruh.style.display, 'flex');
+      assert.strictEqual(ukol.style.display, 'block', 'titulek úkol neschová');
+      // dlouhý text se zkrátí na 300 znaků
+      ws.onmessage({ data: JSON.stringify({ typ: 'ukol', text: new Array(500).join('a') }) });
+      assert.strictEqual(ukol.textContent.length, 300);
+      // prázdný text = schovat; pruhu se to netýká
+      ws.onmessage({ data: '{"typ":"ukol","text":""}' });
+      assert.strictEqual(ukol.style.display, 'none', 'prázdný úkol se schová');
+      assert.strictEqual(tv.prvky.pruh.style.display, 'flex', 'schování úkolu neschová pruh');
+      ws.onmessage({ data: '{"typ":"skryj","id":8}' });
+      // znovu úkol – po ztrátě spojení (níže) musí zmizet
+      ws.onmessage({ data: JSON.stringify({ typ: 'ukol', text: 'Ujeď policii.', misto: [0.35, 0.92, 0.65, 0.96] }) });
+      assert.strictEqual(ukol.style.display, 'block');
+      // neznámý typ zprávy nic nerozbije
+      ws.onmessage({ data: '{"typ":"neco_noveho","text":"x"}' });
+      ws.onmessage({ data: 'neni json' });
+      assert.strictEqual(ukol.style.display, 'block');
       // nabídka Vzhled titulků (od 1.4.0): Android pošle volby, OK je při hře otevře, šipky požádají o změnu
       ws.onmessage({ data: '{"typ":"nastaveni","pruhlednost":90,"velikost":22,"podleHry":true,"poloha":"tesne","original":false}' });
       tv.stiskni(13);
@@ -208,16 +252,18 @@ function zkus(platforma, verze, dalsi) {
       var radky1 = [].concat.apply([], zaznam1.map(function (z) { return z.radky; }));
       assert.ok(radky1.some(function (r) { return r.indexOf('start PlayLingo ' + platforma + ' ' + verze) >= 0; }), 'záznam má start s verzí');
       assert.ok(radky1.some(function (r) { return r.indexOf('připojeno k ws://192.168.1.20:8787') >= 0; }), 'záznam má připojení');
-      pockej(function () { return tv.odeslano.filter(function (z) { return z.typ === 'hotovo'; }).length === 4; }, function () {
+      pockej(function () { return tv.odeslano.filter(function (z) { return z.typ === 'hotovo'; }).length === 6; }, function () {
         // spojení spadne → televize se připojí znovu a pošle jen nové řádky, bez textu titulků
         var pred = tv.odeslano.length;
         ws.onclose();
+        assert.strictEqual(tv.prvky.ukol.style.display, 'none', 'po ztrátě spojení úkol zmizí');
         pockej(function () { return tv.odeslano.slice(pred).some(function (z) { return z.typ === 'zaznam'; }); }, function () {
           var radky2 = [].concat.apply([], tv.odeslano.slice(pred).filter(function (z) { return z.typ === 'zaznam'; }).map(function (z) { return z.radky; }));
           assert.ok(radky2.some(function (r) { return /ukaž #1: 12 znaků/.test(r); }), 'záznam má délku titulku');
           assert.ok(radky2.some(function (r) { return /spojení se ztratilo/.test(r); }), 'záznam má ztrátu spojení');
+          assert.ok(radky2.some(function (r) { return /úkol 14 znaků, 3 částí/.test(r); }), 'záznam má délku úkolu');
           assert.ok(!radky2.some(function (r) { return /start PlayLingo/.test(r); }), 'staré řádky se neposílají znovu');
-          assert.ok(!radky1.concat(radky2).some(function (r) { return /Počkej|Ahoj/.test(r); }), 'text titulků do záznamu nejde');
+          assert.ok(!radky1.concat(radky2).some(function (r) { return /Počkej|Ahoj|úkrytu|policii|Rychle/.test(r); }), 'text titulků do záznamu nejde');
           // Zpět vrátí úvodní obrazovku a na Samsungu schová obraz ze vstupu
           tv.stiskni(platforma === 'tizen' ? 10009 : 461);
           assert.strictEqual(tv.document.body.className, 's-domu');

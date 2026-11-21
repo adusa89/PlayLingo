@@ -173,6 +173,15 @@ a texty hry). GTA (profil `prompts = true`): poslední krátký řádek bez mluv
 titulky“ ho `SubtitleOverlay` vynechá. Diablo IV: chat se nečte (`GameProfile.skip`, regex v `Diablo4.SKIP`), mluvčí
 „Jachal says:“ (`SPEAKER_SAYS`). Jason má i přezdívku J-dog.
 
+**Úkol pod titulky jako samostatný pruh (od 0.97.43, přání majitele, aplikace v TV 1.5.11):** u profilů s `prompts` (GTA)
+`TextLogic.assemble(objectives = true)` vyčlení z titulků nejspodnější řádek bez mluvčího, nad kterým je volný řádek
+(mezera 0,6–2,5 výšky řádku; `objectiveLine`), nebo samotný řádek na naučeném místě úkolu (`objectiveTop`) → `Picked.objective`.
+`core/Objective.kt` (`ObjectiveTracker`, testy `ObjectiveTest`): nový úkol = přeložit (offline, DeepL jako titulky), drobná chyba
+čtení = stejný, zmizí po 2 čteních bez něj. Služba `handleObjective` → `SubtitleOverlay.showObjective` (vlastní okno přes
+anglický úkol, písmo podle originálu) a do TV `{"typ":"ukol",…}` (`TvSender.objectiveMessage` / `sendObjective`). Nezávislé na
+mizení titulků; schová se v menu hry, při pauze a nové volbě. S „Jen titulky“ se úkol jen vyčlení a nepřekládá. Barevná slova
+úkolu zatím ne (TV umí `casti` s barvami, Android je neposílá). V záznamu `OBJ|show|…` / `OBJ|hide`. Na skutečné hře neověřeno.
+
 **Profil hry dál (od 0.97.4)**, vše v `core/GameProfiles.kt` (testy `GameCastTest`):
 - `terms` – herní pojmy s pevným překladem po jazycích (jdou do `Prefs.glossary` před vlastní slovník, ten má
   přednost); jen pojmy, které mají v 1. a 4. pádě stejný tvar (výraz se vkládá do věty hotový).
@@ -371,6 +380,9 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   mluvčích (řádek = mluvčí, v `TvLook` s `
 `) a jméno má stejnou barvu jako v překladu (`SubtitleOverlay.format`,
   `puvodniRadky` v `app.js`). Pruh v TV má zaoblené rohy. Barvy jmen přiděluje PlayLingo (`SpeakerColors`), z obrazu je nečte.
+- **Úkol ve hře** (aplikace v televizi 1.5.11): zpráva `{"typ":"ukol","text":…,"misto":[l,t,r,b],"pismo","pozadi","barva","casti":[{text,barva}]}`
+  ukáže řádek úkolu (GTA VI) ve vlastním prvku `#ukol` (`ukolUkaz` v `app.js`) uprostřed `misto` (zlomky obrazu), šířka podle
+  textu do 90 %; prázdný text = schovat. Na pruhu nezávislý (`skryj` ho neschová), mizí při ztrátě spojení a na Domů; `hotovo` neposílá.
 - **Domů hlásí starou aplikaci v televizi** (`TvChoice.outdated`: ohlášená verze vs. `receiver-manifest.json`
   v APK, text `w_tv_old`), s tlačítkem k nahrání.
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →

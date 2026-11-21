@@ -62,6 +62,8 @@ class SubtitleOverlay(
      * (viz [TvSender]); volá se i tehdy, když se pruh na tomto zařízení zobrazit nepodařilo.
      */
     private val onText: ((String?, String?, String?) -> Unit)? = null,
+    /** Úkol pod titulky pro televizi LG/Samsung – hotová zpráva [TvSender.objectiveMessage] (od 0.97.43). */
+    private val onObjective: ((String) -> Unit)? = null,
 ) {
     companion object {
         private const val TAG = "TestPreklad"
@@ -88,6 +90,9 @@ class SubtitleOverlay(
     @Volatile private var bar: TextView? = null
     @Volatile private var barParams: WindowManager.LayoutParams? = null
     @Volatile private var debugView: TextView? = null
+    /** Samostatný pruh s úkolem pod titulky (GTA) – nezávislý na pruhu s titulkem (od 0.97.43). */
+    @Volatile private var objView: TextView? = null
+    @Volatile private var objParams: WindowManager.LayoutParams? = null
     @Volatile private var layout: ScreenLayout = layout
     private val textSize = textSizeSp
     private val sizeKeeper = SizeKeeper()
@@ -120,6 +125,22 @@ class SubtitleOverlay(
                 gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             }
             if (add(tv, lp)) { bar = tv; barParams = lp }
+
+            // úkol: stejný vzhled jako pruh, vlastní okno a místo (tam, kde je anglický úkol)
+            val ov = TextView(host).apply {
+                setTextColor(textColor)
+                gravity = Gravity.CENTER
+                typeface = Typeface.create("sans-serif-medium", if (bold) Typeface.BOLD else Typeface.NORMAL)
+                if (opacityPercent < 60) setShadowLayer(dp(4).toFloat(), 0f, dp(1).toFloat(), Color.BLACK)
+                else setShadowLayer(3f, 0f, 1f, Color.BLACK)
+                background = GradientDrawable().apply {
+                    setColor(Color.argb(bgAlpha, 0, 0, 0))
+                    cornerRadius = dp(10).toFloat()
+                }
+                visibility = View.GONE
+            }
+            val olp = params(WindowManager.LayoutParams.WRAP_CONTENT)
+            if (add(ov, olp)) { objView = ov; objParams = olp }
 
             if (showDebug) {
                 val dv = TextView(host).apply {
@@ -318,6 +339,39 @@ class SubtitleOverlay(
         }
     }
 
+    /**
+     * Ukáže přeložený úkol ve vlastním pruhu přes anglický úkol. [box] = vlevo, nahoře, vpravo, dole (zlomky obrazu),
+     * [lineHeight] = velikost písma originálu jako zlomek výšky (0 = neznámá → písmo z Nastavení).
+     */
+    fun showObjective(text: String, box: FloatArray, lineHeight: Float) {
+        val px = if (matchOriginalSize && lineHeight > 0f) MatchSize.textPx(lineHeight, screenH).toFloat() else 0f
+        onObjective?.invoke(TvSender.objectiveMessage(text, box,
+            TvLook.textPx(textSize, if (px > 0f) MatchSize.textPx(lineHeight, TvLook.SCREEN_H) else 0),
+            opacityPercent, SpeakerColors.hex(textColor)))
+        main.post {
+            val v = objView ?: return@post
+            val lp = objParams ?: return@post
+            if (px > 0f) v.setTextSize(TypedValue.COMPLEX_UNIT_PX, px) else v.textSize = textSize.toFloat()
+            val em = v.textSize
+            v.setPadding((em * 0.7f).toInt(), (em * 0.12f).toInt(), (em * 0.7f).toInt(), (em * 0.16f).toInt())
+            v.text = text
+            v.measure(View.MeasureSpec.makeMeasureSpec((screenW * 0.9f).toInt(), View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+            val w = v.measuredWidth; val h = v.measuredHeight
+            val cx = (box[0] + box[2]) / 2f * screenW; val cy = (box[1] + box[3]) / 2f * screenH
+            lp.width = w
+            lp.x = (cx - w / 2f).toInt().coerceIn(0, maxOf(0, screenW - w))
+            lp.y = (cy - h / 2f).toInt().coerceIn(0, maxOf(0, screenH - h))
+            v.visibility = View.VISIBLE
+            try { wm.updateViewLayout(v, lp) } catch (_: Exception) {}
+        }
+    }
+
+    fun hideObjective() {
+        onObjective?.invoke(TvSender.objectiveMessage(null))
+        main.post { objView?.visibility = View.GONE }
+    }
+
     fun hide() {
         isShown = false
         onText?.invoke(null, null, null)
@@ -332,9 +386,10 @@ class SubtitleOverlay(
     fun destroy() {
         isShown = false
         onText?.invoke(null, null, null)
+        onObjective?.invoke(TvSender.objectiveMessage(null))
         main.post {
-            listOfNotNull(bar, debugView).forEach { v -> try { wm.removeView(v) } catch (_: Exception) {} }
-            bar = null; barParams = null; debugView = null
+            listOfNotNull(bar, debugView, objView).forEach { v -> try { wm.removeView(v) } catch (_: Exception) {} }
+            bar = null; barParams = null; debugView = null; objView = null; objParams = null
         }
     }
 }

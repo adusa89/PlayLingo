@@ -282,7 +282,7 @@ class TranslatorService : Service() {
             ACTION_PAUSE -> {
                 if (running) {
                     paused = !paused
-                    if (paused) overlay?.hide() else resetReading()
+                    if (paused) { overlay?.hide(); dropObjective() } else resetReading()
                     updateNotification()
                 }
                 return START_NOT_STICKY
@@ -462,8 +462,10 @@ class TranslatorService : Service() {
             barPad = Prefs.barPad(this),
             showPrompts = Prefs.gameTexts(this),
             speakerPreset = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey,
-            onText = sender?.let { s -> { text: String?, parts: String?, look: String? -> if (text == null) s.hide() else s.show(text, parts, look) } }
+            onText = sender?.let { s -> { text: String?, parts: String?, look: String? -> if (text == null) s.hide() else s.show(text, parts, look) } },
+            onObjective = sender?.let { s -> { m: String -> s.sendObjective(m) } },
         )
+        objectiveTracker.reset(); objectiveSeq++
         resetReading()
         val l = lang
         modelTries = 0
@@ -790,7 +792,7 @@ class TranslatorService : Service() {
             }
             tp("MENU|${view.kind}|${view.items.joinToString(",")}|vybraná=${view.selected}|popis=${view.title ?: "-"}")
         }
-        if (!menuShown) resetReading()
+        if (!menuShown) { resetReading(); dropObjective() }
         menuShown = true
         hideAt = 0
         return true
@@ -869,7 +871,10 @@ class TranslatorService : Service() {
             centerTolerance = (capW * 0.14f).toInt(),
             maxLineHeight = (capH * 0.085f).toInt(),
             screen = screen,
+            objectives = prompts,
+            objectiveTop = if (prompts && objectiveTracker.top >= 0f) (objectiveTracker.top * capH).toInt() - y0 else -1,
         )
+        if (prompts) handleObjective(picked.objective, x0, y0)
         if (picked.text.isNotEmpty()) lastOcrText = picked.text
         takeNameColor()
         if (coloredSpeaker && picked.text.isNotEmpty()) askNameColor(blocks, picked.text, x0, y0)
@@ -981,6 +986,52 @@ class TranslatorService : Service() {
             val bb = l.boundingBox ?: return@mapNotNull null
             OcrLine(l.text, (bb.left / k).toInt(), (bb.top / k).toInt(), (bb.right / k).toInt(), (bb.bottom / k).toInt())
         })
+    }
+
+    // ---------------- úkol pod titulky (GTA, od 0.97.43) ----------------
+
+    private val objectiveTracker = cz.playlingo.core.ObjectiveTracker()
+    /** Pořadí zobrazení úkolu – pozdě dokončený překlad staršího úkolu se už neukáže. */
+    @Volatile private var objectiveSeq = 0L
+
+    /**
+     * Úkol je samostatný pruh: ukáže se na místě anglického úkolu a drží se, dokud ho čtení vidí (titulek nad ním
+     * může mezitím zmizet). S „Jen titulky“ se úkol jen vyčlení z titulků a nepřekládá se.
+     */
+    private fun handleObjective(line: cz.playlingo.core.OcrLine?, x0: Int, y0: Int) {
+        val top = line?.let { (y0 + it.top).toFloat() / capH } ?: -1f
+        when (val ch = objectiveTracker.update(line?.text, top)) {
+            is cz.playlingo.core.ObjectiveTracker.Change.Show -> {
+                val l = line ?: return
+                val seq = ++objectiveSeq
+                val ov = overlay ?: return
+                if (!Prefs.gameTexts(this)) { ov.hideObjective(); return }
+                val box = floatArrayOf((x0 + l.left).toFloat() / capW, (y0 + l.top).toFloat() / capH,
+                    (x0 + l.right).toFloat() / capW, (y0 + l.bottom).toFloat() / capH)
+                val lineH = TextLogic.fontSizeOf(l).toFloat() / capH
+                tp("OBJ|show|" + ch.text.take(60))
+                scope.launch {
+                    val offline = translateSegments(ch.text) ?: return@launch
+                    // DeepL jako u titulků (paměť, nejvýš 2,5 s), jinak offline
+                    val segs = deeplKey?.let { DeeplTranslator.plan(it, lang, ch.text, glossary) }?.let { job ->
+                        val texts = DeeplTranslator.cached(job) ?: if (DeeplTranslator.tryStart())
+                            withTimeoutOrNull(cz.playlingo.core.Deepl.WAIT_MS) { DeeplTranslator.fetch(job) }?.texts else null
+                        texts?.let { DeeplTranslator.merge(offline, job, it) }
+                    } ?: offline
+                    val text = segs.joinToString(" ") { it.body }.trim()
+                    if (text.isEmpty() || seq != objectiveSeq || overlay !== ov) return@launch
+                    ov.showObjective(text, box, lineH)
+                }
+            }
+            cz.playlingo.core.ObjectiveTracker.Change.Hide -> { objectiveSeq++; overlay?.hideObjective(); tp("OBJ|hide") }
+            cz.playlingo.core.ObjectiveTracker.Change.Keep -> {}
+        }
+    }
+
+    /** Úkol pryč (menu hry, nové nastavení, pauza). */
+    private fun dropObjective() {
+        objectiveTracker.reset(); objectiveSeq++
+        overlay?.hideObjective()
     }
 
     // ---------------- překlad ----------------

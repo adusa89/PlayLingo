@@ -110,6 +110,19 @@ class TvSender(private val log: (String) -> Unit = {}) {
         fun hideMessage(id: Int) = "{\"typ\":\"skryj\",\"id\":$id}"
 
         /**
+         * Řádek s úkolem pod titulky (od 0.97.43, aplikace v TV 1.5.11) – samostatný pruh, nezávislý na titulku:
+         * `{"typ":"ukol","text":…,"misto":[vlevo,nahoře,vpravo,dole],"pismo":px,"pozadi":0–100,"barva":"#RRGGBB"}`,
+         * schování `{"typ":"ukol","text":""}`. [misto] = kde byl anglický úkol (zlomky obrazu 0..1). Starší TV zprávu
+         * neznají a nic neukážou.
+         */
+        fun objectiveMessage(text: String?, misto: FloatArray? = null, pismo: Int = 0, pozadi: Int = 100, barva: String = "#FFFFFF"): String {
+            if (text.isNullOrBlank() || misto == null || misto.size < 4) return "{\"typ\":\"ukol\",\"text\":\"\"}"
+            val m = misto.joinToString(",") { String.format(java.util.Locale.ROOT, "%.4f", it.coerceIn(0f, 1f)) }
+            return "{\"typ\":\"ukol\",\"text\":${json(text)},\"misto\":[$m],\"pismo\":${pismo.coerceIn(16, 120)}," +
+                "\"pozadi\":${pozadi.coerceIn(0, 100)},\"barva\":\"$barva\"}"
+        }
+
+        /**
          * Stav pro televizi jako Domů v aplikaci: řádky (barva „ok“ / „pozor“ / „info“, text).
          * Aplikace v televizi od 1.5.0 je ukáže pod svými řádky (HDMI, spojení); starší zprávu přeskočí.
          */
@@ -170,6 +183,8 @@ class TvSender(private val log: (String) -> Unit = {}) {
     @Volatile private var settings: String? = null
     /** Poslední stav pro televizi (body s tečkou, aplikace v televizi od 1.5.0); nové televize ho dostanou po připojení. */
     @Volatile private var status: String? = null
+    /** Právě zobrazený úkol ([objectiveMessage]); null = žádný. */
+    @Volatile private var objective: String? = null
     /** Televize požádala o změnu vzhledu ([TvSettings.parse] už ověřil volbu i hodnotu). */
     @Volatile var onChange: ((TvSettings.Change) -> Unit)? = null
 
@@ -271,6 +286,14 @@ class TvSender(private val log: (String) -> Unit = {}) {
         broadcast(message)
     }
 
+    /** Úkol pod titulky ([objectiveMessage]) – posílá se jen změna; nové televize ho dostanou po připojení. */
+    @Synchronized fun sendObjective(message: String) {
+        val m = if (message.contains("\"text\":\"\"")) null else message
+        if (m == objective) return
+        objective = m
+        broadcast(message)
+    }
+
     /** Schová pruh na televizi. */
     @Synchronized fun hide() {
         if (shown == null) return
@@ -332,6 +355,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
                 settings?.let { m -> val b = frame(m); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
                 status?.let { m -> val b = frame(m); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
                 shown?.let { t -> val b = frame(showMessage(++nextId, t, shownParts, shownLook)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
+                objective?.let { m -> val b = frame(m); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
             }
             log("tv connected, now ${clients.size}")
             // Od televize je zajímavé jen ohlášení (platforma a verze); čte se i proto, aby se

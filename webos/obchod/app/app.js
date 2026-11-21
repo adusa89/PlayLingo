@@ -497,6 +497,78 @@
     vzhledPruhu(vzhled, casti);
   }
 
+  // ---- Úkol ve hře (od 1.5.11) ------------------------------------------
+  // Řádek s úkolem (GTA VI dole pod titulky) má vlastní prvek #ukol, nezávislý na pruhu:
+  // skrytí pruhu (skryj, vypršení) ho neschová a naopak. Zpráva z Androidu
+  // {"typ":"ukol","text":…,"misto":[vlevo,nahoře,vpravo,dole],"pismo":…,"pozadi":…,"barva":…,"casti":[…]}
+  // – misto = obdélník anglického úkolu jako zlomky obrazu (jako vzhled.text), pismo v px na 1080 řádků,
+  // pozadi 0–100 (100 = černé), casti = barevné kusy textu (barva null = výchozí). Prázdný text = schovat.
+  var UKOL_MAX = 300;
+  var ukolPodpis = '';   // co je naposledy v záznamu, ať se stejný úkol nezapisuje dokola
+
+  function ukolSkryj() {
+    var u = el('ukol');
+    u.style.display = 'none';
+    u.textContent = '';
+    ukolPodpis = '';
+  }
+
+  function ukolUkaz(z) {
+    var u = el('ukol'), s = u.style;
+    var W = 1920, H = 1080;
+    var text = String(z.text || '').substring(0, UKOL_MAX);
+    var casti = z.casti, i, c, kus, zbyva, barva, m, cx, cy, maxW, w, h, pozadi, podpis;
+    if (!/\S/.test(text)) {
+      if (ukolPodpis) { zapis('úkol skryt'); }
+      ukolSkryj();
+      return;
+    }
+    u.textContent = '';
+    if (casti && Object.prototype.toString.call(casti) === '[object Array]' && casti.length) {
+      // barevné kusy jako span, celkem nejvýš UKOL_MAX znaků
+      zbyva = UKOL_MAX;
+      for (i = 0; i < casti.length && i < 40 && zbyva > 0; i++) {
+        c = casti[i] || {};
+        kus = document.createElement('span');
+        kus.textContent = String(c.text || '').substring(0, zbyva);
+        zbyva -= kus.textContent.length;
+        if (barvaJmena(c.barva)) { kus.style.color = barvaJmena(c.barva); }
+        u.appendChild(kus);
+      }
+    } else {
+      casti = null;
+      u.textContent = text;
+    }
+    pozadi = cislo(z.pozadi, 0, 100, 90);
+    barva = barvaJmena(z.barva);
+    s.color = barva || '#FFFFFF';
+    s.background = 'rgba(0,0,0,' + (pozadi / 100) + ')';
+    s.fontSize = cislo(z.pismo, 16, 120, 40) + 'px';
+    // nejdřív změřit: šířka podle textu, nejvýš 90 % obrazovky
+    maxW = Math.round(W * 0.9);
+    s.left = '0px'; s.top = '0px'; s.width = 'auto'; s.maxWidth = maxW + 'px';
+    s.display = 'block';
+    w = u.getBoundingClientRect ? Math.ceil(u.getBoundingClientRect().width) : u.offsetWidth;
+    w = Math.max(1, Math.min(maxW, w || maxW));
+    h = u.offsetHeight || Math.round(cislo(z.pismo, 16, 120, 40) * 1.6);
+    // střed obdélníku anglického úkolu; bez platného misto dole uprostřed
+    m = z.misto;
+    cx = 0.5; cy = 0.9;
+    if (m && Object.prototype.toString.call(m) === '[object Array]' && m.length >= 4) {
+      m = [cislo(m[0], 0, 1, -1), cislo(m[1], 0, 1, -1), cislo(m[2], 0, 1, -1), cislo(m[3], 0, 1, -1)];
+      if (m[0] >= 0 && m[1] >= 0 && m[2] > m[0] && m[3] > m[1]) {
+        cx = (m[0] + m[2]) / 2;
+        cy = (m[1] + m[3]) / 2;
+      }
+    }
+    s.left = Math.round(Math.max(0, Math.min(W - w, cx * W - w / 2))) + 'px';
+    s.top = Math.round(Math.max(0, Math.min(H - h, cy * H - h / 2))) + 'px';
+    // jen délka a počet kusů, ne text úkolu (zásada soukromí záznamu)
+    podpis = (z.id !== undefined ? '#' + String(z.id).substring(0, 20) + ': ' : '') + text.length + ' znaků' +
+      (casti ? ', ' + casti.length + ' částí' : '');
+    if (podpis !== ukolPodpis) { zapis('úkol ' + podpis); ukolPodpis = podpis; }
+  }
+
   // ---- Vzhled titulků z ovladače (od 1.4.0) -----------------------------
   // Všechno nastavení patří PlayLingu na Androidu. Televize dostane zprávou `nastaveni` pár voleb,
   // ukáže je v malé nabídce (OK při hře) a o změnu požádá zprávou `zmen`; Android ji ověří, uloží
@@ -660,6 +732,7 @@
     chciVzhled = false;
     panelZavri();
     pruh(null);
+    ukolSkryj();
     P.skryjVstup();
     el('obraz').innerHTML = '';
     strana = kam;
@@ -744,6 +817,7 @@
     zapis('připojeno k ' + adresa);
     if (!prijem.pevna) { pamet('titulky', adresa); }
     pruh(null);
+    ukolSkryj();
     stav.bezSite = false;
     stavKresli(true);
     ws.onerror = null;
@@ -763,6 +837,11 @@
         // stav z Androidu (konzole, překlad, hra) – body s tečkou jako na Domů
         stav.android = prectiStav(z);
         stavKresli(false);
+        return;
+      }
+      if (z.typ === 'ukol') {
+        // úkol ve hře (od 1.5.11) – vlastní prvek, pruhu se netýká; bez odpovědi hotovo
+        try { ukolUkaz(z); } catch (e) { zapis('úkol se nepodařilo ukázat'); ukolSkryj(); }
         return;
       }
       if (z.typ === 'ukaz') {
@@ -794,6 +873,7 @@
       stav.android = [];
       panelZavri();
       pruh(null);
+      ukolSkryj();
       stavKresli(true);
       pozdeji(hledej, 2000);
     };
