@@ -632,8 +632,10 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   DeepL pokus v ⚙ Nastavení → Experimentální – tam už není (zůstala Zkušební verze a Ladění a hlášení se záznamem
   v síti). Řádek jazyka na Domů, řádek Režim překladu (⚙ → Čtení a překlad) a Nápověda kap. 4 vedou do Titulků
   s otevřenou skupinou (`openQuality()`). Jedna instance `deeplSection()` (drží rozepsaný klíč).
-- **Cesta ke klíči ve třech krocích** (`keySteps`): televize = **tři čtverečky vedle sebe** – 1. registrace
-  (`Deepl.SIGNUP_URL`, rovnou plán Developer), 2. stránka s klíči (`KEYS_URL`, ikona kopírování), 3. stránka z televize
+- **Cesta ke klíči ve třech krocích** (`keySteps`): televize = **tři čtverečky vedle sebe** – 1. ceník na záložce API
+  (`Deepl.SIGNUP_URL` = `https://www.deepl.com/pro#api`, od 0.97.61; tlačítko u Developeru nepřihlášeného pošle na
+  registraci, přihlášenému – i s účtem jen pro Translator – přidá plán k účtu. Přímá registrace `/signup?…&productId=
+  api-developer` přihlášeného přesměruje do Translatoru, proto ne; ověřeno majitelem 21. 11. 2026), 2. stránka s klíči (`KEYS_URL`, ikona kopírování), 3. stránka z televize
   pro vložení (`DeeplPage`) + „⏳ Čekám na klíč z telefonu…“ a „Napsat klíč ručně“ (`manual`). Telefon / tablet (ne
   `Prefs.isTv`) = tlačítka Otevřít DeepL / Otevřít stránku s klíčem a políčko. Stránka pro telefon má stejné 3 kroky.
   První uložený klíč DeepL rovnou zapne (`store`). Průvodce: bez klíče hlavní tlačítko „Přeskočit – zůstat u offline

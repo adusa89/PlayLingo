@@ -14,10 +14,12 @@ object Deepl {
     const val FREE_HOST = "api-free.deepl.com"
     const val PRO_HOST = "api.deepl.com"
     /**
-     * Registrace DeepL API rovnou s plánem „Developer“ (zdarma, 1 000 000 znaků celkem; ověřeno 20. 11. 2026 –
-     * odkaz „Free API Key“ v menu Developers na deepl.com/pro-api). Jazyk stránky si DeepL doplní sám.
+     * Ceník DeepL na záložce API (plán „Developer“ zdarma, 1 000 000 znaků celkem). Tlačítko u Developeru
+     * nepřihlášeného pošle na registraci, přihlášenému (i s účtem jen pro Translator) přidá plán k účtu.
+     * Přímý odkaz na registraci (`/signup?…&productId=api-developer`) přihlášeného přesměruje do Translatoru –
+     * proto ne (ověřeno na skutečném účtu 21. 11. 2026). Jazyk stránky si DeepL doplní sám.
      */
-    const val SIGNUP_URL = "https://www.deepl.com/signup?cta=checkout&is_api=true&productId=api-developer"
+    const val SIGNUP_URL = "https://www.deepl.com/pro#api"
     /** Stránka s klíči v účtu DeepL – přímo, bez hledání v menu (na mobilu se tam jinak špatně trefuje). */
     const val KEYS_URL = "https://www.deepl.com/your-account/keys"
     /** Odpověď, která přijde později, se už do pruhu nedává (hráč mezitím čte), jen se zapamatuje. */

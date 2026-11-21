@@ -283,15 +283,16 @@ v Titulkách → Kvalita překladu.
 Klíč je dlouhý (asi 40 znaků), proto ho do televize **nepíšeš** – zkopíruješ a vložíš ho jen v telefonu.
 Televize ukáže **tři čtverečky vedle sebe**; naskenuj je telefonem (Android i iPhone) postupně:
 
-1. **Účet DeepL API zdarma** (jen poprvé) – čtvereček vede rovnou na registraci s plánem **Developer**:
-   zadej e-mail a heslo, nech „Developer“ („Test out the API for free“) a zvol **Continue**. Plán je zdarma:
-   **1 000 000 znaků celkem**, každý měsíc se neobnovuje. Kdyby DeepL chtěl platební kartu, plán Developer
-   stejně nic nestojí (20. 11. 2026 kartu nechtěl). Pak **potvrď e-mail** odkazem, který ti DeepL pošle.
-   - Registraci otevři v prohlížeči, kde **nejsi přihlášený do DeepL** – nejjednodušší je soukromá karta
-     (iPhone: Safari → Panely → Soukromé; Android: Chrome → ⋮ → Nová anonymní karta). Jinak tě DeepL
-     přesměruje do Translatoru.
-   - **Máš DeepL jen na překládání (Translator)?** Ten účet klíč API nemá a přidat ho do něj nejde –
-     zaregistruj se **jiným e-mailem**.
+1. **Účet DeepL API zdarma** (jen poprvé) – čtvereček otevře ceník DeepL na záložce **API**
+   (https://www.deepl.com/pro#api). U plánu **Developer** klepni na **Vytvořte si účet zdarma**.
+   - **Nemáš účet DeepL:** zadej e-mail a heslo, zvol **Continue** a **potvrď e-mail** odkazem, který ti
+     DeepL pošle.
+   - **Máš účet DeepL, i jen na překládání (Translator):** nejdřív se na deepl.com **přihlas**, pak otevři
+     ceník → API a klepni na totéž tlačítko u Developeru – plán se **přidá k tvému účtu**, nový e-mail
+     není potřeba (ověřeno 21. 11. 2026).
+   - **Pozor:** odkazy „Získejte API klíč zdarma“ / „API zdarma“ v menu DeepL přihlášeného posílají zpátky
+     do Translatoru. Použij jen tlačítko u plánu Developer v ceníku.
+   - Plán je zdarma: **1 000 000 znaků celkem**, každý měsíc se neobnovuje. Platební kartu DeepL nechce.
 2. **Stránka s klíčem** – https://www.deepl.com/your-account/keys (záložka **API Keys & Limits**). Celý klíč
    se tam nezobrazuje: zkopíruj ho **ikonou kopírování** vedle klíče. Když tam klíč není, zvol **Create key**.
 3. **Vlož klíč** – třetí čtvereček otevře malou stránku „PlayLingo · DeepL“ z televize (telefon musí být
@@ -305,8 +306,9 @@ Ruční psaní ovladačem je jen záloha: **Napsat klíč ručně**. **Telefon j
 tlačítka **Otevřít DeepL**, **Otevřít stránku s klíčem** a políčko, kam klíč vložíš.
 
 ### Dobré vědět
-- **Mám DeepL, ale klíč nevidím / „Create key“ mě přesměruje do Translatoru:** účet jen pro DeepL
-  Translator klíč API nemá. Založ si **nový účet pro API s jiným e-mailem** (krok 1, v soukromé kartě).
+- **Mám DeepL, ale klíč nevidím / všechno mě přesměruje do Translatoru:** účet ještě nemá plán API.
+  Přihlas se, otevři https://www.deepl.com/pro#api a u plánu **Developer** klepni na **Vytvořte si účet
+  zdarma** – plán se přidá k účtu. Pak stránka s klíči → **Create key**.
 - **Registrace visí na „Security check“:** vypni VPN nebo blokování reklam (na iPhonu i Soukromý přenos
   iCloud), případně zkus jiný prohlížeč nebo mobilní data.
 - **Limit:** plán Developer má 1 000 000 znaků celkem (aplikace po ověření ukáže, kolik zbývá).
