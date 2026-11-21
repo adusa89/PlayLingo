@@ -1,0 +1,15 @@
+# Schránka na hlášení od testerů – návod k nasazení v CTI-ME.md.
+name = "playlingo-hlaseni"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+workers_dev = true
+
+[[r2_buckets]]
+binding = "HLASENI"
+bucket_name = "playlingo-hlaseni"
+
+# denní úklid starých balíků (3:17 UTC)
+[triggers]
+crons = ["17 3 * * *"]
+
+# tajný údaj CTENI_KLIC se nastavuje příkazem `npx wrangler secret put CTENI_KLIC` (do repozitáře nepatří)

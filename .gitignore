@@ -22,3 +22,7 @@ zaznamy/
 
 # Python
 __pycache__/
+
+# schránka na hlášení (server/hlaseni)
+node_modules/
+.wrangler/

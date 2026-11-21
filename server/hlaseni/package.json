@@ -1,0 +1,9 @@
+{
+  "name": "playlingo-hlaseni",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/server.test.mjs",
+    "deploy": "wrangler deploy"
+  }
+}

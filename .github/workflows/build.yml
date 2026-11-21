@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - "pc/**"
       - "navrhy/**"
+      - "server/**"
       - ".github/workflows/pc.yml"
   workflow_dispatch:
 
