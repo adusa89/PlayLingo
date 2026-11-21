@@ -86,7 +86,7 @@ internal val ATV_X: Map<Lang, Map<String, String>> = mapOf(
         "at_e_timeout" to "The TV stopped responding.",
     ),
     Lang.PL to mapOf(
-        "at_open" to "Wgraj PlayLingo do Android TV",
+        "at_open" to "Wgrać PlayLingo do Android TV",
         "at_title" to "PlayLingo do Android TV",
         "at_s_find" to "TV w sieci",
         "at_s_find_how" to "Android TV / Google TV włączony i w tej samej sieci Wi-Fi co telefon. Adres TV jest w TV w Ustawieniach → Sieć i internet.",
@@ -320,7 +320,7 @@ internal val ATV_X: Map<Lang, Map<String, String>> = mapOf(
         "at_e_timeout" to "La TV ne répond plus.",
     ),
     Lang.IT to mapOf(
-        "at_open" to "Installa PlayLingo su Android TV",
+        "at_open" to "Installare PlayLingo su Android TV",
         "at_title" to "PlayLingo su Android TV",
         "at_s_find" to "TV in rete",
         "at_s_find_how" to "Android TV / Google TV accesa e sulla stessa Wi-Fi del telefono. L’indirizzo della TV è nella TV in Impostazioni → Rete e Internet.",

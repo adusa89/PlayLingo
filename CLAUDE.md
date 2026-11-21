@@ -434,6 +434,12 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   vždy potřebují Android (čtečka) – bez něj stránka řekne proč. Na stránce z TV pro Android karta **„Jak pokračovat?“**
   (`appmode`: „V aplikaci PlayLingo (Android)“ / „Pokračovat v prohlížeči“, texty `sp_how_h`, `sp_web_go`, `sp_web_d`).
   `pomoc/android-tv.md#telefon` = nahrání z telefonu (ADB). Stránky se zveřejní až z `main`.
+  **Webová obdoba aplikace (od 0.97.67, přání majitele: aplikace v telefonu je hlavní, web jako možnost pro iPhone/počítač):** na
+  stránce z TV nahoře **Stav TV** (`TvStatus.rows`, tečky) a sekce **4 · Titulky a hra** (`core/WebSettings.kt`, testy `WebSettingsTest`):
+  jazyk překladu, Překládat z, hra, velikost písma, pozadí, poloha (jen polohy z `TvSettings`), originál, pokyny / úkol / menu (jen
+  u hry, která je zná), DeepL zapnout. Čtení v `op=info` (pole `web`, `RemoteHost.webState` – nic drahého, dotaz každé 2 s), zápis
+  `op=web&klic=&hodnota=` → `WebSettings.parse` (whitelist) → Prefs / `TvLookPrefs.apply` → `changed`. Výběry ve stránce se při
+  obnovení nepřepíšou, dokud jsou ve fokusu. Texty `web_h`, `web_status_h` v `core/I18nMulti.kt`.
 - Zkouška v emulátoru umí ověřit jen stránku a posílání účtu, ne přihlášení u Sony. Jestli Sony
   pustí přihlášení uvnitř pomocníka na skutečném telefonu, umí ověřit jen uživatel.
 
@@ -890,6 +896,10 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
 - **Související volby do rozbalovacích skupin** po vzoru Nápovědy (`settingRow` s ▼/▲, barevná šipka) –
   majitel Nápovědu v tomhle stylu výslovně chválil. Akce jako „Nastavit oblasti“ jsou řádky ve stejném
   stylu (s „›“), ne velká žlutá tlačítka; velké žluté je jen hlavní akce stránky (Spustit, Spárovat).
+- **V aplikaci ani v návodech se netyká (přání majitele 21. 11. 2026: „To tykání z appky pryč!“, od 0.97.67).** Pokyny v infinitivu
+  („Zapnout PS5“, „Naskenovat čtvereček“), trpný rod / zvratné „se“ („Adresa se vyplní sama“), otázky v infinitivu („Jakou TV nastavit?“,
+  „Na čem nastavovat?“); žádné „máš / zapni / tvůj“ a ani vykání. Totéž v ostatních jazycích (bez du/tu/ty/ти/tú/te – infinitiv nebo
+  neosobní vazba, ne Sie/vous), angličtina beze změny. Neplatí pro překlad titulků ze hry (`Natural.kt` tyká záměrně).
 - **Stavové hlášky, ne věty a bez tykání** (přání majitele, 20. 11. 2026): na Domů, v řádcích a v menu jen
   „Popis · hodnota“ („LG OLED55B7 · připojeno“, nejistý odhad jen „Grand Theft Auto VI?“), ne „Hraješ asi …“ ani jiné oslovení hráče. Kratší
   i v úzkém menu telefonu. Platí pro nové texty ve všech jazycích; staré s tykáním přepisuj, když na ně narazíš.
@@ -1052,6 +1062,12 @@ jen podtitul „Spárování · 3 z 6“, ať nejsou dva pruhy nad sebou) a pomo
   **Od 0.97.56 bez falešné chyby:** spojení s vypínanou PS5 končí chybou knihovny „Unknown Session Request Error“; jakmile
   `connectWhenAwake` pozná klidový režim, smaže `reason` / `endedByConsole` / `refusal` (v hlášení zůstává `recentEndings`)
   a Domů ukáže „PlayStation · Čeká na zapnutí PS5 ovladačem“ (`st_asleep`) bez pruhu „pracuji“ a bez řádku `ls_ended`.
+- **Víc PlayStationů (od 0.97.67, přání majitele):** aktivní PS5 dál pod `ps5_host` (spojení beze změny), všechny spárované navíc
+  v `ps5_hosts` (`core/Ps5Hosts.kt`, testy `Ps5HostsTest`; stejná konzole = stejná MAC). `Prefs.setPs5Host` seznam drží (null = vyřadit
+  aktivní), `Prefs.forgetPs5Host` (Zrušit spárování jen té jedné, aktivní je pak další). Konzole: řádek „Aktivní PS5“ (`switchPs5` – při
+  běžícím překladu se spojí znovu), „Spárovat další PS5“ (`pairAnother`, tlačítko Zrušit). Najít s víc PS5 v síti nic nevybírá samo
+  (`foundPs5` → řádky k výběru, už spárované „· spárováno“); tiché hledání v kroku 1 jen při jediné PS5 a ne při `pairAnother`. Stránka
+  z TV při víc PS5 v síti a neznámé adrese nespáruje (`RemoteHost.multi` → `"multi":true`, `mp_multi`). Texty `mp_…` v `core/I18nMulti.kt`.
 - **Přihlašovací kód účtu na PS5** (4 číslice, `Prefs.ps5LoginPin`): políčko se od 0.86 ukáže jen,
   když o něj PlayStation při spojení požádal (`Ps5Link.needsLoginPin`) nebo když už je nějaký uložený.
 - **Hláška „Aplikace Remote Play je připojena“**: průvodce (u přípravy PS5) a Nápověda radí zapnout na

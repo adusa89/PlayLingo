@@ -27,14 +27,18 @@ object SetupPage {
         /** Jméno spárované PS5 (PS5-151), když je spárovaná. */
         val console: String?,
         val deepl: Boolean,
+        /** Spárování nevyšlo, protože je v síti víc PS5 (vybrat v TV). */
+        val multiPs5: Boolean = false,
     )
 
     /** Stav jako JSON pro stránku. */
-    fun status(s: Status): String =
+    fun status(s: Status, web: String? = null): String = statusCore(s).let { if (web == null) it else it.dropLast(1) + ",\"web\":" + web + "}" }
+
+    private fun statusCore(s: Status): String =
         "{\"acc\":" + (s.account?.let { RemoteSetup.json(it) } ?: "null") +
             ",\"pair\":\"" + s.pair.name.lowercase() + "\"" +
             ",\"ps5\":" + (s.console?.let { RemoteSetup.json(it) } ?: "null") +
-            ",\"deepl\":" + s.deepl + "}"
+            ",\"deepl\":" + s.deepl + (if (s.multiPs5) ",\"multi\":true" else "") + "}"
 
     /**
      * Odkaz `playlingo://…` jako odkaz pro prohlížeč Androidu: PlayLingo v telefonu je → otevře se, není → stáhne se
@@ -69,13 +73,16 @@ object SetupPage {
      * [apkUrl] PlayLingo do telefonu, [loginUrl] přihlášení Sony, [signupUrl]/[keysUrl] DeepL.
      */
     fun page(lang: Lang, tvName: String, target: PhoneLogin.Target?, apkUrl: String, loginUrl: String,
-             signupUrl: String, keysUrl: String, shortcutUrl: String? = null, appModeLink: String? = null): String {
+             signupUrl: String, keysUrl: String, shortcutUrl: String? = null, appModeLink: String? = null,
+             web: WebSettings.Options? = null): String {
         fun t(k: String) = I18n.t(lang, k)
         fun e(k: String) = PhoneLogin.esc(t(k))
         fun para(k: String) = PhoneLogin.esc(t(k)).replace("\n", "<br>")
         // texty pro skript (se zástupným %s pro jméno účtu / konzole)
         val texts = listOf("sp_acc_ok", "sp_acc_none", "sp_ps5_h", "sp_ps5_how", "sp_pair_btn", "sp_pair_busy", "sp_pair_ok",
-            "sp_pair_fail", "sp_need_acc", "sp_bad_url", "sp_bad_pin", "sp_deepl_ok", "sp_deepl_bad", "sp_sent", "sp_change", "sp_repair")
+            "sp_pair_fail", "sp_need_acc", "sp_bad_url", "sp_bad_pin", "sp_deepl_ok", "sp_deepl_bad", "sp_sent", "sp_change", "sp_repair", "mp_multi",
+            "l_lang", "l_src_lang", "gp_profile", "l_opacity", "l_size", "l_pos", "l_original", "gp_prompts", "obj_row", "gp_menu",
+            "dl_toggle", "on", "off")
             .joinToString(",", "{", "}") { RemoteSetup.json(it) + ":" + RemoteSetup.json(t(it)) }
         val sb = StringBuilder()
         sb.append("<!doctype html><html lang=\"").append(lang.code).append("\"><head><meta charset=\"utf-8\">")
@@ -91,11 +98,16 @@ object SetupPage {
             .append("a.btn.plain,button.plain{background:#2a303b;color:#f2f2f2}")
             .append("input{width:100%;box-sizing:border-box;font-size:17px;padding:13px;border-radius:12px;border:2px solid #3a4250;")
             .append("background:#0e1014;color:#f2f2f2;margin-top:6px}summary{cursor:pointer;color:#f2c14e;margin:10px 0}")
-            .append("#done{display:none;border-left:4px solid #4ade80}#off{display:none}")
+            .append("#done{display:none;border-left:4px solid #4ade80}#off{display:none}#stav,#c4{display:none}")
+            .append(".dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:10px}")
+            .append("label.row{display:block;margin:10px 0 0}select{width:100%;box-sizing:border-box;font-size:17px;padding:11px;")
+            .append("border-radius:12px;border:2px solid #3a4250;background:#0e1014;color:#f2f2f2;margin-top:4px}")
             .append("</style></head><body><main>")
             .append("<h1>").append(e("rs_page_title")).append("</h1>")
             .append("<p class=\"muted\">").append(PhoneLogin.esc(tvName)).append("</p>")
             .append("<p id=\"off\" class=\"card bad\">").append(e("sp_off")).append("</p>")
+            // stav TV jako na Domů (webová obdoba aplikace, od 0.97.67) – plní skript z op=info
+            .append("<div class=\"card\" id=\"stav\"><h2>").append(e("web_status_h")).append("</h2><div id=\"rows\"></div></div>")
             .append("<div class=\"card legend\">").append(e("acc_legend")).append("</div>")
         // Android: celé nastavení v PlayLingu v telefonu (vezme si současné nastavení TV, každá změna hned v TV)
         // dvě rovnocenné cesty (od 0.97.66, přání majitele): aplikace (jen Android) / prohlížeč – iPhone a počítač vidí rovnou prohlížeč
@@ -154,6 +166,9 @@ object SetupPage {
             .append("<input id=\"dk\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\" placeholder=\"xxxxxxxx-xxxx-…\">")
             .append("<button id=\"db\">").append(e("dl_tv_3")).append("</button><p id=\"dm\" class=\"bad\"></p></div></div>")
 
+        // ---- 4. Titulky a hra – hlavní volby jako v aplikaci (webová obdoba, od 0.97.67) ----
+        if (web != null) sb.append("<div class=\"card\" id=\"c4\"><h2>").append(e("web_h")).append("</h2><div id=\"set\"></div></div>")
+            .append("<script type=\"application/json\" id=\"o\">").append(WebSettings.optionsJson(web).replace("</", "<\\/")).append("</script>")
         sb.append("<div class=\"card\" id=\"done\"><p class=\"st ok\">").append(e("sp_done")).append("</p></div>")
         sb.append("<script type=\"application/json\" id=\"t\">").append(texts.replace("</", "<\\/")).append("</script>")
         sb.append(SCRIPT).append("</main></body></html>")
@@ -207,10 +222,31 @@ object SetupPage {
         "$('pairx').style.display=(s.pair=='ok'&&!openPair)?'inline':'none';" +
         "if(s.pair=='ok'){st('pairst',T.sp_pair_ok.replace('%s',s.ps5||'PS5'),'ok')}" +
         "else{" +
-        "if(s.pair=='fail')st('pairst',T.sp_pair_fail.replace('%s',name),'bad');else if(acc===null)st('pairst',T.sp_need_acc,'wait');else st('pairst','','wait')}" +
+        "if(s.pair=='fail')st('pairst',s.multi?T.mp_multi:T.sp_pair_fail.replace('%s',name),'bad');else if(acc===null)st('pairst',T.sp_need_acc,'wait');else st('pairst','','wait')}" +
         "if(s.deepl){st('dlst',T.sp_deepl_ok,'ok');$('dl').style.display=openDl?'block':'none';$('dlx').style.display=openDl?'none':'inline'}" +
         "else{st('dlst','','wait');$('dl').style.display='block';$('dlx').style.display='none'}" +
-        "$('done').style.display=(acc!==null&&s.pair=='ok')?'block':'none'})}" +
+        "$('done').style.display=(acc!==null&&s.pair=='ok')?'block':'none';if(s.web){rows(s.web.rows);settings(s.web)}})}" +
+        // přehled stavu: tečka (zelená / oranžová / šedá) a text
+        "function rows(r){var b=$('rows');b.innerHTML='';for(var i=0;i<r.length;i++){var p=document.createElement('p');" +
+        "var d=document.createElement('span');d.className='dot';d.style.background=r[i][0]=='ok'?'#4ade80':r[i][0]=='pozor'?'#f2a03c':'#9aa4ae';" +
+        "p.appendChild(d);p.appendChild(document.createTextNode(r[i][1]));b.appendChild(p)}$('stav').style.display=r.length?'block':'none'}" +
+        // volby: výběrové seznamy; právě upravovaný seznam se nepřepisuje
+        "var O=null;try{O=JSON.parse($('o').textContent)}catch(e){}" +
+        "function settings(w){var c=$('set');if(!O||!c||c.contains(document.activeElement))return;c.innerHTML='';$('c4').style.display='block';" +
+        "function row(label,opts,cur,klic){var l=document.createElement('label');l.className='row';l.appendChild(document.createTextNode(label));" +
+        "var s=document.createElement('select');for(var i=0;i<opts.length;i++){var o=document.createElement('option');o.value=opts[i][0];" +
+        "o.textContent=opts[i][1];if(String(opts[i][0])==String(cur))o.selected=true;s.appendChild(o)}" +
+        "s.addEventListener('change',function(){post('op=web&klic='+klic+'&hodnota='+encodeURIComponent(s.value),function(){s.blur();info()})});" +
+        "l.appendChild(s);c.appendChild(l)}" +
+        "var yn=[['1',T.on],['0',T.off]],g=null,games=[],sizes=[],opac=[];" +
+        "for(var i=0;i<O.games.length;i++){games.push([O.games[i][0],O.games[i][1]]);if(O.games[i][0]==w.game)g=O.games[i]}" +
+        "for(i=0;i<O.sizes.length;i++)sizes.push([O.sizes[i],O.sizes[i]?String(O.sizes[i]):O.sizeGame]);" +
+        "for(i=0;i<O.opac.length;i++)opac.push([O.opac[i],O.opac[i]+' %']);" +
+        "row(T.l_lang,O.langs,w.lang,'lang');row(T.l_src_lang,O.srcs,w.src,'src');row(T.gp_profile,games,w.game,'game');" +
+        "row(T.l_size,sizes,w.velikost,'velikost');row(T.l_opacity,opac,w.pruhlednost,'pruhlednost');row(T.l_pos,O.pos,w.poloha,'poloha');" +
+        "row(T.l_original,yn,w.original?'1':'0','original');" +
+        "if(g&&g[2]){row(T.gp_prompts,yn,w.pokyny?'1':'0','pokyny');row(T.obj_row,yn,w.ukol?'1':'0','ukol')}" +
+        "if(g&&g[3])row(T.gp_menu,yn,w.menu?'1':'0','menu');if(w.deeplKey)row(T.dl_toggle,yn,w.deepl?'1':'0','deepl')}" +
         "function sendUrl(){var v=$('u').value;if(v.indexOf('code=')<0){$('um').textContent=T.sp_bad_url;return}" +
         "$('um').textContent=T.sp_sent;post('op=ucet&url='+encodeURIComponent(v),function(r){" +
         "if(r=='OK'){openAcc=false;$('um').textContent='';$('u').value='';try{if(window.sonyTab)window.sonyTab.close()}catch(e){}}else $('um').textContent=T.sp_bad_url;info()})}" +

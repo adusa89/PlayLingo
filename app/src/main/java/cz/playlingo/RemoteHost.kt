@@ -12,6 +12,8 @@ import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.Ps5
 import cz.playlingo.core.RemoteSetup
 import cz.playlingo.core.SetupPage
+import cz.playlingo.core.TvSettings
+import cz.playlingo.core.WebSettings
 import cz.playlingo.core.UpdateCheck
 
 /**
@@ -72,7 +74,51 @@ object RemoteHost {
     /** Stránka pro telefon (texty v jazyce aplikace v TV). */
     private fun page(c: Context): String = SetupPage.page(Prefs.uiLang(c), tvName(), target(c),
         UpdateCheck.url(if (Prefs.testChannel(c)) UpdateCheck.Channel.TEST else UpdateCheck.Channel.STABLE, "PlayLingo.apk"),
-        PsnAuth.LOGIN_URL, Deepl.SIGNUP_URL, Deepl.KEYS_URL, cz.playlingo.core.HelpLinks.IPHONE_SHORTCUT, appModeLink = link(c))
+        PsnAuth.LOGIN_URL, Deepl.SIGNUP_URL, Deepl.KEYS_URL, cz.playlingo.core.HelpLinks.IPHONE_SHORTCUT, appModeLink = link(c),
+        web = webOptions(c))
+
+    /** Volby pro webovou obdobu aplikace (texty v jazyce aplikace v TV). */
+    private fun webOptions(c: Context): WebSettings.Options {
+        val ui = Prefs.uiLang(c)
+        fun t(k: String) = cz.playlingo.core.I18n.t(ui, k)
+        return WebSettings.Options(
+            langs = cz.playlingo.core.Lang.targets.map { it.code to it.label },
+            sources = cz.playlingo.core.SourceLang.offered(Prefs.lang(c)).map { it.code to it.label },
+            games = cz.playlingo.core.GameProfiles.ALL.map {
+                WebSettings.GameOption(it.id, if (it.id == "all") t("game_universal") else it.title, it.prompts, it.menuSpec != null)
+            },
+            positions = TvSettings.POSITIONS.map { (k, p) -> k to t("pos_" + p.name.lowercase()) },
+            sizeByGame = t("qk_size_game"),
+        )
+    }
+
+    /** Současné hodnoty a přehled stavu pro stránku (dotaz každé 2 s – nic drahého: žádné dešifrování klíče). */
+    private fun webState(c: Context) = WebSettings.State(
+        lang = Prefs.lang(c).code, src = Prefs.sourceLang(c).code, game = Prefs.gameId(c),
+        opacity = Prefs.opacity(c), size = if (Prefs.matchSize(c)) 0 else Prefs.textSize(c),
+        position = TvSettings.POSITIONS.entries.firstOrNull { it.value == Prefs.layout(c).position }?.key ?: "vlastni",
+        original = Prefs.showOriginal(c), prompts = Prefs.gamePrompts(c), objective = Prefs.objectiveOn(c), menu = Prefs.gameMenu(c),
+        deeplKey = DeeplKey.has(c), deeplOn = DeeplKey.has(c) && DeeplKey.enabled(c),
+        rows = TvStatus.rows(c),
+    )
+
+    /** Změna z webové obdoby aplikace – jen povolené volby a hodnoty ([WebSettings.parse]). */
+    private fun webChange(c: Context, form: Map<String, String>): String {
+        val ch = WebSettings.parse(form["klic"], form["hodnota"], cz.playlingo.core.GameProfiles.ALL.map { it.id }) ?: return RemoteSetup.ERR_BAD
+        when (ch) {
+            is WebSettings.Change.Target -> { Prefs.setLang(c, ch.lang); OfflineTranslator.ensureModel(ch.lang) { } }
+            is WebSettings.Change.Source -> { Prefs.setSourceLang(c, ch.lang); OfflineTranslator.ensureModel(Prefs.lang(c)) { } }
+            is WebSettings.Change.Game -> Prefs.setGameId(c, ch.id)
+            is WebSettings.Change.Look -> TvLookPrefs.apply(c, ch.change)
+            is WebSettings.Change.Prompts -> Prefs.setGamePrompts(c, ch.on)
+            is WebSettings.Change.Objective -> Prefs.setObjectiveOn(c, ch.on)
+            is WebSettings.Change.Menu -> Prefs.setGameMenu(c, ch.on)
+            is WebSettings.Change.Deepl -> if (DeeplKey.has(c)) DeeplKey.setEnabled(c, ch.on) else return RemoteSetup.ERR_BAD
+        }
+        Log.i("TP_TEST", "REMOTE|web ${ch.javaClass.simpleName}")
+        changed(c)
+        return "OK"
+    }
 
     /** Spárování spuštěné z telefonu (číslo z PS5) – stav pro stránku i pro obrazovku v TV. */
     @Volatile var pair = SetupPage.Pair.IDLE
@@ -81,6 +127,8 @@ object RemoteHost {
     @Volatile var pairError: String? = null
         private set
     @Volatile private var failAt = 0L
+    /** Poslední nepovedené spárování z telefonu bylo kvůli víc PS5 v síti. */
+    @Volatile private var multi = false
 
     /** Stav pro stránku v telefonu. */
     fun status(c: Context): SetupPage.Status {
@@ -97,6 +145,7 @@ object RemoteHost {
             },
             console = host?.name,
             deepl = DeeplKey.has(c),
+            multiPs5 = multi && pair == SetupPage.Pair.FAIL,
         )
     }
 
@@ -108,14 +157,19 @@ object RemoteHost {
         val account = Ps5.parseAccountId(Prefs.psnId(c)) ?: return "NOACC"
         synchronized(this) {
             if (pair == SetupPage.Pair.BUSY) return "OK"
-            pair = SetupPage.Pair.BUSY; pairError = null
+            pair = SetupPage.Pair.BUSY; pairError = null; multi = false
         }
         changed(c)
         Thread({
             fun fail(why: String) { pairError = why; failAt = android.os.SystemClock.elapsedRealtime(); pair = SetupPage.Pair.FAIL; changed(c) }
             try {
                 var ip = Prefs.ps5Ip(c)
-                if (!Ps5.validHost(ip)) ip = Ps5Pairing.discover().firstOrNull()?.ip ?: ""
+                if (!Ps5.validHost(ip)) {
+                    val found = Ps5Pairing.discover()
+                    // víc PS5 v síti (od 0.97.67): sama nevybírá – kterou spárovat, se zvolí v TV (Konzole → Najít)
+                    if (found.size > 1) { multi = true; EventFile.add("PAIR|z telefonu: v síti víc PS5 (${found.size})"); fail("multi"); return@Thread }
+                    ip = found.firstOrNull()?.ip ?: ""
+                }
                 if (!Ps5.validHost(ip)) { EventFile.add("PAIR|z telefonu: PS5 v síti nenalezena"); fail("ps5_notfound"); return@Thread }
                 Prefs.setPs5Ip(c, ip)
                 val name = Prefs.psnName(c).ifEmpty { "?" }
@@ -140,7 +194,8 @@ object RemoteHost {
         val v = form["v"]?.toIntOrNull() ?: 0
         if (v > RemoteSetup.VERSION) return RemoteSetup.ERR_VERSION
         return when (form["op"]) {
-            SetupPage.OP_INFO -> SetupPage.status(status(c))
+            SetupPage.OP_INFO -> SetupPage.status(status(c), WebSettings.json(webState(c)))
+            WebSettings.OP -> webChange(c, form)
             SetupPage.OP_ACCOUNT -> {
                 val code = Ps5.authCodeFromTyped(form["url"] ?: "") ?: return RemoteSetup.ERR_BAD
                 val acc = try { PsnAuth.accountForCode(code) } catch (_: Throwable) { null } ?: return RemoteSetup.ERR_BAD

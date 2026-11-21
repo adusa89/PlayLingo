@@ -2,35 +2,35 @@
 
 <p id="stav" style="font-weight:600"></p>
 
-Při přihlášení účtem 🔵 **pro PlayLingo** skončí Sony na skoro prázdné stránce „redirect“. Její adresu
-bys jinak musel zkopírovat a vložit. Se zkratkou stačí na té stránce klepnout na **Sdílet → PlayLingo**
+Při přihlášení účtem 🔵 **pro PlayLingo** skončí Sony na skoro prázdné stránce „redirect“. Její adresa
+by se jinak musela zkopírovat a vložit. Se zkratkou stačí na té stránce klepnout na **Sdílet → PlayLingo**
 a adresa dojde do TV sama.
 
 <a id="pridat"></a>
-## 1. Přidej zkratku (jen jednou)
+## 1. Přidat zkratku (jen jednou)
 
 <p id="icloud"></p>
 
-Když tlačítko výš chybí, vytvoř si zkratku sám (asi minuta):
+Když tlačítko výš chybí, zkratka se vytvoří ručně (asi minuta):
 
-1. Otevři aplikaci **Zkratky** → **+** (nová zkratka) a pojmenuj ji **PlayLingo**.
-2. Klepni na **ⓘ** (podrobnosti) → zapni **Zobrazit v listu sdílení** → přijímat jen **URL adresy**.
-3. Přidej akci **Zakódovat URL** (URL Encode) – vstup: **Vstup zkratky**.
-4. Přidej akci **Otevřít URL** a jako adresu napiš
-   `https://adusa89.github.io/PlayLingo/zkratka.html?u=` a za ni vlož proměnnou **Zakódovaný text**.
-5. Hotovo – ulož.
+1. Otevřít aplikaci **Zkratky** → **+** (nová zkratka) a pojmenovat ji **PlayLingo**.
+2. Klepnout na **ⓘ** (podrobnosti) → zapnout **Zobrazit v listu sdílení** → přijímat jen **URL adresy**.
+3. Přidat akci **Zakódovat URL** (URL Encode) – vstup: **Vstup zkratky**.
+4. Přidat akci **Otevřít URL** a jako adresu napsat
+   `https://adusa89.github.io/PlayLingo/zkratka.html?u=` a za ni vložit proměnnou **Zakódovaný text**.
+5. Hotovo – uložit.
 
 <a id="tv"></a>
-## 2. Propoj zkratku se svou TV (jen jednou)
+## 2. Propojit zkratku s TV (jen jednou)
 
-Na stránce **PlayLingo · nastavení TV** (čtvereček v TV, Android TV) klepni na **iPhone bez kopírování:
+Na stránce **PlayLingo · nastavení TV** (čtvereček v TV, Android TV) klepnout na **iPhone bez kopírování:
 zkratka PlayLingo**. Otevře se tahle stránka a nahoře se ukáže „✔ TV je uložená“.
 
 ## 3. Při přihlášení
 
-1. Na stránce PlayLingo klepni na **Přihlásit se u PlayStation** a přihlas se 🔵 účtem pro PlayLingo
+1. Na stránce PlayLingo klepnout na **Přihlásit se u PlayStation** a přihlásit se 🔵 účtem pro PlayLingo
    (ne 🟢 herním).
-2. Na skoro prázdné stránce „redirect“ klepni na **Sdílet** (čtvereček se šipkou) → **PlayLingo**.
+2. Na skoro prázdné stránce „redirect“ klepnout na **Sdílet** (čtvereček se šipkou) → **PlayLingo**.
 3. Otevře se stránka z TV a účet se ověří sám.
 
 <script>
@@ -60,7 +60,7 @@ zkratka PlayLingo**. Otevře se tahle stránka a nahoře se ukáže „✔ TV je
       stav.textContent = '⏳ Posílám do TV… / Sending to the TV…';
       location.replace(saved + '?u=' + encodeURIComponent(u));
     } else if (!saved) {
-      stav.textContent = '○ Zkratka ještě nezná tvou TV – udělej krok 2. / Do step 2 first.';
+      stav.textContent = '○ Zkratka ještě nezná TV – nejdřív krok 2. / Do step 2 first.';
     } else {
       stav.textContent = '○ To není adresa stránky „redirect“. / Not a “redirect” address.';
     }

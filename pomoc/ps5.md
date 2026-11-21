@@ -3,33 +3,33 @@
 PlayLingo značí oba účty všude stejně:
 
 - 🔵 **Účet pro PlayLingo** – druhý účet, jen pro PlayLingo (přihlášení v telefonu, Remote Play, osmimístné číslo)
-- 🟢 **Herní účet** – ten, na kterém hraješ
+- 🟢 **Herní účet** – ten, na kterém se hraje
 
 <a id="ucet"></a>
 ## 1. 🔵 Druhý účet PlayStation – účet pro PlayLingo (zdarma)
 
-PlayLingo se k PS5 připojuje jako druhý hráč přes Remote Play. Kdyby použilo tvůj 🟢 herní účet,
-konzole by ti vypnula ovladač. Proto potřebuje **vlastní 🔵 účet pro PlayLingo** – stačí jiný e-mail.
+PlayLingo se k PS5 připojuje jako druhý hráč přes Remote Play. Kdyby použilo 🟢 herní účet,
+konzole by hráči vypnula ovladač. Proto potřebuje **vlastní 🔵 účet pro PlayLingo** – stačí jiný e-mail.
 
 👉 **[Založit účet PlayStation](https://www.playstation.com/cs-cz/support/account/create-account-for-psn/)**
 (nebo přímo na PS5: Přepnout uživatele → **Přidat uživatele** → Vytvořit účet).
 
-- Použij **jiný e-mail**, než má tvůj 🟢 herní účet, a potvrď ho v e-mailu, který přijde.
-- Zadej datum narození dospělého – u dětského účtu je Remote Play omezené. Datum ani zemi později změnit nejde.
+- Použít **jiný e-mail**, než má 🟢 herní účet, a potvrdit ho v e-mailu, který přijde.
+- Zadat datum narození dospělého – u dětského účtu je Remote Play omezené. Datum ani zemi později změnit nejde.
 
 Když odkaz nefunguje:
 - [Návod Sony (anglicky)](https://www.playstation.com/en-gb/support/account/create-account-for-psn/)
-- nebo hledej: **„vytvořit účet PlayStation Network“**
+- nebo hledat: **„vytvořit účet PlayStation Network“**
 
 <a id="remote-play"></a>
 ## 2. Remote Play na PS5
 
-Přepni se na PS5 na ten **🔵 druhý** účet a zapni:
+Na PS5 se přepnout na ten **🔵 druhý** účet a zapnout:
 **Nastavení → Systém → Remote Play → Povolit Remote Play**.
 
-Ve hře by ti jinak pořád svítila hláška „Aplikace Remote Play je připojena“. Proto tamtéž zapni i
-**Skrýt stav připojení Remote Play**, pod svým 🟢 herním i pod 🔵 druhým účtem. Když tam volba není,
-aktualizuj systém PS5.
+Ve hře by jinak pořád svítila hláška „Aplikace Remote Play je připojena“. Proto tamtéž zapnout i
+**Skrýt stav připojení Remote Play**, pod 🟢 herním i pod 🔵 druhým účtem. Když tam volba není,
+aktualizovat systém PS5.
 
 [Návod Sony k Remote Play](https://www.playstation.com/cs-cz/support/games/remote-play-settings/)
 
@@ -37,20 +37,20 @@ aktualizuj systém PS5.
 ## 3. Probouzení z klidového režimu
 
 Aby PlayLingo umělo konzoli vzbudit:
-**Nastavení → Systém → Úspora energie → Funkce dostupné v klidovém režimu** → zapni
+**Nastavení → Systém → Úspora energie → Funkce dostupné v klidovém režimu** → zapnout
 **Zůstat připojen k internetu** a **Povolit zapnutí systému PS5 ze sítě**.
 
 ## 4. Spárování
-V PlayLingu projdi krok „Připojení konzole“ (6 kroků): zapni PS5 → PlayLingo ho najde → **zvolíš 🔵 účet pro
-PlayLingo** (ten druhý) → přihlásíš se jím telefonem → aplikace ukáže **„Ověřený účet: 🔵 JMÉNO“** → na PS5 se
-přepneš na uživatele **🔵 JMÉNO**, zapneš Remote Play (bod 2) a pod ním zvolíš Nastavení → Systém → Remote Play →
-**Propojit zařízení**. Osmimístné číslo opiš do PlayLinga (v telefonu ho přečte kamerou). Po spárování se na PS5
-přepni zpět na 🟢 herní účet a hraj.
+V PlayLingu se projde krok „Připojení konzole“ (6 kroků): zapnout PS5 → PlayLingo ho najde → **zvolit 🔵 účet pro
+PlayLingo** (ten druhý) → přihlásit se jím telefonem → aplikace ukáže **„Ověřený účet: 🔵 JMÉNO“** → na PS5 se
+přepnout na uživatele **🔵 JMÉNO**, zapnout Remote Play (bod 2) a pod ním zvolit Nastavení → Systém → Remote Play →
+**Propojit zařízení**. Osmimístné číslo se opíše do PlayLinga (v telefonu ho přečte kamerou). Po spárování se na PS5
+přepnout zpět na 🟢 herní účet a hrát.
 
 <a id="ce-110032-7"></a>
 **Chyba CE‑110032‑7 / „Regist failed“:** číslo vyvolal na PS5 **jiný uživatel**, než jakým se PlayLingo
-přihlásilo. Přepni se na PS5 na uživatele, jehož jméno ukazuje PlayLingo, a vyvolej nové číslo – nebo v PlayLingu
-zvol **Přihlásit jiný účet**. Po spárování se na ovladači přepni zpět na svůj 🟢 herní účet.
+přihlásilo. Na PS5 se přepnout na uživatele, jehož jméno ukazuje PlayLingo, a vyvolat nové číslo – nebo v PlayLingu
+zvolit **Přihlásit jiný účet**. Po spárování se na ovladači přepnout zpět na 🟢 herní účet.
 
 ---
 *English: 🔵 = the account for PlayLingo (second account), 🟢 = your gaming account. Create a second, free PlayStation account (different e-mail, adult date of birth):

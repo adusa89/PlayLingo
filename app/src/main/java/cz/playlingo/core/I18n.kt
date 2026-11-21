@@ -16,11 +16,11 @@ object I18n {
         "wz_s2" to ("Offline překlad" to "Offline preklad"),
         "wz_s3" to ("Připojení PlayStationu" to "Pripojenie PlayStationu"),
         "wz_s4" to ("Hotovo" to "Hotovo"),
-        "wz_perm" to ("Aby aplikace mohla ukázat titulky přes hru, zapni ji v nastavení televize: Usnadnění → PlayLingo → Zapnout. Pak se tlačítkem Zpět vrať sem." to "Aby aplikácia mohla ukázať titulky cez hru, zapni ju v nastaveniach televízora: Zjednodušenie ovládania → PlayLingo → Zapnúť. Potom sa tlačidlom Späť vráť sem."),
+        "wz_perm" to ("Aby aplikace mohla ukázat titulky přes hru, je potřeba ji zapnout v nastavení televize: Usnadnění → PlayLingo → Zapnout. Pak se tlačítkem Zpět vrátit sem." to "Aby aplikácia mohla ukázať titulky cez hru, treba ju zapnúť v nastaveniach televízora: Zjednodušenie ovládania → PlayLingo → Zapnúť. Potom sa tlačidlom Späť vrátiť sem."),
         "wz_perm_open" to ("Otevřít nastavení TV" to "Otvoriť nastavenia TV"),
         "wz_model" to ("Překlad běží přímo v televizi, zdarma a bez internetu. Jen teď jednou stáhnu jazykový model (asi 30 MB)." to "Preklad beží priamo v televízore, zadarmo a bez internetu. Len teraz raz stiahnem jazykový model (asi 30 MB)."),
-        "wz_done" to ("Všechno je připravené. Spusť překlad, ve hře zapni titulky a hraj." to "Všetko je pripravené. Spusti preklad, v hre zapni titulky a hraj."),
-        "wz_done_auto" to ("Titulky si aplikace na obrazovce najde sama – nic dalšího nastavovat nemusíš." to "Titulky si aplikácia na obrazovke nájde sama – nič ďalšie nastavovať nemusíš."),
+        "wz_done" to ("Všechno je připravené. Stačí spustit překlad, ve hře zapnout titulky a hrát." to "Všetko je pripravené. Stačí spustiť preklad, v hre zapnúť titulky a hrať."),
+        "wz_done_auto" to ("Titulky si aplikace na obrazovce najde sama – nic dalšího se nastavovat nemusí." to "Titulky si aplikácia na obrazovke nájde sama – nič ďalšie netreba nastavovať."),
         "wz_next" to ("Pokračovat" to "Pokračovať"),
         "wz_back" to ("Zpět" to "Späť"),
         "wz_skip" to ("Přeskočit průvodce" to "Preskočiť sprievodcu"),
@@ -40,7 +40,7 @@ object I18n {
         "lic_pay" to ("Předplatné" to "Predplatné"),
         "lic_pay_soon" to ("Předplatné 49 Kč měsíčně – platba bude brzy k dispozici." to "Predplatné 49 Kč mesačne – platba bude čoskoro k dispozícii."),
         "lic_code" to ("Odemykací kód" to "Odomykací kód"),
-        "lic_code_hint" to ("Zadej kód" to "Zadaj kód"),
+        "lic_code_hint" to ("Zadat kód" to "Zadať kód"),
         "lic_enter" to ("Odemknout" to "Odomknúť"),
         "lic_ok" to ("Odemčeno ✔" to "Odomknuté ✔"),
         "lic_bad" to ("Tento kód neplatí." to "Tento kód neplatí."),
@@ -49,7 +49,7 @@ object I18n {
         // ---- domů ----
         "st_running" to ("Překlad běží" to "Preklad beží"),
         "st_paused" to ("Pozastaveno" to "Pozastavené"),
-        "st_paused_sub" to ("Překlad čeká. Pokračuj tlačítkem níže." to "Preklad čaká. Pokračuj tlačidlom nižšie."),
+        "st_paused_sub" to ("Překlad čeká. Pokračování tlačítkem níže." to "Preklad čaká. Pokračovanie tlačidlom nižšie."),
         "st_ready" to ("Připraveno" to "Pripravené"),
         "st_setup" to ("Ještě je potřeba nastavit" to "Ešte treba nastaviť"),
         "b_go_game" to ("Zpět do hry (HDMI)" to "Späť do hry (HDMI)"),
@@ -58,20 +58,20 @@ object I18n {
         "game_universal" to ("Univerzální (všechny hry)" to "Univerzálne (všetky hry)"),
         "t_game_desc" to ("Jména z vybrané hry se nepřekládají. Univerzální profil zná jména z nejhranějších her; profil konkrétní hry je přesnější." to "Mená z vybranej hry sa neprekladajú. Univerzálny profil pozná mená z najhranejších hier; profil konkrétnej hry je presnejší."),
         "t_dict" to ("Vlastní slovník" to "Vlastný slovník"),
-        "t_dict_desc" to ("Když se něco překládá špatně, zadej sem anglický výraz nebo celou větu a správný překlad. Aplikace ho pak použije vždy." to "Keď sa niečo prekladá zle, zadaj sem anglický výraz alebo celú vetu a správny preklad. Aplikácia ho potom použije vždy."),
+        "t_dict_desc" to ("Když se něco překládá špatně, stačí sem zadat anglický výraz nebo celou větu a správný překlad. Aplikace ho pak použije vždy." to "Keď sa niečo prekladá zle, stačí sem zadať anglický výraz alebo celú vetu a správny preklad. Aplikácia ho potom použije vždy."),
         "t_dict_en" to ("Anglicky (výraz nebo věta)" to "Anglicky (výraz alebo veta)"),
         "t_dict_tr" to ("Správný překlad" to "Správny preklad"),
         "t_dict_add" to ("Přidat do slovníku" to "Pridať do slovníka"),
-        "t_dict_del" to ("Kliknutím na záznam ho smažeš." to "Kliknutím na záznam ho zmažeš."),
+        "t_dict_del" to ("Kliknutím na záznam se smaže." to "Kliknutím na záznam sa zmaže."),
         "upd_new" to ("Je k dispozici nová verze" to "K dispozícii je nová verzia"),
         "upd_btn" to ("Aktualizovat" to "Aktualizovať"),
         "upd_down" to ("Stahuji novou verzi" to "Sťahujem novú verziu"),
-        "upd_inst" to ("Staženo. Potvrď instalaci v okně, které televize ukázala." to "Stiahnuté. Potvrď inštaláciu v okne, ktoré televízor zobrazil."),
-        "upd_net" to ("Novou verzi se nepodařilo stáhnout. Zkontroluj připojení televize k internetu a zkus to znovu." to "Novú verziu sa nepodarilo stiahnuť. Skontroluj pripojenie televízora k internetu a skús to znova."),
-        "upd_space" to ("V televizi není dost místa. Uvolni aspoň 100 MB a zkus to znovu." to "V televízore nie je dosť miesta. Uvoľni aspoň 100 MB a skús to znova."),
-        "upd_sig" to ("Tato verze má jiný podpis než ta nainstalovaná, proto ji televize přes starou nepustí. Jednou starou verzi odinstaluj a novou nahraj ručně z adresy níže; spárování s PlayStationem bude potřeba zopakovat. Další aktualizace už půjdou odsud." to "Táto verzia má iný podpis ako tá nainštalovaná, preto ju televízor cez starú nepustí. Raz starú verziu odinštaluj a novú nahraj ručne z adresy nižšie; spárovanie s PlayStationom bude treba zopakovať. Ďalšie aktualizácie už pôjdu odtiaľto."),
-        "upd_cancel" to ("Instalace byla zrušena. Zvol Aktualizovat a v okně televize ji potvrď." to "Inštalácia bola zrušená. Zvoľ Aktualizovať a v okne televízora ju potvrď."),
-        "upd_fail" to ("Aktualizace se nepovedla. Zkus to znovu, nebo novou verzi nahraj ručně z adresy níže. Když televize instalaci nedovolí: Nastavení → Aplikace → Zabezpečení a omezení → Neznámé zdroje → povol PlayLingo." to "Aktualizácia sa nepodarila. Skús to znova, alebo novú verziu nahraj ručne z adresy nižšie. Keď televízor inštaláciu nedovolí: Nastavenia → Aplikácie → Zabezpečenie a obmedzenia → Neznáme zdroje → povoľ PlayLingo."),
+        "upd_inst" to ("Staženo. Instalaci je potřeba potvrdit v okně, které televize ukázala." to "Stiahnuté. Inštaláciu treba potvrdiť v okne, ktoré televízor zobrazil."),
+        "upd_net" to ("Novou verzi se nepodařilo stáhnout. Je potřeba zkontrolovat připojení televize k internetu a zkusit to znovu." to "Novú verziu sa nepodarilo stiahnuť. Treba skontrolovať pripojenie televízora k internetu a skúsiť to znova."),
+        "upd_space" to ("V televizi není dost místa. Je potřeba uvolnit aspoň 100 MB a zkusit to znovu." to "V televízore nie je dosť miesta. Treba uvoľniť aspoň 100 MB a skúsiť to znova."),
+        "upd_sig" to ("Tato verze má jiný podpis než ta nainstalovaná, proto ji televize přes starou nepustí. Starou verzi je potřeba jednou odinstalovat a novou nahrát ručně z adresy níže; spárování s PlayStationem bude potřeba zopakovat. Další aktualizace už půjdou odsud." to "Táto verzia má iný podpis ako tá nainštalovaná, preto ju televízor cez starú nepustí. Starú verziu treba raz odinštalovať a novú nahrať ručne z adresy nižšie; spárovanie s PlayStationom bude treba zopakovať. Ďalšie aktualizácie už pôjdu odtiaľto."),
+        "upd_cancel" to ("Instalace byla zrušena. Stačí zvolit Aktualizovat a v okně televize ji potvrdit." to "Inštalácia bola zrušená. Stačí zvoliť Aktualizovať a v okne televízora ju potvrdiť."),
+        "upd_fail" to ("Aktualizace se nepovedla. Dá se to zkusit znovu, nebo novou verzi nahrát ručně z adresy níže. Když televize instalaci nedovolí: Nastavení → Aplikace → Zabezpečení a omezení → Neznámé zdroje → povolit PlayLingo." to "Aktualizácia sa nepodarila. Dá sa to skúsiť znova, alebo novú verziu nahrať ručne z adresy nižšie. Keď televízor inštaláciu nedovolí: Nastavenia → Aplikácie → Zabezpečenie a obmedzenia → Neznáme zdroje → povoliť PlayLingo."),
         "upd_test" to ("zkušební" to "skúšobná"),
         "upd_done" to ("Aktualizováno na verzi" to "Aktualizované na verziu"),
         "rep_btn" to ("Vytvořit hlášení chyby" to "Vytvoriť hlásenie chyby"),
@@ -89,8 +89,8 @@ object I18n {
 
         // ---- průběh spuštění ----
         "prep_model" to ("Připravuji jazykový model (poprvé cca 30 MB)…" to "Pripravujem jazykový model (prvýkrát cca 30 MB)…"),
-        "model_fail" to ("Jazykový model se nepodařilo stáhnout. Zkontroluj internet." to "Jazykový model sa nepodarilo stiahnuť. Skontroluj internet."),
-        "need_overlay" to ("Nejdřív povol zobrazení titulků (Nastavení → Povolení)." to "Najprv povoľ zobrazenie titulkov (Nastavenia → Povolenia)."),
+        "model_fail" to ("Jazykový model se nepodařilo stáhnout. Je potřeba zkontrolovat internet." to "Jazykový model sa nepodarilo stiahnuť. Treba skontrolovať internet."),
+        "need_overlay" to ("Nejdřív je potřeba povolit zobrazení titulků (Nastavení → Povolení)." to "Najprv treba povoliť zobrazenie titulkov (Nastavenia → Povolenia)."),
 
         // ---- oblasti ----
         "z_calibrate" to ("Nastavit oblasti nad snímkem ze hry" to "Nastaviť oblasti nad snímkou z hry"),
@@ -101,7 +101,7 @@ object I18n {
 
         // ---- kalibrace ----
         "cal_read_move" to ("Modrý rámeček – POSUN" to "Modrý rámček – POSUN"),
-        "cal_read_move_h" to ("Šipkami posuň modrý rámeček na anglické titulky ve hře." to "Šípkami posuň modrý rámček na anglické titulky v hre."),
+        "cal_read_move_h" to ("Šipkami posunout modrý rámeček na anglické titulky ve hře." to "Šípkami posunúť modrý rámček na anglické titulky v hre."),
         "cal_read_size" to ("Modrý rámeček – VELIKOST" to "Modrý rámček – VEĽKOSŤ"),
         "cal_read_size_h" to ("←/→ šířka, ↑/↓ výška. Má zakrýt jen titulky, ne celý obraz." to "←/→ šírka, ↑/↓ výška. Má zakryť len titulky, nie celý obraz."),
         "cal_bar_move" to ("Pruh s překladem – POLOHA" to "Pruh s prekladom – POLOHA"),
@@ -109,7 +109,7 @@ object I18n {
         "cal_bar_width" to ("Pruh s překladem – ŠÍŘKA" to "Pruh s prekladom – ŠÍRKA"),
         "cal_bar_width_h" to ("←/→ změní šířku pruhu." to "←/→ zmení šírku pruhu."),
         "cal_keys" to ("OK = další úprava   •   ZPĚT = uložit a odejít" to "OK = ďalšia úprava   •   SPÄŤ = uložiť a odísť"),
-        "cal_no_snapshot" to ("Snímek ze hry zatím není – spusť překlad a hru, pak se sem vrať." to "Snímka z hry zatiaľ nie je – spusti preklad a hru, potom sa sem vráť."),
+        "cal_no_snapshot" to ("Snímek ze hry zatím není – stačí spustit překlad a hru a pak se sem vrátit." to "Snímka z hry zatiaľ nie je – stačí spustiť preklad a hru a potom sa sem vrátiť."),
         "cal_read_label" to ("Titulky hry (čtení)" to "Titulky hry (čítanie)"),
         "cal_bar_label" to ("Tady bude překlad" to "Tu bude preklad"),
         "cal_cover_note" to ("Pruh se položí přímo přes anglické titulky." to "Pruh sa položí priamo cez anglické titulky."),
@@ -143,7 +143,7 @@ object I18n {
         "t_mode" to ("Režim překladu" to "Režim prekladu"),
         "t_offline_desc" to ("Překládá se přímo v televizi, nic se neplatí a nic se neodesílá. Jména postav a míst zůstávají v originále a westernový slang se před překladem převede do spisovné angličtiny." to
             "Prekladá sa priamo v televízore, nič sa neplatí a nič sa neodosiela. Mená postáv a miest zostávajú v origináli a westernový slang sa pred prekladom prevedie do spisovnej angličtiny."),
-        "t_model_missing" to ("chybí – stáhni ho (jen jednou, cca 30 MB)" to "chýba – stiahni ho (len raz, cca 30 MB)"),
+        "t_model_missing" to ("chybí – stáhnout (jen jednou, cca 30 MB)" to "chýba – stiahnuť (len raz, cca 30 MB)"),
         "t_stats" to ("Statistika" to "Štatistika"),
         "t_lines" to ("Přeložené titulky" to "Preložené titulky"),
         "t_hits" to ("Z paměti (zdarma, okamžitě)" to "Z pamäte (zadarmo, okamžite)"),
@@ -160,17 +160,17 @@ object I18n {
         "s_test_desc" to ("Aplikace nabídne i verze, které se teprve zkoušejí. Mohou obsahovat chyby." to "Aplikácia ponúkne aj verzie, ktoré sa ešte len skúšajú. Môžu obsahovať chyby."),
         "on" to ("ZAP" to "ZAP"),
         "off" to ("VYP" to "VYP"),
-        "a11y_hint" to ("V nastavení TV najdi Usnadnění → PlayLingo a zapni ho." to "V nastaveniach TV nájdi Zjednodušenie ovládania → PlayLingo a zapni ho."),
-        "overlay_hint" to ("Zapni „Zobrazení přes jiné aplikace“ a vrať se zpět." to "Zapni „Zobrazenie cez iné aplikácie“ a vráť sa späť."),
+        "a11y_hint" to ("V nastavení TV najít Usnadnění → PlayLingo a zapnout." to "V nastaveniach TV nájsť Zjednodušenie ovládania → PlayLingo a zapnúť."),
+        "overlay_hint" to ("Zapnout „Zobrazení přes jiné aplikace“ a vrátit se zpět." to "Zapnúť „Zobrazenie cez iné aplikácie“ a vrátiť sa späť."),
         "adb_title" to ("Povolení přes počítač" to "Povolenie cez počítač"),
-        "adb_text" to ("Tahle televize nemá obrazovku pro toto povolení. Použij Usnadnění, nebo povol přes ADB:" to "Tento televízor nemá obrazovku pre toto povolenie. Použi Zjednodušenie ovládania, alebo povoľ cez ADB:"),
+        "adb_text" to ("Tahle televize nemá obrazovku pro toto povolení. Pomůže Usnadnění, nebo povolení přes ADB:" to "Tento televízor nemá obrazovku pre toto povolenie. Pomôže Zjednodušenie ovládania, alebo povolenie cez ADB:"),
 
         // ---- historie ----
         "h_empty" to ("Zatím tu nic není. Titulky se sem ukládají během hraní." to "Zatiaľ tu nič nie je. Titulky sa sem ukladajú počas hrania."),
         "h_clear" to ("Smazat historii" to "Vymazať históriu"),
 
         // ---- nápověda ----
-        "inst_text" to ("1. Když se objeví okno Play Protect, zvol „Další podrobnosti“ → „Přesto nainstalovat“.\n2. Když tam ta možnost není: otevři Google Play → ikona účtu → Play Protect → ozubené kolo → vypni „Kontrolovat aplikace pomocí Play Protect“, nainstaluj a pak kontrolu zase zapni.\n3. Když televize hlásí „instalace z neznámých zdrojů“: Nastavení → Aplikace → Zabezpečení a omezení → Neznámé zdroje → povol aplikaci, ze které instaluješ (Downloader nebo správce souborů).\n4. Když instalace skončí chybou: uvolni místo v televizi, případně starou verzi odinstaluj a nainstaluj znovu." to "1. Keď sa zobrazí okno Play Protect, zvoľ „Ďalšie podrobnosti“ → „Napriek tomu nainštalovať“.\n2. Keď tam tá možnosť nie je: otvor Google Play → ikona účtu → Play Protect → ozubené koleso → vypni „Kontrolovať aplikácie pomocou Play Protect“, nainštaluj a potom kontrolu znova zapni.\n3. Keď televízor hlási „inštalácia z neznámych zdrojov“: Nastavenia → Aplikácie → Zabezpečenie a obmedzenia → Neznáme zdroje → povoľ aplikáciu, z ktorej inštaluješ (Downloader alebo správca súborov).\n4. Keď inštalácia skončí chybou: uvoľni miesto v televízore, prípadne starú verziu odinštaluj a nainštaluj znova."),
+        "inst_text" to ("1. Když se objeví okno Play Protect, zvolit „Další podrobnosti“ → „Přesto nainstalovat“.\n2. Když tam ta možnost není: otevřít Google Play → ikona účtu → Play Protect → ozubené kolo → vypnout „Kontrolovat aplikace pomocí Play Protect“, nainstalovat a pak kontrolu zase zapnout.\n3. Když televize hlásí „instalace z neznámých zdrojů“: Nastavení → Aplikace → Zabezpečení a omezení → Neznámé zdroje → povolit aplikaci, ze které se instaluje (Downloader nebo správce souborů).\n4. Když instalace skončí chybou: uvolnit místo v televizi, případně starou verzi odinstalovat a nainstalovat znovu." to "1. Keď sa zobrazí okno Play Protect, zvoliť „Ďalšie podrobnosti“ → „Napriek tomu nainštalovať“.\n2. Keď tam tá možnosť nie je: otvoriť Google Play → ikona účtu → Play Protect → ozubené koleso → vypnúť „Kontrolovať aplikácie pomocou Play Protect“, nainštalovať a potom kontrolu znova zapnúť.\n3. Keď televízor hlási „inštalácia z neznámych zdrojov“: Nastavenia → Aplikácie → Zabezpečenie a obmedzenia → Neznáme zdroje → povoliť aplikáciu, z ktorej sa inštaluje (Downloader alebo správca súborov).\n4. Keď inštalácia skončí chybou: uvoľniť miesto v televízore, prípadne starú verziu odinštalovať a nainštalovať znova."),
 
         // ---- notifikace ----
         "n_running" to ("PlayLingo běží" to "PlayLingo beží"),
@@ -188,11 +188,11 @@ object I18n {
      * nahrání do televize LG (core/I18nLg.kt), Xbox (core/I18nXbox.kt) a typ televize s průvodcem
      * pro Samsung (core/I18nSamsung.kt) – mají přednost před obecnými se stejným klíčem.
      */
-    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + XBOX_S + SS_S + DEEPL_S + UI_S + ZAZNAM_S + KAMERA_S + HELP_S + GAME_S + QUICK_S + REMOTE_S + SETUP_S + ATV_S
+    private val PS: Map<String, Pair<String, String>> = PS5_S + LOGIN_S + DIAG_S + LG_S + XBOX_S + SS_S + DEEPL_S + UI_S + ZAZNAM_S + KAMERA_S + HELP_S + GAME_S + QUICK_S + REMOTE_S + SETUP_S + ATV_S + MULTI_S
     private val PX: Map<Lang, Map<String, String>> =
         Lang.values().associateWith { (PS5_X[it] ?: emptyMap()) + (LOGIN_X[it] ?: emptyMap()) + (DIAG_X[it] ?: emptyMap()) + (LG_X[it] ?: emptyMap()) +
             (XBOX_X[it] ?: emptyMap()) + (SS_X[it] ?: emptyMap()) + (DEEPL_X[it] ?: emptyMap()) + (UI_X[it] ?: emptyMap()) + (ZAZNAM_X[it] ?: emptyMap()) +
-            (KAMERA_X[it] ?: emptyMap()) + (HELP_X[it] ?: emptyMap()) + (GAME_X[it] ?: emptyMap()) + (QUICK_X[it] ?: emptyMap()) + (REMOTE_X[it] ?: emptyMap()) + (SETUP_X[it] ?: emptyMap()) + (ATV_X[it] ?: emptyMap()) }
+            (KAMERA_X[it] ?: emptyMap()) + (HELP_X[it] ?: emptyMap()) + (GAME_X[it] ?: emptyMap()) + (QUICK_X[it] ?: emptyMap()) + (REMOTE_X[it] ?: emptyMap()) + (SETUP_X[it] ?: emptyMap()) + (ATV_X[it] ?: emptyMap()) + (MULTI_X[it] ?: emptyMap()) }
 
     fun t(lang: Lang, key: String): String {
         val p = PS[key] ?: S[key] ?: return key

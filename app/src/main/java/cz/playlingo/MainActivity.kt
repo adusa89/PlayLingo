@@ -1312,7 +1312,7 @@ class MainActivity : Activity() {
         }
         val host = Prefs.ps5Host(this)
         if (draftLogin.isEmpty()) draftLogin = Prefs.ps5LoginPin(this)
-        if (host != null) {
+        if (host != null && !pairAnother) {
             val c = ui.card()
             c.addView(ui.text(t("ps5_paired") + ": " + host.name, 20f, Theme.OK, bold = true))
             c.addView(ui.text(host.ip, 15f, Theme.MUTED), ui.lp(top = 4))
@@ -1325,12 +1325,25 @@ class MainActivity : Activity() {
             // Spustit je jen na Domů (telefon i Android TV) – na stránce Konzole bylo podruhé (od 0.97.13)
             // přihlašovací kód účtu na PS5 jen tehdy, když ho PlayStation chtěl (nebo už je zadaný)
             if (loginPinWanted()) add(input("ps5_login", draftLogin, "plogin", number = true), 12)
+            // víc spárovaných PS5 (od 0.97.67): přepnout aktivní; spárovat další bez zapomenutí té první
+            val all = Prefs.ps5Hosts(this)
+            if (all.size > 1) add(tagged(ui.settingRow(t("mp_active"), host.name) {
+                choose(t("mp_active"), all.map { it.name + " · " + it.ip }, 0) { i -> switchPs5(all[i]) }
+            }, "pswitch"), 12)
+            add(tagged(ui.smallButton(t("mp_pair_more")) {
+                pairAnother = true; pairStep = 0; pairMsg = null; draftIp = ""; draftPin = ""; foundPs5 = emptyList(); render()
+            }, "pmore"), 12)
             add(tagged(ui.button(t("ps5_forget")) {
                 if (TranslatorService.running && !TranslatorService.demo) stopService(Intent(this, TranslatorService::class.java))
-                EventFile.add("PAIR|zrušeno spárování " + host.name); Prefs.setPs5Host(this, null); pairStep = 0; pairMsg = null; render(true)
+                // jen tahle PS5 – další spárované zůstanou a aktivní bude první z nich
+                EventFile.add("PAIR|zrušeno spárování " + host.name); Prefs.forgetPs5Host(this); pairStep = 0; pairMsg = null; render(true)
             }, "pforget"), 12)
             return
         }
+        // párování další PS5 jde zrušit (zůstane ta dosavadní)
+        if (pairAnother && host != null) add(tagged(ui.smallButton(t("mp_cancel").replace("%s", host.name)) {
+            pairAnother = false; pairMsg = null; pairStep = 0; render()
+        }, "pmorex"), 12)
         if (draftIp.isEmpty()) draftIp = Prefs.ps5Ip(this)
         if (draftPsn.isEmpty()) draftPsn = Prefs.psnId(this)
 
@@ -1366,6 +1379,14 @@ class MainActivity : Activity() {
                 // neúspěšném hledání a až pod Najít); hlavní tlačítko až když hledání nenašlo nic
                 if (LgScanActivity.available(this)) add(tagged(ui.smallButton("📷 " + t("km_scan_ps5ip")) { scanPs5Code(true) }, "pscanip"), 6)
                 add(tagged(ui.button(t("ps5_find")) { findPs5() }, "pfind"), 10)
+                // víc PS5 v síti: vybrat, kterou spárovat (už spárované označené)
+                val pairedMacs = Prefs.ps5Hosts(this).map { Ps5.hex(it.mac).lowercase() }
+                foundPs5.forEachIndexed { i, f ->
+                    val known = f.id.isNotEmpty() && f.id.lowercase() in pairedMacs
+                    add(tagged(ui.settingRow(f.name, f.ip + (if (known) " · " + t("mp_known") else "")) {
+                        saveDrafts(); draftIp = f.ip; Prefs.setPs5Ip(this, f.ip); foundPs5 = emptyList(); pairMsg = null; pairStep = 7; render()
+                    }, "pfound$i"), if (i == 0) 10 else 6)
+                }
             }
             // účet pro PlayLingo: druhý účet, na kterém se nehraje. Uložený se nikdy nepoužije potichu.
             7 -> {
@@ -1480,6 +1501,22 @@ class MainActivity : Activity() {
         if (step == 7) add(helpLink(cz.playlingo.core.HelpLinks.PS5_PREP, t("help_ps5")), 14)
     }
 
+    /** Páruje se další PS5 (už jedna spárovaná je) – od 0.97.67. */
+    private var pairAnother = false
+    /** Hledání našlo víc PS5 → v kroku „najdi PS5“ volba, kterou spárovat. */
+    private var foundPs5: List<Ps5Pairing.Found> = emptyList()
+
+    /** Přepnout aktivní PS5; běží-li překlad, spojí se znovu s novou. */
+    private fun switchPs5(h: Ps5Host) {
+        if (Prefs.ps5Host(this)?.let { cz.playlingo.core.Ps5Hosts.same(it, h) } == true) return
+        val running = TranslatorService.running && !TranslatorService.demo
+        if (running) stopService(Intent(this, TranslatorService::class.java))
+        Prefs.setPs5Host(this, h); Prefs.setPs5Ip(this, h.ip)
+        EventFile.add("PAIR|aktivní PS5 ${h.name} ${h.ip}")
+        render(true)
+        if (running) main.postDelayed({ if (!isFinishing) startFlow() }, 800)
+    }
+
     /** Spárování se nepovedlo – nabídnout „Zkusit znovu“ a „Přihlásit jiný účet“ (CE-110032-7). */
     private var pairFailed = false
 
@@ -1543,7 +1580,7 @@ class MainActivity : Activity() {
 
     /** Stránka pro telefon běží jen po dobu, kdy průvodce ukazuje kroky přihlášení účtem (2 až 4). */
     private fun syncLoginPage() {
-        val pairing = Prefs.console(this) == Console.PLAYSTATION && Prefs.ps5Host(this) == null && (wizard == W_PAIR || (wizard < 0 && section == Section.PS5))
+        val pairing = Prefs.console(this) == Console.PLAYSTATION && (Prefs.ps5Host(this) == null || pairAnother) && (wizard == W_PAIR || (wizard < 0 && section == Section.PS5))
         val want = pairing && pairStep.coerceIn(0, 7) in 2..4
         if (want && loginServer == null) {
             loginServer = LoginServer(
@@ -1626,11 +1663,13 @@ class MainActivity : Activity() {
             val list = Ps5Pairing.discover()
             val first = list.firstOrNull()
             if (first != null) {
-                Prefs.setPs5Ip(this, first.ip)
+                if (list.size == 1) Prefs.setPs5Ip(this, first.ip)
                 // jediná PS5 v síti → rovnou na volbu účtu (víc PS5: adresa první, hráč může přepsat)
-                pairNote(t("ps5_found") + " " + list.joinToString { it.name + " (" + it.ip + ")" }, Theme.OK) {
-                    draftIp = first.ip; ps5NotFound = false
-                    if (list.size == 1 && pairStep == 1) pairStep = 7
+                // víc PS5 (od 0.97.67): žádná se nevybere sama – krok ukáže volbu, kterou spárovat
+                pairNote(if (list.size > 1) t("mp_pick") else t("ps5_found") + " " + first.name + " (" + first.ip + ")", Theme.OK) {
+                    ps5NotFound = false
+                    foundPs5 = if (list.size > 1) list else emptyList()
+                    if (list.size == 1) { draftIp = first.ip; if (pairStep == 1) pairStep = 7 }
                 }
             } else pairNote(t("ps5_notfound"), Theme.WARN) { ps5NotFound = true }
         }, "tp-find").start()
@@ -1646,13 +1685,14 @@ class MainActivity : Activity() {
      */
     private fun autoFindPs5() {
         val now = android.os.SystemClock.elapsedRealtime()
-        if (pairBusy || ps5AutoFound || now - ps5AutoFindAt < 20_000L) return
+        // párování další PS5: jediná nalezená může být ta už spárovaná – nic nepřeskakovat
+        if (pairBusy || ps5AutoFound || pairAnother || now - ps5AutoFindAt < 20_000L) return
         ps5AutoFindAt = now
         Thread({
             val list = Ps5Pairing.discover(3000)
             val one = list.singleOrNull() ?: return@Thread
             runOnUiThread {
-                if (isFinishing || pairBusy || pairStep != 0 || Prefs.ps5Host(this) != null) return@runOnUiThread
+                if (isFinishing || pairBusy || pairStep != 0 || (Prefs.ps5Host(this) != null && !pairAnother)) return@runOnUiThread
                 if (!(wizard == W_PAIR || (wizard < 0 && section == Section.PS5))) return@runOnUiThread
                 Prefs.setPs5Ip(this, one.ip)
                 ps5AutoFound = true
@@ -1703,7 +1743,7 @@ class MainActivity : Activity() {
                 if (h != null) {
                     Prefs.setPs5Host(this, h)
                     pairNote(t("ps5_ok").replace("%s", name), Theme.OK) {
-                        draftPin = ""; pairStep = 0; pairFailed = false; justPaired = true
+                        draftPin = ""; pairStep = 0; pairFailed = false; justPaired = true; pairAnother = false; foundPs5 = emptyList()
                         // průvodce: spárováno → sám na poslední krok (Hotovo se Spustit)
                         if (wizard == W_PAIR) wizard = wizardSteps.size - 1
                     }

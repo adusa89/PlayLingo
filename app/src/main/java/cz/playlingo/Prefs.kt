@@ -198,7 +198,29 @@ object Prefs {
     // ---- PlayStation ----
     /** Spárovaná konzole (null = ještě nespárováno). */
     fun ps5Host(c: Context): Ps5Host? = Ps5Host.parse(p(c).getString("ps5_host", null))
-    fun setPs5Host(c: Context, v: Ps5Host?) = p(c).edit().putString("ps5_host", v?.serialize()).apply()
+
+    /** Všechny spárované PlayStationy (aktivní první; od 0.97.67 – klíč `ps5_hosts`, starší uložení = jen aktivní). */
+    fun ps5Hosts(c: Context): List<Ps5Host> =
+        cz.playlingo.core.Ps5Hosts.withActive(cz.playlingo.core.Ps5Hosts.parse(p(c).getString("ps5_hosts", null)), ps5Host(c))
+
+    /** Zapomene aktivní PS5; když je spárovaná další, stane se aktivní ona. */
+    fun forgetPs5Host(c: Context) {
+        val cur = ps5Host(c) ?: return
+        val rest = cz.playlingo.core.Ps5Hosts.remove(ps5Hosts(c), cur)
+        p(c).edit().putString("ps5_host", rest.firstOrNull()?.serialize()).putString("ps5_hosts", cz.playlingo.core.Ps5Hosts.serialize(rest)).apply()
+    }
+    /**
+     * Aktivní PS5. Nová / přepnutá / s novou adresou se zároveň uloží do seznamu spárovaných (`ps5_hosts`); null = aktivní
+     * zrušit a vyřadit ji ze seznamu (ostatní spárované zůstanou – přepnout na ně jde na stránce Konzole).
+     */
+    fun setPs5Host(c: Context, v: Ps5Host?) {
+        val list = ps5Hosts(c)
+        val next = when {
+            v != null -> cz.playlingo.core.Ps5Hosts.upsert(list, v)
+            else -> ps5Host(c)?.let { cz.playlingo.core.Ps5Hosts.remove(list, it) } ?: list
+        }
+        p(c).edit().putString("ps5_host", v?.serialize()).putString("ps5_hosts", cz.playlingo.core.Ps5Hosts.serialize(next)).apply()
+    }
 
     /** Naposledy zadané údaje pro párování (ať se nemusí psát znovu). */
     fun ps5Ip(c: Context): String = p(c).getString("ps5_ip", "") ?: ""

@@ -1,7 +1,7 @@
 # Začít s PlayLingem
 
 PlayLingo čte anglické titulky ze hry na PlayStationu 5 (nebo Xboxu), překládá je a ukazuje v pruhu přes obraz.
-Odpověz na dvě otázky – ukážou se jen kroky, které se tě týkají.
+Po odpovědi na dvě otázky se ukážou jen kroky, které se dané sestavy týkají.
 
 <style>
 .volby{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 18px}
@@ -10,14 +10,14 @@ Odpověz na dvě otázky – ukážou se jen kroky, které se tě týkají.
 .cesta{border-left:4px solid #f2c14e;padding:2px 14px;margin:10px 0}
 </style>
 
-**1. Jakou máš TV?**
+**1. Jakou TV nastavit?**
 <div class="volby" id="tv">
 <button data-v="atv">Android TV / Google TV<br><small>Sony, Philips, TCL, Chromecast, Shield…</small></button>
 <button data-v="lg">LG (webOS)</button>
 <button data-v="samsung">Samsung (Tizen)</button>
 </div>
 
-**2. Na čem chceš nastavovat?**
+**2. Na čem nastavovat?**
 <div class="volby" id="na">
 <button data-v="pc">💻 Počítač</button>
 <button data-v="android">📱 Telefon s Androidem</button>
@@ -25,18 +25,18 @@ Odpověz na dvě otázky – ukážou se jen kroky, které se tě týkají.
 <button data-v="tv">📺 Jen ovladač TV</button>
 </div>
 
-<p id="vyber" style="color:#57606a">Vyber obojí – nebo si přečti všechny cesty níž.</p>
+<p id="vyber" style="color:#57606a">Stačí vybrat obojí – nebo přečíst všechny cesty níž.</p>
 
 <div class="cesta" data-tv="atv" data-na="pc" markdown="1">
 
 ### Android TV + 💻 počítač
 1. **PlayLingo do TV:** v TV aplikace **Downloader** a adresa `adusa89.github.io/PlayLingo/tv` –
-   [návod krok za krokem](android-tv.md#downloader). (Umíš-li `adb`: `adb connect <adresa TV>` a
+   [návod krok za krokem](android-tv.md#downloader). (S nástrojem `adb`: `adb connect <adresa TV>` a
    `adb install PlayLingo.apk` – [soubor](https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk).)
-2. **Spusť PlayLingo v TV** a v prvním kroku zvol **Nastavit telefonem nebo počítačem**.
-3. **V počítači** (stejná síť jako TV) otevři adresu, kterou TV ukáže pod čtverečkem (💻 `http://192.168…`).
-   Na stránce **PlayLingo · nastavení TV**: přihlášení 🔵 účtem pro PlayLingo (adresu stránky „redirect“
-   zkopíruješ Ctrl+L, Ctrl+C), osmimístné číslo z PS5 a klíč DeepL. TV se spáruje sama.
+2. **Spustit PlayLingo v TV** a v prvním kroku zvolit **Nastavit telefonem nebo počítačem**.
+3. **V počítači** (stejná síť jako TV) otevřít adresu, kterou TV ukáže pod čtverečkem (💻 `http://192.168…`).
+   Na stránce **PlayLingo · nastavení TV**: přihlášení 🔵 účtem pro PlayLingo (adresa stránky „redirect“
+   se zkopíruje Ctrl+L, Ctrl+C), osmimístné číslo z PS5 a klíč DeepL. TV se spáruje sama.
 </div>
 
 <div class="cesta" data-tv="atv" data-na="android" markdown="1">
@@ -47,8 +47,8 @@ Odpověz na dvě otázky – ukážou se jen kroky, které se tě týkají.
 2. **PlayLingo do TV z telefonu:** v PlayLingu v telefonu **Nahrát PlayLingo do Android TV** – v TV jednou zapnout
    ladění přes síť a potvrdit „Povolit ladění?“ ([návod](android-tv.md#telefon)). Nebo bez telefonu přes
    [Downloader](android-tv.md#downloader).
-3. **Spusť PlayLingo v TV** → **Nastavit telefonem nebo počítačem** → naskenuj čtvereček telefonem a zvol
-   **V aplikaci PlayLingo** (nic se nekopíruje, číslo z PS5 přečte kamerou, nastavíš i vzhled titulků),
+3. **Spustit PlayLingo v TV** → **Nastavit telefonem nebo počítačem** → naskenovat čtvereček telefonem a zvolit
+   **V aplikaci PlayLingo** (nic se nekopíruje, číslo z PS5 přečte kamerou, nastaví se i vzhled titulků),
    nebo **V prohlížeči**.
 </div>
 
@@ -57,9 +57,9 @@ Odpověz na dvě otázky – ukážou se jen kroky, které se tě týkají.
 ### Android TV + 📱 iPhone
 1. **PlayLingo do TV:** aplikace **Downloader** v TV a adresa `adusa89.github.io/PlayLingo/tv` –
    [návod](android-tv.md#downloader).
-2. **Spusť PlayLingo v TV** → **Nastavit telefonem nebo počítačem** → naskenuj čtvereček iPhonem
+2. **Spustit PlayLingo v TV** → **Nastavit telefonem nebo počítačem** → naskenovat čtvereček iPhonem
    (stejná Wi‑Fi). V Safari se otevře **PlayLingo · nastavení TV**: přihlášení 🔵 účtem pro PlayLingo,
-   číslo z PS5 (podrž prst v políčku → **Skenovat text**) a klíč DeepL.
+   číslo z PS5 (podržet prst v políčku → **Skenovat text**) a klíč DeepL.
 3. Bez kopírování adresy „redirect“: [zkratka PlayLingo pro iPhone](zkratka.md).
 </div>
 
@@ -67,8 +67,8 @@ Odpověz na dvě otázky – ukážou se jen kroky, které se tě týkají.
 
 ### Android TV + 📺 jen ovladač
 1. **PlayLingo do TV:** aplikace **Downloader** a adresa `adusa89.github.io/PlayLingo/tv` – [návod](android-tv.md#downloader).
-2. **Spusť PlayLingo v TV** → **Nastavit přímo na TV** – průvodce tě provede ovladačem.
-3. Jen na **přihlášení účtem PlayStation** budeš jednou potřebovat telefon nebo počítač (Sony přihlášení v TV
+2. **Spustit PlayLingo v TV** → **Nastavit přímo na TV** – průvodce provede vším ovladačem.
+3. Jen na **přihlášení účtem PlayStation** je jednou potřeba telefon nebo počítač (Sony přihlášení v TV
    nepustí) – TV ukáže čtvereček nebo adresu.
 </div>
 
@@ -77,9 +77,9 @@ Odpověz na dvě otázky – ukážou se jen kroky, které se tě týkají.
 ### LG + 📱 Android
 TV LG si obraz hry sama nepřečte – čte a překládá **PlayLingo v telefonu** a do TV posílá hotové věty.
 1. **PlayLingo do telefonu:** [stáhnout PlayLingo.apk](https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk).
-2. V telefonu zvol **Použít telefon pro TV LG** – průvodce: vývojářský režim LG ([návod](lg.md)), **Nahrát do TV**,
+2. V telefonu zvolit **Použít telefon pro TV LG** – průvodce: vývojářský režim LG ([návod](lg.md)), **Nahrát do TV**,
    spárování PS5.
-3. Při hraní: v TV spusť PlayLingo, v telefonu **Spustit**.
+3. Při hraní: v TV spustit PlayLingo, v telefonu **Spustit**.
 </div>
 
 <div class="cesta" data-tv="samsung" data-na="android" markdown="1">
@@ -87,9 +87,9 @@ TV LG si obraz hry sama nepřečte – čte a překládá **PlayLingo v telefonu
 ### Samsung + 📱 Android
 TV Samsung si obraz hry sama nepřečte – čte a překládá **PlayLingo v telefonu** a do TV posílá hotové věty.
 1. **PlayLingo do telefonu:** [stáhnout PlayLingo.apk](https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk).
-2. V telefonu zvol **Použít telefon pro TV Samsung** – průvodce nahraje PlayLingo do TV přes **Apps2Samsung**
+2. V telefonu zvolit **Použít telefon pro TV Samsung** – průvodce nahraje PlayLingo do TV přes **Apps2Samsung**
    ([návod](samsung.md)) a spáruje PS5.
-3. Při hraní: v TV spusť PlayLingo, v telefonu **Spustit**.
+3. Při hraní: v TV spustit PlayLingo, v telefonu **Spustit**.
 </div>
 
 <div class="cesta" data-tv="lg samsung" data-na="pc iphone tv" markdown="1">
@@ -97,7 +97,7 @@ TV Samsung si obraz hry sama nepřečte – čte a překládá **PlayLingo v tel
 ### LG / Samsung bez telefonu s Androidem
 TV LG a Samsung si obraz hry samy nepřečtou – číst a překládat musí **telefon s Androidem** nebo box s Android TV
 (připojený k téže TV). iPhone ani počítač to zatím neumí. Stačí i starší telefon s Androidem 8 nebo novějším –
-pak pokračuj cestou „📱 Android“ výš. (TV Samsung jde z počítače nahrát i přes [Apps2Samsung pro počítač](samsung.md#pocitac),
+pak platí cesta „📱 Android“ výš. (TV Samsung jde z počítače nahrát i přes [Apps2Samsung pro počítač](samsung.md#pocitac),
 číst ale musí Android.)
 </div>
 
@@ -127,6 +127,12 @@ pak pokračuj cestou „📱 Android“ výš. (TV Samsung jde z počítače nah
   ukaz();
 })();
 </script>
+
+## Víc TV nebo PlayStationů
+
+- **Dvě Android TV:** PlayLingo do každé zvlášť – každá má vlastní nastavení i čtvereček „Nastavit z telefonu“.
+- **Dvě TV LG / Samsung, jeden telefon:** telefon si pamatuje vzhled titulků pro každou TV zvlášť.
+- **Dva PlayStationy:** v PlayLingu na stránce Konzole **Spárovat další PS5**, přepínání řádkem **Aktivní PS5**.
 
 ## Všechny návody
 
