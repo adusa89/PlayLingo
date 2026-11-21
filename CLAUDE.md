@@ -185,7 +185,7 @@ mizení titulků; schová se v menu hry, při pauze a nové volbě. S „Jen tit
 (`Prefs.objectiveOn`), Písmo úkolu (`objSize`, 0 = podle hry), Poloha úkolu (`objPos`, -1 = na místě ve hře, jinak střed
 v 0–100 % výšky; do TV jako úzké `misto` na zvolené výšce). Klíče `obj_on/obj_size/obj_pos` v `TvProfiles.KEYS`.
 **Fronta rychlých replik (od 0.97.46, přání majitele):** `core/ShowQueue.kt` (testy `ShowQueueTest`) – každý titulek je v pruhu
-aspoň „Nejkratší doba titulku“ (Titulky → Pruh s překladem, `Prefs.minShowMs`, 0/0,5/1/1,5/2/3 s, výchozí 0,5 s od 0.97.48 – delší doba by frontu nafukovala); rychlejší repliky
+aspoň „Nejkratší doba titulku“ (Titulky → Pruh s překladem, `Prefs.minShowMs`, 0/0,5/1/1,5/2/3 s, od 0.97.49 výchozí vypnuto – nové chování; doporučená hodnota 0,5 s, delší by frontu nafukovala); rychlejší repliky
 čekají (nejvýš 3, žádná přes 5 s) a fronta se dožene v mezeře. Služba: `present` (pořadí `presentedSeq` – starší po novějším se
 nezařadí), `pollQueue` na hlavním vlákně podle `dueIn`, schování po zmizení titulku přes `requestHide(teď + Nechat déle)`. S frontou
 se pozdní odpověď DeepL nezahodí (`deeplThenShow`), dokud se neukázalo nic novějšího. Fronta se maže při pauze, menu hry a nové volbě.
@@ -242,6 +242,9 @@ náhoda, opakované selhání po změně kódu ne.
 
 ## Nová verze
 
+- **Nové chování je výchozí vypnuté (přání majitele, 21. 11. 2026):** aplikace už funguje dobře, takže každá novinka, která mění
+  dosavadní chování (čtení, zobrazení, časování, spojení…), přijde jako volba s výchozím **vypnuto**; pokusy navíc do
+  ⚙ → Experimentální. Majitel je vyzkouší a sám rozhodne, co zapnout. Výjimka jen na jeho výslovné přání.
 - **Uložené nastavení hráče se aktualizací nemění (přání majitele, 20. 11. 2026).** Nová verze nesmí smazat, přejmenovat
   ani „vyresetovat“ žádný uložený klíč v `Prefs` (ani v `tv_profily`, `LgVault`, `DeeplKey`, `XboxAccount`). Nová volba =
   nový klíč s výchozí hodnotou; změna výchozí hodnoty platí jen pro ty, kdo volbu nikdy neměnili. Když se změní nabídka

@@ -120,7 +120,7 @@ object Prefs {
     fun setFastRead(c: Context, v: Boolean) = setBool(c, "fast_read", v)
     /** Nejkratší doba titulku v pruhu (fronta rychlých replik, od 0.97.46); 0 = vypnuto. */
     val MIN_SHOW_TIMES = intArrayOf(0, 500, 1000, 1500, 2000, 3000)
-    fun minShowMs(c: Context): Int = p(c).getInt("min_show_ms", 500).let { v -> MIN_SHOW_TIMES.minByOrNull { kotlin.math.abs(it - v) } ?: 500 }
+    fun minShowMs(c: Context): Int = p(c).getInt("min_show_ms", 0).let { v -> MIN_SHOW_TIMES.minByOrNull { kotlin.math.abs(it - v) } ?: 0 }
     fun setMinShowMs(c: Context, v: Int) = p(c).edit().putInt("min_show_ms", v).apply()
 
     fun layout(c: Context): ScreenLayout = ScreenLayout.parse(p(c).getString("layout", null))

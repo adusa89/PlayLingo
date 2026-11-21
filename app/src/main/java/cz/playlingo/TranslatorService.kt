@@ -1124,7 +1124,7 @@ class TranslatorService : Service() {
                         val top: Float, val bottom: Float, val left: Float, val right: Float, val lineH: Float)
 
     /** Fronta rychlých replik s nejkratší dobou zobrazení ([cz.playlingo.core.ShowQueue], od 0.97.46). */
-    private val showQueue = cz.playlingo.core.ShowQueue<Shown>(500)
+    private val showQueue = cz.playlingo.core.ShowQueue<Shown>(0)
     /** Pořadí posledního titulku, který šel do pruhu nebo do fronty – starší se už nezařadí. */
     private var presentedSeq = 0L
     private val queueHandler = android.os.Handler(android.os.Looper.getMainLooper())
