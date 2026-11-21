@@ -147,6 +147,10 @@ v Titulky → Hra a Nápověda → Hraní.
 Nastavení hry, ukáže pruh přeložené položky – vybraná je se šipkou ▸ – a u Nastavení i přeložený nadpis a popis vybrané volby.
 Jednotlivé volby Nastavení se zatím nepřekládají. Funguje s profilem hry GTA VI a se zapnutým Titulky → Hra → Překlad menu hry.
 
+**Seznam her:** jména, postavy a pojmy jednotlivých her se dají aktualizovat bez nové verze aplikace. V Titulky → Hra
+je řádek „Seznam her · verze N“ – OK zjistí, jestli není novější, a stáhne ho. Samo (nejvýš jednou za 6 hodin) jen se
+zapnutou volbou Nastavení → Experimentální → „Seznam her automaticky“. Zvolená hra se tím nikdy nemění.
+
 Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪, se nepřekládají.
 
 ## 7. Problémy

@@ -277,6 +277,13 @@ object Prefs {
     fun dismissGameGuess(c: Context) = p(c).edit().putString("game_guess_no", p(c).getString("game_guess", null)).remove("game_guess").apply()
     fun setGameGuess(c: Context, v: String?) = p(c).edit().apply { if (v == null) remove("game_guess") else putString("game_guess", v) }.apply()
 
+    /** Seznam her ze stránek: sám se ptá na novou verzi (nejvýš jednou za 6 h). Výchozí vypnuto – stáhne se jen po OK na řádku. */
+    fun gamesAuto(c: Context) = bool(c, "hry_auto", false)
+    fun setGamesAuto(c: Context, v: Boolean) = setBool(c, "hry_auto", v)
+    /** Kdy se naposledy zjišťovala verze seznamu her (ms, System.currentTimeMillis). */
+    fun gamesChecked(c: Context): Long = p(c).getLong("hry_kontrola", 0L)
+    fun setGamesChecked(c: Context, v: Long) = p(c).edit().putLong("hry_kontrola", v).apply()
+
     /** Vlastní slovník uživatele pro daný jazyk (anglicky → překlad). */
     fun userDict(c: Context, lang: Lang): LinkedHashMap<String, String> =
         Glossary.parseUser(p(c).getString("dict_${lang.code}", null))
@@ -298,6 +305,8 @@ object Prefs {
     fun glossarySignature(c: Context): String =
         gameId(c) + "|" + lang(c).code + "|" + userDict(c, lang(c)).hashCode() + "|" +
             GameProfiles.of(gameId(c)).let { it.names.hashCode() + 31 * it.termsFor(lang(c)).hashCode() } +
+            // stažený seznam her (postavy a rod se mohly změnit); s vestavěným podpis beze změny
+            GameProfiles.catalog.let { if (it.downloaded) "|hry" + it.version else "" } +
             // jiný jazyk titulků → paměť překladů neplatí (u angličtiny podpis beze změny, paměť hráčům zůstane)
             sourceLang(c).let { if (it.english) "" else "|" + it.code }
     fun savedGlossarySignature(c: Context): String = p(c).getString("gloss_sig", "") ?: ""

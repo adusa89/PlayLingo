@@ -30,6 +30,7 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
     prochází `core/CrashReport.kt` → `Redact` (žádné klíče, čísla účtu ani PIN)
   - `App.kt`, `CrashLog.kt` – zápis pádů do `pady.txt` (posledních pár) a upozornění po dalším spuštění
   - `Updater.kt` – aktualizace z aplikace (stažení nové verze a předání systému k instalaci)
+  - `GameListUpdate.kt` – stažení novějšího seznamu her ze stránek s pomocí (viz Seznam her ke stažení)
   - `LgInstallActivity.kt`, `LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt` – nahrání aplikace
     do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG);
     `LgScanActivity.kt` – adresa a Passphrase z obrazovky televize kamerou telefonu
@@ -248,6 +249,31 @@ V záznamu `READ|ocr=…ms|band=ŠxV` (nebo `band=cela`) – podle toho porovnat
   jen jako mluvčí (`Cast.mentions` je v textu nehledá). Běžná slova z menu (Use, Open, Fine…) do `menu` nepatří.
 - Ulice ve všech hrách: `Glossary.STREET` (1–3 slova s velkým písmenem + Street/St/Avenue/Drive/Road…)
   nechá název v originále i bez seznamu; testy v `GlossaryTest.streetNamesStayInOriginal`.
+
+**Seznam her ke stažení (třetí aktualizace vedle aplikace a aplikace v TV, přání majitele 21. 11. 2026):** profily her jsou
+i jako data na stránkách s pomocí – `pomoc/hry/profily.json` + `pomoc/hry/verze.txt` (https://adusa89.github.io/PlayLingo/hry/…).
+Nová hra nebo oprava jmen tak nepotřebuje nové APK. Logika (rod, menu, úkol…) zůstává v kódu, seznam nese jen data a příznaky,
+které aplikace už umí (`pokyny`, `menuHry`, `rada` = klíč existujícího textu).
+- **Tvar** (`core/GameListJson.kt`, testy `GameListJsonTest`): `{"format":1,"verze":N,"minAppVerze":156,"bezneSlova":[…],"hry":[{"id",
+  "nazev","jmena","bezne","postavy":[{"jmeno","rod":"m|f","prezdivky"}],"pojmy":{"cs":{…}},"napisy","menu","preskocit":[{"vzor",
+  "velikost"}],"pokyny","barvy":{"Jason":"#AARRGGBB"},"menuHry":{"polozky","zalozky","preklady"},"rada"}]}`. `bezne` = jména, která
+  jsou i běžná slova (dřív `*_COMMON` v `AMBIGUOUS`), `bezneSlova` = ostatní běžná slova. Čtení je přísné: neplatná položka se
+  vynechá, neplatný celek / jiný `format` / `minAppVerze` vyšší než versionCode / přes 2 MB = seznam se nevezme (nikdy pád);
+  regulární výrazy nejvýš 200 znaků, rada jen s existujícími texty.
+- **V kódu:** `GameProfiles.BUILTIN` (vestavěný `GameCatalog`, verze `GameProfiles.VERSION`) zůstává zálohou; `GameProfiles.catalog`
+  je ten, podle kterého aplikace jede (`GAMES`, `ALL`, `UNIVERSAL`, `AMBIGUOUS`, `of` ho čtou – levně, vše spočítané v `GameCatalog`).
+  `GameListUpdate.kt`: uložený seznam (`filesDir/hry-profily.json`) se načte v `App.onCreate`, jen když je novější než vestavěný;
+  kontrola = `verze.txt`, novější → stáhnout, ověřit, uložit přes `.part` a `GameProfiles.use`. Volba hráče (`Prefs.gameId`) se
+  nemění – hra, která v seznamu chybí, jede s univerzálním profilem. Podpis slovníku (`Prefs.glossarySignature`) má se staženým
+  seznamem navíc `|hryN` (paměť překladů se obnoví), služba po novém seznamu sestaví znovu i `GameGuess`.
+- **Aplikace:** řádek Titulky → Hra „Seznam her · verze N“ (šedý; OK = zjistit hned; „stahuji…“, „aktualizováno na N“, texty `gl_…`
+  v `I18nGame.kt`). Samo (po otevření aplikace, nejvýš jednou za 6 h) jen s volbou ⚙ → Experimentální „Seznam her automaticky“
+  (`Prefs.gamesAuto`, klíč `hry_auto`, výchozí vypnuto). PC aplikace (`pc/`) jede jen s vestavěnými profily.
+- **Jak přidat hru / opravit jména:** uprav profil v `core/GameProfiles*.kt` → zvyš `GameProfiles.VERSION` → `gradlew -p ci/mistni-kontrola
+  seznamHer` (přepíše `pomoc/hry/`; bez zvýšení verze skončí chybou) → `gradlew -p ci/mistni-kontrola test` (test hlídá, že JSON
+  odpovídá kódu) → commit do `main` → workflow „Stránky s pomocí“ zveřejní (s `[skip ci]` ho spusť ručně) → aplikace si ho stáhnou.
+  Nové pole nebo nové chování = nový kód v aplikaci; pak zvyš `GameProfiles.MIN_APP` na versionCode té verze, ať ho starší aplikace nevezmou
+  (případně `GameListJson.FORMAT`). Hra s novou radou potřebuje nové texty → jen s novou verzí aplikace.
 
 **Ladění profilu ze hry (od 0.97.4):** záznam v síti má navíc `GET /snimek.jpg?k=…` (celý poslední snímek,
 šedý, nanejvýš 1280 px – `StreamReader.still`, čtení titulků neovlivní) a hlášení oddíly „titulky ze hry“

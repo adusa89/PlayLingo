@@ -265,7 +265,9 @@ class TranslatorService : Service() {
     /** Profil hry píše pod repliky pokyny pro hráče (GTA) – poslední krátký řádek se označí jako pokyn. */
     @Volatile private var prompts = false
     /** Odhad hry podle jmen v titulcích – jen nabídka v Nastavení, nic se nepřepíná. */
-    private val gameGuess = cz.playlingo.core.GameGuess()
+    @Volatile private var gameGuess = cz.playlingo.core.GameGuess()
+    /** Seznam her, ze kterého je [gameGuess] (po stažení nového seznamu se odhad sestaví znovu). */
+    private var guessCatalog = cz.playlingo.core.GameProfiles.catalog
 
     private val textScale = TextScale()
     /** Jazyk, jehož překladový model už je načtený v paměti. */
@@ -441,6 +443,9 @@ class TranslatorService : Service() {
         if (autoFind) layout = layout.copy(read = autoZone.current)
         glossary = Prefs.glossary(this)
         source = Prefs.sourceLang(this); OfflineTranslator.source = source
+        if (guessCatalog !== cz.playlingo.core.GameProfiles.catalog) {
+            guessCatalog = cz.playlingo.core.GameProfiles.catalog; gameGuess = cz.playlingo.core.GameGuess()
+        }
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
         prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
         // překlad menu hry jen se zapnutou volbou (od 0.97.57 výchozí vypnuto – majitel ho nechce)
