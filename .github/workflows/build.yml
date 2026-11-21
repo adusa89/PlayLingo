@@ -168,13 +168,18 @@ jobs:
             fi
             exit 0
           fi
+          # Aplikace pro TV Samsung jako samostatný soubor (od 0.97.52): bere si ho Apps2Samsung ze zdroje
+          # github.com/…/releases/tag/latest (průvodce Samsung, core/SamsungSetup.kt). Je to přesně ten
+          # nepodepsaný .wgt, který je v APK – podpis pro konkrétní TV přidá až Apps2Samsung.
+          unzip -p PlayLingo.apk assets/samsung/receiver.wgt > PlayLingo-Samsung.wgt
+          if [ "$(head -c 2 PlayLingo-Samsung.wgt)" != "PK" ]; then echo "::error::V APK chybí aplikace pro TV Samsung (assets/samsung/receiver.wgt)."; exit 1; fi
           # Každá verze zůstává ke stažení natrvalo pod vlastním číslem (záloha, ke které se dá vrátit).
           cp PlayLingo.apk "PlayLingo-$NAME.apk"
-          gh release view "v$NAME" >/dev/null 2>&1 || gh release create "v$NAME" "PlayLingo-$NAME.apk" --target "$GITHUB_SHA" --latest=false --title "PlayLingo $NAME" --notes "Verze $NAME, sestavená a vyzkoušená v emulátoru Android TV. $PODPIS"
+          gh release view "v$NAME" >/dev/null 2>&1 || gh release create "v$NAME" "PlayLingo-$NAME.apk" PlayLingo-Samsung.wgt --target "$GITHUB_SHA" --latest=false --title "PlayLingo $NAME" --notes "Verze $NAME, sestavená a vyzkoušená v emulátoru Android TV. $PODPIS"
           # „nejnovější“ se mění jen z hlavní větve
           if [ "$GITHUB_REF" != "refs/heads/main" ]; then exit 0; fi
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest PlayLingo.apk TestPreklad.apk version.txt --title "PlayLingo – nejnovější APK" --notes "Automaticky sestaveno z posledního kódu a vyzkoušeno v emulátoru Android TV (Android 9, 11, 13, 14). Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng (AGPL-3.0); zdrojový kód je v tomto repozitáři. $PODPIS"
+          gh release create latest PlayLingo.apk TestPreklad.apk version.txt PlayLingo-Samsung.wgt --title "PlayLingo – nejnovější APK" --notes "Automaticky sestaveno z posledního kódu a vyzkoušeno v emulátoru Android TV (Android 9, 11, 13, 14). Spojení s PlayStationem používá otevřenou knihovnu chiaki-ng (AGPL-3.0); zdrojový kód je v tomto repozitáři. $PODPIS"
 
   emulator:
     name: Emulátor Android TV (API ${{ matrix.api }})

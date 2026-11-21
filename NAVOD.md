@@ -232,21 +232,26 @@ až tam PlayLingo bude.
 ### Televize Samsung
 Samsung pustí do televize vlastní aplikaci jen ve vývojářském režimu a jen podepsanou
 certifikátem, který Samsung vystaví na tvůj účet Samsung (zdarma) právě pro tvou televizi.
-To PlayLingo za tebe udělat neumí, proto se aplikace nahrává nástrojem Samsungu. Průvodce
-„Nahrát PlayLingo do televize Samsung“ (krok Televize v průvodci, ⚙ Nastavení, upozornění na Domů,
-pomocník v telefonu, Instalace)
-tě provede:
-1. **Vývojářský režim:** v televizi otevři Aplikace (Apps), na ovladači zadej 1 2 3 4 5, zapni
-   **Developer mode** a do **Host PC IP** napiš adresu počítače (nebo telefonu), ze kterého budeš
-   nahrávat. Televizi restartuj (podrž vypínač, dokud nezhasne a znovu nenaběhne).
-2. **Ulož soubor** s aplikací (tlačítko „Uložit soubor“) – třeba na Disk Google, odkud ho vezmeš
-   v počítači. Soubor není podepsaný.
-3. **Podepiš a nahraj** ho: nejjistěji v počítači nástrojem **Tizen Studio** od Samsungu (Device
-   Manager → připojit televizi, Certificate Manager → certifikát Samsung s přihlášením účtem
-   Samsung, pak podepsat a nahrát), nebo komunitním instalátorem, který umí vlastní soubor .wgt
-   (např. Apps2Samsung). Certifikát si schovej – aktualizace musí být podepsaná stejným.
-4. **Spusť PlayLingo v televizi** a vyber vstup HDMI. Průvodce ukáže „Hotovo“, až se aplikace
-   z televize opravdu připojí, a do televize pošle zkušební větu.
+Podpis i nahrání za tebe zařídí zdarma aplikace **Apps2Samsung** v telefonu s Androidem – bez
+počítače, asi 10 minut. Průvodce „Nahrát PlayLingo do TV Samsung“ (krok Televize v průvodci,
+⚙ Nastavení, upozornění na Domů, pomocník v telefonu, Instalace) tě provede krok za krokem; kroky
+se odškrtávají samy, kde to jde (jinak tlačítkem Hotovo):
+1. **Vývojářský režim v TV:** Aplikace (Apps) → na ovladači 1 2 3 4 5 → **Developer mode** On →
+   do **Host PC IP** adresu **telefonu** s Apps2Samsungem (průvodce v telefonu ji ukáže velkým
+   písmem) → TV restartovat (podržet vypínač). Když průvodce najde TV Samsung v síti s vývojářským
+   režimem, odškrtne krok sám.
+2. **Apps2Samsung do telefonu** (tlačítko Stáhnout Apps2Samsung, na televizi čtvereček na stránku
+   s odkazy). Je-li už v telefonu, průvodce to pozná.
+3. **Přidat PlayLingo do Apps2Samsungu:** tlačítko otevře Apps2Samsung s předvyplněným zdrojem
+   PlayLingo (na televizi čtvereček), stačí potvrdit. Ručně: ⋯ → Add a source →
+   `https://github.com/adusa89/PlayLingo/releases/tag/latest`.
+4. **Nainstalovat:** v Apps2Samsungu vybrat TV a u PlayLinga Install (napoprvé přihlášení účtem
+   Samsung). Pak v TV spustit PlayLingo – průvodce ukáže „hotovo“, až se aplikace z televize
+   opravdu připojí, a do televize pošle zkušební větu. Aktualizace: v Apps2Samsungu Update.
+
+Bez telefonu s Androidem: rozbalovací řádek „Bez telefonu s Androidem: počítač“ uloží soubor
+s aplikací (.wgt, nepodepsaný) a vede na Tizen Studio v počítači. Odkazy jsou na stránce
+https://adusa89.github.io/PlayLingo/samsung.html.
 
 Podrobnosti a důvody jsou v `tizen/CTI-ME.md`.
 

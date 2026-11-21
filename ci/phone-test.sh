@@ -86,6 +86,10 @@ for m in "${MODES[@]}"; do
     adb shell am start -n $PKG/.MainActivity --ez phonelogin true --ei pairstep $step
     sleep 3; shot "p2_${4}_parovani_$step"
   done
+  # průvodce TV Samsung (Apps2Samsung): kroky, adresa telefonu velkým písmem, tlačítka
+  adb shell am start -n $PKG/.MainActivity --es open samsung
+  sleep 5; shot "p2_${4}_samsung"
+  key 4; sleep 1
 done
 adb shell am force-stop $PKG
 adb shell wm size reset; adb shell wm density reset; adb shell settings put system font_scale 1.0; sleep 3

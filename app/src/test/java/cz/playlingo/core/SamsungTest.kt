@@ -194,7 +194,7 @@ class SamsungTest {
 
     @Test fun placeholdersInAllLanguages() {
         for (lang in Lang.values()) {
-            for (k in listOf("ss_ok", "ss_ok_newer", "ss_older", "ss_ip")) assertTrue("$lang/$k", I18n.t(lang, k).contains("%s"))
+            for (k in listOf("ss_ok", "ss_ok_newer", "sa_older", "sa_ip", "sa_found")) assertTrue("$lang/$k", I18n.t(lang, k).contains("%s"))
             assertTrue("$lang/ss_s2", I18n.t(lang, "ss_s2").contains("%s") && I18n.t(lang, "ss_s2").contains("%v"))
             for (t in TvType.values()) assertTrue("$lang/${t.key}", I18n.hasOwn(lang, "tv_type_" + t.key) || lang == Lang.CS || lang == Lang.SK)
         }

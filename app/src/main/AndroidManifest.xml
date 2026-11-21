@@ -29,6 +29,15 @@
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
+    <!-- průvodce TV Samsung: je v telefonu Apps2Samsung? (Android 11+ jinak cizí aplikace nevidí) -->
+    <queries>
+        <package android:name="nl.madebypatrick.apps2samsung" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="apps2samsung" />
+        </intent>
+    </queries>
+
     <application
         android:name=".App"
         android:allowBackup="false"

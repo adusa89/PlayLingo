@@ -18,6 +18,10 @@ object HelpLinks {
     val ANDROID_TV = page("android-tv")
     val PHONE = page("telefon")
     val SAMSUNG = page("samsung")
+    /** Stažení Apps2Samsung (hlavní odkaz + F-Droid, Obtainium, stránka vydání). */
+    val SAMSUNG_INSTALLER = page("samsung", "apps2samsung")
+    /** Záloha bez telefonu s Androidem: Tizen Studio v počítači. */
+    val SAMSUNG_PC = page("samsung", "pocitac")
     val XBOX = page("xbox")
 
     fun page(name: String, anchor: String? = null) = BASE + name + ".html" + (anchor?.let { "#$it" } ?: "")

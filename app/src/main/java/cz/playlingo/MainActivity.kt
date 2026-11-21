@@ -220,6 +220,11 @@ class MainActivity : Activity() {
             section = Section.PS5; pairStep = i?.getIntExtra("pairstep", 2) ?: 2; render(); return
         }
         val debuggable = applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0
+        // Zkouška rozložení: průvodce TV Samsung (snímky p2_<velikost>_samsung v ci/phone-test.sh).
+        if (debuggable && i?.getStringExtra("open") == "samsung") {
+            Prefs.setWizardDone(this, true); wizard = -1; section = Section.HOME; render()
+            startActivity(Intent(this, SamsungInstallActivity::class.java)); return
+        }
         // Zkouška: volba konzole (ps / xbox) a stránka konzole – bez sítě, jen vzhled.
         i?.getStringExtra("console")?.let { c ->
             if (debuggable) {
@@ -2073,7 +2078,7 @@ class MainActivity : Activity() {
                     button(t("lg_open"), "lghelp") { startActivity(Intent(this@MainActivity, LgInstallActivity::class.java)) }
                     page(cz.playlingo.core.HelpLinks.LG_ACCOUNT, "hpage3")
                 }
-                TvType.SAMSUNG -> body("ss_help").apply {
+                TvType.SAMSUNG -> body("sa_help").apply {
                     button(t("ss_open"), "sshelp") { startActivity(Intent(this@MainActivity, SamsungInstallActivity::class.java)) }
                     page(cz.playlingo.core.HelpLinks.SAMSUNG, "hpage3")
                 }
@@ -2374,6 +2379,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.51"
-    const val VERSION_CODE = 148
+    const val VERSION = "verze 0.97.52"
+    const val VERSION_CODE = 149
 }

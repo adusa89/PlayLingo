@@ -520,7 +520,18 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   Verze v `config.xml` a `platforma.js` se musí shodovat (hlídá sestavení). Starý zápis JS (ES5).
 - APK nese `assets/samsung/receiver.wgt` + `receiver-manifest.json` (`signed: false`); skládá je
   úloha `samsungBalicek` kódem `core/SamsungWgt.kt` (ZIP s pevným datem, přes `buildSrc`).
-- **Přímá instalace z Androidu není a záměrně**: Samsung přijme jen balíček podepsaný
+- **Od 0.97.52 hlavní cesta přes Apps2Samsung** (komunitní instalátor v telefonu s Androidem, zdarma, bez počítače; umí najít TV,
+  vyrobit podpis jedním přihlášením účtem Samsung a nahrát libovolný `.wgt`). `SamsungInstallActivity` = pomocník krok za krokem
+  jako u LG (`core/SamsungSetup.kt`, testy `SamsungSetupTest`): 1. vývojářský režim (Host PC IP = adresa **telefonu**; odškrtne se
+  sám, když TV Samsung nalezená přes SSDP `LgFinder.samsung` otevře port SDB 26101), 2. Apps2Samsung v telefonu (balíček
+  `nl.madebypatrick.apps2samsung`, `<queries>` v manifestu), 3. zdroj PlayLingo odkazem `apps2samsung://source?url=…`
+  (web `https://apps2samsung.com/source?url=…`, umí od Apps2Samsung 3.3.1) na **`github.com/adusa89/PlayLingo/releases/tag/latest`**,
+  4. Install v Apps2Samsungu, 5. hotovo podle ohlášení z TV (`TvCheck`). Kroky bez zjištění mají tlačítko Hotovo. Stará cesta
+  (uložit `.wgt` + Tizen Studio) je rozbalovací řádek „Bez telefonu s Androidem: počítač“. Vydání `latest` a `v…` nesou
+  `PlayLingo-Samsung.wgt` (vytažený z APK v `build.yml`; zkušební kanál ne – Apps2Samsung bere jen `latest`). Odkazy na stažení
+  Apps2Samsungu jsou na `pomoc/samsung.md` (kotvy `apps2samsung`, `pocitac`). Texty `sa_…` v `core/I18nSamsung.kt`.
+  Se skutečnou TV Samsung zatím nevyzkoušeno (ani jestli port 26101 odpoví i jinému zařízení než Host PC IP).
+- **Přímá instalace z Androidu (bez Apps2Samsungu) není a záměrně**: Samsung přijme jen balíček podepsaný
   distribučním certifikátem vystaveným na účet Samsung pro DUID konkrétní televize; podpis
   a nahrání (SDB, port 26101) se bez skutečné televize nedají ověřit. Průvodce
   `SamsungInstallActivity` vysvětlí vývojářský režim (Apps → 12345 → Host PC IP), uloží .wgt
@@ -841,7 +852,7 @@ jen podtitul „Spárování · 3 z 6“, ať nejsou dva pruhy nad sebou) a pomo
 - Parametry spuštění `nowizard`, `autostart`, `ps5test`, `phonelogin`, `pairstep`, `updtest`,
   `updself`, `logintest`, `helperlogin`, `fullapp`, `page` (jména `Section`: HOME, PS5, LOOK, HELP,
   SETTINGS; staré LICENSE = SETTINGS), `wizard` (číslo kroku průvodce, snímky `p2_<velikost>_pruvodce_<krok>`),
-  `trtest`, `console` (ps / xbox, snímek `11b_stranka_xbox`) a `TestCardActivity`, `PhoneHelperActivity`.
+  `trtest`, `console` (ps / xbox, snímek `11b_stranka_xbox`), `open` (samsung = průvodce TV Samsung, snímky telefonu `p2_<velikost>_samsung`) a `TestCardActivity`, `PhoneHelperActivity`.
 - Zkouška přihlášení přes telefon (řádky `LOGIN|`, `HELPER|`, snímky `12n`–`12p`) se do výsledku
   nepočítá. V `result.txt` má být `ucet_z_telefonu` aspoň 1 (stránka z televize přijala účet)
   a `pomocnik` aspoň 1 (pomocník přijal odkaz ze stránky televize); na snímku `12n` má být

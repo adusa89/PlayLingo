@@ -3,6 +3,7 @@ package cz.playlingo
 import android.content.Context
 import android.net.wifi.WifiManager
 import cz.playlingo.core.LgSetup
+import cz.playlingo.core.SamsungSetup
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
@@ -13,20 +14,27 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
- * Hledání televize LG v domácí síti a zkouška, jestli běží vývojářský režim a Key Server
+ * Hledání televize LG (a pro průvodce Samsung i televize Samsung) v domácí síti a zkouška, jestli běží vývojářský režim a Key Server
  * (pro pomocníka v [LgInstallActivity], rozhodování v core/LgSetup.kt). Jen čte – nic neposílá
  * kromě dotazu „je tu televize LG?“ a pokusu o spojení na pár portů. Volat mimo hlavní vlákno.
  */
 object LgFinder {
     /** Televize LG, které se ozvaly na dotaz SSDP (adresy domácí sítě). */
-    fun ssdp(ctx: Context, timeoutMs: Int = 2500): List<String> {
+    fun ssdp(ctx: Context, timeoutMs: Int = 2500): List<String> =
+        search(ctx, LgSetup.searchMessage(), timeoutMs) { text, from -> LgSetup.parseResponse(text, from) }
+
+    /** Televize Samsung, které se ozvaly na dotaz SSDP (průvodce Samsung, core/SamsungSetup.kt). */
+    fun samsung(ctx: Context, timeoutMs: Int = 2500): List<String> =
+        search(ctx, SamsungSetup.searchMessage(), timeoutMs) { text, from -> SamsungSetup.parseResponse(text, from) }
+
+    private fun search(ctx: Context, message: String, timeoutMs: Int, parse: (String, String) -> String?): List<String> {
         val found = LinkedHashSet<String>()
         val wifi = ctx.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
         val lock = try { wifi?.createMulticastLock("playlingo-lg")?.apply { setReferenceCounted(false); acquire() } } catch (_: Throwable) { null }
         try {
             DatagramSocket().use { s ->
                 s.soTimeout = 400
-                val msg = LgSetup.searchMessage().toByteArray(Charsets.US_ASCII)
+                val msg = message.toByteArray(Charsets.US_ASCII)
                 val group = InetAddress.getByName("239.255.255.250")
                 repeat(2) { s.send(DatagramPacket(msg, msg.size, group, 1900)) }
                 val end = System.currentTimeMillis() + timeoutMs
@@ -35,7 +43,7 @@ object LgFinder {
                     val p = DatagramPacket(buf, buf.size)
                     try { s.receive(p) } catch (_: java.net.SocketTimeoutException) { continue }
                     val text = String(p.data, 0, p.length, Charsets.UTF_8)
-                    LgSetup.parseResponse(text, p.address.hostAddress ?: "")?.let { found.add(it) }
+                    parse(text, p.address.hostAddress ?: "")?.let { found.add(it) }
                 }
             }
         } catch (_: Throwable) {

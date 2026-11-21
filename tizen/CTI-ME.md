@@ -82,6 +82,14 @@ a z pomocníka v telefonu) místo toho:
    jiná platforma = připojila se LG. Když na televizi nečeká běžící překlad, otevře si průvodce
    port 8787 sám.
 
+**Od 0.97.52 vede průvodce hlavně přes Apps2Samsung** (komunitní instalátor pro Android, Windows, macOS,
+Linux; https://github.com/Apps2Samsung/Apps2Samsung): ten najde televizi, jedním přihlášením účtem Samsung
+vyrobí certifikát pro její DUID a nahraje libovolný `.wgt`. PlayLingo mu předá zdroj odkazem
+`apps2samsung://source?url=https://github.com/adusa89/PlayLingo/releases/tag/latest` (umí od 3.3.1) – ve vydání
+`latest` je `PlayLingo-Samsung.wgt` (týž nepodepsaný balíček jako v APK, přidává ho `build.yml`). Host PC IP v televizi
+je pak adresa telefonu. Kroky výše (uložit .wgt, Tizen Studio) zůstaly jako rozbalovací záloha „Bez telefonu
+s Androidem: počítač“. Logika kroků je v `core/SamsungSetup.kt`.
+
 Další krok, až bude k dispozici skutečná televize Samsung: SDB jen na čtení (DUID, model,
 nainstalovaná verze), pak nahrání balíčku podepsaného jinde, nakonec certifikát a podpis v telefonu.
 
