@@ -1,0 +1,309 @@
+prelozenych_titulku=33 pady=0 knihovna_ps5=2 dekodovano_snimku=2081 pokusy_o_spojeni=2 parovani_bez_konzole=1 aktualizace_stazeno=1 aktualizace_dotaz=4 aktualizace_nahrazeno=1 ucet_z_telefonu=1 pomocnik=2
+VYSLEDEK=OK
+ruznych_titulku=14/15
+NEPRELOZENO: lantern
+11-21 17:38:14.747 I/TP_TEST ( 3014): DEEPL|page page on port 8765
+11-21 17:38:18.506 I/TP_TEST ( 3014): DEEPL|page page closed
+11-21 17:38:27.790 I/TP_TEST ( 3014): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:38:31.499 I/TP_TEST ( 3014): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:39:04.326 I/TP_TEST ( 4806): REMOTE|page on port 8766
+11-21 17:39:05.820 I/TP_TEST ( 4806): NET|připojeno WIFI_24
+11-21 17:39:05.851 I/TP_TEST ( 4806): A11Y|true
+11-21 17:39:05.862 I/TP_TEST ( 4806): START|video=1280x720|interval=100|screen=1920x1080|eco=true|decoder=OMX.google.h264.decoder (přímý výstup)|lib=ok 1280x720@30 10000kb
+11-21 17:39:05.898 I/TP_TEST ( 4806): NET|Wi-Fi na 2,4 GHz (2447 MHz, signál -30 dBm)
+11-21 17:39:05.898 I/TP_TEST ( 4806): VIDEO|fed=0|decoded=0|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:39:05.899 I/TP_TEST ( 4806): SOURCE|demo
+11-21 17:39:05.939 I/TP_TEST ( 4806): MODEL|cs|ok|pokus=1
+11-21 17:39:07.012 I/TP_TEST ( 4806): WARM|cs|první=991ms|další=81ms
+11-21 17:39:11.320 I/TP_TEST ( 4806): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:39:11.320 I/TP_TEST ( 4806): LAT|5421ms|ocr=4166ms
+11-21 17:39:11.422 I/TP_TEST ( 4806): VIDEO|fed=55|decoded=51|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=55 raw=false err=null
+11-21 17:39:11.423 I/TP_TEST ( 4806): PERF|čtení=1|průměr=4166ms|poslední=4166ms|titulků=1|video=1280x720|oblast=33%|paměť=15+85MB|wifi=2447MHz/-30dBm
+11-21 17:39:14.898 I/TP_TEST ( 4806): COLOR|Marek|-|us=5753
+11-21 17:39:19.558 I/TP_TEST ( 4806): COLOR|Marek|-|us=1116
+11-21 17:39:19.885 I/TP_TEST ( 4806): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:39:19.885 I/TP_TEST ( 4806): LAT|486ms|ocr=4549ms
+11-21 17:39:19.887 I/TP_TEST ( 4806): ZONE|learned 0.72-1.0
+11-21 17:39:19.990 I/TP_TEST ( 4806): VIDEO|fed=141|decoded=136|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=140 raw=false err=null
+11-21 17:39:23.788 I/TP_TEST ( 4806): COLOR|Jonas|-|us=523
+11-21 17:39:23.789 I/TP_TEST ( 4806): HIDE
+11-21 17:39:27.769 I/TP_TEST ( 4806): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:39:27.769 I/TP_TEST ( 4806): LAT|870ms|ocr=3716ms
+11-21 17:39:27.870 I/TP_TEST ( 4806): VIDEO|fed=220|decoded=216|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=220 raw=false err=null
+11-21 17:39:31.416 I/TP_TEST ( 4806): HIDE
+11-21 17:39:35.407 I/TP_TEST ( 4806): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:39:35.407 I/TP_TEST ( 4806): LAT|1008ms|ocr=3704ms
+11-21 17:39:35.510 I/TP_TEST ( 4806): VIDEO|fed=296|decoded=292|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=296 raw=false err=null
+11-21 17:39:39.266 I/TP_TEST ( 4806): COLOR|Silas|-|us=60
+11-21 17:39:39.266 I/TP_TEST ( 4806): HIDE
+11-21 17:39:43.582 I/TP_TEST ( 4806): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:39:43.582 I/TP_TEST ( 4806): LAT|183ms|ocr=4058ms
+11-21 17:39:43.690 I/TP_TEST ( 4806): VIDEO|fed=377|decoded=373|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=377 raw=false err=null
+11-21 17:39:43.691 I/TP_TEST ( 4806): PERF|čtení=9|průměr=3862ms|poslední=4058ms|titulků=5|video=1280x720|oblast=27%|paměť=19+93MB|wifi=2447MHz/-30dBm
+11-21 17:39:47.219 I/TP_TEST ( 4806): COLOR|Mira|-|us=71
+11-21 17:39:47.219 I/TP_TEST ( 4806): HIDE
+11-21 17:39:51.070 I/TP_TEST ( 4806): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:39:51.070 I/TP_TEST ( 4806): LAT|171ms|ocr=3587ms
+11-21 17:39:51.174 I/TP_TEST ( 4806): VIDEO|fed=453|decoded=448|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=453 raw=false err=null
+11-21 17:39:54.476 I/TP_TEST ( 4806): COLOR|Tobin|-|us=82
+11-21 17:39:54.476 I/TP_TEST ( 4806): HIDE
+11-21 17:39:58.241 I/TP_TEST ( 4806): SHOW|WE HAVE TO GET OUT OF HERE!|Musíme se odsud dostat!
+11-21 17:39:58.241 I/TP_TEST ( 4806): LAT|1342ms|ocr=3562ms
+11-21 17:39:58.342 I/TP_TEST ( 4806): VIDEO|fed=523|decoded=519|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=523 raw=false err=null
+11-21 17:40:01.867 I/TP_TEST ( 4806): HIDE
+11-21 17:40:05.450 I/TP_TEST ( 4806): SCALE|1.5
+11-21 17:40:05.451 I/TP_TEST ( 4806): SHOW|Wait|Počkej
+11-21 17:40:05.451 I/TP_TEST ( 4806): LAT|1052ms|ocr=3481ms
+11-21 17:40:05.552 I/TP_TEST ( 4806): VIDEO|fed=595|decoded=591|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=595 raw=false err=null
+11-21 17:40:09.182 I/TP_TEST ( 4806): HIDE
+11-21 17:40:13.100 I/TP_TEST ( 4806): SHOW|[old Kessler] You two were never supposed to meet.|Old Kessler: Ty dva se nikdy neměli setkat.
+11-21 17:40:13.100 I/TP_TEST ( 4806): LAT|1201ms|ocr=3703ms
+11-21 17:40:13.202 I/TP_TEST ( 4806): VIDEO|fed=672|decoded=667|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=672 raw=false err=null
+11-21 17:40:16.667 I/TP_TEST ( 4806): COLOR|Old Kessler|-|us=107
+11-21 17:40:16.668 I/TP_TEST ( 4806): HIDE
+11-21 17:40:16.769 I/TP_TEST ( 4806): PERF|čtení=18|průměr=3696ms|poslední=3463ms|titulků=9|video=1280x720|oblast=27%|paměť=13+96MB|wifi=2447MHz/-30dBm
+11-21 17:40:20.540 I/TP_TEST ( 4806): SHOW|Mira: I'll take the left door. Tobin: Then I'm going right.|Mira: Vezmu levé dveře. Tobin: Pak jdu v pořádku.
+11-21 17:40:20.540 I/TP_TEST ( 4806): LAT|1142ms|ocr=3595ms
+11-21 17:40:20.642 I/TP_TEST ( 4806): VIDEO|fed=747|decoded=742|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=747 raw=false err=null
+11-21 17:40:24.455 I/TP_TEST ( 4806): COLOR|Mira|-|us=69
+11-21 17:40:24.456 I/TP_TEST ( 4806): HIDE
+11-21 17:40:28.973 I/TP_TEST ( 4806): SHOW|Lena: Keep your voice down, they can hear us.|Lena: Mluv tiše, slyší nás.
+11-21 17:40:28.973 I/TP_TEST ( 4806): LAT|574ms|ocr=4283ms
+11-21 17:40:29.075 I/TP_TEST ( 4806): VIDEO|fed=830|decoded=826|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=830 raw=false err=null
+11-21 17:40:32.594 I/TP_TEST ( 4806): COLOR|Lena|-|us=43
+11-21 17:40:32.747 I/TP_TEST ( 4806): SHOW|I don't think anyone has been here for years.|Nemyslím si, že by tu někdo byl roky.
+11-21 17:40:32.747 I/TP_TEST ( 4806): LAT|4348ms|ocr=3517ms
+11-21 17:40:36.524 I/TP_TEST ( 4806): VIDEO|fed=905|decoded=901|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=905 raw=false err=null
+11-21 17:40:40.128 I/TP_TEST ( 4806): SHOW|Davor: Hand me the latern and stay close.|Davor: Dej mi latern a zůstaň blízko.
+11-21 17:40:40.128 I/TP_TEST ( 4806): LAT|4230ms|ocr=3470ms
+11-21 17:40:43.915 I/TP_TEST ( 4806): SCALE|2.0
+11-21 17:40:43.916 I/TP_TEST ( 4806): COLOR|Davor|-|us=34
+11-21 17:40:44.018 I/TP_TEST ( 4806): VIDEO|fed=979|decoded=975|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=979 raw=false err=null
+11-21 17:40:48.514 I/TP_TEST ( 4806): COLOR|Davor|-|us=38
+11-21 17:40:48.662 I/TP_TEST ( 4806): SHOW|Lena: The bridge is out, we have to swim.|Lena: Most je zničen, musíme plavat.
+11-21 17:40:48.662 I/TP_TEST ( 4806): LAT|5263ms|ocr=4494ms
+11-21 17:40:48.764 I/TP_TEST ( 4806): PERF|čtení=26|průměr=3729ms|poslední=4494ms|titulků=14|video=1280x720|oblast=27%|paměť=16+104MB|wifi=2447MHz/-30dBm
+11-21 17:40:53.409 I/TP_TEST ( 4806): SCALE|1.5
+11-21 17:40:53.410 I/TP_TEST ( 4806): COLOR|Lena|-|us=62
+11-21 17:40:53.511 I/TP_TEST ( 4806): VIDEO|fed=1075|decoded=1071|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1075 raw=false err=null
+11-21 17:40:57.399 I/TP_TEST ( 4806): COLOR|Lena|-|us=63
+11-21 17:40:57.399 I/TP_TEST ( 4806): SHOW|Davor: Run for the gate!|Davor: Utíkej k bráně!
+11-21 17:40:57.399 I/TP_TEST ( 4806): LAT|500ms|ocr=3885ms
+11-21 17:41:00.849 I/TP_TEST ( 4806): COLOR|Davor|-|us=209
+11-21 17:41:00.849 I/TP_TEST ( 4806): HIDE
+11-21 17:41:00.950 I/TP_TEST ( 4806): VIDEO|fed=1148|decoded=1144|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1148 raw=false err=null
+11-21 17:41:05.367 I/TP_TEST ( 4806): SHOW|Kessler: So, what will it be? • I'll take the job. • Tell me more about the pay. • Not interested.|Kessler: Co to bude? Vezmu si práci. Řekni mi více o mzdě. Nezajímá.
+11-21 17:41:05.367 I/TP_TEST ( 4806): LAT|968ms|ocr=4077ms
+11-21 17:41:09.539 I/TP_TEST ( 4806): COLOR|Kessler|-|us=203
+11-21 17:41:09.539 I/TP_TEST ( 4806): HIDE
+11-21 17:41:09.640 I/TP_TEST ( 4806): VIDEO|fed=1236|decoded=1233|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1236 raw=false err=null
+11-21 17:41:13.437 I/TP_TEST ( 4806): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:41:13.437 I/TP_TEST ( 4806): LAT|39ms|ocr=3795ms
+11-21 17:41:17.245 I/TP_TEST ( 4806): COLOR|Marek|-|us=132
+11-21 17:41:17.246 I/TP_TEST ( 4806): HIDE
+11-21 17:41:17.347 I/TP_TEST ( 4806): VIDEO|fed=1312|decoded=1308|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1312 raw=false err=null
+11-21 17:41:21.037 I/TP_TEST ( 4806): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:41:21.037 I/TP_TEST ( 4806): LAT|139ms|ocr=3685ms
+11-21 17:41:21.140 I/TP_TEST ( 4806): PERF|čtení=34|průměr=3769ms|poslední=3685ms|titulků=18|video=1280x720|oblast=27%|paměť=20+105MB|wifi=2447MHz/-30dBm
+11-21 17:41:24.529 I/TP_TEST ( 4806): COLOR|Jonas|-|us=408
+11-21 17:41:24.529 I/TP_TEST ( 4806): HIDE
+11-21 17:41:24.630 I/TP_TEST ( 4806): VIDEO|fed=1385|decoded=1381|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1385 raw=false err=null
+11-21 17:41:28.253 I/TP_TEST ( 4806): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:41:28.253 I/TP_TEST ( 4806): LAT|1354ms|ocr=3621ms
+11-21 17:41:31.933 I/TP_TEST ( 4806): HIDE
+11-21 17:41:32.034 I/TP_TEST ( 4806): VIDEO|fed=1459|decoded=1455|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1459 raw=false err=null
+11-21 17:41:35.702 I/TP_TEST ( 4806): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:41:35.702 I/TP_TEST ( 4806): LAT|1303ms|ocr=3666ms
+11-21 17:41:39.189 I/TP_TEST ( 4806): COLOR|Silas|-|us=59
+11-21 17:41:39.189 I/TP_TEST ( 4806): HIDE
+11-21 17:41:39.290 I/TP_TEST ( 4806): VIDEO|fed=1531|decoded=1526|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1531 raw=false err=null
+11-21 17:41:43.305 I/TP_TEST ( 4806): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:41:43.305 I/TP_TEST ( 4806): LAT|1406ms|ocr=4013ms
+11-21 17:41:47.403 I/TP_TEST ( 4806): COLOR|Mira|-|us=80
+11-21 17:41:47.403 I/TP_TEST ( 4806): HIDE
+11-21 17:41:47.505 I/TP_TEST ( 4806): VIDEO|fed=1613|decoded=1608|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1613 raw=false err=null
+11-21 17:41:51.307 I/TP_TEST ( 4806): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:41:51.307 I/TP_TEST ( 4806): LAT|409ms|ocr=3800ms
+11-21 17:41:51.411 I/TP_TEST ( 4806): PERF|čtení=42|průměr=3752ms|poslední=3800ms|titulků=22|video=1280x720|oblast=27%|paměť=22+106MB|wifi=2447MHz/-30dBm
+11-21 17:41:55.313 I/TP_TEST ( 4806): COLOR|Tobin|-|us=78
+11-21 17:41:55.313 I/TP_TEST ( 4806): SHOW|WE HAVE TO GET OUT OF HERE!|Musíme se odsud dostat!
+11-21 17:41:55.313 I/TP_TEST ( 4806): LAT|4414ms|ocr=3900ms
+11-21 17:41:55.416 I/TP_TEST ( 4806): VIDEO|fed=1692|decoded=1688|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1692 raw=false err=null
+11-21 17:42:02.496 I/TP_TEST ( 4806): SHOW|Wait|Počkej
+11-21 17:42:02.496 I/TP_TEST ( 4806): LAT|4097ms|ocr=3428ms
+11-21 17:42:02.598 I/TP_TEST ( 4806): VIDEO|fed=1765|decoded=1760|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1765 raw=false err=null
+11-21 17:42:09.987 I/TP_TEST ( 4806): SHOW|[old Kessler] You two were never supposed to meet.|Old Kessler: Ty dva se nikdy neměli setkat.
+11-21 17:42:09.987 I/TP_TEST ( 4806): LAT|4088ms|ocr=3500ms
+11-21 17:42:10.089 I/TP_TEST ( 4806): VIDEO|fed=1839|decoded=1835|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1839 raw=false err=null
+11-21 17:42:13.468 I/TP_TEST ( 4806): COLOR|Old Kessler|-|us=173
+11-21 17:42:18.309 I/TP_TEST ( 4806): COLOR|Old Kessler|-|us=236
+11-21 17:42:18.309 I/TP_TEST ( 4806): HIDE
+11-21 17:42:18.410 I/TP_TEST ( 4806): VIDEO|fed=1923|decoded=1919|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1923 raw=false err=null
+11-21 17:42:22.283 I/TP_TEST ( 4806): SHOW|Mira: I'll take the left door. Tobin: Then I'm going right.|Mira: Vezmu levé dveře. Tobin: Pak jdu v pořádku.
+11-21 17:42:22.283 I/TP_TEST ( 4806): LAT|1384ms|ocr=3871ms
+11-21 17:42:22.386 I/TP_TEST ( 4806): PERF|čtení=50|průměr=3755ms|poslední=3871ms|titulků=26|video=1280x720|oblast=27%|paměť=25+106MB|wifi=2447MHz/-30dBm
+11-21 17:42:26.334 I/TP_TEST ( 4806): COLOR|Mira|-|us=69
+11-21 17:42:26.334 I/TP_TEST ( 4806): SHOW|Lena: Keep your voice down, they can hear us.|Lena: Mluv tiše, slyší nás.
+11-21 17:42:26.334 I/TP_TEST ( 4806): LAT|5435ms|ocr=3945ms
+11-21 17:42:26.435 I/TP_TEST ( 4806): VIDEO|fed=2002|decoded=1998|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=2002 raw=false err=null
+11-21 17:42:31.455 I/TP_TEST ( 4806): VIDEO|fed=2052|decoded=2047|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=2052 raw=false err=null
+11-21 17:42:31.526 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:42:34.531 I/TP_TEST ( 4806): PAIR|failed RegistEventFailed
+11-21 17:42:34.922 I/TP_TEST ( 4806): SOURCE|ps5 10.0.2.2
+11-21 17:42:34.970 I/TP_TEST ( 4806): LINK|OFF||dec=OMX.google.h264.decoder (přímý výstup)|0x0|fed=2086|decoded=2081
+11-21 17:42:36.479 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:42:40.466 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:42:40.466 I/TP_TEST ( 4806): PS5|v síti: žádná konzole
+11-21 17:42:40.467 I/TP_TEST ( 4806): PS5|spárováno: Zkouška 10.0.2.2 …0000 · účet ? · spárovaná konzole v síti nenalezena
+11-21 17:42:41.500 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:42:45.996 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:42:45.997 I/TP_TEST ( 4806): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:42:45.998 I/TP_TEST ( 4806): PS5|connect 10.0.2.2 → Success
+11-21 17:42:45.999 I/TP_TEST ( 4806): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=1
+11-21 17:42:46.000 I/TP_TEST ( 4806): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:42:46.017 I/TP_TEST ( 4806): LINK|WAITING|Connection Refused in Session Request|dec=OMX.google.h264.decoder (přímý výstup)|0x0|fed=2086|decoded=2081
+11-21 17:42:46.519 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:42:51.543 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:42:52.447 I/TP_TEST ( 4806): PERF|čtení=51|průměr=3759ms|poslední=3945ms|titulků=27|video=0x0|oblast=27%|paměť=16+107MB|wifi=2447MHz/-30dBm
+11-21 17:42:54.539 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:42:54.540 I/TP_TEST ( 4806): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:42:54.541 I/TP_TEST ( 4806): PS5|connect 10.0.2.2 → Success
+11-21 17:42:54.542 I/TP_TEST ( 4806): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=2
+11-21 17:42:54.542 I/TP_TEST ( 4806): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:42:56.562 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:01.578 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:06.060 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:43:06.599 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:11.595 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:43:11.596 I/TP_TEST ( 4806): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:43:11.597 I/TP_TEST ( 4806): PS5|connect 10.0.2.2 → Success
+11-21 17:43:11.598 I/TP_TEST ( 4806): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=3
+11-21 17:43:11.598 I/TP_TEST ( 4806): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:11.617 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:11.617 I/TP_TEST ( 4806): LINK|FAILED|Connection Refused in Session Request|dec=OMX.google.h264.decoder (přímý výstup)|0x0|fed=2086|decoded=2081
+11-21 17:43:16.640 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:21.343 I/TP_TEST ( 4806): LOGIN|page on port 8765
+11-21 17:43:21.663 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:22.465 I/TP_TEST ( 4806): PERF|čtení=51|průměr=3759ms|poslední=3945ms|titulků=27|video=0x0|oblast=27%|paměť=19+111MB|wifi=2447MHz/-30dBm
+11-21 17:43:26.681 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:29.129 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:43:29.130 I/TP_TEST ( 4806): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:43:29.130 I/TP_TEST ( 4806): PS5|connect 10.0.2.2 → Success
+11-21 17:43:29.132 I/TP_TEST ( 4806): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=4
+11-21 17:43:29.132 I/TP_TEST ( 4806): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:31.705 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:31.939 I/TP_TEST ( 4806): LOGIN|page closed
+11-21 17:43:35.135 I/TP_TEST ( 4806): LOGIN|page on port 8765
+11-21 17:43:35.151 I/TP_TEST ( 4806): LOGIN|test page 200 form=true
+11-21 17:43:35.161 I/TP_TEST ( 4806): LOGIN|test wrong key 404
+11-21 17:43:35.163 I/TP_TEST ( 4806): LOGIN|page account from app
+11-21 17:43:35.163 I/TP_TEST ( 4806): LOGIN|test app OK
+11-21 17:43:35.180 I/TP_TEST ( 4806): LOGIN|page closed
+11-21 17:43:36.723 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:41.739 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:43.343 I/TP_TEST ( 4806): HELPER|start
+11-21 17:43:43.347 I/TP_TEST ( 4806): HELPER|link ok
+11-21 17:43:46.665 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:43:46.666 I/TP_TEST ( 4806): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:43:46.667 I/TP_TEST ( 4806): PS5|connect 10.0.2.2 → Success
+11-21 17:43:46.668 I/TP_TEST ( 4806): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=5
+11-21 17:43:46.668 I/TP_TEST ( 4806): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:46.759 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:47.542 I/TP_TEST ( 4806): HELPER|link ok
+11-21 17:43:47.706 I/TP_TEST ( 4806): HELPER|login open
+11-21 17:43:47.756 I/TP_TEST ( 4806): HELPER|cookies cleared=false
+11-21 17:43:49.248 I/TP_TEST ( 4806): HELPER|page my.account.sony.com
+11-21 17:43:49.479 I/TP_TEST ( 4806): HELPER|page my.account.sony.com
+11-21 17:43:51.790 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:52.498 I/TP_TEST ( 4806): PERF|čtení=51|průměr=3759ms|poslední=3945ms|titulků=27|video=0x0|oblast=27%|paměť=13+115MB|wifi=2447MHz/-30dBm
+11-21 17:43:53.579 I/TP_TEST ( 4806): HELPER|page my.account.sony.com
+11-21 17:43:56.878 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:01.912 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:06.501 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:44:06.922 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:11.940 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:12.007 I/TP_TEST ( 4806): PAIR|discover nets=10.0.2.16/24 10.0.2.15/24 → 
+11-21 17:44:12.008 I/TP_TEST ( 4806): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:44:12.008 I/TP_TEST ( 4806): PS5|connect 10.0.2.2 → Success
+11-21 17:44:12.009 I/TP_TEST ( 4806): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=6
+11-21 17:44:12.010 I/TP_TEST ( 4806): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:44:16.983 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:22.009 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:22.527 I/TP_TEST ( 4806): PERF|čtení=51|průměr=3759ms|poslední=3945ms|titulků=27|video=0x0|oblast=27%|paměť=11+117MB|wifi=2447MHz/-30dBm
+11-21 17:44:26.353 I/TP_TEST ( 4806): ZONE|scan
+11-21 17:44:27.056 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:32.075 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:37.097 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:39.949 I/TP_TEST ( 4806): DEEPL|page page on port 8765
+11-21 17:44:42.139 I/TP_TEST ( 4806): VIDEO|fed=2086|decoded=2081|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:43.764 I/TP_TEST ( 4806): DEEPL|page page closed
+11-21 17:44:54.279 I/TP_TEST (10042): REMOTE|page on port 8766
+11-21 17:44:55.779 I/TP_TEST (10042): NET|připojeno WIFI_24
+11-21 17:44:55.800 I/TP_TEST (10042): A11Y|false
+11-21 17:44:55.806 I/TP_TEST (10042): START|video=1280x720|interval=100|screen=1280x720|eco=true|decoder=OMX.google.h264.decoder (přímý výstup)|lib=ok 1280x720@30 10000kb
+11-21 17:44:55.843 I/TP_TEST (10042): SOURCE|demo
+11-21 17:44:55.845 I/TP_TEST (10042): NET|Wi-Fi na 2,4 GHz (2447 MHz, signál -30 dBm)
+11-21 17:44:55.845 I/TP_TEST (10042): VIDEO|fed=0|decoded=0|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=0 raw=false err=null
+11-21 17:44:55.881 I/TP_TEST (10042): MODEL|cs|ok|pokus=1
+11-21 17:44:56.865 I/TP_TEST (10042): WARM|cs|první=899ms|další=84ms
+11-21 17:45:01.006 I/TP_TEST (10042): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:45:01.006 I/TP_TEST (10042): LAT|5163ms|ocr=4017ms
+11-21 17:45:01.110 I/TP_TEST (10042): VIDEO|fed=53|decoded=48|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=53 raw=false err=null
+11-21 17:45:01.111 I/TP_TEST (10042): PERF|čtení=1|průměr=4017ms|poslední=4017ms|titulků=1|video=1280x720|oblast=33%|paměť=15+85MB|wifi=2447MHz/-30dBm
+11-21 17:45:04.441 I/TP_TEST (10042): COLOR|Marek|-|us=1944
+11-21 17:45:08.183 I/TP_TEST (10042): COLOR|Marek|-|us=1457
+11-21 17:45:08.183 I/TP_TEST (10042): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:45:08.183 I/TP_TEST (10042): LAT|4840ms|ocr=3638ms
+11-21 17:45:08.201 I/TP_TEST (10042): ZONE|learned 0.72-1.0
+11-21 17:45:08.311 I/TP_TEST (10042): VIDEO|fed=126|decoded=121|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=126 raw=false err=null
+11-21 17:45:12.512 I/TP_TEST (10042): COLOR|Jonas|-|us=1522
+11-21 17:45:16.300 I/TP_TEST (10042): COLOR|Jonas|-|us=98
+11-21 17:45:16.301 I/TP_TEST (10042): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:45:16.301 I/TP_TEST (10042): LAT|5458ms|ocr=3659ms
+11-21 17:45:16.403 I/TP_TEST (10042): VIDEO|fed=207|decoded=202|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=207 raw=false err=null
+11-21 17:45:23.298 I/TP_TEST (10042): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:45:23.298 I/TP_TEST (10042): LAT|4955ms|ocr=3477ms
+11-21 17:45:23.399 I/TP_TEST (10042): VIDEO|fed=275|decoded=270|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=275 raw=false err=null
+11-21 17:45:26.936 I/TP_TEST (10042): COLOR|Silas|-|us=95
+11-21 17:45:30.587 I/TP_TEST (10042): COLOR|Silas|-|us=101
+11-21 17:45:30.588 I/TP_TEST (10042): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:45:30.588 I/TP_TEST (10042): LAT|4745ms|ocr=3548ms
+11-21 17:45:30.689 I/TP_TEST (10042): VIDEO|fed=348|decoded=343|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=348 raw=false err=null
+11-21 17:45:34.887 I/TP_TEST (10042): COLOR|Mira|-|us=92
+11-21 17:45:34.989 I/TP_TEST (10042): PERF|čtení=10|průměr=3690ms|poslední=4196ms|titulků=5|video=1280x720|oblast=27%|paměť=19+93MB|wifi=2447MHz/-30dBm
+11-21 17:45:38.667 I/TP_TEST (10042): COLOR|Mira|-|us=197
+11-21 17:45:38.669 I/TP_TEST (10042): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:45:38.669 I/TP_TEST (10042): LAT|5326ms|ocr=3677ms
+11-21 17:45:38.771 I/TP_TEST (10042): VIDEO|fed=429|decoded=424|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=429 raw=false err=null
+11-21 17:45:42.446 I/TP_TEST (10042): COLOR|Tobin|-|us=93
+11-21 17:45:48.578 I/TP_TEST (11220): UPD|start file allowed=false
+11-21 17:45:48.666 I/TP_TEST (11220): REMOTE|page on port 8766
+11-21 17:45:48.866 I/TP_TEST (11220): UPD|apk code=165
+11-21 17:45:49.053 I/TP_TEST (11220): UPD|committed session=1796439219
+11-21 17:45:49.345 I/TP_TEST (11220): UPD|status=-1
+11-21 17:45:49.352 I/TP_TEST (11220): UPD|confirm shown
+11-21 17:46:08.144 I/TP_TEST (11339): UPD|start latest/PlayLingo.apk allowed=true
+11-21 17:46:08.212 I/TP_TEST (11339): REMOTE|page on port 8766
+11-21 17:46:11.393 I/TP_TEST (11339): UPD|downloaded bytes=41052181
+11-21 17:46:11.561 I/TP_TEST (11339): UPD|apk code=164
+11-21 17:46:11.598 I/TP_TEST (11339): UPD|status=3 old session
+11-21 17:46:11.758 I/TP_TEST (11339): UPD|committed session=590482124
+11-21 17:46:11.910 I/TP_TEST (11339): UPD|status=-1
+11-21 17:46:11.912 I/TP_TEST (11339): UPD|confirm shown
+11-21 17:46:48.167 I/TP_TEST (11339): UPD|status=3 INSTALL_FAILED_ABORTED: User rejected permissions
+11-21 17:46:48.194 I/TP_TEST (11339): UPD|fail upd_cancel INSTALL_FAILED_ABORTED: User rejected permissions
+11-21 17:46:56.302 I/TP_TEST (11589): UPD|start file allowed=true
+11-21 17:46:56.375 I/TP_TEST (11589): REMOTE|page on port 8766
+11-21 17:46:56.445 I/TP_TEST (11589): UPD|apk code=165
+11-21 17:46:56.713 I/TP_TEST (11589): UPD|committed session=821475770
+11-21 17:46:57.046 I/TP_TEST (11589): UPD|status=-1
+11-21 17:46:57.048 I/TP_TEST (11589): UPD|confirm shown
+11-21 17:47:15.972 I/TP_TEST (11871): UPD|replaced
+11-21 17:47:16.520 I/TP_TEST (11871): REMOTE|page on port 8766
+11-21 17:47:39.317 I/TP_TEST (11871): UPD|start file allowed=true
+11-21 17:47:39.459 I/TP_TEST (11871): UPD|apk code=165
+11-21 17:47:39.814 I/TP_TEST (11871): UPD|committed session=262474260
+11-21 17:47:39.825 I/TP_TEST (11871): UPD|status=-1
+11-21 17:47:39.826 I/TP_TEST (11871): UPD|confirm shown
+11-21 17:48:04.675 I/TP_TEST (11871): UPD|status=3 INSTALL_FAILED_ABORTED: User rejected permissions
+11-21 17:48:04.676 I/TP_TEST (11871): UPD|fail upd_cancel INSTALL_FAILED_ABORTED: User rejected permissions
