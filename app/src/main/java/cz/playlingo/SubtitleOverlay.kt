@@ -71,6 +71,8 @@ class SubtitleOverlay(
     private val onText: ((String?, String?, String?) -> Unit)? = null,
     /** Úkol pod titulky pro televizi LG/Samsung – hotová zpráva [TvSender.objectiveMessage] (od 0.97.43). */
     private val onObjective: ((String) -> Unit)? = null,
+    /** Popis volby Nastavení hry pro televizi LG/Samsung – hotová zpráva [TvSender.menuDescMessage] (od 0.97.58). */
+    private val onMenuDesc: ((String) -> Unit)? = null,
 ) {
     companion object {
         private const val TAG = "TestPreklad"
@@ -100,6 +102,9 @@ class SubtitleOverlay(
     /** Samostatný pruh s úkolem pod titulky (GTA) – nezávislý na pruhu s titulkem (od 0.97.43). */
     @Volatile private var objView: TextView? = null
     @Volatile private var objParams: WindowManager.LayoutParams? = null
+    /** Nadpis a popis vybrané volby Nastavení hry – vlastní okno přes anglický popis, vedle pruhu se záložkou (od 0.97.58). */
+    @Volatile private var descView: TextView? = null
+    @Volatile private var descParams: WindowManager.LayoutParams? = null
     @Volatile private var layout: ScreenLayout = layout
     private val textSize = textSizeSp
     private val sizeKeeper = SizeKeeper()
@@ -154,6 +159,22 @@ class SubtitleOverlay(
             }
             val olp = params(WindowManager.LayoutParams.WRAP_CONTENT)
             if (add(ov, olp)) { objView = ov; objParams = olp }
+
+            // popis volby Nastavení hry: text zarovnaný vlevo, šířka sloupce popisu ve hře
+            val dv = TextView(host).apply {
+                setTextColor(textColor)
+                gravity = Gravity.START or Gravity.TOP
+                typeface = Typeface.create("sans-serif-medium", if (bold) Typeface.BOLD else Typeface.NORMAL)
+                setShadowLayer(3f, 0f, 1f, Color.BLACK)
+                setLineSpacing(0f, 1.1f)
+                background = GradientDrawable().apply {
+                    setColor(Color.argb(maxOf(bgAlpha, 200), 0, 0, 0))
+                    cornerRadius = dp(8).toFloat()
+                }
+                visibility = View.GONE
+            }
+            val dlp0 = params(WindowManager.LayoutParams.WRAP_CONTENT)
+            if (add(dv, dlp0)) { descView = dv; descParams = dlp0 }
 
             if (showDebug) {
                 val dv = TextView(host).apply {
@@ -427,6 +448,45 @@ class SubtitleOverlay(
         }
     }
 
+    /**
+     * Ukáže přeložený nadpis a popis vybrané volby Nastavení hry přes anglický popis: [box] = vlevo, nahoře, vpravo,
+     * dole (zlomky obrazu; text od levého horního rohu, zalomený na šířku boxu), [lineHeight] = výška řádku popisu ve hře
+     * (zlomek výšky; písmo podle něj, nejvýš jako titulky). Pozadí aspoň 80 %, ať anglický text pod ním neplete.
+     */
+    fun showMenuDesc(title: String?, text: String?, box: FloatArray, lineHeight: Float) {
+        val tvMax = TvLook.textPx(textSize, 0)
+        val tvPx = if (lineHeight > 0f) Math.round(lineHeight * TvLook.SCREEN_H * 1.1f).coerceIn(22, tvMax.coerceAtLeast(22)) else tvMax
+        onMenuDesc?.invoke(TvSender.menuDescMessage(title, text, box, tvPx, maxOf(opacityPercent, 80), SpeakerColors.hex(textColor)))
+        val sb = SpannableStringBuilder()
+        if (!title.isNullOrBlank()) {
+            sb.append(title)
+            sb.setSpan(StyleSpan(Typeface.BOLD), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        if (!text.isNullOrBlank()) { if (sb.isNotEmpty()) sb.append('\n'); sb.append(text) }
+        main.post {
+            val v = descView ?: return@post
+            val lp = descParams ?: return@post
+            val maxPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, textSize.toFloat(), host.resources.displayMetrics)
+            val px = if (lineHeight > 0f) (lineHeight * screenH * 1.1f).coerceIn(0.02f * screenH, maxOf(maxPx, 0.02f * screenH)) else maxPx
+            v.setTextSize(TypedValue.COMPLEX_UNIT_PX, px)
+            val em = v.textSize
+            v.setPadding((em * 0.5f).toInt(), (em * 0.3f).toInt(), (em * 0.5f).toInt(), (em * 0.35f).toInt())
+            v.text = sb
+            val w = ((box[2] - box[0]) * screenW).toInt().coerceIn(dp(120), screenW)
+            lp.width = w
+            lp.x = (box[0] * screenW).toInt().coerceIn(0, maxOf(0, screenW - w))
+            v.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+            lp.y = (box[1] * screenH).toInt().coerceIn(0, maxOf(0, screenH - v.measuredHeight))
+            v.visibility = View.VISIBLE
+            try { wm.updateViewLayout(v, lp) } catch (_: Exception) {}
+        }
+    }
+
+    fun hideMenuDesc() {
+        onMenuDesc?.invoke(TvSender.menuDescMessage(null, null))
+        main.post { descView?.visibility = View.GONE }
+    }
+
     fun hideObjective() {
         onObjective?.invoke(TvSender.objectiveMessage(null))
         main.post { objView?.visibility = View.GONE }
@@ -447,9 +507,10 @@ class SubtitleOverlay(
         isShown = false
         onText?.invoke(null, null, null)
         onObjective?.invoke(TvSender.objectiveMessage(null))
+        onMenuDesc?.invoke(TvSender.menuDescMessage(null, null))
         main.post {
-            listOfNotNull(bar, debugView, objView).forEach { v -> try { wm.removeView(v) } catch (_: Exception) {} }
-            bar = null; barParams = null; debugView = null; objView = null; objParams = null
+            listOfNotNull(bar, debugView, objView, descView).forEach { v -> try { wm.removeView(v) } catch (_: Exception) {} }
+            bar = null; barParams = null; debugView = null; objView = null; objParams = null; descView = null; descParams = null
         }
     }
 }

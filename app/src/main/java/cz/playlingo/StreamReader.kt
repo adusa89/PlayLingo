@@ -546,6 +546,28 @@ class StreamReader(private val width: Int, private val height: Int) {
         MenuCrop(b, menuArgb, 0, 0, w, h, w, (frameH / step))
     }
 
+    private var sampleSerial = -1L
+
+    /**
+     * Průměrný jas (0–255) v každém obdélníku [rects] (vlevo, nahoře, vpravo, dole ve zlomcích obrazu) na posledním
+     * snímku – přímo z jasové roviny, bez bitmapy, nejvýš 24 × 4 bodů na obdélník (od 0.97.58: vybraná položka menu hry
+     * podle bílého pruhu na každém snímku). null = žádný nový snímek od minulého měření.
+     */
+    fun sampleGray(rects: List<FloatArray>): IntArray? = synchronized(frameLock) {
+        if (frameW <= 0 || frameH <= 0 || sampleSerial == frameSerial) return null
+        sampleSerial = frameSerial
+        IntArray(rects.size) { i ->
+            val r = rects[i]
+            val x0 = (r[0] * frameW).toInt().coerceIn(0, frameW - 1); val x1 = (r[2] * frameW).toInt().coerceIn(x0 + 1, frameW)
+            val y0 = (r[1] * frameH).toInt().coerceIn(0, frameH - 1); val y1 = (r[3] * frameH).toInt().coerceIn(y0 + 1, frameH)
+            val sx = maxOf(1, (x1 - x0) / 24); val sy = maxOf(1, (y1 - y0) / 4)
+            var s = 0L; var n = 0
+            var y = y0
+            while (y < y1) { val row = y * yStride; var x = x0; while (x < x1) { s += yBuf[row + x].toInt() and 0xFF; n++; x += sx }; y += sy }
+            if (n == 0) 0 else (s / n).toInt()
+        }
+    }
+
     fun grab(left: Float, top: Float, right: Float, bottom: Float): Crop? = synchronized(frameLock) {
         if (frameW <= 0 || frameH <= 0) return null
         if (grabbedSerial == frameSerial) return null

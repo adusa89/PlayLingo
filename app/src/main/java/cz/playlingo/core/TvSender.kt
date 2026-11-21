@@ -128,6 +128,21 @@ class TvSender(private val log: (String) -> Unit = {}) {
         }
 
         /**
+         * Nadpis a popis vybrané volby Nastavení hry (od 0.97.58, aplikace v TV 1.5.13) – vlastní okno přes anglický popis,
+         * nezávislé na pruhu (v pruhu je mezitím vybraná záložka): `{"typ":"menupopis","nadpis":…,"text":…,
+         * "misto":[vlevo,nahoře,vpravo,dole],"pismo":px,"pozadi":0–100,"barva":"#RRGGBB"}`, text zarovnaný vlevo
+         * od levého horního rohu `misto`, šířka `misto`. Schování `{"typ":"menupopis","text":""}`. Starší TV zprávu
+         * přeskočí (neznámý typ) a popis neukážou.
+         */
+        fun menuDescMessage(title: String?, text: String?, misto: FloatArray? = null, pismo: Int = 0, pozadi: Int = 100,
+                            barva: String = "#FFFFFF"): String {
+            if ((text.isNullOrBlank() && title.isNullOrBlank()) || misto == null || misto.size < 4) return "{\"typ\":\"menupopis\",\"text\":\"\"}"
+            val m = misto.joinToString(",") { String.format(java.util.Locale.ROOT, "%.4f", it.coerceIn(0f, 1f)) }
+            return "{\"typ\":\"menupopis\",\"nadpis\":${json(title ?: "")},\"text\":${json(text ?: "")},\"misto\":[$m]," +
+                "\"pismo\":${pismo.coerceIn(16, 120)},\"pozadi\":${pozadi.coerceIn(0, 100)},\"barva\":\"$barva\"}"
+        }
+
+        /**
          * Stav pro televizi jako Domů v aplikaci: řádky (barva „ok“ / „pozor“ / „info“, text).
          * Aplikace v televizi od 1.5.0 je ukáže pod svými řádky (HDMI, spojení); starší zprávu přeskočí.
          */
@@ -190,6 +205,8 @@ class TvSender(private val log: (String) -> Unit = {}) {
     @Volatile private var status: String? = null
     /** Právě zobrazený úkol ([objectiveMessage]); null = žádný. */
     @Volatile private var objective: String? = null
+    /** Právě zobrazený popis volby Nastavení hry ([menuDescMessage]); null = žádný. */
+    @Volatile private var menuDesc: String? = null
     /** Televize požádala o změnu vzhledu ([TvSettings.parse] už ověřil volbu i hodnotu). */
     @Volatile var onChange: ((TvSettings.Change) -> Unit)? = null
 
@@ -299,6 +316,14 @@ class TvSender(private val log: (String) -> Unit = {}) {
         broadcast(message)
     }
 
+    /** Popis volby Nastavení hry ([menuDescMessage]) – posílá se jen změna; nové televize ho dostanou po připojení. */
+    @Synchronized fun sendMenuDesc(message: String) {
+        val m = if (message.contains("\"text\":\"\"}")) null else message
+        if (m == menuDesc) return
+        menuDesc = m
+        broadcast(message)
+    }
+
     /** Schová pruh na televizi. */
     @Synchronized fun hide() {
         if (shown == null) return
@@ -361,6 +386,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
                 status?.let { m -> val b = frame(m); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
                 shown?.let { t -> val b = frame(showMessage(++nextId, t, shownParts, shownLook)); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
                 objective?.let { m -> val b = frame(m); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
+                menuDesc?.let { m -> val b = frame(m); try { sendQueue?.execute { write(c, b) } } catch (_: Throwable) {} }
             }
             log("tv connected, now ${clients.size}")
             // Od televize je zajímavé jen ohlášení (platforma a verze); čte se i proto, aby se

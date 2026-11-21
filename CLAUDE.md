@@ -155,6 +155,14 @@ ukáže i druhý řádek (ukázková anglická věta `pn_ukazka_orig`, `nahled(t
 (`TvSender.start(retry = true)`, každé 2 s) – po aktualizaci ho na okamžik držela obrazovka aplikace (`TvIdle`) a TV jen hledala.
 Neprůhlednost pruhu 0–100 % (`OPACITIES`: 0, 20, 40, 60, 80, 90, 100 na třech místech, od 0.97.30 / TV 1.5.7).
 
+**Menu hry od 0.97.58 (aplikace v TV 1.5.13):** vybraná položka se pozná **podle jasu na každém novém snímku**, ne až po čtení:
+`MenuView.rects` (menu zleva kousek pruhu vpravo za textem `pauseRect`, záložky rámeček z rámečků slov `MenuLine.words`) →
+`StreamReader.sampleGray` (jasová rovina, ≤ 24×4 bodů na položku, bez bitmapy) → `MenuTracker.fast` (výrazně nejsvětlejší = vybraná);
+čtení staršího snímku novější výběr nepřebije (`update(read, grabbedAt)`). OCR dál každých 0,4 s doplňuje položky, popis a zavření;
+v Nastavení posun bílého pruhu v seznamu voleb (`GameMenu.WATCH`) nebo jiná záložka spustí čtení hned. **Nastavení zvlášť:** v pruhu
+jen vybraná záložka těsně nad lištou (`GameMenu.tabPlace` → `box`+`step`), nadpis a popis vybrané volby ve vlastním okně přes anglický
+popis (`MenuView.descBox`, `SubtitleOverlay.showMenuDesc`, do TV `{"typ":"menupopis",…}` → `#menupopis` v `app.js`; starší TV ho přeskočí).
+Lišta se hledá do 12 % výšky (text je kolem 8 %). Na skutečné hře neověřeno.
 **Od 0.97.39 (aplikace v TV 1.5.10):** menu zleva řádek proti řádku – `MenuView.step` (rozestup položek ve hře, nejmenší rozdíl
 sousedních, `GameMenu.rowStep`) → výška řádku překladu = rozestup, písmo nejvýš 62 % řádku (Android `lineHeight` od API 28,
 TV `misto:[x,y,rozestup]`). Po menu se výška řádku pruhu vrací (`setLineSpacing` v `SubtitleOverlay.show`, od 0.97.42 – dřív titulky po menu vypadaly větší). V menu se čte každých 0,4 s, zavře se až po 4 čteních bez něj (`MenuTracker.MISSES`), `MENU|off|…`

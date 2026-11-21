@@ -131,6 +131,26 @@ h1 { margin: 10px 0 20px 0; font-size: 68px; font-weight: bold; color: #FFFFFF; 
   text-shadow: 0 0 3px #000000, 0 0 6px #000000, 0 2px 4px #000000;
 }
 
+/* Popis volby Nastavení hry (od 1.5.13, GTA VI vpravo) – vlastní prvek přes anglický popis, text vlevo.
+   Poloha, šířka, písmo a pozadí přijdou z Androidu (popisUkaz v app.js). */
+#menupopis {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  box-sizing: border-box;
+  padding: 0.3em 0.5em 0.35em;
+  font-size: 32px;
+  line-height: 1.25;
+  color: #FFFFFF;
+  text-align: left;
+  white-space: pre-line;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 12px;
+  text-shadow: 0 0 3px #000000, 0 2px 4px #000000;
+}
+
 #zpet {
   display: none;
   position: absolute;

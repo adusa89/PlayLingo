@@ -188,6 +188,19 @@ function zkus(platforma, verze, dalsi) {
       assert.strictEqual(ukol.style.left, Math.round(0.5 * 1920 - 1728 / 2) + 'px');
       assert.strictEqual(ukol.style.top, Math.round(0.925 * 1080 - 75) + 'px');
       assert.strictEqual(tv.prvky.titulek.textContent.indexOf('úkrytu'), -1, 'úkol nejde do pruhu');
+      // popis volby Nastavení hry (od 1.5.13): vlastní prvek #menupopis od levého horního rohu misto, šířka misto
+      var hotovoPred = tv.odeslano.length;
+      ws.onmessage({ data: JSON.stringify({ typ: 'menupopis', nadpis: 'Citlivost', text: 'Rychlost kamery.', misto: [0.6, 0.18, 0.98, 0.32], pismo: 30, pozadi: 90, barva: '#FFFFFF' }) });
+      var popis = tv.prvky.menupopis;
+      assert.strictEqual(popis.style.display, 'block', 'popis je vidět');
+      assert.strictEqual(popis.textContent, 'Citlivost\nRychlost kamery.');
+      assert.strictEqual(popis.style.left, Math.round(0.6 * 1920) + 'px');
+      assert.strictEqual(popis.style.width, Math.round(0.38 * 1920) + 'px');
+      assert.strictEqual(popis.style.fontSize, '30px');
+      assert.strictEqual(tv.odeslano.length, hotovoPred, 'popis nečeká na hotovo');
+      assert.strictEqual(tv.prvky.titulek.textContent.indexOf('kamery'), -1, 'popis nejde do pruhu');
+      ws.onmessage({ data: '{"typ":"menupopis","text":""}' });
+      assert.strictEqual(popis.style.display, 'none', 'prázdný popis = schovat');
       // skrytí pruhu úkol neschová
       ws.onmessage({ data: '{"typ":"skryj","id":3}' });
       assert.strictEqual(tv.prvky.pruh.style.display, 'none');
