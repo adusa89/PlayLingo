@@ -244,7 +244,7 @@ object Prefs {
 
     /** Okraj pruhu nad a pod textem 0–3 (násobek velikosti písma, viz [BAR_PADS]); výchozí 1. */
     val BAR_PADS = floatArrayOf(0.04f, 0.16f, 0.32f, 0.5f)
-    /** „Zakrýt celou oblast titulků“ v poloze Přes titulky (od 0.97.58, výchozí vypnuto – nové chování). */
+    /** „Zakrýt celou oblast titulků“ v poloze Přes titulky (od 0.97.59, výchozí vypnuto – nové chování). */
     fun coverAll(c: Context) = bool(c, "cover_all", false)
     fun setCoverAll(c: Context, v: Boolean) = setBool(c, "cover_all", v)
     fun barPad(c: Context): Int = p(c).getInt("bar_pad", 1).coerceIn(0, 3)

@@ -74,12 +74,17 @@ class GameMenuTest {
         assertEquals(41f / h - 0.004f, top + step, 0.001f)
         assertTrue(top >= 0f)
         assertEquals(146f / w - 0.006f, box.first, 0.001f)
-        // popis přes anglický popis vpravo: od nadpisu, do pravého okraje sloupce, pod poslední řádek
+        // překlad popisu pod anglický popis: vlevo u nadpisu (ne dál doleva), nahoře pod posledním řádkem, dole nejníž DESC_BOTTOM
         val d = v.descBox!!
         assertEquals(591f / w - 0.006f, d[0], 0.001f)
-        assertEquals(96f / h - 0.008f, d[1], 0.001f)
+        assertEquals(166f / h + 0.012f, d[1], 0.001f)
         assertTrue(d[2] >= 0.97f)
-        assertEquals(166f / h + 0.008f, d[3], 0.001f)
+        assertEquals(GameMenu.DESC_BOTTOM, d[3], 0.001f)
+        // text ve sloupci pod popisem = dolní hranice; když pod popisem není místo, přes anglický popis jako dřív
+        val under = MenuLine("Reset to default", 600, 300, 700, 312, 90)
+        assertEquals(300f / h - 0.008f, GameMenu.read(listOf(l, head, b1, b2, under), w, h, spec)!!.descBox!![3], 0.001f)
+        val close = MenuLine("Reset", 700, 180, 760, 192, 90)
+        assertEquals(96f / h - 0.008f, GameMenu.read(listOf(l, head, b1, b2, close), w, h, spec)!!.descBox!![1], 0.001f)
         assertEquals(13f / h, v.descLine, 0.001f)
         assertEquals("The sensitivity of the horizontal camera speed when using R to look around.", v.description)
     }

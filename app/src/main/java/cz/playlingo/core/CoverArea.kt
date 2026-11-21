@@ -1,7 +1,7 @@
 package cz.playlingo.core
 
 /**
- * Volba „Zakrýt celou oblast titulků“ (od 0.97.58, přání majitele: dvouřádkové titulky občas vyčuhovaly nad pruh nebo
+ * Volba „Zakrýt celou oblast titulků“ (od 0.97.59, přání majitele: dvouřádkové titulky občas vyčuhovaly nad pruh nebo
  * po stranách). Pruh v poloze „Přes titulky“ nekryje jen právě přečtený řádek ([CoverBox]), ale celé pole, kde se anglické
  * titulky v téhle hře naposledy ukazovaly – obálku rámečků posledních titulků.
  *

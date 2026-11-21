@@ -10,7 +10,7 @@ package cz.playlingo.core
  *  - popis vybrané volby: vpravo (x > 50 %), nadpis VERZÁLKAMI a pod ním 1–3 řádky textu.
  * Od 0.97.36 se menu zleva ukazuje jako seznam pod sebou hned vedle menu ([MenuView.box] → `TvLook` poloha „misto“).
  * Od 0.97.58 Nastavení zvlášť: jen vybraná záložka těsně nad lištou ([tabPlace], v pruhu) a nadpis s popisem
- * ve vlastním okně přes anglický popis ([MenuView.descBox], v TV zpráva `menupopis`).
+ * ve vlastním okně ([MenuView.descBox], v TV zpráva `menupopis`; od 0.97.59 pod anglickým popisem, [descPlace]).
  * Bez Androidu – testy `GameMenuTest`.
  */
 class MenuSpec(
@@ -56,7 +56,7 @@ data class MenuView(
      * na každém novém snímku bez čtečky ([MenuTracker.fast]). Prázdné pole = nevíme.
      */
     val rects: List<FloatArray> = emptyList(),
-    /** Nastavení: obdélník nadpisu a popisu vybrané volby vpravo (zlomky) a výška jeho řádku (zlomek výšky). */
+    /** Nastavení: kam dát překlad nadpisu a popisu vybrané volby ([GameMenu.descPlace], zlomky; dole = nejníž) a výška řádku popisu ve hře. */
     val descBox: FloatArray? = null,
     val descLine: Float = 0f,
 ) {
@@ -127,12 +127,7 @@ object GameMenu {
             val body = right.filter { it.top > head.top && it.top < head.bottom + lineH * 8 && !isHeading(it.text) &&
                 kotlin.math.abs(it.left - head.left) < w * 0.06f }
             description = body.joinToString(" ") { it.text.trim() }.replace(Regex("\\s+"), " ").trim().ifEmpty { null }
-            // překlad přes anglický nadpis a popis: od nadpisu do pravého okraje sloupce (text se v něm zalomí)
-            val all = listOf(head) + body
-            descBox = floatArrayOf(
-                (head.left.toFloat() / w - 0.006f).coerceAtLeast(0f), (head.top.toFloat() / h - 0.008f).coerceAtLeast(0f),
-                maxOf(all.maxOf { it.right }.toFloat() / w + 0.01f, 0.97f).coerceAtMost(0.995f),
-                (all.maxOf { it.bottom }.toFloat() / h + 0.008f).coerceAtMost(1f))
+            descBox = descPlace(head, body, lines, w, h)
             descLine = (body.map { it.bottom - it.top }.sorted().getOrNull(body.size / 2) ?: lineH).toFloat() / h
         }
         val x = (head?.left?.toFloat()?.div(w) ?: 0.55f)
@@ -140,6 +135,28 @@ object GameMenu {
             head?.text?.trim()?.let { titleCase(it) }, description, tabs.map { it.left }, x to 0.34f,
             rects = tabs.map { floatArrayOf(it.left.toFloat() / w, it.top.toFloat() / h, it.right.toFloat() / w, maxOf(it.bottom, it.top + 1).toFloat() / h) },
             descBox = descBox, descLine = descLine)
+    }
+
+    /** Dolní hranice překladu popisu, když pod ním ve hře nic není (dole bývá nápověda tlačítek). */
+    const val DESC_BOTTOM = 0.88f
+
+    /**
+     * Kam dát překlad nadpisu a popisu volby (od 0.97.59, přání majitele: přes anglický popis zasahoval doleva do seznamu
+     * voleb): anglický popis nechat, překlad pod něj do volného místa – vlevo nejdál k levé hraně nadpisu, nahoře hned pod
+     * posledním řádkem popisu, vpravo k okraji sloupce, dole po nejbližší text ve sloupci pod popisem (jinak [DESC_BOTTOM]).
+     * Výsledek = vlevo, nahoře, vpravo, nejníž dole (zlomky); text se zalomí na šířku a když se nevejde, zmenší se písmo.
+     * Když pod popisem skoro nic volného není (méně než 6 % výšky), jde překlad přes anglický nadpis a popis jako dřív.
+     */
+    internal fun descPlace(head: MenuLine, body: List<MenuLine>, lines: List<MenuLine>, w: Int, h: Int): FloatArray {
+        val all = listOf(head) + body
+        val left = (head.left.toFloat() / w - 0.006f).coerceAtLeast(0f)
+        val right = maxOf(all.maxOf { it.right }.toFloat() / w + 0.01f, 0.97f).coerceAtMost(0.995f)
+        val textBottom = all.maxOf { it.bottom }
+        val below = lines.filter { it.top > textBottom && it.right > head.left && it !in all }.minOfOrNull { it.top }
+        val limit = minOf(below?.let { it.toFloat() / h - 0.008f } ?: DESC_BOTTOM, DESC_BOTTOM)
+        val top = textBottom.toFloat() / h + 0.012f
+        return if (limit - top >= 0.06f) floatArrayOf(left, top, right, limit)
+        else floatArrayOf(left, (head.top.toFloat() / h - 0.008f).coerceAtLeast(0f), right, maxOf(limit, textBottom.toFloat() / h + 0.008f))
     }
 
     /** Záložka lišty Nastavení: název z profilu, jas pod ní (−1 = nevíme) a rámeček v pixelech. */

@@ -294,7 +294,7 @@ class SubtitleOverlay(
         // „přes titulky“: zakrýt anglický text i s okrajem a v rozhovoru se nezmenšovat (CoverBox, od 0.97.56) –
         // rozšířená plocha jde i do TV LG/Samsung, takže kryje lépe i se stávající aplikací v TV
         if (!isShown) coverBox.reset()
-        // volba „Zakrýt celou oblast titulků“ (od 0.97.58): celé pole, kde titulky naposledy byly, ne jen tenhle řádek
+        // volba „Zakrýt celou oblast titulků“ (od 0.97.59): celé pole, kde titulky naposledy byly, ne jen tenhle řádek
         val all = coverAll && layout.cover && box == null && rawTop >= 0f
         val cb = when {
             all -> coverArea.next(rawTop, rawBottom, rawLeft, rawRight, layout.read, android.os.SystemClock.uptimeMillis())
@@ -465,8 +465,8 @@ class SubtitleOverlay(
     }
 
     /**
-     * Ukáže přeložený nadpis a popis vybrané volby Nastavení hry přes anglický popis: [box] = vlevo, nahoře, vpravo,
-     * dole (zlomky obrazu; text od levého horního rohu, zalomený na šířku boxu), [lineHeight] = výška řádku popisu ve hře
+     * Ukáže přeložený nadpis a popis vybrané volby Nastavení hry pod anglickým popisem: [box] = vlevo, nahoře, vpravo,
+     * nejníž dole (zlomky obrazu; text od levého horního rohu, zalomený na šířku boxu, písmo se zmenší, když se nevejde), [lineHeight] = výška řádku popisu ve hře
      * (zlomek výšky; písmo podle něj, nejvýš jako titulky). Pozadí aspoň 80 %, ať anglický text pod ním neplete.
      */
     fun showMenuDesc(title: String?, text: String?, box: FloatArray, lineHeight: Float) {
@@ -491,7 +491,17 @@ class SubtitleOverlay(
             val w = ((box[2] - box[0]) * screenW).toInt().coerceIn(dp(120), screenW)
             lp.width = w
             lp.x = (box[0] * screenW).toInt().coerceIn(0, maxOf(0, screenW - w))
-            v.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+            // od 0.97.59: box[3] = nejníž dole; když se text nevejde, písmo se zmenšuje (nejvýš na 60 %)
+            val room = ((box[3] - box[1]) * screenH).toInt()
+            var size = px
+            while (true) {
+                v.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+                if (v.measuredHeight <= room || size <= px * 0.6f) break
+                size *= 0.9f
+                v.setTextSize(TypedValue.COMPLEX_UNIT_PX, size)
+                val e = v.textSize
+                v.setPadding((e * 0.5f).toInt(), (e * 0.3f).toInt(), (e * 0.5f).toInt(), (e * 0.35f).toInt())
+            }
             lp.y = (box[1] * screenH).toInt().coerceIn(0, maxOf(0, screenH - v.measuredHeight))
             v.visibility = View.VISIBLE
             try { wm.updateViewLayout(v, lp) } catch (_: Exception) {}

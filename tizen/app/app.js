@@ -578,7 +578,8 @@
   // Nadpis a popis vybrané volby v Nastavení hry (GTA VI vpravo) má vlastní prvek #menupopis přes anglický popis;
   // v pruhu je mezitím jen vybraná záložka. Zpráva z Androidu
   // {"typ":"menupopis","nadpis":…,"text":…,"misto":[vlevo,nahoře,vpravo,dole],"pismo":…,"pozadi":…,"barva":…}
-  // – text od levého horního rohu misto, zalomený na šířku misto. Prázdný text i nadpis = schovat.
+  // – text od levého horního rohu misto, zalomený na šířku misto, dole nejníž misto[3] (od 1.5.14 se písmo zmenší).
+  // Prázdný text i nadpis = schovat.
   var POPIS_MAX = 600;
 
   function popisSkryj() {
@@ -589,7 +590,7 @@
   }
 
   function popisUkaz(z) {
-    var u = el('menupopis'), s, W = 1920, H = 1080, m, nadpis, text, n, w, h, barva;
+    var u = el('menupopis'), s, W = 1920, H = 1080, m, nadpis, text, n, w, h, barva, pismo, vyska, min;
     if (!u) { return; }
     s = u.style;
     nadpis = String(z.nadpis || '').substring(0, 120);
@@ -619,6 +620,15 @@
     s.top = '0px';
     s.display = 'block';
     h = u.offsetHeight || 0;
+    // od 1.5.14: misto[3] = nejníž dole – když se text nevejde, písmo se zmenšuje (nejvýš na 60 %)
+    pismo = cislo(z.pismo, 16, 120, 32);
+    vyska = Math.round((m[3] - m[1]) * H);
+    min = pismo * 0.6;
+    while (m[3] > m[1] && h > vyska && pismo > min) {
+      pismo = pismo * 0.9;
+      s.fontSize = Math.round(pismo) + 'px';
+      h = u.offsetHeight || 0;
+    }
     s.top = Math.round(Math.max(0, Math.min(H - h, m[1] * H))) + 'px';
   }
 
