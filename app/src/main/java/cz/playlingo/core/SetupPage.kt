@@ -36,6 +36,31 @@ object SetupPage {
             ",\"ps5\":" + (s.console?.let { RemoteSetup.json(it) } ?: "null") +
             ",\"deepl\":" + s.deepl + "}"
 
+    /**
+     * Odkaz `playlingo://…` jako odkaz pro prohlížeč Androidu: PlayLingo v telefonu je → otevře se, není → stáhne se
+     * [apkUrl]. (Pro tlačítko „Nastavit vše v aplikaci“ a „📷 Načíst kamerou“.)
+     */
+    fun intentLink(playlingoLink: String, apkUrl: String): String {
+        val rest = playlingoLink.removePrefix("playlingo://")
+        return "intent://" + rest + "#Intent;scheme=playlingo;package=" + PhoneLogin.PACKAGE +
+            ";S.browser_fallback_url=" + java.net.URLEncoder.encode(apkUrl, "UTF-8") + ";end"
+    }
+
+    /** Odkaz pro čtečku kódu z PS5 v PlayLingu v telefonu: přečte osmimístné číslo kamerou a pošle ho téhle TV. */
+    fun scanLink(t: PhoneLogin.Target): String = "playlingo://kod?h=${t.host}&p=${t.port}&k=${t.key}"
+
+    /** Odkaz čtečky → kam poslat přečtené číslo. Jen adresa v domácí síti (nikdy do internetu). */
+    fun parseScanLink(link: String?): PhoneLogin.Target? {
+        val s = link?.trim() ?: return null
+        if (!s.startsWith("playlingo://kod?")) return null
+        val q = PhoneLogin.parseForm(s.substringAfter('?').substringBefore('#'))
+        val host = q["h"] ?: return null
+        val port = q["p"]?.toIntOrNull() ?: return null
+        val key = q["k"] ?: return null
+        if (!PhoneLogin.isHomeAddress(host) || port !in 1..65535 || !PhoneLogin.validKey(key)) return null
+        return PhoneLogin.Target(host, port, key)
+    }
+
     /** Je to osmimístné číslo z PS5 (mezery a pomlčky se ignorují)? */
     fun pin(input: String?): Int? = Ps5.parsePin((input ?: "").replace(" ", "").replace("-", ""))
 
@@ -44,13 +69,13 @@ object SetupPage {
      * [apkUrl] PlayLingo do telefonu, [loginUrl] přihlášení Sony, [signupUrl]/[keysUrl] DeepL.
      */
     fun page(lang: Lang, tvName: String, target: PhoneLogin.Target?, apkUrl: String, loginUrl: String,
-             signupUrl: String, keysUrl: String, shortcutUrl: String? = null): String {
+             signupUrl: String, keysUrl: String, shortcutUrl: String? = null, appModeLink: String? = null): String {
         fun t(k: String) = I18n.t(lang, k)
         fun e(k: String) = PhoneLogin.esc(t(k))
         fun para(k: String) = PhoneLogin.esc(t(k)).replace("\n", "<br>")
         // texty pro skript (se zástupným %s pro jméno účtu / konzole)
         val texts = listOf("sp_acc_ok", "sp_acc_none", "sp_ps5_h", "sp_ps5_how", "sp_pair_btn", "sp_pair_busy", "sp_pair_ok",
-            "sp_pair_fail", "sp_need_acc", "sp_bad_url", "sp_bad_pin", "sp_deepl_ok", "sp_deepl_bad", "sp_sent")
+            "sp_pair_fail", "sp_need_acc", "sp_bad_url", "sp_bad_pin", "sp_deepl_ok", "sp_deepl_bad", "sp_sent", "sp_change", "sp_repair")
             .joinToString(",", "{", "}") { RemoteSetup.json(it) + ":" + RemoteSetup.json(t(it)) }
         val sb = StringBuilder()
         sb.append("<!doctype html><html lang=\"").append(lang.code).append("\"><head><meta charset=\"utf-8\">")
@@ -72,10 +97,17 @@ object SetupPage {
             .append("<p class=\"muted\">").append(PhoneLogin.esc(tvName)).append("</p>")
             .append("<p id=\"off\" class=\"card bad\">").append(e("sp_off")).append("</p>")
             .append("<div class=\"card legend\">").append(e("acc_legend")).append("</div>")
+        // Android: celé nastavení v PlayLingu v telefonu (vezme si současné nastavení TV, každá změna hned v TV)
+        if (appModeLink != null) sb.append("<div id=\"appmode\"><a class=\"btn\" href=\"").append(PhoneLogin.esc(intentLink(appModeLink, apkUrl)))
+            .append("\">").append(e("sp_app_mode")).append("</a><p class=\"muted\">").append(e("sp_app_mode_d")).append("</p></div>")
+        // kde se co dělá: telefon / PS5 / TV (majitel: „lepší popis, kdy se kde přihlásit“)
+        sb.append("<details class=\"card\"><summary>").append(e("sp_where_h")).append("</summary><p style=\"white-space:pre-line\">")
+            .append(e("sp_where")).append("</p></details>")
 
         // ---- 1. 🔵 účet pro PlayLingo ----
         sb.append("<div class=\"card\" id=\"c1\"><h2>").append(e("sp_1_h")).append("</h2>")
-            .append("<p id=\"accst\" class=\"st wait\">").append(e("sp_acc_none")).append("</p><div id=\"acc\">")
+            .append("<p id=\"accst\" class=\"st wait\">").append(e("sp_acc_none")).append("</p>")
+            .append("<a href=\"#\" id=\"accx\" class=\"muted\" style=\"display:none\">").append(e("sp_change")).append("</a><div id=\"acc\">")
         if (target != null) {
             // Android: PlayLingo v telefonu se přihlásí samo (skript tuhle část jinde schová)
             sb.append("<div id=\"app\"><a class=\"btn\" href=\"").append(PhoneLogin.esc(PhoneLogin.appIntentLink(target, lang, apkUrl)))
@@ -100,12 +132,19 @@ object SetupPage {
         sb.append("<div class=\"card\" id=\"c2\"><h2 id=\"ps5h\">").append(PhoneLogin.esc(t("sp_ps5_h").replace("%s", "…"))).append("</h2>")
             .append("<p id=\"pairst\" class=\"st wait\"></p>")
             .append("<p id=\"ps5how\">").append(PhoneLogin.esc(t("sp_ps5_how").replace("%s", "…")).replace("\n", "<br>")).append("</p>")
+            .append("<a href=\"#\" id=\"pairx\" class=\"muted\" style=\"display:none\">").append(e("sp_repair")).append("</a>")
             .append("<input id=\"pin\" inputmode=\"numeric\" autocomplete=\"off\" maxlength=\"9\" placeholder=\"12345678\">")
-            .append("<button id=\"pb\">").append(e("sp_pair_btn")).append("</button><p id=\"pm\" class=\"bad\"></p></div>")
+            .append("<button id=\"pb\">").append(e("sp_pair_btn")).append("</button>")
+        // číslo kamerou: Android čtečkou v PlayLingu v telefonu (pošle ho rovnou TV), iPhone sám (Skenovat text v políčku)
+        if (target != null) sb.append("<a id=\"scan\" class=\"btn plain\" href=\"").append(PhoneLogin.esc(intentLink(scanLink(target), apkUrl)))
+            .append("\">").append(e("sp_scan")).append("</a>")
+        sb.append("<p id=\"scanios\" class=\"muted\">").append(e("sp_scan_ios")).append("</p>")
+            .append("<p id=\"pm\" class=\"bad\"></p></div>")
 
         // ---- 3. DeepL (nepovinné) ----
         sb.append("<div class=\"card\" id=\"c3\"><h2>").append(e("sp_3_h")).append("</h2>")
-            .append("<p id=\"dlst\" class=\"st wait\"></p><div id=\"dl\">")
+            .append("<p id=\"dlst\" class=\"st wait\"></p>")
+            .append("<a href=\"#\" id=\"dlx\" class=\"muted\" style=\"display:none\">").append(e("sp_change")).append("</a><div id=\"dl\">")
             .append("<a class=\"btn plain\" target=\"_blank\" rel=\"noopener\" href=\"").append(PhoneLogin.esc(signupUrl)).append("\">").append(e("dl_tv_1")).append("</a>")
             .append("<a class=\"btn plain\" target=\"_blank\" rel=\"noopener\" href=\"").append(PhoneLogin.esc(keysUrl)).append("\">").append(e("dl_tv_2")).append("</a>")
             .append("<input id=\"dk\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\" placeholder=\"xxxxxxxx-xxxx-…\">")
@@ -142,37 +181,45 @@ object SetupPage {
         "function post(d,cb){var x=new XMLHttpRequest();x.open('POST',P);x.setRequestHeader('Content-Type','application/x-www-form-urlencoded');" +
         "x.onload=function(){cb(x.status==200?x.responseText:null)};x.onerror=function(){cb(null)};x.send(d)}" +
         "var android=/Android/i.test(navigator.userAgent);" +
-        "if(!android){if($('app'))$('app').style.display='none'}else if($('app')&&$('web')){$('web').open=false}" +
+        "if(!android){if($('app'))$('app').style.display='none';if($('appmode'))$('appmode').style.display='none';if($('scan'))$('scan').style.display='none'}" +
+        "else{if($('app')&&$('web'))$('web').open=false;$('scanios').style.display='none'}" +
         // zkratka pro iPhone: odkaz nese adresu téhle stránky (TV si ji zapamatuje stránka zkratky); na Androidu není potřeba
         "var sc=$('sc');if(sc){if(android)sc.style.display='none';else sc.href=sc.getAttribute('data-base')+'?tv='+encodeURIComponent(location.protocol+'//'+location.host+P)}" +
-        "var acc=null,busy=false;" +
+        // „Změnit“ u hotové části ji znovu otevře (jiný účet, znovu spárovat, jiný klíč DeepL) – do dalšího obnovení
+        "var acc=null,busy=false,openAcc=false,openPair=false,openDl=false;" +
+        "function link(id,f){$(id).addEventListener('click',function(e){e.preventDefault();f();info()})}" +
         "function st(id,txt,cls){var e=$(id);e.textContent=txt;e.className='st '+cls}" +
         "function info(){post('op=info',function(r){var s=null;try{s=r&&JSON.parse(r)}catch(e){}" +
         "$('off').style.display=s?'none':'block';if(!s)return;acc=s.acc;var name=acc||'?';" +
-        "if(acc!==null){st('accst',T.sp_acc_ok.replace('%s',name),'ok');$('acc').style.display='none'}" +
-        "else{st('accst',T.sp_acc_none,'wait');$('acc').style.display='block'}" +
+        "if(acc!==null){st('accst',T.sp_acc_ok.replace('%s',name),'ok');$('acc').style.display=openAcc?'block':'none';$('accx').style.display=openAcc?'none':'inline'}" +
+        "else{st('accst',T.sp_acc_none,'wait');$('acc').style.display='block';$('accx').style.display='none'}" +
         "$('ps5h').textContent=T.sp_ps5_h.replace('%s',name);$('ps5how').innerHTML='';" +
         "var lines=T.sp_ps5_how.replace('%s',name).split('\\n');for(var i=0;i<lines.length;i++){if(i)$('ps5how').appendChild(document.createElement('br'));$('ps5how').appendChild(document.createTextNode(lines[i]))}" +
         "busy=s.pair=='busy';$('pb').textContent=busy?T.sp_pair_busy:T.sp_pair_btn;" +
-        "if(s.pair=='ok'){st('pairst',T.sp_pair_ok.replace('%s',s.ps5||'PS5'),'ok');$('pin').style.display='none';$('pb').style.display='none'}" +
-        "else{$('pin').style.display='block';$('pb').style.display='block';" +
+        "var pinOn=s.pair!='ok'||openPair;$('pin').style.display=pinOn?'block':'none';$('pb').style.display=pinOn?'block':'none';" +
+        "if($('scan'))$('scan').style.display=(pinOn&&android)?'block':'none';$('scanios').style.display=(pinOn&&!android)?'block':'none';" +
+        "$('pairx').style.display=(s.pair=='ok'&&!openPair)?'inline':'none';" +
+        "if(s.pair=='ok'){st('pairst',T.sp_pair_ok.replace('%s',s.ps5||'PS5'),'ok')}" +
+        "else{" +
         "if(s.pair=='fail')st('pairst',T.sp_pair_fail.replace('%s',name),'bad');else if(acc===null)st('pairst',T.sp_need_acc,'wait');else st('pairst','','wait')}" +
-        "if(s.deepl){st('dlst',T.sp_deepl_ok,'ok');$('dl').style.display='none'}else{st('dlst','','wait');$('dl').style.display='block'}" +
+        "if(s.deepl){st('dlst',T.sp_deepl_ok,'ok');$('dl').style.display=openDl?'block':'none';$('dlx').style.display=openDl?'none':'inline'}" +
+        "else{st('dlst','','wait');$('dl').style.display='block';$('dlx').style.display='none'}" +
         "$('done').style.display=(acc!==null&&s.pair=='ok')?'block':'none'})}" +
         "function sendUrl(){var v=$('u').value;if(v.indexOf('code=')<0){$('um').textContent=T.sp_bad_url;return}" +
         "$('um').textContent=T.sp_sent;post('op=ucet&url='+encodeURIComponent(v),function(r){" +
-        "if(r=='OK'){$('um').textContent='';$('u').value='';try{if(window.sonyTab)window.sonyTab.close()}catch(e){}}else $('um').textContent=T.sp_bad_url;info()})}" +
+        "if(r=='OK'){openAcc=false;$('um').textContent='';$('u').value='';try{if(window.sonyTab)window.sonyTab.close()}catch(e){}}else $('um').textContent=T.sp_bad_url;info()})}" +
         "$('ub').addEventListener('click',sendUrl);" +
         "$('u').addEventListener('paste',function(){setTimeout(function(){if($('u').value.indexOf('code=')>=0)sendUrl()},80)});" +
         "var l=$('l');l.addEventListener('click',function(e){var w=null;try{w=window.open(l.href,'_blank')}catch(x){}if(w){window.sonyTab=w;e.preventDefault()}});" +
         "document.addEventListener('visibilitychange',function(){if(!document.hidden){info();if(window.sonyTab&&acc===null){try{$('u').focus()}catch(e){}}}});" +
         "function sendPin(){if(busy)return;var v=$('pin').value.replace(/[^0-9]/g,'');if(v.length!=8){$('pm').textContent=T.sp_bad_pin;return}" +
         "$('pm').textContent='';busy=true;$('pb').textContent=T.sp_pair_busy;post('op=kod&pin='+v,function(r){" +
-        "if(r=='NOACC')$('pm').textContent=T.sp_need_acc;else if(r!='OK')$('pm').textContent=T.sp_bad_pin;else $('pin').value='';info()})}" +
+        "if(r=='NOACC')$('pm').textContent=T.sp_need_acc;else if(r!='OK')$('pm').textContent=T.sp_bad_pin;else{$('pin').value='';openPair=false}info()})}" +
         "$('pb').addEventListener('click',sendPin);" +
+        "link('accx',function(){openAcc=true});link('pairx',function(){openPair=true});link('dlx',function(){openDl=true});" +
         "$('pin').addEventListener('input',function(){if($('pin').value.replace(/[^0-9]/g,'').length==8)sendPin()});" +
         "$('db').addEventListener('click',function(){var v=$('dk').value.trim();if(!v)return;$('dm').textContent=T.sp_sent;" +
-        "post('op=deepl&key='+encodeURIComponent(v),function(r){$('dm').textContent=r=='OK'?'':T.sp_deepl_bad;if(r=='OK')$('dk').value='';info()})});" +
+        "post('op=deepl&key='+encodeURIComponent(v),function(r){$('dm').textContent=r=='OK'?'':T.sp_deepl_bad;if(r=='OK'){$('dk').value='';openDl=false}info()})});" +
         // adresa „redirect“ poslaná zkratkou z iPhonu (?u=…) → rovnou odeslat a adresu stránky uklidit
         "var m=/[?&]u=([^&]+)/.exec(location.search);if(m){try{$('u').value=decodeURIComponent(m[1]);if(history.replaceState)history.replaceState(null,'',P)}catch(e){}" +
         "if($('u').value.indexOf('code=')>=0)sendUrl()}" +

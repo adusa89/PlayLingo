@@ -72,7 +72,7 @@ object RemoteHost {
     /** Stránka pro telefon (texty v jazyce aplikace v TV). */
     private fun page(c: Context): String = SetupPage.page(Prefs.uiLang(c), tvName(), target(c),
         UpdateCheck.url(if (Prefs.testChannel(c)) UpdateCheck.Channel.TEST else UpdateCheck.Channel.STABLE, "PlayLingo.apk"),
-        PsnAuth.LOGIN_URL, Deepl.SIGNUP_URL, Deepl.KEYS_URL, cz.playlingo.core.HelpLinks.IPHONE_SHORTCUT)
+        PsnAuth.LOGIN_URL, Deepl.SIGNUP_URL, Deepl.KEYS_URL, cz.playlingo.core.HelpLinks.IPHONE_SHORTCUT, appModeLink = link(c))
 
     /** Spárování spuštěné z telefonu (číslo z PS5) – stav pro stránku i pro obrazovku v TV. */
     @Volatile var pair = SetupPage.Pair.IDLE
@@ -80,6 +80,7 @@ object RemoteHost {
     /** Proč spárování z telefonu nevyšlo (pro TV, ne pro stránku). */
     @Volatile var pairError: String? = null
         private set
+    @Volatile private var failAt = 0L
 
     /** Stav pro stránku v telefonu. */
     fun status(c: Context): SetupPage.Status {
@@ -87,7 +88,13 @@ object RemoteHost {
         val host = Prefs.ps5Host(c)
         return SetupPage.Status(
             account = if (Ps5.parseAccountId(id) != null) Prefs.psnName(c) else null,
-            pair = if (host != null && pair != SetupPage.Pair.BUSY) SetupPage.Pair.OK else pair,
+            // nepovedené nové spárování (i když staré platí) stránka ukáže ještě 3 minuty, ať hráč ví, že číslo nevyšlo
+            pair = when {
+                pair == SetupPage.Pair.BUSY -> pair
+                pair == SetupPage.Pair.FAIL && (host == null || android.os.SystemClock.elapsedRealtime() - failAt < 180_000L) -> pair
+                host != null -> SetupPage.Pair.OK
+                else -> pair
+            },
             console = host?.name,
             deepl = DeeplKey.has(c),
         )
@@ -105,7 +112,7 @@ object RemoteHost {
         }
         changed(c)
         Thread({
-            fun fail(why: String) { pairError = why; pair = SetupPage.Pair.FAIL; changed(c) }
+            fun fail(why: String) { pairError = why; failAt = android.os.SystemClock.elapsedRealtime(); pair = SetupPage.Pair.FAIL; changed(c) }
             try {
                 var ip = Prefs.ps5Ip(c)
                 if (!Ps5.validHost(ip)) ip = Ps5Pairing.discover().firstOrNull()?.ip ?: ""

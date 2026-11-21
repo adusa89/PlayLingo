@@ -52,6 +52,26 @@ class SetupPageTest {
         assertEquals("a\"b", s["acc"])
     }
 
+    @Test fun cameraAndAppLinks() {
+        // čtečka v telefonu: odkaz na tutéž TV, zpět se přijme jen adresa domácí sítě
+        val scan = SetupPage.scanLink(t)
+        assertEquals("playlingo://kod?h=192.168.1.20&p=8766&k=abcd2345efgh6789", scan)
+        assertEquals(t, SetupPage.parseScanLink(scan))
+        assertNull(SetupPage.parseScanLink("playlingo://kod?h=8.8.8.8&p=8766&k=abcd2345efgh6789"))
+        assertNull(SetupPage.parseScanLink("playlingo://login?h=192.168.1.20&p=8766&k=abcd2345efgh6789"))
+        assertNull(SetupPage.parseScanLink(null))
+        // prohlížeč Androidu: aplikace je → otevře se, není → stáhne se
+        assertEquals("intent://kod?h=1#Intent;scheme=playlingo;package=cz.playlingo;S.browser_fallback_url=https%3A%2F%2Fx.cz%2Fa.apk;end",
+            SetupPage.intentLink("playlingo://kod?h=1", "https://x.cz/a.apk"))
+        val html = SetupPage.page(Lang.CS, "TV", t, "https://x.cz/a.apk", "https://sony.example/", "https://d/", "https://k/",
+            appModeLink = "playlingo://tv?h=192.168.1.20&p=8766&k=abcd2345efgh6789&n=TV")
+        assertTrue(html.contains("intent://tv?h=192.168.1.20&amp;p=8766"))
+        assertTrue(html.contains("intent://kod?h=192.168.1.20&amp;p=8766"))
+        // hotové části jde znovu otevřít („Změnit“, „Spárovat znovu“)
+        assertTrue(html.contains("id=\"accx\"") && html.contains("id=\"pairx\"") && html.contains("id=\"dlx\""))
+        assertTrue(html.contains(PhoneLogin.esc(I18n.t(Lang.CS, "sp_where_h"))))
+    }
+
     @Test fun pinFromThePhone() {
         assertEquals(12345678, SetupPage.pin("1234 5678"))
         assertEquals(12345678, SetupPage.pin("1234-5678"))

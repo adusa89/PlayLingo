@@ -420,6 +420,14 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   přepošle (`SetupPage` JS si `?u=` přečte a odešle `op=ucet`). Zkratku (Sdílet → URL Encode → Otevřít URL
   `…/zkratka.html?u=`) si hráč vytvoří podle stránky; hotový odkaz z iCloudu doplní majitel do `ICLOUD` ve skriptu
   stránky (zkratku umí podepsat jen iPhone). Na skutečném telefonu, iPhonu ani PS5 neověřeno.
+  **Od 0.97.64 (spojeno s dílem 3 druhého sezení):** na stránce nahoře pro Android „Nastavit vše v aplikaci PlayLingo“
+  (`appModeLink` = `RemoteHost.link` → `playlingo://tv`, přes `SetupPage.intentLink` se stažením APK, když aplikace není);
+  rozbalovací „Kde se co dělá“ (`sp_where`, i v TV v kroku 1 spárování a na obrazovce `phoneSetupScreen`); u hotových
+  částí „Změnit“ / „Spárovat znovu“ (`accx`, `pairx`, `dlx` – část se znovu otevře; nepovedené nové spárování ukáže TV
+  ve stavu ještě 3 min, `RemoteHost.failAt`); **📷 Načíst číslo kamerou** (Android): `playlingo://kod?h=&p=&k=`
+  (`SetupPage.scanLink`/`parseScanLink`) otevře `ScanCodeActivity` (bez vzhledu: povolení kamery → `LgScanActivity`
+  `MODE_PS5` → POST `op=kod` → zavřít), iPhone jen nápověda „Skenovat text“ (`sp_scan_ios`). Řádek „Nastavit
+  z telefonu“ (`remotePhoneRow`) je v ⚙ → Obecné i na stránce Konzole. Vzdálená pomoc z jiné sítě zatím ne (majitel).
 - Zkouška v emulátoru umí ověřit jen stránku a posílání účtu, ne přihlášení u Sony. Jestli Sony
   pustí přihlášení uvnitř pomocníka na skutečném telefonu, umí ověřit jen uživatel.
 

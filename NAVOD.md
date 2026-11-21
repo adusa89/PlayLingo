@@ -62,7 +62,15 @@ ukáže až krok Připojení konzole (bod 4).
    - **3 · DeepL** (nepovinné) – klíč pro lepší překlad.
    TV mezitím ukazuje seznam, který se sám odškrtává (✔ účet · ✔ PS5 spárovaná · ✔ DeepL). Na konci se na PS5
    přepni zpět na 🟢 herní účet a v TV zvol **Pokračovat na TV** – průvodce pokračuje jazykem překladu a hotové
-   kroky už jen potvrdíš. Totéž kdykoli později v ⚙ Nastavení → Obecné → **Nastavit z telefonu**.
+   kroky už jen potvrdíš. Totéž kdykoli později – i u už nastavené TV – v ⚙ Nastavení → Obecné nebo na stránce
+   Konzole → **Nastavit z telefonu**: stránka ukáže, co v TV už je, a u hotového nabídne **Změnit** / **Spárovat
+   znovu** (jiný účet, nové spárování, jiný klíč DeepL).
+   - **Android s PlayLingem v telefonu:** nahoře **Nastavit vše v aplikaci PlayLingo** – aplikace v telefonu si
+     vezme současné nastavení TV a každá změna (vzhled titulků, hra, DeepL…) se hned projeví v TV.
+   - **Číslo z PS5 kamerou:** Android – **📷 Načíst číslo kamerou** (čtečka v PlayLingu v telefonu, číslo jde rovnou
+     do TV); iPhone – podrž prst v políčku → **Skenovat text** a namiř na číslo.
+   - **Kde se co dělá** (rozbalovací řádek na stránce i v TV): 📱 telefon jen přihlášení 🔵 účtem · 🎮 PS5 přepnout
+     na 🔵 účet, Remote Play, Propojit zařízení → číslo, pak zpět na 🟢 herní účet · 📺 TV nic, jen čtvereček.
 2. **Zařízení:** na čem PlayLingo běží – Android TV nebo box s Androidem, nebo telefon či tablet
    (ten jen čte a hotové titulky posílá do televize LG nebo Samsung, viz bod 8).
 3. **Konzole:** PlayStation 5, nebo Xbox (viz bod 7b).

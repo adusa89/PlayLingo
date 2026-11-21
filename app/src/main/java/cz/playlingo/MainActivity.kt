@@ -790,7 +790,7 @@ class MainActivity : Activity() {
      */
     private fun phoneSetupScreen(focusedTag: Any?) {
         val url = if (RemoteHost.start(this)) RemoteHost.pageUrl(this) else null
-        if (url != null) add(qrRow(url, t("wz_ph_scan")), 14) else add(ui.text(t("rs_nolan"), 16f, Theme.WARN), 14)
+        if (url != null) add(qrRow(url, t("wz_ph_scan") + "\n\n" + t("sp_where")), 14) else add(ui.text(t("rs_nolan"), 16f, Theme.WARN), 14)
         val st = RemoteHost.status(this)
         add(ui.card().apply {
             fun l(ok: Boolean, text: String) = addView(ui.text((if (ok) "✔ " else "○ ") + text, 18f, if (ok) Theme.OK else Theme.TEXT, bold = ok), ui.lp(top = 6))
@@ -1226,6 +1226,8 @@ class MainActivity : Activity() {
 
     private fun ps5() {
         ps5Form()
+        // znovu něco z telefonu (jiný účet, spárovat znovu, DeepL) – i u už nastavené TV, bez hledání v ⚙ (od 0.97.64)
+        if (wizard < 0 && RemoteHost.eligible(this) && Prefs.console(this) == Console.PLAYSTATION) remotePhoneRow("remoteps5")
         // náhled obrazu jen po rozbalení – jinak se snímek z konzole vůbec nepočítá (od 0.97.15)
         if (TranslatorService.running && !TranslatorService.demo && group("preview", ct("ps5_preview"), 18)) preview()
     }
@@ -1356,6 +1358,8 @@ class MainActivity : Activity() {
         when (step) {
             0 -> {
                 add(ui.card().apply { addView(ui.text(t("pg_0_text"), 17f, Theme.TEXT)) }, 10)
+                // kde se co dělá (telefon / PS5 / TV) – majitel: „lepší popis, kdy se kde přihlásit“
+                add(ui.text(t("sp_where"), 15f, Theme.MUTED), 8)
                 // PS5 už je zapnutá: najít ji potichu a rovnou na volbu účtu (adresa se vyplní sama)
                 autoFindPs5()
             }
@@ -2279,18 +2283,21 @@ class MainActivity : Activity() {
             }, "overlay"), 8)
         }
         // nastavení z telefonu: čtvereček na stránku z TV (PlayLingo v telefonu pak nastaví celou aplikaci)
-        if (RemoteHost.eligible(this)) {
-            add(tagged(ui.settingRow(t("rs_row"), if (remoteQr) "▲" else "▼") { remoteQr = !remoteQr; render(true) }, "remote"), 8)
-            if (remoteQr) {
-                val url = if (RemoteHost.start(this)) RemoteHost.pageUrl(this) else null
-                if (url != null) add(qrRow(url, t("rs_qr_text")), 8) else add(ui.text(t("rs_nolan"), 15f, Theme.WARN), 8)
-            }
-        }
+        if (RemoteHost.eligible(this)) remotePhoneRow("remote")
         if (SHOW_LICENSE && Prefs.license(this).canRun) { content.addView(ui.section(t("m_license"))); license() }
     }
 
-    /** Čtvereček „Nastavit z telefonu“ rozbalený (⚙ → Obecné). */
+    /** Čtvereček „Nastavit z telefonu“ rozbalený (⚙ → Obecné, stránka Konzole). */
     private var remoteQr = false
+
+    /** Řádek „Nastavit z telefonu“ s rozbalovacím čtverečkem na stránku z TV ([RemoteHost], [cz.playlingo.core.SetupPage]). */
+    private fun remotePhoneRow(tag: String) {
+        add(tagged(ui.settingRow(t("rs_row"), if (remoteQr) "▲" else "▼") { remoteQr = !remoteQr; render(true) }, tag), 8)
+        if (remoteQr) {
+            val url = if (RemoteHost.start(this)) RemoteHost.pageUrl(this) else null
+            if (url != null) add(qrRow(url, t("rs_qr_text")), 8) else add(ui.text(t("rs_nolan"), 15f, Theme.WARN), 8)
+        }
+    }
 
     /** Čtení a překlad: kvalita čtení (nad tím, co dělá [translate]). */
     private fun settingsRead() {
@@ -2820,6 +2827,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.63"
-    const val VERSION_CODE = 160
+    const val VERSION = "verze 0.97.64"
+    const val VERSION_CODE = 161
 }

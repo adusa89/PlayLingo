@@ -114,6 +114,19 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- stránka „Nastavení TV“ v prohlížeči telefonu: „📷 Načíst kamerou“ přečte číslo z PS5 a pošle ho TV (bez vzhledu) -->
+        <activity
+            android:name=".ScanCodeActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="playlingo" android:host="kod" />
+            </intent-filter>
+        </activity>
+
         <!-- čtení adresy a Passphrase z obrazovky televize LG kamerou telefonu -->
         <activity
             android:name=".LgScanActivity"
