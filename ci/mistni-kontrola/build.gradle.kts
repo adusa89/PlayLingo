@@ -30,7 +30,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 }
 kotlin {
-    sourceSets["main"].kotlin.srcDirs(app.resolve("main/java"), "stub")
+    sourceSets["main"].kotlin.srcDirs(app.resolve("main/java"), "stub", "gen")
     sourceSets["test"].kotlin.srcDirs(app.resolve("test/java"))
 }
 // Knihovna z Robolectricu nese poznámky o null, které skutečné SDK překladači neukazuje.
@@ -38,3 +38,12 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
     compilerOptions.freeCompilerArgs.addAll("-Xnullability-annotations=@android.annotation:ignore", "-Xnullability-annotations=@androidx.annotation:ignore")
 }
 tasks.test { useJUnit(); testLogging { events("failed") } }
+
+// Seznam her pro stránky s pomocí (pomoc/hry/profily.json + verze.txt) z vestavěných profilů – po změně core/GameProfiles*.kt:
+//   gradlew -p ci/mistni-kontrola seznamHer
+// Test GameListJsonTest hlídá, že soubor v repozitáři odpovídá profilům v kódu.
+tasks.register<JavaExec>("seznamHer") {
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("cz.playlingo.gen.SeznamHerKt")
+    args(rootDir.resolve("../../pomoc/hry").absolutePath)
+}

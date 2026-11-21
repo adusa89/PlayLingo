@@ -315,6 +315,8 @@ class MainActivity : Activity() {
         // po návratu do aplikace se zeptá i na novou verzi (dřív jen při spuštění – nová verze se pak
         // ukázala až po zavření a otevření aplikace); nejvýš jednou za 5 minut
         if (android.os.SystemClock.elapsedRealtime() - lastUpdateCheck > 5 * 60_000L) checkForUpdate()
+        // seznam her: jen se zapnutou volbou „Seznam her automaticky“, nejvýš jednou za 6 h
+        checkGameList(manual = false)
     }
 
     override fun onPause() {
@@ -1523,6 +1525,21 @@ class MainActivity : Activity() {
         }
     }
 
+    /**
+     * Seznam her ze stránek: [manual] = OK na řádku (vždy), jinak jen automaticky se zapnutou volbou a nejvýš
+     * jednou za 6 h. Po novém seznamu se službě znovu načte nastavení (slovník, postavy) a stránka překreslí.
+     */
+    private fun checkGameList(manual: Boolean) {
+        val done: (Boolean) -> Unit = { changed ->
+            runOnUiThread {
+                if (isFinishing) return@runOnUiThread
+                if (changed) applyToService()
+                if (section == Section.LOOK || changed) render(true)
+            }
+        }
+        if (manual) { GameListUpdate.check(this, done); render(true) } else GameListUpdate.maybeAuto(this, done)
+    }
+
     /** Rozbalený seznam postav, míst a pojmů profilu hry. */
     private var gameListOpen = false
 
@@ -1610,6 +1627,16 @@ class MainActivity : Activity() {
                 }, "objcolors"), 8)
             }
         }
+        // seznam her ze stránek (třetí aktualizace): stav z paměti, OK = zjistit hned
+        val glVer = GameProfiles.catalog.version
+        val glState = GameListUpdate.state
+        add(tagged(ui.settingRow(t("gl_row"), when (glState) {
+            GameListUpdate.State.CHECKING -> t("gl_busy")
+            GameListUpdate.State.UPDATED -> String.format(t("gl_new"), glVer)
+            GameListUpdate.State.CURRENT -> String.format(t("gl_current"), glVer)
+            GameListUpdate.State.FAILED -> String.format(t("gl_fail"), glVer)
+            GameListUpdate.State.IDLE -> String.format(t("gl_ver"), glVer)
+        }, Theme.MUTED) { checkGameList(manual = true) }, "gamelistver"), 8)
         add(tagged(ui.settingRow(t("gp_list"), if (gameListOpen) "▲" else "▼") { gameListOpen = !gameListOpen; toggled("gamelist", gameListOpen); render(true) }, "gamelist"), 8)
         if (!gameListOpen) return
         openNest("gamelist", inner = true)
@@ -2099,6 +2126,11 @@ class MainActivity : Activity() {
             if (Prefs.fastRead(this)) { Prefs.setFastRead(this, false); applyToService(); render(true) }
             else confirmOn(t("fr_row"), t("fr_desc")) { Prefs.setFastRead(this, true); applyToService(); render(true) }
         }, "fastread"), 8)
+        // seznam her ze stránek sám jednou za 6 h (výchozí vypnuto – ručně jde vždy z Titulky → Hra)
+        add(tagged(ui.settingRow(t("gl_auto"), onOff(Prefs.gamesAuto(this))) {
+            if (Prefs.gamesAuto(this)) { Prefs.setGamesAuto(this, false); render(true) }
+            else confirmOn(t("gl_auto"), t("gl_auto_desc")) { Prefs.setGamesAuto(this, true); checkGameList(manual = false); render(true) }
+        }, "gamesauto"), 8)
         // DeepL je od 0.97.28 v Titulkách → Kvalita překladu (už ne pokus)
         settingsDiag()
     }

@@ -25,6 +25,11 @@ data class GameProfile(
      * `<hint>_val` hodnota, `<hint>_desc` delší vysvětlení (dialog po OK a Nápověda → Hraní). null = žádná rada.
      */
     val hint: String? = null,
+    /**
+     * Jména z [names], která jsou zároveň běžná anglická slova (od seznamu her ke stažení): v profilu hry zůstávají
+     * v originále, ale univerzální profil a odhad hry je vynechají ([GameCatalog.ambiguous]).
+     */
+    val common: List<String> = emptyList(),
 ) {
     /** Barvy pro [SpeakerColors]: zjednodušené jméno i všechny přezdívky postavy → barva. */
     val colorsByKey: Map<String, Int> by lazy {
@@ -57,13 +62,13 @@ class GameScreen(hud: List<String>, menu: List<String>, private val skip: List<R
  * Nic nepřepíná – jen nabídne řádek v Nastavení („Grand Theft Auto VI?“ s Přepnout).
  * Hra platí, když se objevila aspoň [MIN_NAMES] různá její jména a žádná jiná hra jich nemá ani polovinu.
  */
-class GameGuess(games: List<GameProfile> = GameProfiles.GAMES) {
+class GameGuess(games: List<GameProfile> = GameProfiles.GAMES, ambiguous: Set<String> = GameProfiles.AMBIGUOUS) {
     private val owner: Map<String, GameProfile>
     private val longest: Int
     init {
         val m = HashMap<String, GameProfile?>()
         for (g in games) for (n in (g.names + g.characters.flatMap { it.allNames }).distinct()) {
-            if (n in GameProfiles.AMBIGUOUS) continue
+            if (n in ambiguous) continue
             val k = TextLogic.simplify(n)
             if (k.length < 4) continue          // krátké přezdívky (Lu, Jay) jsou moc náhodné
             m[k] = if (m.containsKey(k) && m[k]?.id != g.id) null else g
@@ -99,7 +104,39 @@ class GameGuess(games: List<GameProfile> = GameProfiles.GAMES) {
     companion object { const val MIN_NAMES = 3 }
 }
 
+/**
+ * Seznam her: profily a běžná slova, která se do univerzálního profilu nedávají. Vestavěný je v APK
+ * ([GameProfiles.BUILTIN]), novější se dá stáhnout ([GameListJson], aplikace `GameListUpdate`).
+ * [version] = verze seznamu, [downloaded] = stažený (ne vestavěný).
+ */
+class GameCatalog(val games: List<GameProfile>, extraAmbiguous: Collection<String>, val version: Int, val downloaded: Boolean = false) {
+    /** Běžná slova mimo profily her (pro zápis seznamu). */
+    val extraAmbiguous: List<String> = extraAmbiguous.distinct()
+    /** Slova, která jsou zároveň běžná anglická slova – do univerzálního profilu nepatří. */
+    val ambiguous: Set<String> = extraAmbiguous.toSet() + games.flatMap { it.common }
+
+    /** Univerzální profil: nezaměnitelná jména ze všech her dohromady (bez běžných slov). */
+    val universal = GameProfile("all", "*", games.flatMap { it.names }.filter { it !in ambiguous }.distinct(),
+        // rod postav platí i v univerzálním profilu (Jason je muž v každé hře); jména s různým rodem vynechá [Cast]
+        games.flatMap { it.characters },
+        // hlášky a menu všech her (přesná shoda celého řádku – v replice se neobjeví)
+        hud = games.flatMap { it.hud }.distinct(), menu = games.flatMap { it.menu }.distinct())
+
+    val all: List<GameProfile> = listOf(universal) + games
+    private val byId = all.associateBy { it.id }
+
+    fun of(id: String?): GameProfile = byId[id] ?: universal
+}
+
 object GameProfiles {
+    /**
+     * Verze vestavěného seznamu her. Po každé změně profilů ji zvyš a přegeneruj `pomoc/hry/profily.json`
+     * (`gradlew -p ci/mistni-kontrola seznamHer`) – jinak aplikace novější seznam ze stránek nestáhnou
+     * a test `GameListJsonTest` neprojde.
+     */
+    const val VERSION = 1
+    /** Nejnižší versionCode aplikace, která seznam v tomto tvaru umí přečíst (pole `minAppVerze`). */
+    const val MIN_APP = 156
 
     private val RDR2 = (OfflinePrep.NAMES + Rdr2.NAMES).distinct()
 
@@ -346,8 +383,8 @@ object GameProfiles {
         m("Radagon"), f("Marika"), m("Godfrey"), m("Blaidd"),
     )
 
-    /** Slova, která jsou zároveň běžná anglická slova – do univerzálního profilu nepatří. */
-    val AMBIGUOUS = setOf(
+    /** Slova, která jsou zároveň běžná anglická slova a nepatří k jedné hře – do univerzálního profilu nepatří. */
+    private val EXTRA_AMBIGUOUS = listOf(
         "Gray", "Grays", "Bell", "Bill", "Smith", "Jack", "John", "Uncle", "Sam", "Wolves", "Beta", "Rio", "Reed",
         "Rogue", "Fig", "Watcher", "Chop", "Roach", "Zenith", "Torrent", "Tarnished", "Jackson", "Summers", "Wade",
         "Drake", "Queens", "Watson", "Roman", "Jason", "Nora", "Zo", "Taka", "Jin", "Tess", "Mel", "Lev", "Faye",
@@ -361,22 +398,22 @@ object GameProfiles {
         "Donnie", "Shirley", "Vicki", "Frankie", "Andrea", "Nicole", "Petra", "Valentina", "Manuel", "Benedict",
         "Delights", "Cheetah", "Elegy", "Moreau", "Salton", "Southwind", "Millport", "M7", "Kingfishers", "Final Chapter",
         "The Chamber", "Game", "Map", "Help", "Save", "Store", "Progress", "Brief", "Settings",
-    ) + GTA6_COMMON + Gta5.COMMON + Rdr2.COMMON + AlanWake2.COMMON + ReRequiem.COMMON + Bond007.COMMON + Diablo4.COMMON
+    )
 
-    val GAMES: List<GameProfile> = listOf(
-        GameProfile("rdr2", "Red Dead Redemption 2", RDR2, Rdr2.CAST, Rdr2.TERMS, Rdr2.HUD, Rdr2.MENU),
+    private val BUILTIN_GAMES: List<GameProfile> = listOf(
+        GameProfile("rdr2", "Red Dead Redemption 2", RDR2, Rdr2.CAST, Rdr2.TERMS, Rdr2.HUD, Rdr2.MENU, common = Rdr2.COMMON),
         // barvy jmen jako v titulcích GTA VI (majitel ve hře 20. 11. 2026): Jason žlutě, Lucia modře
         GameProfile("gta6", "Grand Theft Auto VI", GTA6, GTA6_CAST, GTA6_TERMS, GTA6_HUD, GTA6_MENU, prompts = true,
             colors = mapOf("Jason" to SpeakerColors.PALETTE[0], "Lucia" to SpeakerColors.PALETTE[1]), menuSpec = GTA6_MENU_SPEC,
-            hint = "gp_bg_gta6"),
+            hint = "gp_bg_gta6", common = GTA6_COMMON),
         // GTA V: Michael modře, Franklin zeleně, Trevor oranžově (barvy postav v titulcích hry)
         GameProfile("gta", "Grand Theft Auto V", Gta5.NAMES.distinct(), Gta5.CAST, Gta5.TERMS, Gta5.HUD, Gta5.MENU, prompts = true,
-            colors = mapOf("Michael" to SpeakerColors.PALETTE[1], "Franklin" to SpeakerColors.PALETTE[2], "Trevor" to SpeakerColors.PALETTE[5])),
-        GameProfile("alanwake2", "Alan Wake 2", AlanWake2.NAMES.distinct(), AlanWake2.CAST, hud = AlanWake2.HUD, menu = AlanWake2.MENU),
-        GameProfile("re9", "Resident Evil Requiem", ReRequiem.NAMES.distinct(), ReRequiem.CAST, ReRequiem.TERMS, ReRequiem.HUD, ReRequiem.MENU),
-        GameProfile("bond", "007 First Light", Bond007.NAMES.distinct(), Bond007.CAST),
+            colors = mapOf("Michael" to SpeakerColors.PALETTE[1], "Franklin" to SpeakerColors.PALETTE[2], "Trevor" to SpeakerColors.PALETTE[5]), common = Gta5.COMMON),
+        GameProfile("alanwake2", "Alan Wake 2", AlanWake2.NAMES.distinct(), AlanWake2.CAST, hud = AlanWake2.HUD, menu = AlanWake2.MENU, common = AlanWake2.COMMON),
+        GameProfile("re9", "Resident Evil Requiem", ReRequiem.NAMES.distinct(), ReRequiem.CAST, ReRequiem.TERMS, ReRequiem.HUD, ReRequiem.MENU, common = ReRequiem.COMMON),
+        GameProfile("bond", "007 First Light", Bond007.NAMES.distinct(), Bond007.CAST, common = Bond007.COMMON),
         GameProfile("diablo4", "Diablo IV", Diablo4.NAMES.distinct(), Diablo4.CAST, Diablo4.TERMS, Diablo4.HUD, Diablo4.MENU,
-            skip = Diablo4.SKIP),
+            skip = Diablo4.SKIP, common = Diablo4.COMMON),
         GameProfile("tlou", "The Last of Us", TLOU, TLOU_CAST),
         GameProfile("gow", "God of War", GOW, GOW_CAST),
         GameProfile("spiderman", "Spider-Man", SPIDERMAN, SPIDERMAN_CAST),
@@ -389,17 +426,23 @@ object GameProfiles {
         GameProfile("elden", "Elden Ring", ELDEN, ELDEN_CAST),
     )
 
-    /** Univerzální profil: nezaměnitelná jména ze všech her dohromady (bez běžných slov). */
-    val UNIVERSAL = GameProfile("all", "*", GAMES.flatMap { it.names }.filter { it !in AMBIGUOUS }.distinct(),
-        // rod postav platí i v univerzálním profilu (Jason je muž v každé hře); jména s různým rodem vynechá [Cast]
-        GAMES.flatMap { it.characters },
-        // hlášky a menu všech her (přesná shoda celého řádku – v replice se neobjeví)
-        hud = GAMES.flatMap { it.hud }.distinct(), menu = GAMES.flatMap { it.menu }.distinct())
+    /** Vestavěný seznam (v APK) – platí, dokud se nestáhne novější, a jako záloha, když stažený nejde přečíst. */
+    val BUILTIN = GameCatalog(BUILTIN_GAMES, EXTRA_AMBIGUOUS, VERSION)
 
-    val ALL: List<GameProfile> = listOf(UNIVERSAL) + GAMES
+    /** Seznam, podle kterého aplikace právě jede (vestavěný nebo stažený). */
+    @Volatile var catalog: GameCatalog = BUILTIN
+        private set
 
-    fun of(id: String?): GameProfile = ALL.firstOrNull { it.id == id } ?: UNIVERSAL
-    fun next(id: String?): GameProfile = ALL[(ALL.indexOf(of(id)) + 1) % ALL.size]
+    /** Přepne na jiný seznam (stažený); null = zpět na vestavěný. */
+    fun use(c: GameCatalog?) { catalog = c ?: BUILTIN }
+
+    val GAMES: List<GameProfile> get() = catalog.games
+    val AMBIGUOUS: Set<String> get() = catalog.ambiguous
+    val UNIVERSAL: GameProfile get() = catalog.universal
+    val ALL: List<GameProfile> get() = catalog.all
+
+    fun of(id: String?): GameProfile = catalog.of(id)
+    fun next(id: String?): GameProfile = ALL.let { all -> all[(all.indexOf(of(id)) + 1) % all.size] }
 }
 
 /** Předpřipravené překlady krátkých herních hlášek, které offline překladač často kazí. */

@@ -18,5 +18,7 @@ class App : Application() {
         // z čeho se překládá (volba „Překládat z“, výchozí angličtina) – offline překladač ho potřebuje od začátku
         try { OfflineTranslator.source = Prefs.sourceLang(this) } catch (_: Throwable) {}
         try { NetLogShare.resume(this) } catch (_: Throwable) {}
+        // stažený seznam her (profily), když je novější než vestavěný – jinak zůstává vestavěný
+        GameListUpdate.load(this)
     }
 }
