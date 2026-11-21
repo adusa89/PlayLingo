@@ -398,7 +398,7 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   je aplikace vidět); ukáže se při změně, zelený zmizí po 8 s / s prvním titulkem, oranžový zůstává.
   **Od 0.97.40 výchozí vypnuto** (přání majitele – stav stačí na Domů): volba ⚙ → Obecné „Stav přes hru“ (`Prefs.statusOverlay`,
   klíč `stav_pres_hru`, texty `so_row`/`so_desc` v `I18nQuick.kt`); bez ní se panel neukáže ani s rychlou nabídkou vzhledu.
-  **Od 0.97.50 tři režimy** (`Prefs.statusMode`, klíč `stav_rezim`: 0 vypnuto – výchozí, 1 dynamicky, 2 vždy; starý zapnutý
+  **Od 0.97.50 tři režimy** (`Prefs.statusMode`, klíč `stav_rezim`: 0 vypnuto, 1 dynamicky – výchozí od 0.97.51 (přání majitele), 2 vždy; starý zapnutý
   `stav_pres_hru` = vždy): dynamicky se ukáže na začátku a při změně stavu, po 8 s zmizí i oranžový, zůstane jen při
   `TvStatus.sticky` (PS5 spí, obraz nejde / spojení selhalo, chybí jazykový balíček) – odhad hry „GTA VI?“ ho už nedrží (u kolegy
   na Android TV visel pořád). TV LG/Samsung beze změny.

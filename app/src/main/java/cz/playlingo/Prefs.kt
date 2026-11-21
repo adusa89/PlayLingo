@@ -224,11 +224,11 @@ object Prefs {
     fun setPs5Wake(c: Context, v: Boolean) = setBool(c, "ps5_wake2", v)
     /** Stav (konzole, překlad, hra) vlevo nahoře přes hru na Android TV – výchozí vypnuto (od 0.97.40), stav je na Domů. */
     /**
-     * Stav přes hru (Android TV): 0 vypnuto (výchozí), 1 dynamicky (ukáže se při změně a po chvíli zmizí; zůstane jen
+     * Stav přes hru (Android TV): 0 vypnuto, 1 dynamicky (výchozí od 0.97.51, přání majitele) (ukáže se při změně a po chvíli zmizí; zůstane jen
      * při potížích se spojením nebo chybějícím jazykovém balíčku), 2 vždy (jako do 0.97.49: oranžový zůstává).
      * Kdo měl do 0.97.49 zapnutý přepínač `stav_pres_hru`, má „vždy“ (uložené nastavení se nemění).
      */
-    fun statusMode(c: Context): Int = p(c).getInt("stav_rezim", -1).let { if (it in 0..2) it else if (bool(c, "stav_pres_hru", false)) 2 else 0 }
+    fun statusMode(c: Context): Int = p(c).getInt("stav_rezim", -1).let { if (it in 0..2) it else if (bool(c, "stav_pres_hru", false)) 2 else 1 }
     fun setStatusMode(c: Context, v: Int) = p(c).edit().putInt("stav_rezim", v.coerceIn(0, 2)).apply()
     fun statusOverlay(c: Context): Boolean = statusMode(c) != 0
 
