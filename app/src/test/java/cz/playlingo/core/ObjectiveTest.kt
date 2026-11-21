@@ -39,6 +39,17 @@ class ObjectiveTest {
         assertEquals("Go to the safehouse.", at("Go to the safehouse.")?.text)
     }
 
+    @Test fun ukolJenUplneDole() {
+        // stejné dva řádky, úkol by byl na 670 px – s pásem pro úkol od 680 px (výš = titulek) úkol není
+        fun obj(minTop: Int) = TextLogic.assemble(
+            listOf(block(line("JASON: Let's go.", 600)), block(line("Follow Lucia", 670))),
+            minLineHeight = 10, subtitlesOnly = true, screenCenterX = 950, centerTolerance = 300, objectives = true,
+            objectiveMinTop = minTop,
+        ).objective
+        assertNull(obj(680))
+        assertEquals("Follow Lucia", obj(650)?.text)
+    }
+
     @Test fun tvarUkolu() {
         assertTrue(TextLogic.objectiveShape("Take your shot"))
         assertTrue(!TextLogic.objectiveShape("emergencies,"))

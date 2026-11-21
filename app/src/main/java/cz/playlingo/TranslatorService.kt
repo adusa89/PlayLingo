@@ -68,6 +68,8 @@ import kotlin.math.max
 class TranslatorService : Service() {
 
     companion object {
+        /** Horní hrana pásu pro úkol (zlomek výšky obrazu): úkol GTA leží jen pod ní, úplně dole (od 0.97.58). */
+        const val OBJECTIVE_ZONE_TOP = 0.86f
         const val ACTION_STOP = "cz.playlingo.STOP"
         const val ACTION_PAUSE = "cz.playlingo.PAUSE"
         const val ACTION_RELOAD = "cz.playlingo.RELOAD"
@@ -963,6 +965,8 @@ class TranslatorService : Service() {
             screen = screen,
             objectives = prompts,
             objectiveTop = if (prompts && objectiveTracker.top >= 0f) (objectiveTracker.top * capH).toInt() - y0 else -1,
+            // úkol jen ve spodních 14 % obrazu (v GTA je vždy úplně dole, pod titulky)
+            objectiveMinTop = if (prompts) (capH * OBJECTIVE_ZONE_TOP).toInt() - y0 else -1,
         )
         if (prompts) handleObjective(picked.objective, x0, y0)
         if (picked.text.isNotEmpty()) lastOcrText = picked.text

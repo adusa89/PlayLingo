@@ -303,6 +303,8 @@ object TextLogic {
         objectives: Boolean = false,
         /** Naučená horní hrana řádku s úkolem v pixelech oblasti (-1 = ještě nevíme) – pro úkol bez titulku nad ním. */
         objectiveTop: Int = -1,
+        /** Úkol leží jen v pásu úplně dole na obrazovce: horní hrana řádku aspoň tady (px oblasti; -1 = bez omezení). */
+        objectiveMinTop: Int = -1,
     ): Picked {
         if (screen.isMenu(blocks.flatMap { b -> b.lines.map { it.text } })) return Picked("", 0)
         val sorted = blocks.sortedBy { b -> b.lines.minOfOrNull { it.top } ?: Int.MAX_VALUE }
@@ -335,7 +337,7 @@ object TextLogic {
         }
         // 1b) řádek s úkolem (GTA): nejspodnější řádek, nad kterým je volný řádek – ke kterému titulku nepatří.
         //     Bez titulku nad ním se pozná podle místa, kde už úkol jednou byl ([objectiveTop]).
-        val objective = if (objectives) objectiveLine(kept.map { it.second }, objectiveTop) else null
+        val objective = if (objectives) objectiveLine(kept.map { it.second }, objectiveTop, objectiveMinTop) else null
         if (objective != null) kept.removeAll { it.second === objective }
         // 2) "jen titulky": texty daleko nad sebou k sobě nepatří (nadpis v menu + titulek dole).
         //    Bere se jen nejspodnější skupina – pruh pak zakryje jen titulek, ne půl obrazovky.
@@ -417,9 +419,11 @@ object TextLogic {
     /** Spojky a slova, kterými v titulcích začíná pokračování věty na dalším řádku. */
     private val CONTINUATIONS = setOf("and", "or", "but", "so", "because", "cause", "then", "that", "which", "who", "to", "of", "with", "for")
 
-    fun objectiveLine(lines: List<OcrLine>, objectiveTop: Int = -1): OcrLine? {
+    fun objectiveLine(lines: List<OcrLine>, objectiveTop: Int = -1, minTop: Int = -1): OcrLine? {
         if (lines.isEmpty()) return null
         val last = lines.maxByOrNull { it.top } ?: return null
+        // úkol je v GTA vždy úplně dole na obrazovce – výš položený řádek je titulek (od 0.97.58)
+        if (minTop >= 0 && last.top < minTop) return null
         if (splitSpeaker(clean(last.text)).speaker != null || last.text.trim().startsWith(CHOICE_MARK.trim())) return null
         if (last.text.count { it.isLetter() } < 3) return null
         if (!objectiveShape(last.text)) return null
