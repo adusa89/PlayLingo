@@ -800,6 +800,9 @@ seznam ukončení ze strany PS5 je v hlášení („PlayStation ukončil spojen�
 
 - `navrhy/preklad-menu.md` – překlad menu a UI hry (box s přeloženým menu vedle originálu, zvýraznění vybrané
   položky, tooltipy v Diablu IV). Schváleno majitelem jako samostatná session po profilu Diablo IV; nezačato.
+- `navrhy/ctecka-pc-mac.md` – počítač (Windows, později Mac) jako čtečka pro TV LG/Samsung místo Androidu, hlavně pro
+  hráče s iPhonem (přání majitele 21. 11. 2026). Díl 1 (režim „Čtečka pro TV“ v `pc/`) rozpracován; balíček ke stažení, Mac
+  a nabídka na webu „Začít s PlayLingem“ potom.
 
 ## Stránky s pomocí (`pomoc/`)
 
