@@ -181,6 +181,11 @@ titulky“ ho `SubtitleOverlay` vynechá. Diablo IV: chat se nečte (`GameProfil
 anglický úkol, písmo podle originálu) a do TV `{"typ":"ukol",…}` (`TvSender.objectiveMessage` / `sendObjective`). Nezávislé na
 mizení titulků; schová se v menu hry, při pauze a nové volbě. S „Jen titulky“ se úkol jen vyčlení a nepřekládá. Barevná slova
 úkolu zatím ne (TV umí `casti` s barvami, Android je neposílá). V záznamu `OBJ|show|…` / `OBJ|hide`. Na skutečné hře neověřeno.
+**Volby úkolu (od 0.97.45)** v Titulkách → Hra (jen profil s `prompts` a „Titulky a texty hry“): Úkol pod titulky zapnout
+(`Prefs.objectiveOn`), Písmo úkolu (`objSize`, 0 = podle hry), Poloha úkolu (`objPos`, -1 = na místě ve hře, jinak střed
+v 0–100 % výšky; do TV jako úzké `misto` na zvolené výšce). Klíče `obj_on/obj_size/obj_pos` v `TvProfiles.KEYS`.
+**Vlastní výška pruhu (od 0.97.45):** v nabídce Poloha poslední volba „Vlastní výška“ → střed pruhu 0–100 % po 5 (`withBarCenter`,
+`Position.CUSTOM`, do TV `stred`); jemně dál v Jemném doladění.
 
 **Profil hry dál (od 0.97.4)**, vše v `core/GameProfiles.kt` (testy `GameCastTest`):
 - `terms` – herní pojmy s pevným překladem po jazycích (jdou do `Prefs.glossary` před vlastní slovník, ten má

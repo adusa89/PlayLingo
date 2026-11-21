@@ -1462,6 +1462,29 @@ class MainActivity : Activity() {
         if (game.id != "all") add(tagged(ui.settingRow(t("gp_scope"), t(if (Prefs.gameTexts(this)) "gp_scope_all" else "gp_scope_subs")) {
             Prefs.setGameTexts(this, !Prefs.gameTexts(this)); applyToService(); render(true)
         }, "gamescope"), 8)
+        // úkol pod titulky (GTA): zapnout, písmo, poloha – jen s „Titulky a texty hry“ (od 0.97.45)
+        if (game.prompts && Prefs.gameTexts(this)) {
+            val on = Prefs.objectiveOn(this)
+            add(tagged(ui.settingRow(t("obj_row"), onOff(on)) {
+                Prefs.setObjectiveOn(this, !on); applyToService(); render(true)
+            }, "objon"), 8)
+            if (on) {
+                val sz = Prefs.objSize(this)
+                val sizes = listOf(0) + Prefs.TEXT_SIZES.toList()
+                add(tagged(ui.settingRow(t("obj_size"), if (sz == 0) t("qk_size_game") else sz.toString()) {
+                    choose(t("obj_size"), sizes.map { if (it == 0) t("qk_size_game") else it.toString() }, sizes.indexOf(sz).coerceAtLeast(0)) { i ->
+                        Prefs.setObjSize(this, sizes[i]); applyToService(); render(true)
+                    }
+                }, "objsize"), 8)
+                val pos = Prefs.objPos(this)
+                val opts = listOf(-1) + Prefs.HEIGHTS
+                add(tagged(ui.settingRow(t("obj_pos"), if (pos < 0) t("obj_pos_game") else "$pos %") {
+                    choose(t("obj_pos"), opts.map { if (it < 0) t("obj_pos_game") else "$it %" }, opts.indexOf(pos).coerceAtLeast(0)) { i ->
+                        Prefs.setObjPos(this, opts[i]); applyToService(); render(true)
+                    }
+                }, "objpos"), 8)
+            }
+        }
         add(tagged(ui.settingRow(t("gp_list"), if (gameListOpen) "▲" else "▼") { gameListOpen = !gameListOpen; render(true) }, "gamelist"), 8)
         if (!gameListOpen) return
         add(ui.text(t("t_game_desc") + " " + t("t_game_deepl"), 14f, Theme.MUTED), 8)
@@ -1615,10 +1638,19 @@ class MainActivity : Activity() {
         // LG / Samsung: vzhled a oblasti jsou zvlášť pro každou televizi (TvProfile)
         TvProfile.activeName(this)?.let { add(ui.text(t("tv_profile_for").replace("%s", it), 14f, Theme.MUTED), 6) }
         val lay = Prefs.layout(this)
-        add(tagged(ui.settingRow(t("l_pos"), t("pos_" + lay.position.name.lowercase())) {
+        val custom = lay.position == cz.playlingo.core.ScreenLayout.Position.CUSTOM
+        val customPct = Math.round(lay.barCenterY * 100)
+        add(tagged(ui.settingRow(t("l_pos"), if (custom) t("pos_height") + " · $customPct %" else t("pos_" + lay.position.name.lowercase())) {
+            // pevné polohy + „Vlastní výška“ (střed pruhu 0–100 % výšky, od 0.97.45); jemně dál táhnutím v Jemném doladění
             val all = cz.playlingo.core.ScreenLayout.Position.values().filter { it != cz.playlingo.core.ScreenLayout.Position.CUSTOM }
-            choose(t("l_pos"), all.map { t("pos_" + it.name.lowercase()) }, all.indexOf(lay.position)) { i ->
-                Prefs.setLayout(this, lay.withPosition(all[i])); applyToService(); render(true); showDemo()
+            choose(t("l_pos"), all.map { t("pos_" + it.name.lowercase()) } + t("pos_height"), if (custom) all.size else all.indexOf(lay.position)) { i ->
+                if (i < all.size) { Prefs.setLayout(this, lay.withPosition(all[i])); applyToService(); render(true); showDemo() }
+                else {
+                    val near = Prefs.HEIGHTS.minByOrNull { kotlin.math.abs(it - (if (custom) customPct else 85)) } ?: 85
+                    choose(t("pos_height"), Prefs.HEIGHTS.map { "$it %" }, Prefs.HEIGHTS.indexOf(near)) { k ->
+                        Prefs.setLayout(this, lay.withBarCenter(Prefs.HEIGHTS[k] / 100f)); applyToService(); render(true); showDemo()
+                    }
+                }
             }
         }, "pos"), 6)
         val widthPct = Math.round(lay.barWidth * 100)
@@ -2307,6 +2339,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.44"
-    const val VERSION_CODE = 141
+    const val VERSION = "verze 0.97.45"
+    const val VERSION_CODE = 142
 }

@@ -54,6 +54,9 @@ class SubtitleOverlay(
     private val barPad: Int = 1,
     /** Velikost anglického originálu v % písma překladu ([Prefs.ORIG_SIZES]). */
     private val origPercent: Int = 62,
+    /** Písmo úkolu v sp (0 = podle úkolu ve hře / jako titulky) a poloha (-1 = na místě úkolu, jinak střed v % výšky). */
+    private val objSizeSp: Int = 0,
+    private val objPosPercent: Int = -1,
     /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky a texty hry), nebo vynechat (Jen titulky). */
     private val showPrompts: Boolean = true,
     /** Pevné barvy postav z profilu hry ([cz.playlingo.core.GameProfile.colorsByKey]). */
@@ -345,11 +348,21 @@ class SubtitleOverlay(
      * Ukáže přeložený úkol ve vlastním pruhu přes anglický úkol. [box] = vlevo, nahoře, vpravo, dole (zlomky obrazu),
      * [lineHeight] = velikost písma originálu jako zlomek výšky (0 = neznámá → písmo z Nastavení).
      */
-    fun showObjective(text: String, box: FloatArray, lineHeight: Float) {
-        val px = if (matchOriginalSize && lineHeight > 0f) MatchSize.textPx(lineHeight, screenH).toFloat() else 0f
-        onObjective?.invoke(TvSender.objectiveMessage(text, box,
-            TvLook.textPx(textSize, if (px > 0f) MatchSize.textPx(lineHeight, TvLook.SCREEN_H) else 0),
-            opacityPercent, SpeakerColors.hex(textColor)))
+    fun showObjective(text: String, gameBox: FloatArray, lineHeight: Float) {
+        // vlastní výška: vodorovně na střed obrazovky, svisle střed na zvolené výšce
+        val box = if (objPosPercent >= 0) (objPosPercent / 100f).let { y -> floatArrayOf(0.3f, (y - 0.001f).coerceAtLeast(0f), 0.7f, (y + 0.001f).coerceAtMost(1f)) } else gameBox
+        val byGame = objSizeSp <= 0 && matchOriginalSize && lineHeight > 0f
+        val px = when {
+            objSizeSp > 0 -> objSizeSp * density * host.resources.configuration.fontScale
+            byGame -> MatchSize.textPx(lineHeight, screenH).toFloat()
+            else -> 0f
+        }
+        val tvPx = when {
+            objSizeSp > 0 -> TvLook.textPx(objSizeSp, 0)
+            byGame -> TvLook.textPx(textSize, MatchSize.textPx(lineHeight, TvLook.SCREEN_H))
+            else -> TvLook.textPx(textSize, 0)
+        }
+        onObjective?.invoke(TvSender.objectiveMessage(text, box, tvPx, opacityPercent, SpeakerColors.hex(textColor)))
         main.post {
             val v = objView ?: return@post
             val lp = objParams ?: return@post

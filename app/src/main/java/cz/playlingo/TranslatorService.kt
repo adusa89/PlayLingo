@@ -461,6 +461,8 @@ class TranslatorService : Service() {
             Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this),
             barPad = Prefs.barPad(this),
             origPercent = Prefs.origSize(this),
+            objSizeSp = Prefs.objSize(this),
+            objPosPercent = Prefs.objPos(this),
             showPrompts = Prefs.gameTexts(this),
             speakerPreset = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey,
             onText = sender?.let { s -> { text: String?, parts: String?, look: String? -> if (text == null) s.hide() else s.show(text, parts, look) } },
@@ -1006,7 +1008,7 @@ class TranslatorService : Service() {
                 val l = line ?: return
                 val seq = ++objectiveSeq
                 val ov = overlay ?: return
-                if (!Prefs.gameTexts(this)) { ov.hideObjective(); return }
+                if (!Prefs.gameTexts(this) || !Prefs.objectiveOn(this)) { ov.hideObjective(); return }
                 val box = floatArrayOf((x0 + l.left).toFloat() / capW, (y0 + l.top).toFloat() / capH,
                     (x0 + l.right).toFloat() / capW, (y0 + l.bottom).toFloat() / capH)
                 val lineH = TextLogic.fontSizeOf(l).toFloat() / capH

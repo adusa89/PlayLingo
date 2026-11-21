@@ -98,6 +98,15 @@ object Prefs {
     val ORIG_SIZES = intArrayOf(40, 50, 62, 75, 90, 100)
     fun origSize(c: Context): Int = p(c).getInt("orig_size", 62).let { v -> ORIG_SIZES.minByOrNull { kotlin.math.abs(it - v) } ?: 62 }
     fun setOrigSize(c: Context, v: Int) = p(c).edit().putInt("orig_size", v).apply()
+    /** Úkol pod titulky (GTA) jako samostatný pruh (od 0.97.45): zapnuto, písmo (0 = podle hry), poloha (-1 = na místě úkolu ve hře, jinak 0–100 % výšky). */
+    fun objectiveOn(c: Context) = bool(c, "obj_on", true)
+    fun setObjectiveOn(c: Context, v: Boolean) = setBool(c, "obj_on", v)
+    fun objSize(c: Context): Int = p(c).getInt("obj_size", 0)
+    fun setObjSize(c: Context, v: Int) = p(c).edit().putInt("obj_size", v).apply()
+    fun objPos(c: Context): Int = p(c).getInt("obj_pos", -1).let { if (it < 0) -1 else it.coerceIn(0, 100) }
+    fun setObjPos(c: Context, v: Int) = p(c).edit().putInt("obj_pos", v).apply()
+    /** Vlastní výška pruhu / úkolu: střed v % výšky obrazovky. */
+    val HEIGHTS = (0..100 step 5).toList()
 
     fun coloredSpeaker(c: Context) = bool(c, "colored_speaker", true)
     fun setColoredSpeaker(c: Context, v: Boolean) = setBool(c, "colored_speaker", v)

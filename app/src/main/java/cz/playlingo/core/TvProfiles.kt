@@ -11,7 +11,7 @@ package cz.playlingo.core
 object TvProfiles {
     /** Klíče nastavení, která patří k televizi (vzhled pruhu, oblasti, co se čte). Ostatní jsou společná. */
     val KEYS = listOf(
-        "text_color", "bold_text", "text_size", "match_size", "opacity", "show_original", "orig_size",
+        "text_color", "bold_text", "text_size", "match_size", "opacity", "show_original", "orig_size", "obj_on", "obj_size", "obj_pos",
         "colored_speaker", "hold_ms", "layout", "auto_zone", "only_subs", "bar_pad",
     )
 
