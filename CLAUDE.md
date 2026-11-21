@@ -440,7 +440,8 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   ohlášení drží v `TvSender.lastSeen` (`TvAnnounce`); podle něj Domů a průvodce Samsung poznají,
   co v televizi běží.
 - Telefon: pomocník (`PhoneHelperActivity`) má od 0.63 tlačítko „Použít telefon pro televizi LG“
-  a vedle něj „… Samsung“. Zapne `Prefs.forceTv` a nastaví typ televize, předá už ověřený účet do párování a otevře celou
+  a vedle něj „… Samsung“ (z celé aplikace zpět: ⚙ → Obecné → Pomocník pro přihlášení otevře pomocníka s `EXTRA_FROM_APP` –
+  od 0.97.55 nahoře „‹ Zpět do aplikace“ a Zpět telefonu vrací do aplikace, `forceTv` se nemění; dřív cesta zpět nebyla). Zapne `Prefs.forceTv` a nastaví typ televize, předá už ověřený účet do párování a otevře celou
   aplikaci. Jestli se celá aplikace dá na telefonu pohodlně ovládat, umí ověřit jen uživatel.
 - **Nahrání do televize z Androidu** (přehled ve `webos/CTI-ME.md`): tlačítko „Nahrát PlayLingo do
   televize LG“ v průvodci (krok Televize), v Nastavení, upozornění na Domů (typ LG, dokud se televize

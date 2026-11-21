@@ -383,9 +383,9 @@ class MainActivity : Activity() {
     /** Zpět k pomocníkovi pro přihlášení (telefon, na kterém byla omylem nebo dočasně otevřená celá aplikace). */
     private fun backToPhoneHelper() {
         if (TranslatorService.running) stopService(Intent(this, TranslatorService::class.java))
-        Prefs.setForceTv(this, false)
-        startActivity(Intent(this, PhoneHelperActivity::class.java))
-        finish()
+        // od 0.97.55: aplikace zůstává pod pomocníkem a režim celé aplikace se nemění – Zpět (tlačítko v pomocníkovi
+        // i telefonu) vede zpátky; dřív se aplikace zavřela, telefon přepnul na „jen pomocník“ a cesta zpět nebyla
+        startActivity(Intent(this, PhoneHelperActivity::class.java).putExtra(PhoneHelperActivity.EXTRA_FROM_APP, true))
     }
 
     private fun buildShell() {
@@ -2437,6 +2437,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.54"
-    const val VERSION_CODE = 151
+    const val VERSION = "verze 0.97.55"
+    const val VERSION_CODE = 152
 }

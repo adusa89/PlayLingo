@@ -108,6 +108,13 @@ class PhoneHelperActivity : Activity() {
         take(intent)
     }
 
+    companion object {
+        /** Otevřeno z celé aplikace (⚙ → Pomocník pro přihlášení) – nahoře „Zpět do aplikace“, Zpět vede tam. */
+        const val EXTRA_FROM_APP = "z_aplikace"
+    }
+
+    private val fromApp get() = intent?.getBooleanExtra(EXTRA_FROM_APP, false) == true
+
     override fun onDestroy() {
         web?.destroy(); web = null
         super.onDestroy()
@@ -118,7 +125,7 @@ class PhoneHelperActivity : Activity() {
         val w = web
         @Suppress("DEPRECATION")
         when {
-            w == null -> super.onBackPressed()
+            w == null -> if (fromApp) finish() else super.onBackPressed()
             w.canGoBack() -> w.goBack()
             else -> { closeLogin(); render() }
         }
@@ -159,6 +166,9 @@ class PhoneHelperActivity : Activity() {
         names.addView(ui.text(t("hp_title"), 14f, Theme.ACCENT, bold = true))
         head.addView(names)
         content.addView(head)
+        // otevřeno z celé aplikace: cesta zpět (od 0.97.55)
+        if (fromApp) content.addView(ui.button("‹ " + t("hp_back_app")) { finish() }.apply { textSize = 15f },
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = ui.dp(14) })
 
         // nová verze: stejná nabídka jako na stránce Domů v televizi
         update?.let { o ->
