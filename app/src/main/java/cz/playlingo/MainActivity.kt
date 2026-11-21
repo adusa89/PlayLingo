@@ -500,7 +500,7 @@ class MainActivity : Activity() {
         content.setPadding(content.paddingLeft, if (pin) ui.dp(8) else contentTop, content.paddingRight, content.paddingBottom)
         if (wizard >= 0) { renderWizard(focusedTag); return }
         renderMenu()
-        content.removeAllViews()
+        content.removeAllViews(); closeNests()
         // nadpis stránky jen u Historie – ostatní stránky mají název v menu (přání majitele, od 0.97.6)
         if (section == Section.HISTORY) content.addView(ui.text(ct(section.key), 30f, Theme.TEXT, bold = true))
         when (section) {
@@ -562,7 +562,7 @@ class MainActivity : Activity() {
                 addView(ui.text(ct(key), 16f, if (active) Theme.ACCENT else if (i < wizard) Theme.TEXT else Theme.MUTED, bold = active))
             }, menuLp())
         }
-        content.removeAllViews()
+        content.removeAllViews(); closeNests()
         content.addView(ui.text(t("wz_title"), 15f, Theme.ACCENT, bold = true))
         // kolik kroků zbývá (v telefonu není vidět levý seznam kroků)
         content.addView(ui.steps(wizard + 1, wizardSteps.size, steps(wizard + 1, wizardSteps.size)), ui.lp(top = 8))
@@ -701,7 +701,56 @@ class MainActivity : Activity() {
         render()
     }
 
-    private fun add(v: View, top: Int = 12) = content.addView(v, ui.lp(top = top))
+    private fun add(v: View, top: Int = 12) = target().addView(v, ui.lp(top = top))
+
+    // ---- rozbalené skupiny jako odsazená karta (od 0.97.53, přání majitele: nepoznal, co je podmenu) ----
+
+    /** Otevřené karty podmenu (vnořené: Hra → Postavy, místa a pojmy); řádky přidané přes [add] jdou do poslední. */
+    private val nests = ArrayList<LinearLayout>()
+    /** Nadpis skupiny, kterou hráč právě rozbalil – její karta se plynule zjeví a stránka se posune na nadpis. */
+    private var justOpened: String? = null
+
+    private fun target(): LinearLayout = nests.lastOrNull() ?: content
+
+    /**
+     * Obsah rozbalené skupiny pod nadpisem [tag]: odsazená tmavší karta se žlutou čarou vlevo. Platí do dalšího
+     * nadpisu skupiny ([closeNests]) nebo konce stránky; [inner] = karta uvnitř karty.
+     */
+    private fun openNest(tag: String, inner: Boolean = false) {
+        if (!inner) closeNests()
+        val body = ui.vbox().apply { setPadding(ui.dp(12), ui.dp(2), 0, ui.dp(10)) }
+        val wrap = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            clipChildren = false; clipToPadding = false
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(android.graphics.Color.rgb(0x13, 0x16, 0x1C)); cornerRadius = ui.dp(12).toFloat()
+            }
+            addView(View(this@MainActivity).apply {
+                background = android.graphics.drawable.GradientDrawable().apply { setColor(Theme.ACCENT); cornerRadius = ui.dp(2).toFloat() }
+            }, LinearLayout.LayoutParams(ui.dp(3), LinearLayout.LayoutParams.MATCH_PARENT).apply { topMargin = ui.dp(8); bottomMargin = ui.dp(8) })
+            addView(body, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        target().addView(wrap, ui.lp(top = 4).apply { leftMargin = ui.dp(18) })
+        nests.add(body)
+        if (justOpened == tag) {
+            justOpened = null
+            wrap.alpha = 0f; wrap.translationY = -ui.dp(8).toFloat()
+            wrap.animate().alpha(1f).translationY(0f).setDuration(180).start()
+            // nadpis nahoru (s kouskem místa nad ním), ať je vidět, že obsah pod ním patří k němu
+            pageScroll?.post {
+                val sv = pageScroll ?: return@post
+                val head = content.findViewWithTag<View>(tag) ?: return@post
+                val r = android.graphics.Rect(); head.getDrawingRect(r)
+                try { (sv.getChildAt(0) as? android.view.ViewGroup)?.offsetDescendantRectToMyCoords(head, r) } catch (_: Exception) { return@post }
+                sv.smoothScrollTo(0, (r.top - ui.dp(16)).coerceAtLeast(0))
+            }
+        }
+    }
+
+    private fun closeNests() = nests.clear()
+
+    /** Rozbalit / sbalit: zapamatovat, který nadpis se právě otevřel (animace a posun na něj). */
+    private fun toggled(tag: String, opening: Boolean) { justOpened = if (opening) tag else null }
 
     private fun <V : View> tagged(v: V, tag: String): V { v.tag = tag; return v }
 
@@ -1506,8 +1555,9 @@ class MainActivity : Activity() {
                 }, "objcolors"), 8)
             }
         }
-        add(tagged(ui.settingRow(t("gp_list"), if (gameListOpen) "▲" else "▼") { gameListOpen = !gameListOpen; render(true) }, "gamelist"), 8)
+        add(tagged(ui.settingRow(t("gp_list"), if (gameListOpen) "▲" else "▼") { gameListOpen = !gameListOpen; toggled("gamelist", gameListOpen); render(true) }, "gamelist"), 8)
         if (!gameListOpen) return
+        openNest("gamelist", inner = true)
         add(ui.text(t("t_game_desc") + " " + t("t_game_deepl"), 14f, Theme.MUTED), 8)
         if (game.id == "all") {
             add(ui.text(String.format(t("gp_universal"), game.names.size, game.characters.size), 15f), 8)
@@ -1561,10 +1611,12 @@ class MainActivity : Activity() {
      */
     private fun group(id: String, title: String, top: Int = 8): Boolean {
         val open = id in openGroups
+        closeNests()
         add(tagged(ui.settingRow(title, if (open) "▲" else "▼") {
             if (!openGroups.remove(id)) openGroups.add(id)
-            render(true)
+            toggled("grp_$id", id in openGroups); render(true)
         }, "grp_$id"), top)
+        if (open) openNest("grp_$id")
         return open
     }
 
@@ -1582,9 +1634,9 @@ class MainActivity : Activity() {
         // Kvalita překladu (DeepL) hned pod jazykem překladu (od 0.97.28, dřív Nastavení → Experimentální)
         val dlOpen = lookOpen == LOOK_DEEPL
         add(tagged(ui.settingRow(t("wz_tr"), t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline") + if (dlOpen) "  ▲" else "  ▼") {
-            lookOpen = if (dlOpen) -1 else LOOK_DEEPL; render(true)
+            lookOpen = if (dlOpen) -1 else LOOK_DEEPL; toggled("lkdl", !dlOpen); render(true)
         }, "lkdl"), 8)
-        if (dlOpen) deeplSection().build(content)
+        if (dlOpen) { openNest("lkdl"); deeplSection().build(target()); closeNests() }
         val groups = listOf<Pair<String, () -> Unit>>(
             "lk_text" to { lookText() },
             "lk_bar" to { lookBar() },
@@ -1594,8 +1646,9 @@ class MainActivity : Activity() {
         )
         groups.forEachIndexed { i, (key, build) ->
             val open = lookOpen == i
-            add(tagged(ui.settingRow(t(key), if (open) "▲" else "▼") { lookOpen = if (open) -1 else i; render(true) }, "lk$i"), if (i == 0) 14 else 8)
-            if (open) build()
+            closeNests()
+            add(tagged(ui.settingRow(t(key), if (open) "▲" else "▼") { lookOpen = if (open) -1 else i; toggled("lk$i", !open); render(true) }, "lk$i"), if (i == 0) 14 else 8)
+            if (open) { openNest("lk$i"); build(); closeNests() }
         }
         add(tagged(ui.settingRow(t("l_reset"), "↺", Theme.MUTED) {
             Prefs.setTextSize(this, Prefs.DEFAULT_TEXT_SIZE); Prefs.setOpacity(this, 100); Prefs.setTextColorIndex(this, 0)
@@ -2117,9 +2170,9 @@ class MainActivity : Activity() {
             val mark = when (done) { true -> "✔  "; false -> "○  "; null -> "" }
             // šipka: zeleně hotovo, žlutě ještě udělat, šedě kapitola bez stavu (Hraní, Když něco nejde…)
             add(tagged(ui.settingRow(mark + t(key), if (open) "▲" else "▼", when (done) { true -> Theme.OK; false -> Theme.ACCENT; null -> Theme.MUTED }) {
-                helpOpen = if (open) -1 else i; render(true)
+                helpOpen = if (open) -1 else i; toggled("hc$i", !open); render(true)
             }, "hc$i"), if (i == 0) 16 else 8)
-            if (open) add(make(), 6)
+            if (open) { openNest("hc$i"); add(make(), 6); closeNests() }
         }
         add(tagged(ui.button(t("wz_again")) { wizard = 0; render() }, "wagain"), 20)
         add(ui.text("PlayLingo · ${BuildInfo.VERSION}", 13f, Theme.MUTED), 24)
@@ -2375,6 +2428,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.52"
-    const val VERSION_CODE = 149
+    const val VERSION = "verze 0.97.53"
+    const val VERSION_CODE = 150
 }

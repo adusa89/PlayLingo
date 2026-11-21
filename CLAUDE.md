@@ -732,6 +732,10 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   při zhasnutém displeji…“ – Wi-Fi 2,4 GHz je prostě zelený řádek „Síť: Wi-Fi 2,4 GHz“).
 - **Vysvětlení patří do Nápovědy** (kapitoly v `help()`), popis volby do **dialogu při jejím zapnutí**
   (`confirmOn` v MainActivity) – ne jako šedý text mezi řádky.
+- **Rozbalená skupina = odsazená karta (od 0.97.53, přání majitele):** obsah otevřené skupiny jde do tmavší odsazené karty se
+  žlutou čarou vlevo (`openNest` / `closeNests` v MainActivity; `add()` přidává do poslední otevřené karty, karta končí dalším nadpisem
+  skupiny nebo koncem stránky; vnořená „Postavy, místa a pojmy“ s `inner = true`). Po rozbalení (`toggled`) se karta plynule zjeví
+  a stránka se posune na nadpis. Novou rozbalovací skupinu dělej přes `group()` nebo stejně (`closeNests` před nadpisem, `openNest` po něm).
 - **Související volby do rozbalovacích skupin** po vzoru Nápovědy (`settingRow` s ▼/▲, barevná šipka) –
   majitel Nápovědu v tomhle stylu výslovně chválil. Akce jako „Nastavit oblasti“ jsou řádky ve stejném
   stylu (s „›“), ne velká žlutá tlačítka; velké žluté je jen hlavní akce stránky (Spustit, Spárovat).
