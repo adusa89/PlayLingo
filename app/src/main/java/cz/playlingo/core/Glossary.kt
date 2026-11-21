@@ -16,7 +16,10 @@ class Glossary(
     sentences: Map<String, String> = emptyMap(),
     /** postavy hry s rodem – po překladu podle nich [CzechGender] opraví tvary */
     val cast: Cast = Cast.EMPTY,
+    /** Výrazy z vlastního slovníku hráče – mají přednost i před jménem z profilu hry (od 0.97.54). */
+    userTerms: Collection<String> = emptyList(),
 ) {
+    private val userKeys = userTerms.map { it.trim().lowercase() }.toHashSet()
     private val nameList = names.map { it.trim() }.filter { it.length >= 2 }.distinct()
     private val termMap = terms.entries
         .map { it.key.trim().lowercase() to it.value.trim() }
@@ -52,7 +55,8 @@ class Glossary(
         val protectedText = r.replace(plain) { m ->
             val found = m.value
             // jméno zůstává, výraz se nahradí překladem
-            val out = termMap[found.lowercase()]?.takeIf { found !in nameList } ?: found
+            // vlastní slovník hráče přebije i jméno z profilu hry (chtěl ho přeložit jinak)
+            val out = termMap[found.lowercase()]?.takeIf { found !in nameList || found.lowercase() in userKeys } ?: found
             var idx = replacements.indexOf(out)
             if (idx < 0) { replacements.add(out); idx = replacements.size - 1 }
             "[${idx + 1}]"

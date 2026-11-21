@@ -1509,7 +1509,8 @@ class MainActivity : Activity() {
             }, "gameguess"), 8)
         }
         // rozsah čtení: jen titulky, nebo i texty hry z profilu (prompty v GTA…)
-        if (game.id != "all") add(tagged(ui.settingRow(t("gp_scope"), t(if (Prefs.gameTexts(this)) "gp_scope_all" else "gp_scope_subs")) {
+        // rozsah čtení mění něco jen u her, které mají úkol/pokyny nebo překlad menu (zatím GTA)
+        if (game.prompts || game.menuSpec != null) add(tagged(ui.settingRow(t("gp_scope"), t(if (Prefs.gameTexts(this)) "gp_scope_all" else "gp_scope_subs")) {
             Prefs.setGameTexts(this, !Prefs.gameTexts(this)); applyToService(); render(true)
         }, "gamescope"), 8)
         // úkol pod titulky (GTA): zapnout, písmo, poloha – jen s „Titulky a texty hry“ (od 0.97.45)
@@ -1521,8 +1522,10 @@ class MainActivity : Activity() {
             if (on) {
                 val sz = Prefs.objSize(this)
                 val sizes = listOf(0) + Prefs.TEXT_SIZES.toList()
-                add(tagged(ui.settingRow(t("obj_size"), if (sz == 0) t("qk_size_game") else sz.toString()) {
-                    choose(t("obj_size"), sizes.map { if (it == 0) t("qk_size_game") else it.toString() }, sizes.indexOf(sz).coerceAtLeast(0)) { i ->
+                // „podle hry“ jen když i titulky jdou podle hry, jinak „jako titulky“
+                val autoLabel = t(if (Prefs.matchSize(this)) "qk_size_game" else "obj_bg_same")
+                add(tagged(ui.settingRow(t("obj_size"), if (sz == 0) autoLabel else sz.toString()) {
+                    choose(t("obj_size"), sizes.map { if (it == 0) autoLabel else it.toString() }, sizes.indexOf(sz).coerceAtLeast(0)) { i ->
                         Prefs.setObjSize(this, sizes[i]); applyToService(); render(true)
                     }
                 }, "objsize"), 8)
@@ -1637,12 +1640,12 @@ class MainActivity : Activity() {
             lookOpen = if (dlOpen) -1 else LOOK_DEEPL; toggled("lkdl", !dlOpen); render(true)
         }, "lkdl"), 8)
         if (dlOpen) { openNest("lkdl"); deeplSection().build(target()); closeNests() }
+        // hra hned pod jazykem (od 0.97.54, přání majitele): profil hry je vidět dřív než obecné volby, které doplňuje
         val groups = listOf<Pair<String, () -> Unit>>(
+            "t_game" to { gameGroup() },
             "lk_text" to { lookText() },
             "lk_bar" to { lookBar() },
             "m_zones" to { lookZones() },
-            // hra (profil, odhad z titulků, postavy a jména) patří k titulkům, ne do Nastavení (od 0.97.15)
-            "t_game" to { gameGroup() },
         )
         groups.forEachIndexed { i, (key, build) ->
             val open = lookOpen == i
@@ -1703,7 +1706,9 @@ class MainActivity : Activity() {
                 }
             }, "origsize"), 6)
         }
-        add(tagged(ui.settingRow(t("l_speaker"), onOff(Prefs.coloredSpeaker(this))) {
+        // profil hry má barvy postav (GTA: Jason žlutě, Lucia modře) – je vidět, odkud barvy jsou
+        val profColors = Prefs.coloredSpeaker(this) && GameProfiles.of(Prefs.gameId(this)).colors.isNotEmpty()
+        add(tagged(ui.settingRow(t("l_speaker"), onOff(Prefs.coloredSpeaker(this)) + if (profColors) " · " + t("gp_mark") else "") {
             Prefs.setColoredSpeaker(this, !Prefs.coloredSpeaker(this)); applyToService(); render(true); showDemo()
         }, "speaker"), 6)
     }
@@ -1768,7 +1773,8 @@ class MainActivity : Activity() {
             if (Prefs.autoZone(this)) { Prefs.setAutoZone(this, false); applyToService(); render(true) }
             else confirmOn(t("z_auto"), t("z_auto_desc")) { Prefs.setAutoZone(this, true); applyToService(); render(true) }
         }, "zauto"), 6)
-        add(tagged(ui.settingRow(t("z_only_subs"), onOff(Prefs.onlySubtitles(this))) {
+        // s automatikou se čtou vždy jen titulky – volba by nic neměnila (od 0.97.54 schovaná)
+        if (!Prefs.autoZone(this)) add(tagged(ui.settingRow(t("z_only_subs"), onOff(Prefs.onlySubtitles(this))) {
             Prefs.setOnlySubtitles(this, !Prefs.onlySubtitles(this)); applyToService(); render(true)
         }, "onlysubs"), 6)
         add(tagged(ui.settingRow(t("z_calibrate"), "›") { startActivity(Intent(this, CalibrationActivity::class.java)) }, "calib"), 6)
@@ -1928,7 +1934,8 @@ class MainActivity : Activity() {
             }, "a11y"), 8)
             // tlačítko ovladače pro rychlou nabídku vzhledu při hře (QuickLook, jen Android TV)
             val qk = Prefs.quickKey(this)
-            add(tagged(ui.settingRow(t("qk_row"), if (qk == 0) t("qk_none") else QuickLook.keyName(qk), if (qk == 0) Theme.MUTED else Theme.ACCENT) {
+            // tlačítka chytá služba Usnadnění – bez ní volba nefunguje (od 0.97.54 schovaná)
+            if (a11yOn) add(tagged(ui.settingRow(t("qk_row"), if (qk == 0) t("qk_none") else QuickLook.keyName(qk), if (qk == 0) Theme.MUTED else Theme.ACCENT) {
                 learnQuickKey()
             }, "quickkey"), 8)
             // stav vlevo nahoře přes hru (StatusPanel): vypnuto (výchozí) / dynamicky / vždy
@@ -1938,7 +1945,8 @@ class MainActivity : Activity() {
                 choose(t("so_row"), modes, sm) { i -> Prefs.setStatusMode(this, i); render(true) }
             }, "statusov"), 8)
             val ovOn = Settings.canDrawOverlays(this)
-            add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
+            // „zobrazení přes jiné aplikace“ je jen záloha, když Usnadnění neběží
+            if (!a11yOn) add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
                 openOverlaySettings()
             }, "overlay"), 8)
         }
@@ -1949,7 +1957,8 @@ class MainActivity : Activity() {
     private fun settingsRead() {
         val q = Prefs.readQuality(this)
         val qKeys = listOf("auto", "std", "high")
-        add(tagged(ui.settingRow(t("s_quality"), t("q_$q")) {
+        // přesnost čtení = rozlišení obrazu z PlayStationu; Xbox ji nepoužívá
+        if (Prefs.console(this) == Console.PLAYSTATION) add(tagged(ui.settingRow(t("s_quality"), t("q_$q")) {
             choose(t("s_quality"), qKeys.map { t("q_$it") }, qKeys.indexOf(q)) { i ->
                 Prefs.setReadQuality(this, qKeys[i])
                 // jiné rozlišení obrazu z konzole = spojení je potřeba navázat znovu
@@ -2428,6 +2437,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.53"
-    const val VERSION_CODE = 150
+    const val VERSION = "verze 0.97.54"
+    const val VERSION_CODE = 151
 }

@@ -791,6 +791,13 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   Řádek konzole/televize OK = změna. Samostatný souhrnný řádek ani návody v textu tam už nejsou. Náhled obrazu
   je jen na stránce Konzole (tlačítko Spustit tam od 0.97.13 není – jen na Domů, telefon i Android TV) (s popiskem `pv_stale`, když obraz nechodí). „Zpět do hry (HDMI)“ jen na zařízení
   v televizi (`Prefs.isTv`); telefon jako čtečka má jen Pozastavit a Zastavit. Jednorázové volby na Domů nepatří.
+- **Profil hry vs. obecné volby (od 0.97.54, přání majitele):** skupina Hra je v Titulkách hned pod jazykem (před Písmem,
+  Pruhem a Oblastmi). Profil u běžných titulků nemění písmo, polohu, šířku ani oblast čtení; přebíjí jen: barvy postav (řádek
+  Barevná jména ukáže „· profil hry“, naučená barva z obrazu má přednost), překlad menu (vlastní místo vedle menu) a úkol (vlastní
+  volby). Vlastní slovník hráče přebije i jméno z profilu (`Glossary(userTerms)`, testy `GlossaryUserTest`).
+  **Řádky jen když dávají smysl:** „Jen titulky“ (oblasti) bez automatiky, Přesnost čtení jen PS5, Tlačítko vzhledu jen s Usnadněním,
+  Zobrazení přes jiné aplikace jen bez Usnadnění, Rozsah čtení jen u her s úkolem/menu (`prompts` / `menuSpec`), Písmo úkolu
+  „podle hry“ / „jako titulky“ podle `matchSize`.
 - **Titulky** (od 0.97.1, `subtitlesPage`): nahoře jazyk překladu (zkouška `13_nabidka_jazyk` na něj míří
   šipkou vpravo + OK), pod ním rozbalovací skupiny Písmo / Pruh s překladem / Oblasti titulků
   (`lookOpen`) a dole řádek Obnovit vzhled. Automatika oblastí ukáže popis v dialogu jen při zapnutí.

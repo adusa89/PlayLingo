@@ -13,6 +13,7 @@ internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
     "obj_pos_game" to ("na místě ve hře" to "na mieste v hre"),
     "pos_height" to ("Vlastní výška" to "Vlastná výška"),
     "orig_auto" to ("automaticky" to "automaticky"),
+    "gp_mark" to ("profil hry" to "profil hry"),
     "obj_pos_above" to ("těsně nad úkolem" to "tesne nad úlohou"),
     "obj_pos_bar" to ("nad pruhem s titulky" to "nad pruhom s titulkami"),
     "obj_bg" to ("Pozadí úkolu" to "Pozadie úlohy"),
@@ -42,6 +43,7 @@ internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "gp_mark" to "game profile",
         "obj_pos_above" to "just above the objective",
         "obj_pos_bar" to "above the subtitle bar",
         "obj_bg" to "Objective background",
@@ -74,6 +76,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "This is how the translation will look.",
     ),
     Lang.PL to mapOf(
+        "gp_mark" to "profil gry",
         "obj_pos_above" to "tuż nad zadaniem",
         "obj_pos_bar" to "nad paskiem z napisami",
         "obj_bg" to "Tło zadania",
@@ -106,6 +109,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Tak będzie wyglądać tłumaczenie napisów.",
     ),
     Lang.DE to mapOf(
+        "gp_mark" to "Spielprofil",
         "obj_pos_above" to "direkt über der Aufgabe",
         "obj_pos_bar" to "über dem Untertitelbalken",
         "obj_bg" to "Hintergrund der Aufgabe",
@@ -138,6 +142,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "So wird die Übersetzung aussehen.",
     ),
     Lang.HU to mapOf(
+        "gp_mark" to "játékprofil",
         "obj_pos_above" to "közvetlenül a feladat felett",
         "obj_pos_bar" to "a feliratsáv felett",
         "obj_bg" to "Feladat háttere",
@@ -170,6 +175,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Így fog kinézni a felirat fordítása.",
     ),
     Lang.UK to mapOf(
+        "gp_mark" to "профіль гри",
         "obj_pos_above" to "одразу над завданням",
         "obj_pos_bar" to "над смугою субтитрів",
         "obj_bg" to "Фон завдання",
@@ -202,6 +208,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Ось так виглядатиме переклад субтитрів.",
     ),
     Lang.ES to mapOf(
+        "gp_mark" to "perfil del juego",
         "obj_pos_above" to "justo encima del objetivo",
         "obj_pos_bar" to "encima de la barra de subtítulos",
         "obj_bg" to "Fondo del objetivo",
@@ -234,6 +241,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Así se verá la traducción de los subtítulos.",
     ),
     Lang.FR to mapOf(
+        "gp_mark" to "profil du jeu",
         "obj_pos_above" to "juste au-dessus de l’objectif",
         "obj_pos_bar" to "au-dessus de la barre des sous-titres",
         "obj_bg" to "Fond de l’objectif",
@@ -266,6 +274,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Voici à quoi ressemblera la traduction.",
     ),
     Lang.IT to mapOf(
+        "gp_mark" to "profilo del gioco",
         "obj_pos_above" to "appena sopra l’obiettivo",
         "obj_pos_bar" to "sopra la barra dei sottotitoli",
         "obj_bg" to "Sfondo dell’obiettivo",

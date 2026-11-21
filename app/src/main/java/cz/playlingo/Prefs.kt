@@ -259,7 +259,7 @@ object Prefs {
         val game = GameProfiles.of(gameId(c))
         val terms = LinkedHashMap(game.termsFor(lang))     // pojmy hry; vlastní slovník je přepíše
         for ((k, v) in user) if (Glossary.isSentence(k)) sentences[k] = v else terms[k] = v
-        return Glossary(game.names, terms, sentences, game.cast)
+        return Glossary(game.names, terms, sentences, game.cast, user.keys.filterNot { Glossary.isSentence(it) })
     }
 
     /** Otisk nastavení slovníku – když se změní, paměť překladů se smaže. */
