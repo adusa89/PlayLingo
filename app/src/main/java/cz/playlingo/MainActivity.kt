@@ -58,16 +58,18 @@ class MainActivity : Activity() {
         private const val REQ_PS5_CAMERA = 1004
         private const val REQ_PS5_IP_SCAN = 1005
         // kroky průvodce prvním spuštěním (pořadí = pořadí v menu průvodce; zkouška jím prochází naslepo)
-        private const val W_DEVICE = 0
-        private const val W_CONSOLE = 1
+        /** Jazyky: jazyk aplikace a z čeho se překládá – hned při prvním spuštění (přání majitele, 21. 11. 2026). */
+        private const val W_LANGS = 0
+        private const val W_DEVICE = 1
+        private const val W_CONSOLE = 2
         /** Licence a platby v aplikaci: zatím skryté, odkryjí se při vydání (true). */
         private const val SHOW_LICENSE = false
-        private const val W_TV = 2
-        private const val W_LANG = 3
+        private const val W_TV = 3
+        private const val W_LANG = 4
         /** Kvalita překladu: jen offline, nebo DeepL s vlastním klíčem (od 0.94). */
-        private const val W_TRANSLATE = 4
-        private const val W_PERM = 5
-        private const val W_PAIR = 6
+        private const val W_TRANSLATE = 5
+        private const val W_PERM = 6
+        private const val W_PAIR = 7
     }
 
     /**
@@ -236,7 +238,7 @@ class MainActivity : Activity() {
                 Prefs.setWizardDone(this, true); wizard = -1; section = it; render(); return
             }
         }
-        // Zkouška rozložení průvodce: rovnou na daný krok (0 = Zařízení).
+        // Zkouška rozložení průvodce: rovnou na daný krok (0 = Jazyky, 1 = Zařízení).
         if (debuggable && i?.hasExtra("wizard") == true) {
             wizard = i.getIntExtra("wizard", 0).coerceIn(0, wizardSteps.size - 1); render(); return
         }
@@ -522,10 +524,11 @@ class MainActivity : Activity() {
     // ======================= PRŮVODCE PRVNÍM SPUŠTĚNÍM =======================
 
     /**
-     * Názvy kroků průvodce: zařízení, konzole, televize, jazyk překladu, povolení pruhu, spárování
-     * konzole, hotovo (indexy W_…). Jednorázové volby jdou později změnit v Nastavení.
+     * Názvy kroků průvodce: jazyky (aplikace a titulků), zařízení, konzole, televize, jazyk překladu,
+     * lepší překlad, povolení pruhu, spárování konzole, hotovo (indexy W_…). Jednorázové volby jdou
+     * později změnit v Nastavení.
      */
-    private val wizardSteps = listOf("wz_dev", "c_console", "wz_tv", "wz_s2", "wz_tr_step", "wz_s1", "wz_s3", "wz_s4")
+    private val wizardSteps = listOf("wz_langs", "wz_dev", "c_console", "wz_tv", "wz_s2", "wz_tr_step", "wz_s1", "wz_s3", "wz_s4")
 
     /** Volba v průvodci: řádek s názvem a popisem; vybraná je zlatá a s fajfkou. */
     private fun option(title: String, desc: String?, selected: Boolean, tag: String, onPick: () -> Unit) {
@@ -571,8 +574,23 @@ class MainActivity : Activity() {
         val lang = Prefs.lang(this)
         var nextLabel = t("wz_next")
         when (wizard) {
-            W_DEVICE -> {
+            // Jazyky: jazyk aplikace (texty se hned přepnou) a z čeho se překládá (jazyk titulků ve hře)
+            W_LANGS -> {
                 add(ui.text(t("wz_intro"), 17f, Theme.MUTED), 12)
+                val uiLang = Prefs.uiLang(this)
+                add(tagged(ui.settingRow(t("l_ui_lang"), uiLang.label) {
+                    val all = cz.playlingo.core.Lang.values().toList()
+                    choose(t("l_ui_lang"), all.map { it.label }, all.indexOf(uiLang)) { i ->
+                        Prefs.setUiLang(this, all[i])
+                        // jazyk překladu, který hráč ještě nezvolil, jde s jazykem aplikace → i dvojice jazyků
+                        OfflineTranslator.source = Prefs.sourceLang(this)
+                        applyToService(); buildShell(); render()
+                        window.decorView.findViewWithTag<View>("wuilang")?.requestFocus()
+                    }
+                }, "wuilang"), 18)
+                sourceRow("wsrc", 8)
+            }
+            W_DEVICE -> {
                 add(ui.text(t("wz_dev_q"), 20f, Theme.TEXT, bold = true), 18)
                 val reader = Prefs.readerDevice(this)
                 option(t("dev_tv"), t("dev_tv_d"), !reader, "wdevtv") { setReader(false); render(true) }
@@ -617,7 +635,7 @@ class MainActivity : Activity() {
                     }
                 }, "wlang"), 16)
                 add(ui.card().apply {
-                    addView(ui.checkRow(ok, false, t("chk_model") + " (${lang.label})", t("ok"), null, null))
+                    addView(ui.checkRow(ok, false, t("chk_model") + " (${Prefs.langPair(this@MainActivity)})", t("ok"), null, null))
                     if (!ok) addView(ui.text(busyText ?: t("prep_model"), 15f, Theme.WARN), ui.lp(top = 6))
                     // stahování jazykového balíčku (asi 30 MB): pruh běhá, dokud ML Kit neskončí
                     if (!ok && OfflineTranslator.isDownloading(lang)) addView(ui.progress(null), ui.lp(h = ui.dp(10), top = 8))
@@ -926,9 +944,9 @@ class MainActivity : Activity() {
                 TranslatorService.videoSize.takeIf { it.isNotEmpty() }?.let { " · $it" }.orEmpty(), "hspeed")
         }
         // překlad: jazyk, offline / DeepL, chybějící balíček
-        val tl = Prefs.lang(this)
-        if (!modelOk) row(Theme.WARN, t("w_model").replace("%s", tl.label), "hmodel", t("download"), { downloadModel() })
-        else row(Theme.OK, tl.label + " · " + t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline"), "hmodel", onClick = { openQuality() })
+        val pair = Prefs.langPair(this)
+        if (!modelOk) row(Theme.WARN, t("w_model").replace("%s", pair), "hmodel", t("download"), { downloadModel() })
+        else row(Theme.OK, pair + " · " + t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline"), "hmodel", onClick = { openQuality() })
         // hra: vybraný profil zeleně; titulky ukazují na jinou hru → oranžově s Přepnout (GameGuess, nic se nepřepíná samo).
         // S univerzálním profilem a bez odhadu řádek není.
         val game = GameProfiles.of(Prefs.gameId(this))
@@ -1165,7 +1183,7 @@ class MainActivity : Activity() {
         val name = accName()
         val key = when (step) { 0 -> "pg_0"; 1 -> "pg_2"; 2 -> "pa_1"; 3 -> "pa_2"; 4 -> "pa_3"; 6 -> "pg_1"; 7 -> "pg_acc"; else -> "pg_4" }
         val pos = when (step) { 0 -> 1; 1 -> 2; 7 -> 3; 2, 3, 4 -> 4; 6 -> 5; else -> 6 }
-        // kolikátý krok spárování: v průvodci jen malý podtitul (nahoře už je „Krok 7 z 8“), jinde pruh na dílky
+        // kolikátý krok spárování: v průvodci jen malý podtitul (nahoře už je „Krok 8 z 9“), jinde pruh na dílky
         if (wizard == W_PAIR) add(tagged(ui.text(t("pg_sub").replace("%1", pos.toString()).replace("%2", "6"), 14f, Theme.MUTED), "psub"), 10)
         else add(ui.steps(pos, 6, steps(pos, 6)), 16)
         add(ui.text(t("${key}_title"), 22f, Theme.TEXT, bold = true), 2)
@@ -1463,6 +1481,23 @@ class MainActivity : Activity() {
 
     // ======================= VZHLED =======================
 
+    /**
+     * Řádek „Překládat z“ – jazyk titulků ve hře (průvodce krok Jazyky a stránka Titulky pod jazykem překladu).
+     * Nabízí jen jazyky v latince, které umí offline překladač i DeepL ([cz.playlingo.core.SourceLang]).
+     */
+    private fun sourceRow(tag: String, top: Int) {
+        val cur = Prefs.sourceLang(this)
+        add(tagged(ui.settingRow(t("l_src_lang"), cur.label) {
+            val all = cz.playlingo.core.SourceLang.offered(Prefs.lang(this))
+            choose(t("l_src_lang"), all.map { it.label }, all.indexOf(cur)) { i ->
+                Prefs.setSourceLang(this, all[i])
+                // jiný jazyk titulků = jiný jazykový balíček (stáhne se jednou)
+                OfflineTranslator.ensureModel(Prefs.lang(this)) { runOnUiThread { if (wizard >= 0 || section == Section.HOME) render(true) } }
+                applyToService(); render(true)
+            }
+        }, tag), top)
+    }
+
     /** Řádek s výběrem jazyka překladu (stránka Titulky; v průvodci krok Jazyk překladu). */
     private fun langRow(tag: String, top: Int) {
         add(tagged(ui.settingRow(t("l_lang"), Prefs.lang(this).label) {
@@ -1638,6 +1673,7 @@ class MainActivity : Activity() {
      */
     private fun subtitlesPage() {
         langRow("lang", 16)
+        sourceRow("srclang", 8)
         // Kvalita překladu (DeepL) hned pod jazykem překladu (od 0.97.28, dřív Nastavení → Experimentální)
         val dlOpen = lookOpen == LOOK_DEEPL
         add(tagged(ui.settingRow(t("wz_tr"), t(if (DeeplTranslator.active(this)) "dl_mode_on" else "h_offline") + if (dlOpen) "  ▲" else "  ▼") {

@@ -405,11 +405,19 @@ object TextLogic {
         return if (alone && objectiveTop >= 0 && kotlin.math.abs(last.top - objectiveTop) <= 0.7f * h) last else null
     }
 
-    fun looksForeign(text: String): Boolean {
+    /**
+     * Text v jiném jazyce, než ze kterého se překládá (hra už je přeložená, nabídka konzole, šum)?
+     * U angličtiny stačí dvě písmena s diakritikou. U jiného jazyka titulků ([source]) diakritika
+     * patří k věci – za cizí se bere jen jiné písmo než latinka (azbuka, asijská písma…).
+     */
+    fun looksForeign(text: String, source: SourceLang = SourceLang.EN): Boolean {
         var n = 0
-        for (c in text) if (c.isLetter() && c.code > 0x7F) { n++; if (n >= 2) return true }
+        for (c in text) if (c.isLetter() && (if (source.english) c.code > 0x7F else !isLatin(c))) { n++; if (n >= 2) return true }
         return false
     }
+
+    private fun isLatin(c: Char): Boolean =
+        try { Character.UnicodeScript.of(c.code) == Character.UnicodeScript.LATIN } catch (_: Exception) { true }
 
     private val WORD = Regex("[\\p{L}\\p{N}]+(?:['’][\\p{L}]+)?")
 
@@ -480,7 +488,7 @@ object TextLogic {
      * Text psaný jen VELKÝMI písmeny převede na běžnou větu ("WE HAVE TO GO!" → "We have to go!").
      * Překladač si s velkými písmeny neporadí (bere je jako zkratky a jména). Jiný text nechá být.
      */
-    fun normalizeCase(text: String): String {
+    fun normalizeCase(text: String, english: Boolean = true): String {
         val letters = text.count { it.isLetter() }
         if (letters < 4 || text.any { it.isLowerCase() }) return text
         val sb = StringBuilder(text.lowercase())
@@ -491,7 +499,8 @@ object TextLogic {
                 if (start) { sb[i] = c.uppercaseChar(); start = false }
             } else if (c == '.' || c == '!' || c == '?' || c == '…') start = true
         }
-        return sb.toString().replace(LOWER_I, "I")
+        // samotné „i“ = anglické „I“ (jen u angličtiny – v italštině, polštině… je to jiné slovo)
+        return if (english) sb.toString().replace(LOWER_I, "I") else sb.toString()
     }
 
     /** Jméno psané velkými písmeny ukáže jako běžné jméno ("MARY-BETH" → "Mary-Beth"). */

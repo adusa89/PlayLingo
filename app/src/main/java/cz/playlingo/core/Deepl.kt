@@ -112,10 +112,10 @@ object Deepl {
     /**
      * Tělo POST /v2/translate. `formality=prefer_less` = tykání tam, kde ho DeepL umí nastavit
      * (němčina, francouzština, italština, španělština, polština); u ostatních jazyků ho DeepL
-     * tiše ignoruje (varianta „prefer_“ nikdy neskončí chybou).
+     * tiše ignoruje (varianta „prefer_“ nikdy neskončí chybou). [source] = jazyk titulků ([SourceLang.deepl]).
      */
-    fun requestJson(texts: List<String>, target: String): String =
-        "{\"text\":[" + texts.joinToString(",") { jsonStr(it) } + "],\"source_lang\":\"EN\",\"target_lang\":" + jsonStr(target) +
+    fun requestJson(texts: List<String>, target: String, source: String = "EN"): String =
+        "{\"text\":[" + texts.joinToString(",") { jsonStr(it) } + "],\"source_lang\":" + jsonStr(source) + ",\"target_lang\":" + jsonStr(target) +
             ",\"formality\":\"prefer_less\",\"tag_handling\":\"xml\",\"ignore_tags\":[\"$KEEP_TAG\"],\"preserve_formatting\":true}"
 
     /** Kolik znaků se účtuje (DeepL počítá text bez značek). */

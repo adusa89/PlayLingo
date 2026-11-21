@@ -42,14 +42,15 @@ class Glossary(
      * Doladění hotového překladu jedné části titulku podle postav (rod mluvčího, osloveného
      * a postavy v textu). [source] je anglický originál části, [speaker] jméno mluvčího z titulku.
      */
-    fun genders(lang: Lang, source: String, translated: String, speaker: String?): String =
-        if (lang == Lang.CS) CzechGender.fix(cast, source, translated, speaker) else translated
+    fun genders(lang: Lang, source: String, translated: String, speaker: String?, english: Boolean = true): String =
+        // originál v jiném jazyce než angličtině se nečte (oslovení, she/her) – zůstane mluvčí a jméno v překladu
+        if (lang == Lang.CS) CzechGender.fix(cast, if (english) source else "", translated, speaker) else translated
 
     /** Ručně zadaný překlad celé věty, pokud existuje. */
     fun sentence(text: String): String? = sentenceMap[TextLogic.simplify(text)]
 
-    fun prepare(text: String): OfflinePrep.Prepared {
-        val plain = OfflinePrep.standardize(text)
+    fun prepare(text: String, english: Boolean = true): OfflinePrep.Prepared {
+        val plain = if (english) OfflinePrep.standardize(text) else text
         val r = rx ?: return OfflinePrep.Prepared(plain, plain, emptyList())
         val replacements = ArrayList<String>()
         val protectedText = r.replace(plain) { m ->

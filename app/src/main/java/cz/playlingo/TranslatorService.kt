@@ -245,6 +245,8 @@ class TranslatorService : Service() {
 
     /** Slovník: jména podle hry, předpřipravené hlášky a vlastní slovník uživatele. */
     @Volatile private var glossary: Glossary? = null
+    /** Z čeho se překládá (volba „Překládat z“, výchozí angličtina). */
+    @Volatile private var source = cz.playlingo.core.SourceLang.EN
     /** Hlášky a menu podle profilu hry (přeskočí se při čtení). */
     @Volatile private var screen: cz.playlingo.core.GameScreen = cz.playlingo.core.GameScreen.EMPTY
     /** Profil hry píše pod repliky pokyny pro hráče (GTA) – poslední krátký řádek se označí jako pokyn. */
@@ -421,6 +423,7 @@ class TranslatorService : Service() {
         if (autoFind != wasAuto) autoZone.reset()
         if (autoFind) layout = layout.copy(read = autoZone.current)
         glossary = Prefs.glossary(this)
+        source = Prefs.sourceLang(this); OfflineTranslator.source = source
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
         prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
         // překlad menu hry jen se zapnutou volbou (od 0.97.57 výchozí vypnuto – majitel ho nechce)
@@ -884,7 +887,7 @@ class TranslatorService : Service() {
 
         // V oblasti je text v jiném jazyce než v angličtině (česká nabídka konzole, hra už je přeložená):
         // to není anglický titulek ze hry – nepřekládá se nic, ani anglické nápisy vedle.
-        val foreignScreen = (onlySubtitles || autoFind) && TextLogic.looksForeign(result.text)
+        val foreignScreen = (onlySubtitles || autoFind) && TextLogic.looksForeign(result.text, source)
         val picked = if (foreignScreen) Picked("", 0) else TextLogic.assemble(
             blocks,
             minLineHeight = (capH * 0.013f).toInt(),
@@ -908,7 +911,7 @@ class TranslatorService : Service() {
         })
 
         // text, který není anglicky (hra už je v jiném jazyce, nebo je to šum), se nepřekládá
-        if (picked.text.isNotEmpty() && TextLogic.looksForeign(picked.text)) {
+        if (picked.text.isNotEmpty() && TextLogic.looksForeign(picked.text, source)) {
             if (ticksLogged++ < 400) tp("SKIP|" + picked.text.replace('\n', ' ').take(40))
             return
         }
@@ -941,7 +944,7 @@ class TranslatorService : Service() {
                 // překlad doběhl až po novém začátku (pauza, změna jazyka, jiná oblast) → neukazuje se
                 if (!tracker.confirmShown(action.text, token)) return
                 // pokus DeepL (výchozí vypnuto): řádek, který už DeepL překládal, se vezme rovnou z jeho paměti
-                val deeplJob = deeplKey?.let { DeeplTranslator.plan(it, lang, action.text, glossary) }
+                val deeplJob = deeplKey?.let { DeeplTranslator.plan(it, lang, action.text, glossary, source) }
                 val fromDeepl = deeplJob?.let { DeeplTranslator.cached(it) }
                 val segs = if (deeplJob != null && fromDeepl != null) {
                     DeeplTranslator.stats.fromCache(); tp(cz.playlingo.core.Deepl.logLine(0, "cache", 0))
@@ -1067,7 +1070,7 @@ class TranslatorService : Service() {
                 scope.launch {
                     val offline = translateSegments(ch.text) ?: return@launch
                     // DeepL jako u titulků (paměť, nejvýš 2,5 s), jinak offline
-                    val segs = deeplKey?.let { DeeplTranslator.plan(it, lang, ch.text, glossary) }?.let { job ->
+                    val segs = deeplKey?.let { DeeplTranslator.plan(it, lang, ch.text, glossary, source) }?.let { job ->
                         val texts = DeeplTranslator.cached(job) ?: if (DeeplTranslator.tryStart())
                             withTimeoutOrNull(cz.playlingo.core.Deepl.WAIT_MS) { DeeplTranslator.fetch(job) }?.texts else null
                         texts?.let { DeeplTranslator.merge(offline, job, it) }
@@ -1159,13 +1162,15 @@ class TranslatorService : Service() {
     /** Přeloží text po částech; jména mluvčích se nepřekládají. */
     private suspend fun translateSegments(text: String): List<Segment>? {
         val l = lang   // jazyk se může během překladu změnit – celý text se překládá do jednoho
+        val en = source.english
         val out = ArrayList<Segment>()
         val segs = TextLogic.segments(text).let { if (prompts) TextLogic.markPrompt(it) else it }
         for (s in segs) {
-            val body = TextLogic.normalizeCase(s.body)
-            val raw = QuickWords.lookup(l.code, body) ?: translate(l, TextLogic.forTranslator(body)) ?: return null
+            val body = TextLogic.normalizeCase(s.body, en)
+            // rychlá slovíčka jsou anglická – u jiného jazyka titulků jde všechno překladači
+            val raw = (if (en) QuickWords.lookup(l.code, body) else null) ?: translate(l, TextLogic.forTranslator(body)) ?: return null
             // rod postav (mluvčí, oslovený) – až po paměti překladů, ta je jen podle textu
-            val tr = glossary?.genders(l, body, raw, s.speaker) ?: raw
+            val tr = glossary?.genders(l, body, raw, s.speaker, en) ?: raw
             out.add(Segment(s.speaker?.let { TextLogic.normalizeName(it) }, TextLogic.finishTranslation(body, tr), s.choice, s.prompt))
         }
         return out
@@ -1308,7 +1313,8 @@ class TranslatorService : Service() {
 
     private fun publishDebug(ov: SubtitleOverlay) {
         val secs = max(1L, (SystemClock.uptimeMillis() - statsStart) / 1000)
-        val mode = if (OfflineTranslator.isReady(lang)) "offline ${lang.code}" else "offline ${lang.code} – model se stahuje"
+        val pair = (if (source.english) "" else source.code + "→") + lang.code
+        val mode = if (OfflineTranslator.isReady(lang)) "offline $pair" else "offline $pair – model se stahuje"
         val r = reader
         val src = if (demo) "ukázka" else (if (xbox) "Xbox " else "PS5 ") + linkState + (linkReason?.let { " ($it)" } ?: "")
         val ecoInfo = if (perf.eco) " · úsporný režim" else ""
