@@ -89,6 +89,21 @@ class OknoHry(nazev: String) {
         return nalezeno
     }
 
+    /** Okno je otevřené, ale minimalizované (pak se z něj nedá číst). */
+    fun minimalizovane(): Boolean {
+        val h = hwnd?.takeIf { U32.I.IsWindow(it) } ?: najdi().also { hwnd = it } ?: return false
+        return U32.I.IsIconic(h)
+    }
+
+    /** Je okno otevřené (i minimalizované)? */
+    fun existuje(): Boolean = (hwnd?.takeIf { U32.I.IsWindow(it) } ?: najdi().also { hwnd = it }) != null
+
+    /** Minimalizované okno vrátí na obrazovku, bez převzetí zaměření (SW_SHOWNOACTIVATE). */
+    fun obnov() {
+        val h = hwnd?.takeIf { U32.I.IsWindow(it) } ?: najdi().also { hwnd = it } ?: return
+        if (U32.I.IsIconic(h)) User32.INSTANCE.ShowWindow(h, 4)
+    }
+
     /** Vnitřek okna hry (bez rámečku a titulku) na obrazovce; null = okno není nebo je minimalizované. */
     fun oblast(): Obdelnik? {
         val h = hwnd?.takeIf { U32.I.IsWindow(it) } ?: najdi().also { hwnd = it } ?: return null

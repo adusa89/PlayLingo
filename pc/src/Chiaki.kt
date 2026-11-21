@@ -16,18 +16,28 @@ import java.util.zip.ZipInputStream
 /**
  * chiaki-ng – program pro Remote Play, ve kterém se na počítači hraje. PlayLingo ho obsluhuje
  * samo: stáhne přenosnou verzi z GitHubu (do složky nástrojů, nic se neinstaluje), najde PS5
- * v síti, probudí ji a spustí hru rovnou přes celou obrazovku (`chiaki stream <konzole> <adresa>
- * --fullscreen --exit-app-on-stream-exit`). Hráč tak vidí jen hru s pruhem PlayLinga.
+ * v síti, probudí ji a spustí hru rovnou přes celou obrazovku (`chiaki --exit-app-on-stream-exit
+ * --fullscreen stream <konzole> <adresa>`). Hráč tak vidí jen hru s pruhem PlayLinga.
  *
  * Spárování s PS5 dělá PlayLingo samo ([Registrace], průvodce v `Parovani.kt`) a výsledek zapíše
  * tam, kam si ho ukládá chiaki-ng: do registru Windows (`HKCU\Software\Chiaki\Chiaki\registered_hosts`,
  * [uloz]). Odtud ho chiaki-ng při `chiaki stream` vezme a PlayLingo odtud bere jméno konzole a číslo
  * pro probuzení. Klíče z registru se nikam nevypisují.
+ *
+ * **Čtečka pro TV** (Použití = čtečka, `CteckaTv.kt`) má v chiaki-ng vlastní profil [PROFIL_CTECKY]
+ * (`--profile`, registr `HKCU\Software\Chiaki\Chiaki-playlingo`): konzole spárovaná účtem pro PlayLingo
+ * tak nepřepíše spárování herním účtem pro hraní na PC a ztlumený zvuk ([pripravProfil]) neplatí pro
+ * hráčovo vlastní nastavení chiaki-ng.
  */
 object Chiaki {
     val slozka = File(Nastroje.slozka, "chiaki-ng")
     private const val REPO = "streetpea/chiaki-ng"
     private const val REG = "Software\\Chiaki\\Chiaki"
+    /** Profil chiaki-ng pro čtečku pro TV (vlastní spárované konzole a nastavení). */
+    const val PROFIL_CTECKY = "playlingo"
+
+    /** Klíč nastavení profilu v registru (Qt: aplikace „Chiaki-<profil>“); null = výchozí profil chiaki-ng. */
+    private fun reg(profil: String?) = if (profil.isNullOrEmpty()) REG else "$REG-$profil"
 
     /** chiaki.exe – stažený do složky nástrojů, nebo nainstalovaný. */
     fun exe(): File? {
@@ -121,8 +131,8 @@ object Chiaki {
 
     data class Konzole(val jmeno: String, val probuzeni: ULong?)
 
-    fun konzole(): List<Konzole> = runCatching {
-        val k = "$REG\\registered_hosts"
+    fun konzole(profil: String? = null): List<Konzole> = runCatching {
+        val k = "${reg(profil)}\\registered_hosts"
         if (!Advapi32Util.registryKeyExists(WinReg.HKEY_CURRENT_USER, k)) return emptyList()
         Advapi32Util.registryGetKeys(WinReg.HKEY_CURRENT_USER, k).sortedBy { it.toIntOrNull() ?: 0 }.mapNotNull { i ->
             val h = "$k\\$i"
@@ -204,11 +214,88 @@ object Chiaki {
 
     // ---- spuštění ----
 
-    /** Hra rovnou přes celou obrazovku; chiaki-ng se po konci hraní sám zavře. */
-    fun hraj(exe: File, konzole: String, adresa: String): Process =
-        ProcessBuilder(exe.path, "stream", konzole, adresa, "--fullscreen", "--exit-app-on-stream-exit")
+    /**
+     * Hra v chiaki-ng; chiaki-ng se po konci spojení sám zavře. [celaObrazovka] = přes celou obrazovku
+     * (hraní na PC); bez ní okno (čtečka pro TV – obraz se jen čte, okno může být za jinými).
+     * [profil] = profil chiaki-ng (spárované konzole a nastavení zvlášť).
+     *
+     * Volby musí být před „stream“: chiaki-ng bere všechno za prvním slovem bez pomlček jako slova
+     * příkazu (`ParseAsPositionalArguments` v `gui/src/main.cpp`) a adresa konzole je poslední slovo.
+     */
+    fun hraj(exe: File, konzole: String, adresa: String, profil: String? = null, celaObrazovka: Boolean = true): Process {
+        val cmd = mutableListOf(exe.path)
+        if (!profil.isNullOrEmpty()) { cmd += "--profile"; cmd += profil }
+        cmd += "--exit-app-on-stream-exit"
+        if (celaObrazovka) cmd += "--fullscreen"
+        cmd += listOf("stream", konzole, adresa)
+        return ProcessBuilder(cmd)
             .directory(exe.parentFile).redirectErrorStream(true)
             .redirectOutput(File(Nastroje.slozka, "chiaki-vystup.txt")).start()
+    }
+
+    // ---- profil čtečky pro TV ----
+
+    /** Co se z hráčova nastavení chiaki-ng do profilu čtečky nepřebírá (okno, zvuk, účet PSN). */
+    private val NEKOPIROVAT = setOf(
+        "current_profile", "geometry", "stream_geometry", "window_type", "audio_volume",
+        "audio_out_device", "audio_in_device", "auto_connect_mac",
+    )
+
+    /**
+     * Profil chiaki-ng pro čtečku pro TV. Poprvé převezme hráčovo nastavení obrazu (vykreslování,
+     * dekodér, rozlišení – co na tomto PC funguje), ne okno, zvuk ani přihlášení PSN; okno ve velikosti
+     * obrazu („Selected Resolution“). Pokaždé nastaví hlasitost 0: hra zní z TV a chiaki-ng s nulovou
+     * hlasitostí zvuk vůbec nepouští (`StreamSession::PushAudioFrame`). Hráčův výchozí profil se nemění.
+     */
+    fun pripravProfil(profil: String = PROFIL_CTECKY) {
+        val hk = WinReg.HKEY_CURRENT_USER
+        val cil = "${reg(profil)}\\settings"
+        if (!Advapi32Util.registryKeyExists(hk, cil)) {
+            Advapi32Util.registryCreateKey(hk, REG)
+            Advapi32Util.registryCreateKey(hk, reg(profil))
+            Advapi32Util.registryCreateKey(hk, cil)
+            val zdroj = "$REG\\settings"
+            if (Advapi32Util.registryKeyExists(hk, zdroj)) {
+                for ((n, v) in Advapi32Util.registryGetValues(hk, zdroj)) {
+                    if (n in NEKOPIROVAT || n.startsWith("psn")) continue
+                    runCatching {
+                        when (v) {
+                            is String -> Advapi32Util.registrySetStringValue(hk, cil, n, v)
+                            is Int -> Advapi32Util.registrySetIntValue(hk, cil, n, v)
+                            is Long -> Advapi32Util.registrySetLongValue(hk, cil, n, v)
+                            is ByteArray -> Advapi32Util.registrySetBinaryValue(hk, cil, n, v)
+                        }
+                    }
+                }
+            }
+            Advapi32Util.registrySetStringValue(hk, cil, "window_type", "Selected Resolution")
+        }
+        Advapi32Util.registrySetIntValue(hk, cil, "audio_volume", 0)
+    }
+
+    /**
+     * Profil, se kterým se chiaki-ng otevře příště (`settings/current_profile`). chiaki-ng spuštěný
+     * s `--profile` si ho přepíše natrvalo – PlayLingo ho po spuštění vrátí ([obnovProfil]), ať hráčovo
+     * chiaki-ng neotevírá profil čtečky. null = žádný (výchozí profil).
+     */
+    fun aktualniProfil(): String? = runCatching {
+        val k = "$REG\\settings"
+        val hk = WinReg.HKEY_CURRENT_USER
+        if (!Advapi32Util.registryKeyExists(hk, k) || !Advapi32Util.registryValueExists(hk, k, "current_profile")) null
+        else Advapi32Util.registryGetStringValue(hk, k, "current_profile")
+    }.getOrNull()
+
+    fun obnovProfil(puvodni: String?) {
+        runCatching {
+            val k = "$REG\\settings"
+            val hk = WinReg.HKEY_CURRENT_USER
+            if (!Advapi32Util.registryKeyExists(hk, k)) return
+            val ted = if (Advapi32Util.registryValueExists(hk, k, "current_profile")) Advapi32Util.registryGetStringValue(hk, k, "current_profile") else null
+            if (ted == puvodni) return
+            if (puvodni == null) Advapi32Util.registryDeleteValue(hk, k, "current_profile")
+            else Advapi32Util.registrySetStringValue(hk, k, "current_profile", puvodni)
+        }
+    }
 
     /** Běží chiaki-ng? Při zavření by si přepsal seznam konzolí tím, co měl v paměti. */
     fun bezi(): List<ProcessHandle> = ProcessHandle.allProcesses().filter { p ->
@@ -218,14 +305,14 @@ object Chiaki {
     // ---- zápis spárované konzole (tvar jako QSettings v chiaki-ng, `RegisteredHost::SaveToSettings`) ----
 
     /**
-     * Uloží spárovanou konzoli mezi `registered_hosts` chiaki-ng. Stejná konzole (podle MAC) se
+     * Uloží spárovanou konzoli mezi `registered_hosts` chiaki-ng (profilu [profil], null = výchozí). Stejná konzole (podle MAC) se
      * přepíše, jinak se přidá na konec. Qt ukládá pole jako podklíče 1…N a hodnotu `size`, čísla
      * jako REG_DWORD, text jako REG_SZ a bajty jako text „@ByteArray(…)“ (Latin-1) v UTF-16 –
      * s nulami uvnitř jako REG_BINARY.
      */
-    fun uloz(k: Registrace.Konzole) {
+    fun uloz(k: Registrace.Konzole, profil: String? = null) {
         val hk = WinReg.HKEY_CURRENT_USER
-        val pole = "$REG\\registered_hosts"
+        val pole = "${reg(profil)}\\registered_hosts"
         if (!Advapi32Util.registryKeyExists(hk, pole)) Advapi32Util.registryCreateKey(hk, pole)
         val indexy = Advapi32Util.registryGetKeys(hk, pole).mapNotNull { it.toIntOrNull() }
         val stejny = indexy.firstOrNull { i -> bajty(hodnota("$pole\\$i", "server_mac"))?.contentEquals(k.mac) == true }

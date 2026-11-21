@@ -33,6 +33,22 @@ class Nastaveni(private val soubor: File = File(Nastroje.slozka, "aplikace.prope
     val ukazka: Boolean get() = zdroj == "ukazka"
     /** Jméno spárované konzole v chiaki-ng (prázdné = první). */
     var konzole: String get() = text("konzole", ""); set(v) = nastav("konzole", v)
+    /**
+     * Použití: pc = hraje se na PC v chiaki-ng herním účtem (dosavadní, výchozí), ctecka = čtečka pro TV
+     * LG / Samsung (hra běží na PS5 v TV, PC se připojí účtem pro PlayLingo a posílá překlad do TV).
+     */
+    var pouziti: String get() = text("pouziti", "pc").let { v -> if (POUZITI.any { it.first == v }) v else "pc" }; set(v) = nastav("pouziti", v)
+    val ctecka: Boolean get() = pouziti == "ctecka"
+    /** Konzole čtečky pro TV (spárovaná zvlášť v profilu chiaki-ng [Chiaki.PROFIL_CTECKY]); prázdné = první. */
+    var konzoleCtecka: String get() = text("konzoleCtecka", ""); set(v) = nastav("konzoleCtecka", v)
+    /** Účet pro PlayLingo (druhý uživatel na PS5) pro čtečku pro TV – jen číslo a jméno, jako [ucetId]. */
+    var ucetCteckaId: String get() = text("ucetCteckaId", ""); set(v) = nastav("ucetCteckaId", v)
+    var ucetCteckaJmeno: String get() = text("ucetCteckaJmeno", ""); set(v) = nastav("ucetCteckaJmeno", v)
+    /** Kterým účtem byla konzole spárovaná ([rezim] pc / ctecka) – pozná se tak spárování herním účtem. */
+    fun ucetParovani(rezim: String, konzole: String): String = text("parovaniUcet.$rezim.$konzole", "")
+    fun ucetParovani(rezim: String, konzole: String, ucet: String) = nastav("parovaniUcet.$rezim.$konzole", ucet)
+    /** Poslední ohlášená TV („LG OLED55B7“) – na Domů i před spuštěním. */
+    var tvNazev: String get() = text("tvNazev", ""); set(v) = nastav("tvNazev", v)
     var jazyk: String get() = text("jazyk", "cs"); set(v) = nastav("jazyk", v)
     /** pc | tv | oboje */
     var vystup: String get() = text("vystup", "pc"); set(v) = nastav("vystup", v)
@@ -73,5 +89,6 @@ class Nastaveni(private val soubor: File = File(Nastroje.slozka, "aplikace.prope
         val BARVY = listOf("Bílá" to 0xFFFFFF, "Žlutá" to 0xFFE066, "Zelená" to 0xA8F0A8, "Modrá" to 0x9FD8FF)
         val ZDROJE = listOf("chiaki" to "chiaki-ng v PlayLingu", "okno" to "Jiný program", "ukazka" to "Ukázková hra")
         val VYSTUPY = listOf("pc" to "Pruh na PC", "tv" to "TV LG / Samsung", "oboje" to "PC i TV")
+        val POUZITI = listOf("pc" to "Hraji na PC", "ctecka" to "Čtečka pro TV (hra na PS5 v TV)")
     }
 }
