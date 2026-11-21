@@ -116,8 +116,10 @@ class DeeplSection(
 
     /**
      * Cesta ke klíči ve třech krocích (od 0.97.28): 1. účet DeepL API (plán Developer, zdarma), 2. stránka s klíči
-     * (u klíče ikona kopírování), 3. vložit klíč. Televize: tři čtverečky vedle sebe – první dva vedou rovnou na DeepL,
-     * třetí na stránku z televize, kam se klíč vloží (dlouhý klíč se ovladačem psát nedá). Telefon: tlačítka a políčko.
+     * (u klíče ikona kopírování), 3. vložit klíč. Televize: jen jeden čtvereček – na stránku z televize
+     * ([DeeplPage]), která v telefonu provede všemi třemi kroky i s vysvětlením (dlouhý klíč se ovladačem psát nedá);
+     * vedle něj krátce kroky. Dřív tři čtverečky vedle sebe a dlouhý odstavec – majitel nevěděl, k čemu který je.
+     * Telefon: tlačítka a políčko.
      * Vrací true, když se čeká na klíč z telefonu (ruční políčko se pak neukazuje).
      */
     private fun keySteps(content: LinearLayout): Boolean {
@@ -125,18 +127,15 @@ class DeeplSection(
         if (Prefs.isTv(a)) {
             if (!manual && page == null) openPage(redraw = false)
             val url = pageUrl()
-            val qrs = ui.hbox().apply { gravity = Gravity.TOP }
-            qrs.addView(qrCard(Deepl.SIGNUP_URL, t("dl_s1")), cell(0))
-            qrs.addView(qrCard(Deepl.KEYS_URL, t("dl_s2")), cell(1))
-            if (url != null) qrs.addView(qrCard(url, t("dl_s3")), cell(2))
-            add(qrs, 12)
-            add(ui.text(t("dl_howto"), 14f, Theme.MUTED), 8)
             if (url != null) {
-                add(ui.text("⏳ " + t("dl_wait"), 16f, Theme.ACCENT, bold = true).apply { tag = "dlwait" }, 10)
-                add(ui.text(url, 13f, Theme.MUTED), 4)
-                add(ui.button(t("dl_manual")) { manual = true; stopPage(); rerender() }.apply { tag = "dlqrclose" }, 10)
+                // vlevo čtvereček, vpravo kroky a čekání – celé i s tlačítky průvodce na jednu obrazovku
+                add(phoneQr(url), 12)
+                content.addView(ui.smallButton(t("dl_manual")) { manual = true; stopPage(); rerender() }.apply { tag = "dlqrclose" },
+                    ui.lp(w = LinearLayout.LayoutParams.WRAP_CONTENT, top = 12))
                 return true
             }
+            // stránka běží, ale zařízení nemá adresu v domácí síti (nepovedené spuštění hlásí už openPage)
+            if (page != null && msg == null) add(ui.text(t("dl_qr_nolan"), 14f, Theme.WARN), 8)
         } else {
             // telefon / tablet: DeepL se otevře v prohlížeči, klíč se tam zkopíruje a vloží do políčka níž
             add(ui.text(t("dl_s1"), 16f, Theme.TEXT, bold = true), 12)
@@ -173,18 +172,30 @@ class DeeplSection(
         return false
     }
 
-    /** Čtvereček s popiskem pod ním (tři vedle sebe na televizi). */
-    private fun qrCard(url: String, label: String): View = ui.vbox().apply {
+    /**
+     * Televize: čtvereček na stránku pro telefon a vedle něj krátké kroky (podobně jako qrRow v MainActivity).
+     * Vysvětlení registrace (plán Developer, karta, Security check…) je až na stránce v telefonu.
+     */
+    private fun phoneQr(url: String): View {
+        val row = ui.hbox().apply { gravity = Gravity.CENTER_VERTICAL }
         QrImage.bitmap(url)?.let { qr ->
-            addView(ImageView(a).apply {
+            row.addView(ImageView(a).apply {
                 setImageBitmap(qr); setBackgroundColor(android.graphics.Color.WHITE)
-                setPadding(ui.dp(6), ui.dp(6), ui.dp(6), ui.dp(6))
-            }, LinearLayout.LayoutParams(ui.dp(150), ui.dp(150)))
+                setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8))
+            }, LinearLayout.LayoutParams(ui.dp(168), ui.dp(168)))
         }
-        addView(ui.text(label, 15f, Theme.TEXT), ui.lp(top = 8))
+        val col = ui.vbox().apply { setPadding(ui.dp(24), 0, 0, 0) }
+        fun line(v: View, top: Int) = col.addView(v, ui.lp(top = top))
+        line(ui.text(t("dl_tv_scan"), 19f, Theme.TEXT, bold = true), 0)
+        line(ui.text(t("dl_tv_1"), 16f, Theme.TEXT), 6)
+        line(ui.text(t("dl_tv_2"), 16f, Theme.TEXT), 2)
+        line(ui.text(t("dl_tv_3"), 16f, Theme.TEXT), 2)
+        line(ui.text(t("dl_tv_where"), 14f, Theme.MUTED), 4)
+        line(ui.text("⏳ " + t("dl_wait"), 16f, Theme.ACCENT, bold = true).apply { tag = "dlwait" }, 10)
+        line(ui.text(url, 13f, Theme.MUTED), 2)
+        row.addView(col, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        return row
     }
-
-    private fun cell(i: Int) = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { if (i > 0) leftMargin = ui.dp(16) }
 
     private fun open(url: String) {
         try { a.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) }

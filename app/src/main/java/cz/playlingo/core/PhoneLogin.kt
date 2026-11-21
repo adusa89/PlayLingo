@@ -42,6 +42,16 @@ object PhoneLogin {
     fun appLink(t: Target, lang: Lang? = null) =
         "playlingo://login?h=${t.host}&p=${t.port}&k=${t.key}" + (lang?.let { "&l=" + it.code } ?: "")
 
+    /**
+     * Totéž jako [appLink], ale pro tlačítko na stránce v prohlížeči Androidu (od 0.97.57): aplikace v telefonu je →
+     * otevře se pomocník (přihlásí se sám, nic se nekopíruje); není → prohlížeč rovnou stáhne [apkUrl].
+     */
+    fun appIntentLink(t: Target, lang: Lang?, apkUrl: String): String =
+        "intent://login?h=${t.host}&p=${t.port}&k=${t.key}" + (lang?.let { "&l=" + it.code } ?: "") +
+            "#Intent;scheme=playlingo;package=$PACKAGE;S.browser_fallback_url=" + java.net.URLEncoder.encode(apkUrl, "UTF-8") + ";end"
+
+    const val PACKAGE = "cz.playlingo"
+
     /** Jazyk televize z odkazu – telefon ho převezme, dokud si uživatel nevybral vlastní. */
     fun langFromAppLink(link: String?): Lang? {
         val code = parseForm((link ?: "").substringAfter('?', "").substringBefore('#'))["l"] ?: return null
@@ -159,7 +169,8 @@ object PhoneLogin {
 
     /**
      * Chování stránky v prohlížeči telefonu:
-     *  - PlayLingo do telefonu je jen pro Android, jinde se ta nabídka schová;
+     *  - PlayLingo do telefonu je jen pro Android, jinde se ta nabídka schová; na Androidu je naopak první
+     *    a přihlášení v prohlížeči (s kopírováním adresy) je sbalené jako záloha (od 0.97.57);
      *  - přihlášení Sony otevře stránka sama na nové kartě, aby ji po úspěchu mohla sama zavřít
      *    (když to prohlížeč nedovolí, zůstane obyčejný odkaz);
      *  - po vložení adresy se formulář odešle sám, na pozadí – výsledek se ukáže na téže kartě;
@@ -170,7 +181,8 @@ object PhoneLogin {
      * stránce z domácí sítě bez zabezpečeného spojení nevydá – zkopírovat a vložit musí člověk.
      */
     private const val SCRIPT = "<script>(function(){" +
-        "if(!/Android/i.test(navigator.userAgent)){var a=document.getElementById('app');if(a)a.style.display='none'}" +
+        "var a=document.getElementById('app'),wb=document.getElementById('web');" +
+        "if(!/Android/i.test(navigator.userAgent)){if(a)a.style.display='none'}else if(a&&wb){wb.open=false}" +
         "var u=document.getElementById('u'),f=u.form,l=document.getElementById('l'),b=f.querySelector('button'),busy=false;" +
         "l.addEventListener('click',function(e){var w=null;try{w=window.open(l.href,'_blank')}catch(x){}" +
         "if(w){window.sonyTab=w;e.preventDefault()}});" +
@@ -211,6 +223,7 @@ object PhoneLogin {
             .append("a.btn,button{display:block;width:100%;box-sizing:border-box;text-align:center;background:#f2c14e;color:#1a1405;")
             .append("font:600 18px system-ui,sans-serif;border:0;border-radius:12px;padding:14px;margin:12px 0 4px;text-decoration:none}")
             .append("a.btn.plain{background:#2a303b;color:#f2f2f2}")
+            .append("summary{cursor:pointer;margin:26px 0 8px;color:#f2c14e}")
             .append("input{width:100%;box-sizing:border-box;font-size:16px;padding:13px;border-radius:12px;border:2px solid #3a4250;")
             .append("background:#0e1014;color:#f2f2f2;margin-top:6px}")
             .append("</style></head><body><main><h1>PlayLingo</h1>")
@@ -220,21 +233,24 @@ object PhoneLogin {
             Page.ASK, Page.BAD -> {
                 if (state == Page.BAD) sb.append("<p class=\"bad\">").append(para(t("wp_bad"))).append("</p>")
                 sb.append("<div class=\"card note\"><p>").append(para(t("acc2"))).append("</p></div>")
-                sb.append("<h2>").append(esc(t("wp_web_h"))).append("</h2><div class=\"card\">")
+                // Android: nejdřív PlayLingo v telefonu (bez kopírování); skript ho jinde schová
+                if (target != null) {
+                    sb.append("<div id=\"app\"><h2>").append(esc(t("wp_easy_h"))).append("</h2><div class=\"card\">")
+                        .append("<p>").append(para(t("wp_app_text"))).append("</p>")
+                        .append("<a class=\"btn\" href=\"").append(esc(appIntentLink(target, lang, apkUrl))).append("\">").append(esc(t("wp_app_btn"))).append("</a>")
+                        .append("<p class=\"muted\">").append(para(t("wp_app_inst"))).append("</p>")
+                        .append("<a class=\"btn plain\" href=\"").append(esc(apkUrl)).append("\">").append(esc(t("wp_app_get"))).append("</a>")
+                        .append("</div></div>")
+                }
+                // přihlášení v prohlížeči (iPhone, nebo bez aplikace): rozbalené; na Androidu s aplikací ho skript sbalí
+                sb.append("<details id=\"web\" open><summary><h2 style=\"display:inline\">").append(esc(t("wp_web_h"))).append("</h2></summary><div class=\"card\">")
                     .append("<p>").append(para(t("wp_1"))).append("</p>")
                     .append("<a id=\"l\" class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(esc(loginUrl)).append("\">").append(esc(t("wp_login_btn"))).append("</a>")
                     .append("<p>").append(para(t("wp_2"))).append("</p>")
                     .append("<form method=\"post\" action=\"").append(esc(path(key))).append("\">")
                     .append("<p>").append(para(t("wp_3"))).append("</p>")
                     .append("<input name=\"url\" id=\"u\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\" placeholder=\"https://…/redirect?code=…\">")
-                    .append("<button type=\"submit\">").append(esc(t("wp_send"))).append("</button></form></div>")
-                if (target != null) {
-                    sb.append("<div id=\"app\"><h2>").append(esc(t("wp_app_h"))).append("</h2><div class=\"card\">")
-                        .append("<p class=\"muted\">").append(para(t("wp_app_text"))).append("</p>")
-                        .append("<a class=\"btn plain\" href=\"").append(esc(appLink(target, lang))).append("\">").append(esc(t("wp_app_btn"))).append("</a>")
-                        .append("<a class=\"btn plain\" href=\"").append(esc(apkUrl)).append("\">").append(esc(t("wp_app_get"))).append("</a>")
-                        .append("</div></div>")
-                }
+                    .append("<button type=\"submit\">").append(esc(t("wp_send"))).append("</button></form></div></details>")
                 sb.append(SCRIPT)
             }
         }

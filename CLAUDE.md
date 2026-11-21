@@ -321,6 +321,11 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   ze stránky televize. Přihlášení Sony běží v něm, kód si vezme sám, číslo účtu pošle televizi
   (`LoginClient`) a zapamatuje si ho (`Prefs.phoneAccounts`; jen číslo a jméno, žádné heslo).
   Účet posílá jen na adresy domácí sítě. Záloha: přihlášení v prohlížeči a Sdílet → PlayLingo.
+  **Od 0.97.57 je na stránce z televize v Androidu PlayLingo v telefonu první cestou** (majitel čekal, že na Android TV
+  se adresa „redirect“ nepřepisuje): žluté tlačítko `wp_app_btn` s odkazem `PhoneLogin.appIntentLink` (`intent://login?…
+  #Intent;scheme=playlingo;package=cz.playlingo;S.browser_fallback_url=<APK>;end` – aplikace je → pomocník se přihlásí sám,
+  není → prohlížeč stáhne APK; `wp_easy_h`, `wp_app_inst`) a přihlášení v prohlížeči s kopírováním je pod ním sbalené
+  (`<details id="web" open>`, skript ho sbalí jen na Androidu). iPhone vidí jen přihlášení v prohlížeči jako dřív.
   Před otevřením přihlášení Sony smaže cookies a úložiště WebView (`openLogin`, od 0.97.28) – hráč vždy píše e-mail
   a heslo a vědomě volí účet (jinak Sony potichu vzala naposledy přihlášený, často herní účet → CE-110032-7).
 - **Jméno účtu a žádný účet potichu (od 0.97.28).** Ověřený účet se ukládá s jménem (Online ID):
@@ -577,9 +582,10 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   DeepL pokus v ⚙ Nastavení → Experimentální – tam už není (zůstala Zkušební verze a Ladění a hlášení se záznamem
   v síti). Řádek jazyka na Domů, řádek Režim překladu (⚙ → Čtení a překlad) a Nápověda kap. 4 vedou do Titulků
   s otevřenou skupinou (`openQuality()`). Jedna instance `deeplSection()` (drží rozepsaný klíč).
-- **Cesta ke klíči ve třech krocích** (`keySteps`): televize = **tři čtverečky vedle sebe** – 1. registrace
-  (`Deepl.SIGNUP_URL`, rovnou plán Developer), 2. stránka s klíči (`KEYS_URL`, ikona kopírování), 3. stránka z televize
-  pro vložení (`DeeplPage`) + „⏳ Čekám na klíč z telefonu…“ a „Napsat klíč ručně“ (`manual`). Telefon / tablet (ne
+- **Cesta ke klíči ve třech krocích** (`keySteps`): televize = od 0.97.57 **jen jeden čtvereček** (`phoneQr`) na stránku
+  z televize (`DeeplPage` – v telefonu provede 1. registrací `Deepl.SIGNUP_URL`, 2. stránkou s klíči `KEYS_URL` i 3. vložením,
+  s dlouhým vysvětlením `dl_howto`), vedle něj krátké body `dl_tv_scan`, `dl_tv_1`–`3`, `dl_tv_where`, „⏳ Čekám na klíč
+  z telefonu…“ a malé „Napsat klíč ručně“ (`manual`). Do 0.97.56 tři čtverečky vedle sebe a odstavec – majitel: „těžko říct k čemu“. Telefon / tablet (ne
   `Prefs.isTv`) = tlačítka Otevřít DeepL / Otevřít stránku s klíčem a políčko. Stránka pro telefon má stejné 3 kroky.
   První uložený klíč DeepL rovnou zapne (`store`). Průvodce: bez klíče hlavní tlačítko „Přeskočit – zůstat u offline
   překladu“ (`wnext`) a Zpět (bez Přeskočit průvodce), s klíčem „✔ DeepL je nastavený“ a Pokračovat.

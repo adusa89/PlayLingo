@@ -38,8 +38,8 @@ ukáže až krok Připojení konzole (bod 4).
    V telefonu průvodce sám hledá televizi v domácí síti: najde-li jen LG, nebo jen Samsung, rovnou ji
    předvybere a ukáže „✔ V síti · …“ (volbu jde změnit).
 4. **Jazyk:** jazyk překladu; počkej na stažení jazykového balíčku (jednou, asi 30 MB).
-5. **Lepší překlad (DeepL):** jedna věta proč a tři čtverečky pro telefon (registrace na DeepL, stránka
-   s klíčem, vložení klíče) – viz bod 9. Bez klíče zvol **Přeskočit – zůstat u offline překladu**; DeepL
+5. **Lepší překlad (DeepL):** jedna věta proč a jeden čtvereček pro telefon – stránka v telefonu provede
+   registrací na DeepL, zkopírováním klíče i jeho vložením – viz bod 9. Bez klíče zvol **Přeskočit – zůstat u offline překladu**; DeepL
    jde nastavit kdykoli později v Titulkách → Kvalita překladu. Po přijetí klíče se ukáže „✔ DeepL je
    nastavený“ a Pokračovat.
 6. **Zobrazení titulků** (jen Android TV): zapni aplikaci v nastavení televize: Usnadnění →
@@ -93,7 +93,9 @@ a pod ním malý podtitul „Spárování · 3 z 6“, na stránce Konzole pruh 
    - Když jsou účty uložené v PlayLingu v telefonu, nabídnou se se jmény.
 4. **Přihlas se tím účtem** (telefon). Otevři v telefonu fotoaparát, namiř ho na čtvereček v televizi
    a klepni na odkaz – otevře se stránka PlayLingo z tvé televize (telefon musí být na stejné Wi-Fi).
-   Klepni na „Přihlásit se u PlayStation“, zadej e-mail a heslo **druhého** účtu (na „passkey“ zvol
+   **Android:** nahoře je žluté **Otevřít v aplikaci PlayLingo** – když PlayLingo v telefonu není, tlačítko
+   ho stáhne (po instalaci se vrať na stránku a klepni znovu); přihlásíš se v aplikaci a nic se nekopíruje.
+   **iPhone** (nebo „Přihlášení v prohlížeči“ níž na stránce): klepni na „Přihlásit se u PlayStation“, zadej e-mail a heslo **druhého** účtu (na „passkey“ zvol
    „Remind Me Later“). Zůstane skoro prázdná stránka „redirect“ – zkopíruj její adresu a vlož ji na
    stránku PlayLingo. Televize pak pokračuje sama.
    **Bez telefonu:** pod čtverečkem je adresa stránky (např. `http://192.168.1.20:8765/p/k7mq2xra`) –
@@ -273,9 +275,10 @@ v Titulkách → Kvalita překladu.
 
 ### Nastavení klíče – nic se nepíše ovladačem
 Klíč je dlouhý (asi 40 znaků), proto ho do televize **nepíšeš** – zkopíruješ a vložíš ho jen v telefonu.
-Televize ukáže **tři čtverečky vedle sebe**; naskenuj je telefonem (Android i iPhone) postupně:
+Televize ukáže **jeden čtvereček**; naskenuj ho telefonem (Android i iPhone, stejná Wi‑Fi). Otevře se
+stránka „PlayLingo · DeepL“, která tě provede třemi kroky:
 
-1. **Účet DeepL API zdarma** (jen poprvé) – čtvereček vede rovnou na registraci s plánem **Developer**:
+1. **Účet DeepL API zdarma** (jen poprvé) – tlačítko vede rovnou na registraci s plánem **Developer**:
    zadej e-mail a heslo, nech „Developer“ („Test out the API for free“) a zvol **Continue**. Plán je zdarma:
    **1 000 000 znaků celkem**, každý měsíc se neobnovuje. Kdyby DeepL chtěl platební kartu, plán Developer
    stejně nic nestojí (20. 11. 2026 kartu nechtěl). Pak **potvrď e-mail** odkazem, který ti DeepL pošle.
@@ -286,12 +289,11 @@ Televize ukáže **tři čtverečky vedle sebe**; naskenuj je telefonem (Android
      zaregistruj se **jiným e-mailem**.
 2. **Stránka s klíčem** – https://www.deepl.com/your-account/keys (záložka **API Keys & Limits**). Celý klíč
    se tam nezobrazuje: zkopíruj ho **ikonou kopírování** vedle klíče. Když tam klíč není, zvol **Create key**.
-3. **Vlož klíč** – třetí čtvereček otevře malou stránku „PlayLingo · DeepL“ z televize (telefon musí být
-   na **stejné Wi‑Fi**). **Podrž prst v políčku → Vložit** a zvol **Odeslat do TV**. Televize mezitím
+3. **Vlož klíč** – vrať se na stránku „PlayLingo · DeepL“, **podrž prst v políčku → Vložit** a zvol
+   **Odeslat do TV**. Televize mezitím
    ukazuje „Čekám na klíč z telefonu…“.
 4. Televize klíč ověří, uloží a DeepL zapne: „✔ DeepL je nastavený“.
 
-Stránka „PlayLingo · DeepL“ má stejné tři kroky s tlačítky, takže stačí i jen třetí čtvereček.
 Když telefon stránku neotevře (mobilní data, jiná Wi‑Fi), připoj ho ke stejné Wi‑Fi a naskenuj znovu.
 Ruční psaní ovladačem je jen záloha: **Napsat klíč ručně**. **Telefon jako čtečka** čtverečky nemá – má
 tlačítka **Otevřít DeepL**, **Otevřít stránku s klíčem** a políčko, kam klíč vložíš.

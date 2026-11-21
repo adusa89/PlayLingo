@@ -652,7 +652,7 @@ class MainActivity : Activity() {
                 }
             }
             // Lepší překlad (od 0.97.28 bez volby DeepL / jen offline): rovnou jedna věta proč, cesta ke klíči
-            // (televize: čtverečky, telefon: tlačítka a políčko) a „Čekám na klíč z telefonu…“. Bez klíče je hlavní
+            // (televize: jeden čtvereček na stránku pro telefon, telefon: tlačítka a políčko) a „Čekám na klíč z telefonu…“. Bez klíče je hlavní
             // tlačítko „Přeskočit – zůstat u offline překladu“, po přijetí klíče „✔ DeepL je nastavený“ a Pokračovat.
             W_TRANSLATE -> {
                 add(ui.text(t("wz_tr_why"), 17f, Theme.MUTED), 12)
@@ -2481,6 +2481,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.56"
-    const val VERSION_CODE = 153
+    const val VERSION = "verze 0.97.57"
+    const val VERSION_CODE = 154
 }

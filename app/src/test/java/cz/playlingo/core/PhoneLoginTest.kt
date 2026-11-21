@@ -84,7 +84,11 @@ class PhoneLoginTest {
             assertTrue("$lang přihlášení", ask.contains("href=\"https://sony.example/login?a=1&amp;b=2\""))
             // stránka si přihlášení otevírá sama (aby kartu po úspěchu mohla zavřít) a odesílá na pozadí
             assertTrue("$lang chování stránky", ask.contains("id=\"l\"") && ask.contains("window.sonyTab") && ask.contains("XMLHttpRequest"))
-            assertTrue("$lang odkaz do aplikace", ask.contains("playlingo://login?h=192.168.1.20&amp;p=8765&amp;k=abcd2345&amp;l=${lang.code}"))
+            // Android: odkaz otevře PlayLingo v telefonu, bez něj prohlížeč stáhne aplikaci (od 0.97.57)
+            assertTrue("$lang odkaz do aplikace", ask.contains("intent://login?h=192.168.1.20&amp;p=8765&amp;k=abcd2345&amp;l=${lang.code}" +
+                "#Intent;scheme=playlingo;package=cz.playlingo;S.browser_fallback_url=https%3A%2F%2Fexample.com%2FPlayLingo.apk;end"))
+            // aplikace je na stránce první, přihlášení v prohlížeči je záloha (sbalitelná, bez skriptu rozbalená)
+            assertTrue("$lang pořadí", ask.indexOf("id=\"app\"") in 0 until ask.indexOf("id=\"web\" open"))
             assertTrue("$lang texty", ask.contains(PhoneLogin.esc(I18n.t(lang, "wp_send"))) && ask.contains(PhoneLogin.esc(I18n.t(lang, "wp_app_btn"))))
             for (state in PhoneLogin.Page.values()) {
                 val html = PhoneLogin.page(lang, state, t.key, t, "https://sony.example/", "https://example.com/a.apk")
@@ -98,7 +102,7 @@ class PhoneLoginTest {
         assertTrue(PhoneLogin.page(Lang.CS, PhoneLogin.Page.DONE, t.key, t, "x", "y").contains("class=\"ok\""))
         // bez adresy televize v domácí síti se odkaz do aplikace nenabízí, formulář ale funguje
         val noApp = PhoneLogin.page(Lang.CS, PhoneLogin.Page.BAD, t.key, null, "x", "y")
-        assertFalse(noApp.contains("playlingo://"))
+        assertFalse(noApp.contains("intent://") || noApp.contains("playlingo://"))
         assertTrue(noApp.contains("action=\"/p/abcd2345\"") && noApp.contains(I18n.t(Lang.CS, "wp_bad")))
         assertEquals("&lt;b&gt;&amp;&quot;", PhoneLogin.esc("<b>&\""))
     }

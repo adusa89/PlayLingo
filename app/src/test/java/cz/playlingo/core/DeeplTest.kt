@@ -189,6 +189,9 @@ class DeeplTest {
         assertTrue(ask.indexOf(I18n.t(Lang.CS, "dl_s1")) in 0 until ask.indexOf(I18n.t(Lang.CS, "dl_s2")))
         assertTrue(ask.indexOf(I18n.t(Lang.CS, "dl_s2")) < ask.indexOf(I18n.t(Lang.CS, "dl_s3_here")))
         assertTrue(ask.contains("API Keys &amp; Limits"))
+        // vysvětlení registrace (plán Developer, karta, Security check) je jen tady – televize ukazuje jen krátké kroky
+        assertTrue(ask.contains(PhoneLogin.esc(I18n.t(Lang.CS, "dl_howto"))))
+        assertTrue(ask.contains("Security check"))
         assertFalse(ask.contains("kartu nechce"))
         assertTrue(ask.contains(I18n.t(Lang.CS, "dl_privacy")))
         val done = DeeplPage.page(Lang.EN, DeeplPage.State.DONE, "/p/x", "<b>")
