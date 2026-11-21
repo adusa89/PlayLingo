@@ -39,20 +39,30 @@ v telefonu – a televize se podle toho nastaví. Pro iPhone (a Android bez apli
    `Prefs.applyRemote` + `ACTION_RELOAD` (jen běžící služba) + překreslení TV, `op=deepl&key=` → ověření
    a `DeeplKey.save`. GET → stránka s tlačítkem do aplikace. ⚙ → Obecné → „Nastavit z telefonu“ (čtvereček).
    Zbývá: čtvereček i v prvním kroku průvodce v TV.
-3. Telefon – návrh:
-   - Manifest: `PhoneHelperActivity` přijme i `playlingo://tv` → `RemoteClient.connect` (mimo hlavní vlákno
-     `op=stav`), uloží cíl (vlastní SharedPreferences `dalkove`: host, port, klíč, jméno TV, aktivní).
-   - `Prefs.p()` v režimu TV používá soubor `dalkove_tv` (ne `test_preklad`), aby telefon jako čtečka pro LG
-     o svoje nastavení nepřišel; příznak režimu držet v `@Volatile` proměnné (žádné čtení souboru při každém
-     `Prefs.…`). Stejně `DeeplKey` (`deepl` → `deepl_dalkove`) a klíč DeepL se místo uložení pošle `op=deepl`.
-   - Po spojení: soubor `dalkove_tv` vymazat a naplnit snímkem z TV (TV je hlavní), `tv_type` = Android TV,
-     `reader_device` = false. Posluchač `OnSharedPreferenceChangeListener` (silná reference v objektu) při
-     zápisu snímku vypnutý; jinak změna přenášené volby → po 400 ms `RemoteSetup.diff` proti naposledy
-     poslanému → `op=zmen`. Při chybě sítě pruh „TV nedostupná“ a nový pokus při další změně / po 10 s.
+3. ✔ Telefon (režim „Nastavuji TV“):
+   - Manifest: `PhoneHelperActivity` přijme i `playlingo://tv?…` → `RemoteSetup.parseLink` → `RemoteClient.connect`
+     (mimo hlavní vlákno `op=stav`). Úspěch = celá `MainActivity` (extra `dalkove`); jinak hláška `rs_e_net` (jiná
+     Wi-Fi), `rs_e_version` (starší PlayLingo v TV), `rs_e_bad` (neplatný odkaz). Pomocník v režimu TV ukazuje nahoře
+     kartu „Nastavuji: <TV> · stav“ s Otevřít nastavení TV / Odpojit; „Použít telefon pro TV LG/Samsung“ režim ukončí.
+   - `RemoteClient.kt`: cíl v SharedPreferences `dalkove` (host, port, klíč, jméno TV, aktivní, co TV naposledy
+     potvrdila – po novém spuštění aplikace pokračuje a dopošle, co nestihla). Příznak `@Volatile active`, ze souboru
+     se čte jednou (`RemoteClient.on`). `Prefs.p()` pak bere `dalkove_tv`; vlastní soubor telefonu (`Prefs.own`) dál
+     drží účty z telefonu, `force_tv`, zkušební verze, viděnou verzi a licenci. `NetInfo.isPhone` je v režimu TV false.
+   - Po spojení: `dalkove_tv` vymazán a naplněn snímkem TV + `tv_type` Android TV, `reader_device` false
+     (`RemoteSync.localValues`). Posluchač (silná reference) → po 400 ms `RemoteSync.pending` (rozdíl proti potvrzenému)
+     → `op=zmen`; TV nedostupná → stav `UNREACHABLE`, nový pokus s další změnou / po 10 s. Logika bez Androidu
+     v `core/RemoteSync.kt`, testy `RemoteSyncTest`.
+   - DeepL: `DeeplKey` v režimu TV v `deepl_dalkove`; uložený klíč odejde `op=deepl&key=` (TV ho ověří, „REJECTED“ →
+     „TV odmítla klíč DeepL“), zapnutí/vypnutí `op=deepl&on=1/0` (nové v `RemoteHost`), snímek nese `deepl_on`.
+     Klíč, který má jen TV, se do telefonu neposílá – Titulky ukazují „Klíč DeepL je uložený v TV“.
    - Spárování PS5 v telefonu zapíše `ps5_host` do `dalkove_tv` → odejde do TV jako každá jiná volba.
-   - `MainActivity` v režimu TV: nahoře pruh „Nastavuji: <TV> · Odpojit“; Spustit / náhled / povolení pruhu
-     (Usnadnění, překrytí) / běh na pozadí / krok průvodce Zařízení se v telefonu neukazují (patří TV);
-     krok Zobrazení titulků jen věta „zapni v TV ovladačem“. Odpojit → zpět do `test_preklad`, pomocník.
+   - `MainActivity` v režimu TV: pruh „Nastavuji: <TV> · připojeno / TV nedostupná“ + Odpojit nahoře na každé stránce
+     i v průvodci; Spustit/Zastavit (a tím náhled) se neukazuje, `startFlow`/`startDemo` nic nespustí; řádek TV na Domů
+     = jméno TV a stav spojení; jazykový balíček se v telefonu nestahuje ani nekontroluje; ⚙ → Obecné bez typu TV,
+     zařízení, běhu na pozadí, Usnadnění, tlačítka vzhledu a překrytí (zůstává Stav přes hru – přenáší se). Průvodce
+     přeskakuje krok Zařízení, v kroku Televize jen Android TV, v kroku Zobrazení titulků věta `rs_perm_tv`.
+   - Neověřeno (jen skutečná zařízení): celé spojení telefon ↔ Android TV, spárování PS5 z telefonu a jeho použití v TV.
+     Účet Xbox se nepřenáší (je mimo `Prefs`) – Xbox se v režimu TV přihlašuje v TV.
 4. Web pro iPhone: na GET stránka s průvodcem (jazyk, hra, DeepL, přihlášení PlayStation přes `PhoneLogin`,
    kód z PS5 – zde páruje TV, `Ps5Pairing` v TV) a vzhledem titulků; POST stejné `op=` jako aplikace.
 5. Nápověda, `NAVOD.md`, CLAUDE.md, zkouška v emulátoru (snímek čtverečku v ⚙), pak zvýšit verzi a do `main`.

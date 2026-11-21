@@ -33,7 +33,15 @@ object Prefs {
     fun boldText(c: Context) = bool(c, "bold_text", false)
     fun setBoldText(c: Context, v: Boolean) = setBool(c, "bold_text", v)
 
+    /**
+     * Nastavení, se kterým aplikace pracuje. V telefonu v režimu „Nastavuji TV“ ([RemoteClient]) je to nastavení
+     * té TV (`dalkove_tv`, každá změna odejde do TV) – vlastní nastavení telefonu zůstává nedotčené.
+     */
     private fun p(c: Context): SharedPreferences =
+        c.applicationContext.getSharedPreferences(if (RemoteClient.on(c)) RemoteClient.TV_FILE else "test_preklad", Context.MODE_PRIVATE)
+
+    /** Vlastní nastavení tohoto zařízení i v režimu „Nastavuji TV“ (účty v telefonu, zkušební verze, licence…). */
+    private fun own(c: Context): SharedPreferences =
         c.applicationContext.getSharedPreferences("test_preklad", Context.MODE_PRIVATE)
 
     private fun bool(c: Context, k: String, d: Boolean) = p(c).getBoolean(k, d)
@@ -88,8 +96,8 @@ object Prefs {
     fun debug(c: Context) = bool(c, "debug", false)
     fun setDebug(c: Context, v: Boolean) = setBool(c, "debug", v)
     /** Brát i zkušební verze (sestavené z rozpracované větve, ještě neschválené pro všechny). */
-    fun testChannel(c: Context) = bool(c, "test_channel", false)
-    fun setTestChannel(c: Context, v: Boolean) = setBool(c, "test_channel", v)
+    fun testChannel(c: Context) = own(c).getBoolean("test_channel", false)
+    fun setTestChannel(c: Context, v: Boolean) = own(c).edit().putBoolean("test_channel", v).apply()
     /**
      * Typ televize (průvodce, Nastavení, souhrnný řádek na Domů): Android TV ukazuje pruh samo, LG a Samsung dostávají
      * hotové věty po síti. Kdo ho nezvolil, řídí se starou volbou „Posílat titulky do televize LG“
@@ -103,8 +111,8 @@ object Prefs {
     fun tvSeen(c: Context, platform: String): String? = p(c).getString("tv_seen_$platform", null)
     fun setTvSeen(c: Context, platform: String, v: String) = p(c).edit().putString("tv_seen_$platform", v).apply()
     /** Číslo verze, která běžela naposledy (0 = první spuštění) – aby šlo po aktualizaci říct, že proběhla. */
-    fun seenVersion(c: Context): Int = p(c).getInt("seen_version", 0)
-    fun setSeenVersion(c: Context, v: Int) = p(c).edit().putInt("seen_version", v).apply()
+    fun seenVersion(c: Context): Int = own(c).getInt("seen_version", 0)
+    fun setSeenVersion(c: Context, v: Int) = own(c).edit().putInt("seen_version", v).apply()
 
     fun onlySubtitles(c: Context) = bool(c, "only_subs", true)
     fun setOnlySubtitles(c: Context, v: Boolean) = setBool(c, "only_subs", v)
@@ -222,13 +230,13 @@ object Prefs {
 
     // ---- PlayLingo v telefonu (pomocník pro přihlášení účtem PlayStation) ----
     /** Účty, které si telefon pamatuje: jen číslo účtu a jméno, žádné heslo. */
-    fun phoneAccounts(c: Context): List<PhoneLogin.Account> = PhoneLogin.parseAccounts(p(c).getString("phone_accounts", null))
+    fun phoneAccounts(c: Context): List<PhoneLogin.Account> = PhoneLogin.parseAccounts(own(c).getString("phone_accounts", null))
     fun setPhoneAccounts(c: Context, v: List<PhoneLogin.Account>) =
-        p(c).edit().putString("phone_accounts", PhoneLogin.serializeAccounts(v)).apply()
+        own(c).edit().putString("phone_accounts", PhoneLogin.serializeAccounts(v)).apply()
 
     /** Uživatel řekl, že tohle zařízení je televize nebo box, i když se tváří jako telefon. */
-    fun forceTv(c: Context) = bool(c, "force_tv", false)
-    fun setForceTv(c: Context, v: Boolean) = setBool(c, "force_tv", v)
+    fun forceTv(c: Context) = own(c).getBoolean("force_tv", false)
+    fun setForceTv(c: Context, v: Boolean) = own(c).edit().putBoolean("force_tv", v).apply()
 
     /**
      * Na čem PlayLingo běží (průvodce, Nastavení → Zařízení): true = telefon nebo tablet, který jen čte
@@ -346,15 +354,15 @@ object Prefs {
     }
 
     // ---- licence ----
-    fun unlocked(c: Context) = bool(c, "unlocked", false)
-    fun setUnlocked(c: Context, v: Boolean) = setBool(c, "unlocked", v)
+    fun unlocked(c: Context) = own(c).getBoolean("unlocked", false)
+    fun setUnlocked(c: Context, v: Boolean) = own(c).edit().putBoolean("unlocked", v).apply()
 
     /** Stav licence; při prvním spuštění si zapamatuje začátek zkušební doby. */
     fun license(c: Context): License.State {
         val now = System.currentTimeMillis()
-        val saved = p(c).getLong("first_run", 0L)
+        val saved = own(c).getLong("first_run", 0L)
         val first = License.firstRun(saved, now)
-        if (first != saved && first != 0L) p(c).edit().putLong("first_run", first).apply()
+        if (first != saved && first != 0L) own(c).edit().putLong("first_run", first).apply()
         return License.state(unlocked(c), first, now)
     }
 }

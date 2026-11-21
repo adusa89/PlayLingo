@@ -144,7 +144,7 @@ object RemoteHost {
                 val pin = SetupPage.pin(form["pin"]) ?: return RemoteSetup.ERR_BAD
                 startPair(c, pin)
             }
-            RemoteSetup.OP_SNAPSHOT -> RemoteSetup.snapshot(tvName(), Prefs.remoteValues(c), DeeplKey.has(c))
+            RemoteSetup.OP_SNAPSHOT -> RemoteSetup.snapshot(tvName(), Prefs.remoteValues(c), DeeplKey.has(c), DeeplKey.enabled(c))
             RemoteSetup.OP_SET -> {
                 val values = RemoteSetup.decode(form["data"] ?: "") ?: return RemoteSetup.ERR_BAD
                 Prefs.applyRemote(c, values)
@@ -153,6 +153,12 @@ object RemoteHost {
                 "OK"
             }
             RemoteSetup.OP_DEEPL -> {
+                // jen zapnout / vypnout DeepL (Titulky → Kvalita překladu v telefonu); zapnout jde jen s klíčem
+                if (form["key"] == null && form["on"] != null) {
+                    DeeplKey.setEnabled(c, form["on"] == "1" && DeeplKey.has(c))
+                    changed(c)
+                    return "OK"
+                }
                 val key = Deepl.cleanKey(form["key"])
                 if (Deepl.keyKind(key) == null) return RemoteSetup.ERR_BAD
                 val r = DeeplTranslator.check(key)

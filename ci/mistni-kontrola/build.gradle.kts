@@ -27,6 +27,9 @@ dependencies {
     compileOnly("com.google.zxing:core:3.5.3")
     // instalace do televize LG (LgInstaller.kt)
     compileOnly("com.github.mwiede:jsch:2.28.8")
+    // nahrání do Android TV přes ADB (AtvInstaller.kt); v testu AtvInstallTest i jako vzor klíče ADB
+    compileOnly("dev.mobile:dadb:2.0.0")
+    testImplementation("dev.mobile:dadb:2.0.0")
     testImplementation("junit:junit:4.13.2")
 }
 kotlin {

@@ -63,8 +63,11 @@ class DeeplSection(
 
         // klíč: uložený (jen začátek a konec) a výsledek posledního ověření
         val key = if (has) DeeplKey.get(a) else null
-        if (wizard && key != null) add(ui.text("✔ " + t("wz_tr_ok"), 18f, Theme.OK, bold = true).apply { tag = "dlok" }, 14)
-        else if (!wizard) add(ui.text(if (key != null) t("dl_key_saved").replace("%s", Deepl.masked(key)) else t("dl_key_none"), 15f, Theme.TEXT), 10)
+        // telefon v režimu „Nastavuji TV“: klíč může mít jen TV (do telefonu se neposílá)
+        val inTv = DeeplKey.onlyInTv(a)
+        if (wizard && (key != null || inTv)) add(ui.text("✔ " + t("wz_tr_ok"), 18f, Theme.OK, bold = true).apply { tag = "dlok" }, 14)
+        else if (!wizard) add(ui.text(if (key != null) t("dl_key_saved").replace("%s", Deepl.masked(key)) else if (inTv) t("rs_dl_tv") else t("dl_key_none"), 15f, Theme.TEXT), 10)
+        if (wizard && inTv) return
         var shown: String? = null
         if (has) {
             val p = DeeplKey.lastProblem(a)

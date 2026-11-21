@@ -34,6 +34,8 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
   - `LgInstallActivity.kt`, `LgInstaller.kt`, `LgVault.kt`, `LgDevMode.kt` – nahrání aplikace
     do televize LG ve vývojářském režimu a zbývající dny režimu (viz Televize LG);
     `LgScanActivity.kt` – adresa a Passphrase z obrazovky televize kamerou telefonu
+  - `AtvInstallActivity.kt`, `AtvInstaller.kt`, `AtvVault.kt` – nahrání PlayLinga z telefonu do Android TV
+    přes ladění po síti (viz Android TV – nahrání z telefonu)
   - `TvProfile.kt` (+ `core/TvProfiles.kt`) – vzhled pruhu a oblasti zvlášť pro každou televizi LG/Samsung:
     aktivní je ta, která se naposledy ohlásila (platforma + model z `TvAnnounce`), hodnoty aktivní jsou
     v běžném Prefs (klíče `TvProfiles.KEYS`), ostatní v SharedPreferences `tv_profily`. Přepíná
@@ -47,6 +49,9 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
     přes vzdálené hraní (WebRTC) a stránka konzole pro Xbox (viz Xbox)
   - `DeeplTranslator.kt`, `DeeplSection.kt` – DeepL (viz DeepL – Kvalita překladu)
   - `NetLogShare.kt` – záznam pro vývojáře v domácí síti, Kopírovat/Sdílet hlášení (viz Záznam ze zařízení)
+  - `RemoteHost.kt` (TV) a `RemoteClient.kt` (telefon, režim „Nastavuji TV“: `Prefs` čte `dalkove_tv`, každá změna
+    přenášené volby jde do TV; `core/RemoteSetup.kt`, `core/RemoteSync.kt`) – nastavení Android TV z telefonu
+    (`navrhy/nastaveni-z-telefonu.md`)
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
   knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
 - `third_party/chiaki-ng` – submodul. Needituj ho; před sestavením se do něj kopíruje
@@ -629,6 +634,28 @@ Přehled a zjištění jsou v `tizen/CTI-ME.md`; tady jen to, co je potřeba vě
   `SamsungInstall`), testy `SamsungTest`. Skutečná televize Samsung zatím nikdy nebyla vyzkoušená.
 - Převzato podle přijímače PlayCaption pro Samsung (AGPL-3.0) – hlavičky souborů zachovej.
 
+## Android TV – nahrání z telefonu (zkušební, od větve nastaveni-z-telefonu)
+
+Zjištění a rozhodnutí: `navrhy/instalace-android-tv.md`. Bez aplikace v televizi (Downloader…).
+
+- Pomocník v telefonu → „Nahrát PlayLingo do Android TV“ (`at_open`) → `AtvInstallActivity` (vzor `LgInstallActivity`):
+  karta kroků, které se každé 3 s samy odškrtávají (TV v síti – projití /24 na portech 5555 / 6466 Android TV Remote /
+  8009 Cast; ladění zapnuté = port 5555; TV klíč přijala), adresa (`IpField`, i `ip:port`), velké tlačítko, průběh.
+- `AtvInstaller` přes knihovnu **`dev.mobile:dadb:2.0.0`** (Apache-2.0, čisté Kotlin + okio, asi 0,4 MB): ADB po TCP
+  s klíčem RSA → poprvé TV ukáže „Povolit ladění?“ (čeká se až 120 s, krok `CONFIRM`) → `dumpsys package cz.playlingo`
+  → **stejná/novější verze jen spustit, nikdy nesnižovat** → `cmd package install -r` vlastního APK z telefonu
+  (`applicationInfo.sourceDir`, se stálým podpisem; split APK přes `installMultiple`) s pruhem podle bajtů → kontrola
+  verze → `am start`. Nic neodinstalovává (jiný podpis = `at_e_signature`). Limit 8 min, Zrušit.
+- Klíč ADB telefonu: RSA 2048 z `KeyPairGenerator`, soukromý zašifrovaný přes Android Keystore (`AtvVault`, alias
+  `playlingo-atv-v1`, `LgVault.seal/open`); veřejný v tvaru adbkey.pub počítá `AtvInstall.adbPublicKey` (test ho
+  porovnává s výstupem dadb). Rozhodování, adresa, čtení odpovědí, chyby `AtvError` → `at_e_…`: `core/AtvInstall.kt`,
+  testy `AtvInstallTest`. Texty `at_…` v `core/I18nAtv.kt` (`ATV_S`, `ATV_X`), společné s LG `lg_go`, `lg_ip`….
+- **Neumí** Bezdrátové ladění s párovacím kódem (Android 11+, TLS + SPAKE2) – dadb to nemá; port, který odpoví jinak
+  než ADB, hlásí `at_e_wireless`. Další krok viz návrh.
+- Skutečnou televizi zkouška nemá: spojení, dotaz „Povolit ladění?“, instalaci a spuštění **ověří jen majitel**
+  (Sony/Philips/TCL, Chromecast s Google TV, Fire TV, Shield). Neověřeno ani to, že dadb běží na Androidu
+  (podpis `RSA/ECB/NoPadding` přes Conscrypt) – první sestavení na GitHubu a ruční zkouška.
+
 ## Xbox
 
 - Druhá konzole vedle PlayStationu (`Prefs.console`, výchozí PlayStation – dosavadní uživatelé si
@@ -799,6 +826,8 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
   na pád (`cr_…`): `core/I18nDiag.kt` (`DIAG_S`, `DIAG_X`).
 - texty nahrání do televize LG (`lg_…`; chyby `lg_e_<LgError>`, kroky `lg_p_<LgPhase>`):
   `core/I18nLg.kt` (`LG_S`, `LG_X`).
+- texty nahrání do Android TV z telefonu (`at_…`; chyby `at_e_<AtvError>`, kroky `at_p_<AtvPhase>`):
+  `core/I18nAtv.kt` (`ATV_S`, `ATV_X`).
 - texty Xboxu a volby konzole (`c_…`, `xb_…`; chyby `xb_e_<XboxFail>`): `core/I18nXbox.kt`
   (`XBOX_S`, `XBOX_X`). Text, který se u Xboxu liší jen jménem konzole, má klíč `xb_<klíč PS>`
   (např. `xb_st_failed`, `xb_ls_image`) a bere se přes `Console.key()` / `ct()` v MainActivity.

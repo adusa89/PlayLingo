@@ -20,6 +20,7 @@ import cz.playlingo.core.Lang
 import cz.playlingo.core.LoginClient
 import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.Ps5
+import cz.playlingo.core.RemoteSetup
 import cz.playlingo.core.UpdateCheck
 import cz.playlingo.core.TvType
 import java.util.Locale
@@ -59,7 +60,8 @@ class PhoneHelperActivity : Activity() {
         super.onCreate(savedInstanceState)
         ui = Ui(this)
         // jazyk: poprvé podle telefonu (později ho může přepsat jazyk televize z odkazu, nebo uživatel)
-        if (!Prefs.uiLangChosen(this)) Prefs.setUiLang(this, Lang.ui(Locale.getDefault().language) ?: Lang.EN)
+        // (ne v režimu „Nastavuji TV“ – jazyk by se zapsal do nastavení TV)
+        if (!RemoteClient.on(this) && !Prefs.uiLangChosen(this)) Prefs.setUiLang(this, Lang.ui(Locale.getDefault().language) ?: Lang.EN)
         val scroll = ScrollView(this).apply { isFillViewport = true; setBackgroundColor(Theme.BG) }
         content = ui.vbox().apply { setPadding(ui.dp(20), ui.dp(28), ui.dp(20), ui.dp(36)) }
         scroll.addView(content)
@@ -136,6 +138,8 @@ class PhoneHelperActivity : Activity() {
         when (i?.action) {
             Intent.ACTION_VIEW -> {
                 val link = i.dataString
+                // čtvereček „Nastavit z telefonu“ v Android TV: celá aplikace v režimu „Nastavuji TV“ (RemoteClient)
+                if (link?.startsWith("playlingo://tv") == true) { connectTv(link); return }
                 val tg = PhoneLogin.parseAppLink(link)
                 log("link " + if (tg != null) "ok" else "bad")
                 if (tg != null) {
@@ -169,6 +173,14 @@ class PhoneHelperActivity : Activity() {
         // otevřeno z celé aplikace: cesta zpět (od 0.97.55)
         if (fromApp) content.addView(ui.button("‹ " + t("hp_back_app")) { finish() }.apply { textSize = 15f },
             LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = ui.dp(14) })
+
+        // režim „Nastavuji TV“: zpět do nastavení TV, nebo odpojit (telefon se vrátí ke svému nastavení)
+        if (RemoteClient.on(this)) add(ui.card().apply {
+            val (st, warn) = RemoteClient.stateText(this@PhoneHelperActivity)
+            addView(ui.text(t("rs_bar").replace("%s", RemoteClient.tvName) + " · " + st, 17f, if (warn) Theme.WARN else Theme.OK, bold = true))
+            addView(ui.button(t("rs_open"), primary = true) { if (!busy) openFullApp() }, ui.lp(top = 12))
+            addView(ui.button(t("rs_disconnect")) { if (!busy) { RemoteClient.disconnect(this@PhoneHelperActivity); render() } }, ui.lp(top = 8))
+        }, 14)
 
         // nová verze: stejná nabídka jako na stránce Domů v televizi
         update?.let { o ->
@@ -204,6 +216,8 @@ class PhoneHelperActivity : Activity() {
             }
             // Samsung: návod, uložení balíčku a ověření, že se televize připojila
             addView(ui.button(t("ss_open")) { if (!busy) startActivity(Intent(this@PhoneHelperActivity, SamsungInstallActivity::class.java)) }, ui.lp(top = 8))
+            // Android TV / Google TV: nahrát přes ladění po síti, bez aplikace v televizi
+            addView(ui.button(t("at_open")) { if (!busy) startActivity(Intent(this@PhoneHelperActivity, AtvInstallActivity::class.java)) }, ui.lp(top = 8))
         }, 18)
         add(ui.card().apply { addView(ui.text(t("hp_intro"), 15f, Theme.MUTED)) }, 10)
         val tg = target
@@ -235,6 +249,7 @@ class PhoneHelperActivity : Activity() {
             Prefs.setTestChannel(this, !Prefs.testChannel(this)); render(); checkForUpdate()
         }, 8)
         add(ui.button(t("hp_is_tv")) {
+            if (RemoteClient.on(this)) RemoteClient.disconnect(this)
             Prefs.setForceTv(this, true)
             startActivity(Intent(this, MainActivity::class.java))
             finish()
@@ -248,11 +263,47 @@ class PhoneHelperActivity : Activity() {
      * při spárování se jménem a hráč ho vědomě zvolí – jinak PS5 hlásila CE-110032-7 (jiný uživatel).
      */
     private fun useForTv(type: TvType) {
+        // telefon jako čtečka pracuje se svým nastavením – režim „Nastavuji TV“ ukončit
+        if (RemoteClient.on(this)) RemoteClient.disconnect(this)
         Prefs.setForceTv(this, true)
         Prefs.setTvType(this, type)
         log(if (type == TvType.LG) "lg mode" else "samsung mode")
         startActivity(Intent(this, MainActivity::class.java))
         finish()
+    }
+
+    // ---------------- nastavení Android TV z telefonu (RemoteClient) ----------------
+
+    /**
+     * Odkaz `playlingo://tv?…` ze stránky z TV: stáhnout nastavení TV a otevřít celou aplikaci v režimu
+     * „Nastavuji TV“. Když to nejde, zůstane pomocník s krátkou hláškou (jiná Wi-Fi, starší PlayLingo v TV…).
+     */
+    private fun connectTv(text: String?) {
+        val link = RemoteSetup.parseLink(text)
+        log("tv link " + if (link != null) "ok" else "bad")
+        if (link == null) { note(t("rs_e_bad"), Theme.BAD); return }
+        if (busy) return
+        busy = true
+        note(t("rs_connecting"))
+        Thread({
+            val r = RemoteClient.connect(this, link)
+            runOnUiThread {
+                busy = false
+                log("tv connect $r")
+                if (isFinishing) return@runOnUiThread
+                when (r) {
+                    RemoteClient.Connect.OK -> openFullApp()
+                    RemoteClient.Connect.UNREACHABLE -> note(t("rs_e_net"), Theme.BAD)
+                    RemoteClient.Connect.VERSION -> note(t("rs_e_version"), Theme.BAD)
+                    RemoteClient.Connect.BAD -> note(t("rs_e_bad"), Theme.BAD)
+                }
+            }
+        }, "tp-helper-tv").start()
+    }
+
+    /** Celá aplikace (v režimu „Nastavuji TV“ ji pustí [NetInfo.isPhone]); pomocník zůstává pod ní. */
+    private fun openFullApp() {
+        startActivity(Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_REMOTE, true))
     }
 
     // ---------------- přihlášení u Sony ----------------
