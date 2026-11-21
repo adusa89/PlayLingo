@@ -762,6 +762,8 @@ class MainActivity : Activity() {
             demoRun -> { title = t("st_running"); sub = t("st_demo"); color = Theme.OK }
             // podrobnosti (spojení, obraz, síť, rychlost…) jsou v bodech pod nadpisem, ne v textu
             running && link == Ps5.Link.CONNECTED -> { title = t("st_running"); sub = ""; color = Theme.OK }
+            // PS5 v klidovém režimu (hráč ji vypnul): aplikace ji nebudí a jen čeká – žádné „neodpovídá, zkouším znovu“
+            running && !onXbox && Ps5Link.asleep -> { title = ct("m_ps5"); sub = t("st_asleep"); color = Theme.WARN }
             running && link == Ps5.Link.FAILED -> {
                 title = ct("m_ps5")
                 sub = if (onXbox) t(TranslatorService.linkReason ?: "xb_st_failed")
@@ -776,7 +778,7 @@ class MainActivity : Activity() {
             // co chybí, ukazují body pod nadpisem – bez dalšího textu
             else -> { title = t("st_setup"); sub = ""; color = Theme.WARN }
         }
-        if (running && !demoRun && link != Ps5.Link.CONNECTED && !(onXbox && link == Ps5.Link.FAILED))
+        if (running && !demoRun && link != Ps5.Link.CONNECTED && !(onXbox && link == Ps5.Link.FAILED) && !(!onXbox && Ps5Link.asleep))
             TranslatorService.linkReason?.let { sub += "\n(" + (if (onXbox) t(it) else it) + ")" }
         val status = ui.card()
         val head = ui.hbox()
@@ -863,10 +865,12 @@ class MainActivity : Activity() {
                 else -> Theme.MUTED to t("h_con_wait")
             }
             row(color, "$conName · $state", "linkline", onClick = { chooseConsole() })
-            if (ls.stage == cz.playlingo.core.LinkStatus.Stage.CONNECTING || ls.stage == cz.playlingo.core.LinkStatus.Stage.RETRYING ||
-                ls.stage == cz.playlingo.core.LinkStatus.Stage.WAIT_IMAGE) card.addView(ui.progress(null), ui.lp(h = ui.dp(8), top = 2))
-            // spojení ukončil sám PlayStation: jiné zařízení se stejným účtem, nebo jeho vlastní důvod
-            if (!ls.console && console == Console.PLAYSTATION) {
+            val sleeping = console == Console.PLAYSTATION && Ps5Link.asleep
+            // spící PS5: nic se nepřipojuje, pruh „pracuji“ by klamal
+            if (!sleeping && (ls.stage == cz.playlingo.core.LinkStatus.Stage.CONNECTING || ls.stage == cz.playlingo.core.LinkStatus.Stage.RETRYING ||
+                ls.stage == cz.playlingo.core.LinkStatus.Stage.WAIT_IMAGE)) card.addView(ui.progress(null), ui.lp(h = ui.dp(8), top = 2))
+            // spojení ukončil sám PlayStation: jiné zařízení se stejným účtem, nebo jeho vlastní důvod (ne když spí – vypnul ji hráč)
+            if (!ls.console && console == Console.PLAYSTATION && !sleeping) {
                 val refusal = Ps5Link.refusal
                 if (Ps5Link.otherDevice || refusal == Ps5.Refusal.IN_USE) card.addView(ui.text(t("ls_other_device"), 14f, Theme.WARN), ui.lp(top = 2))
                 // PS5 odmítla spojení ještě před obrazem: místo anglické hlášky knihovny co s tím (od 0.97.31)
@@ -2477,6 +2481,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.53"
-    const val VERSION_CODE = 150
+    const val VERSION = "verze 0.97.56"
+    const val VERSION_CODE = 153
 }

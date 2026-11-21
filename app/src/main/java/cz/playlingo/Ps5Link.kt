@@ -153,6 +153,12 @@ class Ps5Link(
         if ((everConnected || !Prefs.ps5Wake(ctx)) && sleeping()) {
             if (!asleep) log("console in rest mode, waiting (wake off)")
             asleep = true
+            // hráč PS5 vypnul: spojení skončilo chybou knihovny („Unknown Session Request Error“), ale to není porucha –
+            // na Domů se nemá ukazovat „neodpovídá, zkouším znovu“ (od 0.97.56). Ukončení zůstává v hlášení (recentEndings).
+            reason = null
+            endedByConsole = null
+            refusal = null
+            otherDevice = false
             state = Ps5.Link.WAITING
             retry?.cancel(false)
             retry = exec.schedule({ connectWhenAwake() }, 8000, TimeUnit.MILLISECONDS)

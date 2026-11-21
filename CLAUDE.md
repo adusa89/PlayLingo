@@ -893,6 +893,9 @@ jen podtitul „Spárování · 3 z 6“, ať nejsou dva pruhy nad sebou) a pomo
   **Od 0.97.41 klíč `ps5_wake2`** (dřív `ps5_wake`): po aktualizaci je probouzení u všech vypnuté (přání majitele), kdo chce, zapne znovu.
   **Od 0.97.37 i po přerušeném spojení:** když hráč PS5 během překladu vypne (klidový režim), aplikace se znovu nepřipojuje
   (pokus o spojení by ji zapnul – hlásili testeři), jen čeká (`sleeping()` před každým pokusem, i s volbou Probouzet).
+  **Od 0.97.56 bez falešné chyby:** spojení s vypínanou PS5 končí chybou knihovny „Unknown Session Request Error“; jakmile
+  `connectWhenAwake` pozná klidový režim, smaže `reason` / `endedByConsole` / `refusal` (v hlášení zůstává `recentEndings`)
+  a Domů ukáže „PlayStation · Čeká na zapnutí PS5 ovladačem“ (`st_asleep`) bez pruhu „pracuji“ a bez řádku `ls_ended`.
 - **Přihlašovací kód účtu na PS5** (4 číslice, `Prefs.ps5LoginPin`): políčko se od 0.86 ukáže jen,
   když o něj PlayStation při spojení požádal (`Ps5Link.needsLoginPin`) nebo když už je nějaký uložený.
 - **Hláška „Aplikace Remote Play je připojena“**: průvodce (u přípravy PS5) a Nápověda radí zapnout na
