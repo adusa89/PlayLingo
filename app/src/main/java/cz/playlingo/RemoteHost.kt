@@ -9,7 +9,10 @@ import android.util.Log
 import cz.playlingo.core.Deepl
 import cz.playlingo.core.LoginServer
 import cz.playlingo.core.PhoneLogin
+import cz.playlingo.core.Ps5
 import cz.playlingo.core.RemoteSetup
+import cz.playlingo.core.SetupPage
+import cz.playlingo.core.UpdateCheck
 
 /**
  * Nastavení Android TV z telefonu – strana televize (návrh `navrhy/nastaveni-z-telefonu.md`).
@@ -19,7 +22,10 @@ import cz.playlingo.core.RemoteSetup
  *  - [RemoteSetup.OP_SNAPSHOT] – stáhne celé nastavení TV,
  *  - [RemoteSetup.OP_SET] – pošle změněné volby (uloží se a služba si je hned načte),
  *  - [RemoteSetup.OP_DEEPL] – pošle klíč DeepL (ověří se a uloží zašifrovaný jako dosud).
- * Prohlížeč (GET) dostane stránku s odkazem do aplikace. Běží jen na Android TV / boxu, ne v telefonu.
+ * Prohlížeč (GET) dostane od 0.97.63 stránku „Nastavení TV“ ([SetupPage], iPhone i Android): 🔵 účet pro PlayLingo
+ * ([SetupPage.OP_ACCOUNT] – adresa „redirect“; z PlayLinga v telefonu pole `account`), osmimístné číslo z PS5
+ * ([SetupPage.OP_CODE] – TV spáruje sama, [pair]), DeepL a stav ([SetupPage.OP_INFO]).
+ * Běží jen na Android TV / boxu, ne v telefonu.
  */
 object RemoteHost {
     private const val PORT = 8766
@@ -37,7 +43,7 @@ object RemoteHost {
         if (!eligible(app)) return false
         server?.takeIf { it.running }?.let { return true }
         val s = LoginServer.forPage({ Prefs.uiLang(app) }, object : LoginServer.Custom {
-            override fun get(path: String) = RemoteSetup.page(Prefs.uiLang(app), link(app) ?: "")
+            override fun get(path: String) = page(app)
             override fun gone() = RemoteSetup.page(Prefs.uiLang(app), "")
             override fun post(path: String, form: Map<String, String>): String = handle(app, form)
         }, log = { Log.i("TP_TEST", "REMOTE|$it") }, fixedKey = Prefs.remoteKey(app))
@@ -63,10 +69,81 @@ object RemoteHost {
     fun tvName(): String = listOf(Build.MANUFACTURER, Build.MODEL).filter { !it.isNullOrBlank() }
         .joinToString(" ").replaceFirstChar { it.uppercase() }.take(60)
 
+    /** Stránka pro telefon (texty v jazyce aplikace v TV). */
+    private fun page(c: Context): String = SetupPage.page(Prefs.uiLang(c), tvName(), target(c),
+        UpdateCheck.url(if (Prefs.testChannel(c)) UpdateCheck.Channel.TEST else UpdateCheck.Channel.STABLE, "PlayLingo.apk"),
+        PsnAuth.LOGIN_URL, Deepl.SIGNUP_URL, Deepl.KEYS_URL, cz.playlingo.core.HelpLinks.IPHONE_SHORTCUT)
+
+    /** Spárování spuštěné z telefonu (číslo z PS5) – stav pro stránku i pro obrazovku v TV. */
+    @Volatile var pair = SetupPage.Pair.IDLE
+        private set
+    /** Proč spárování z telefonu nevyšlo (pro TV, ne pro stránku). */
+    @Volatile var pairError: String? = null
+        private set
+
+    /** Stav pro stránku v telefonu. */
+    fun status(c: Context): SetupPage.Status {
+        val id = Prefs.psnId(c)
+        val host = Prefs.ps5Host(c)
+        return SetupPage.Status(
+            account = if (Ps5.parseAccountId(id) != null) Prefs.psnName(c) else null,
+            pair = if (host != null && pair != SetupPage.Pair.BUSY) SetupPage.Pair.OK else pair,
+            console = host?.name,
+            deepl = DeeplKey.has(c),
+        )
+    }
+
+    /**
+     * Osmimístné číslo z telefonu → TV spáruje sama (adresu PS5 zná z dřívějška, jinak ji najde v síti). Spárovat
+     * jde jen s ověřeným 🔵 účtem; číslo musí na PS5 vyvolat týž uživatel (jinak CE-110032-7 – stránka to řekne).
+     */
+    private fun startPair(c: Context, pin: Int): String {
+        val account = Ps5.parseAccountId(Prefs.psnId(c)) ?: return "NOACC"
+        synchronized(this) {
+            if (pair == SetupPage.Pair.BUSY) return "OK"
+            pair = SetupPage.Pair.BUSY; pairError = null
+        }
+        changed(c)
+        Thread({
+            fun fail(why: String) { pairError = why; pair = SetupPage.Pair.FAIL; changed(c) }
+            try {
+                var ip = Prefs.ps5Ip(c)
+                if (!Ps5.validHost(ip)) ip = Ps5Pairing.discover().firstOrNull()?.ip ?: ""
+                if (!Ps5.validHost(ip)) { EventFile.add("PAIR|z telefonu: PS5 v síti nenalezena"); fail("ps5_notfound"); return@Thread }
+                Prefs.setPs5Ip(c, ip)
+                val name = Prefs.psnName(c).ifEmpty { "?" }
+                Ps5Pairing.pair(ip, account, pin) { h ->
+                    EventFile.add("PAIR|z telefonu: " + (if (h != null) "spárováno ${h.name} ${h.ip}" else "nepovedlo se ($ip)") +
+                        " · účet $name" + (Ps5Pairing.lastError?.takeIf { h == null }?.let { " · $it" } ?: ""))
+                    if (h != null) { Prefs.setPs5Host(c, h); pair = SetupPage.Pair.OK; changed(c) }
+                    else fail(Ps5Pairing.lastError ?: "")
+                }
+            } catch (e: Throwable) { fail(e.javaClass.simpleName) }
+        }, "tp-remote-pair").start()
+        return "OK"
+    }
+
     private fun handle(c: Context, form: Map<String, String>): String {
+        // PlayLingo v telefonu (pomocník přihlášení) posílá ověřený účet stejně jako stránce přihlášení
+        if (form.containsKey("account")) {
+            val acc = PhoneLogin.cleanAccount(form["account"], form["name"]) ?: return RemoteSetup.ERR_BAD
+            useAccount(c, acc)
+            return "OK"
+        }
         val v = form["v"]?.toIntOrNull() ?: 0
         if (v > RemoteSetup.VERSION) return RemoteSetup.ERR_VERSION
         return when (form["op"]) {
+            SetupPage.OP_INFO -> SetupPage.status(status(c))
+            SetupPage.OP_ACCOUNT -> {
+                val code = Ps5.authCodeFromTyped(form["url"] ?: "") ?: return RemoteSetup.ERR_BAD
+                val acc = try { PsnAuth.accountForCode(code) } catch (_: Throwable) { null } ?: return RemoteSetup.ERR_BAD
+                useAccount(c, acc)
+                "OK"
+            }
+            SetupPage.OP_CODE -> {
+                val pin = SetupPage.pin(form["pin"]) ?: return RemoteSetup.ERR_BAD
+                startPair(c, pin)
+            }
             RemoteSetup.OP_SNAPSHOT -> RemoteSetup.snapshot(tvName(), Prefs.remoteValues(c), DeeplKey.has(c))
             RemoteSetup.OP_SET -> {
                 val values = RemoteSetup.decode(form["data"] ?: "") ?: return RemoteSetup.ERR_BAD
@@ -92,6 +169,15 @@ object RemoteHost {
             }
             else -> RemoteSetup.ERR_BAD
         }
+    }
+
+    /** Ověřený 🔵 účet z telefonu: uložit s jménem; jiný účet = staré spárování z telefonu neplatí. */
+    private fun useAccount(c: Context, a: PhoneLogin.Account) {
+        Prefs.setPsnAccount(c, a.id, PhoneLogin.cleanName(a.name))
+        if (pair == SetupPage.Pair.FAIL) pair = SetupPage.Pair.IDLE
+        Log.i("TP_TEST", "REMOTE|account")
+        EventFile.add("LOGIN|účet z telefonu (nastavení TV)")
+        changed(c)
     }
 
     /** Služba si nastavení načte znovu a obrazovka v TV se překreslí. */

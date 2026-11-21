@@ -399,6 +399,22 @@ Aplikace z přihlášení potřebuje jen číslo účtu PlayStation (nemění se
   `ps5_fail_user` (CE-110032-7, jméno), hlavní tlačítko „Zkusit znovu“ (`pairFailed`) a vedle „Přihlásit jiný účet“.
   Úspěch: `ps5_ok` se jménem. Účet se volí PŘED nastavením na PS5, protože PS5 spáruje jen, když číslo vyvolá
   stejný uživatel, jakým se aplikace přihlásila. Indexy 0–6 a `pairstep=2` drží zkouška.
+- **Nastavení TV z telefonu na jedné stránce (od 0.97.63, přání majitele: „nejhorší byly účty na PS a redirect“).**
+  Stavěné na přenosu nastavení druhého sezení (`RemoteHost` + `core/RemoteSetup`, větev `nastaveni-z-telefonu`, návrh
+  `navrhy/nastaveni-z-telefonu.md` – díl 3 „aplikace v telefonu v režimu TV“ dělá to sezení). GET stránky z TV =
+  `core/SetupPage.page` (iPhone i Android, ES5, testy `SetupPageTest`, texty `sp_…` + rozcestník `wz_how_…`/`wz_ph_…`
+  v `core/I18nSetup.kt`): 1. 🔵 účet (Android `PhoneLogin.appIntentLink` na tutéž stránku TV – pomocník v telefonu pošle
+  pole `account`, které `RemoteHost.handle` přijme; jinak přihlášení Sony + obrázek „klepni na adresu → Kopírovat“ +
+  `op=ucet&url=`), 2. PS5: osmimístné číslo `op=kod&pin=` → `RemoteHost.startPair` (adresa z `Prefs.ps5Ip`, jinak
+  `Ps5Pairing.discover`; stav `RemoteHost.pair`, záznam `PAIR|z telefonu: …`), 3. DeepL `op=deepl`. Stránka se každé 2 s
+  ptá `op=info` (`SetupPage.status`). **Rozcestník** v prvním kroku průvodce (W_LANGS, jen `RemoteHost.eligible` +
+  PlayStation): volby „Telefonem (doporučeno)“ (`wphone` → `phoneSetup`, obrazovka `phoneSetupScreen`: čtvereček +
+  seznam ✔/○ účet · PS5 · DeepL, „Pokračovat na TV“ → W_LANG) a „Přímo na TV“; výchozí fokus dál `wnext` (zkouška kliká
+  naslepo, počet kroků se nemění). **iPhone zkratka:** `pomoc/zkratka.md` (`HelpLinks.IPHONE_SHORTCUT`) – `?tv=` si
+  zapamatuje stránku TV (localStorage, jen adresa domácí sítě `/p/<klíč>`), `?u=<adresa redirect>` ji na stránku TV
+  přepošle (`SetupPage` JS si `?u=` přečte a odešle `op=ucet`). Zkratku (Sdílet → URL Encode → Otevřít URL
+  `…/zkratka.html?u=`) si hráč vytvoří podle stránky; hotový odkaz z iCloudu doplní majitel do `ICLOUD` ve skriptu
+  stránky (zkratku umí podepsat jen iPhone). Na skutečném telefonu, iPhonu ani PS5 neověřeno.
 - Zkouška v emulátoru umí ověřit jen stránku a posílání účtu, ne přihlášení u Sony. Jestli Sony
   pustí přihlášení uvnitř pomocníka na skutečném telefonu, umí ověřit jen uživatel.
 

@@ -23,6 +23,11 @@ object HelpLinks {
     /** Záloha bez telefonu s Androidem: Tizen Studio v počítači. */
     val SAMSUNG_PC = page("samsung", "pocitac")
     val XBOX = page("xbox")
+    /**
+     * iPhone: zkratka „PlayLingo“ (Sdílet na stránce „redirect“ → adresa jde do TV bez kopírování). Stránka si z odkazu
+     * `?tv=` zapamatuje stránku TV a s `?u=` na ni adresu „redirect“ přepošle (`pomoc/zkratka.md`, od 0.97.63).
+     */
+    val IPHONE_SHORTCUT = BASE + "zkratka.html"
 
     fun page(name: String, anchor: String? = null) = BASE + name + ".html" + (anchor?.let { "#$it" } ?: "")
 }

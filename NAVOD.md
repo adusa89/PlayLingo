@@ -44,6 +44,18 @@ ukáže až krok Připojení konzole (bod 4).
 1. **Jazyky:** jazyk aplikace (texty se hned přepnou) a **Překládat z** – v jakém jazyce jsou titulky
    ve hře. Výchozí je angličtina; nabízejí se jen jazyky v latince (čtení obrazu jiné písmo neumí).
    Obojí jde později změnit (jazyk aplikace v ⚙ Nastavení → Obecné, Překládat z v Titulkách).
+   **Jak nastavit?** (Android TV s PlayStationem): **Telefonem (doporučeno)**, nebo **Přímo na TV**. Telefonem
+   ukáže TV jeden čtvereček – v telefonu (i iPhonu, stejná Wi‑Fi) se otevře stránka **PlayLingo · nastavení TV**
+   se vším, co se jinak píše ovladačem:
+   - **1 · 🔵 Účet pro PlayLingo** – Android: tlačítko **Otevřít v aplikaci PlayLingo** (nic se nekopíruje);
+     iPhone: přihlášení v prohlížeči s obrázkem, kde adresu „redirect“ zkopírovat, nebo zkratka **PlayLingo**
+     v Sdílet ([návod](https://adusa89.github.io/PlayLingo/zkratka.html)).
+   - **2 · PS5 pod 🔵 účtem** – na PS5 se přepni na 🔵 účet, zapni Remote Play a **Propojit zařízení**; osmimístné
+     číslo opiš do telefonu (ne do TV) a TV se spáruje sama.
+   - **3 · DeepL** (nepovinné) – klíč pro lepší překlad.
+   TV mezitím ukazuje seznam, který se sám odškrtává (✔ účet · ✔ PS5 spárovaná · ✔ DeepL). Na konci se na PS5
+   přepni zpět na 🟢 herní účet a v TV zvol **Pokračovat na TV** – průvodce pokračuje jazykem překladu a hotové
+   kroky už jen potvrdíš. Totéž kdykoli později v ⚙ Nastavení → Obecné → **Nastavit z telefonu**.
 2. **Zařízení:** na čem PlayLingo běží – Android TV nebo box s Androidem, nebo telefon či tablet
    (ten jen čte a hotové titulky posílá do televize LG nebo Samsung, viz bod 8).
 3. **Konzole:** PlayStation 5, nebo Xbox (viz bod 7b).
@@ -91,6 +103,12 @@ Kdyby se připojila tvým herním účtem, konzole by ti při hraní vypínala o
 (bere to tak, že ses přesunul hrát jinam). Po spárování se na ovladači přepneš zpět na herní účet
 a hraješ jako vždy, se svými hrami. Druhý účet se jen „dívá“.
 
+Aby se účty nepletly, značí je aplikace (i Nápověda, stránka v telefonu a tento návod) vždy stejně:
+
+- 🔵 **Účet pro PlayLingo** – druhý účet, jen pro PlayLingo: přihlásíš se jím v telefonu, na PS5 se na něj
+  přepneš, zapneš pod ním Remote Play a vyvoláš osmimístné číslo. U jména účtu je vždy 🔵 (např. „🔵 JMÉNO“).
+- 🟢 **Herní účet** – ten, na kterém hraješ. Na něj se na PS5 po spárování přepneš zpátky.
+
 **PS5 spáruje jen tehdy, když osmimístné číslo vyvolá na PS5 stejný uživatel, jakým se PlayLingo
 přihlásilo.** Proto aplikace účet nikdy nebere potichu a jeho jméno (Online ID) ukazuje až do konce.
 
@@ -101,15 +119,15 @@ a pod ním malý podtitul „Spárování · 3 z 6“, na stránce Konzole pruh 
    Na PS5 zatím nic nenastavuj.
 2. **Najdi PlayStation.** Aplikace ho v síti najde sama. Když ne, zadej adresu ručně
    (PS5 → Nastavení → Síť → Stav připojení → Adresa IPv4).
-3. **Účet pro PlayLingo.** Druhý účet PlayStation, na kterém nehraješ. Nemáš ho? Založ ho zdarma –
+3. **🔵 Účet pro PlayLingo.** Nahoře je legenda obou značek (🔵 / 🟢). Druhý účet PlayStation, na kterém nehraješ. Nemáš ho? Založ ho zdarma –
    návod je pod tlačítky (čtvereček, v telefonu tlačítko; stránka [pomoc/ps5.md](pomoc/ps5.md)).
-   - Když už je účet uložený (i po „Zrušit spárování“), ukáže se **Použít účet JMÉNO** a **Přihlásit jiný účet**.
+   - Když už je účet uložený (i po „Zrušit spárování“), ukáže se **Použít účet 🔵 JMÉNO** a **Přihlásit jiný účet**.
    - Když jsou účty uložené v PlayLingu v telefonu, nabídnou se se jmény.
-4. **Přihlas se tím účtem** (telefon). Otevři v telefonu fotoaparát, namiř ho na čtvereček v televizi
+4. **Přihlas se 🔵 účtem pro PlayLingo** (telefon), ne 🟢 herním. Otevři v telefonu fotoaparát, namiř ho na čtvereček v televizi
    a klepni na odkaz – otevře se stránka PlayLingo z tvé televize (telefon musí být na stejné Wi-Fi).
    **Android:** nahoře je žluté **Otevřít v aplikaci PlayLingo** – když PlayLingo v telefonu není, tlačítko
    ho stáhne (po instalaci se vrať na stránku a klepni znovu); přihlásíš se v aplikaci a nic se nekopíruje.
-   **iPhone** (nebo „Přihlášení v prohlížeči“ níž na stránce): klepni na „Přihlásit se u PlayStation“, zadej e-mail a heslo **druhého** účtu (na „passkey“ zvol
+   **iPhone** (nebo „Přihlášení v prohlížeči“ níž na stránce): klepni na „Přihlásit se u PlayStation“, zadej e-mail a heslo **🔵 druhého** účtu (na „passkey“ zvol
    „Remind Me Later“). Zůstane skoro prázdná stránka „redirect“ – zkopíruj její adresu a vlož ji na
    stránku PlayLingo. Televize pak pokračuje sama.
    **Bez telefonu:** pod čtverečkem je adresa stránky (např. `http://192.168.1.20:8765/p/k7mq2xra`) –
@@ -117,19 +135,20 @@ a pod ním malý podtitul „Spárování · 3 z 6“, na stránce Konzole pruh 
    **Záloha – opiš kód ručně:** když se stránka v telefonu neotevře, zvol „Stránka se neotevřela“.
    Krok má vlastní čtvereček rovnou na přihlášení Sony; na stránce „redirect“ najdi v adrese „code=“
    a opiš do televize to, co je za ním, až po znak & (i s tečkou a velkými písmeny). Kód platí pár minut.
-   Výsledek: **„✔ Ověřený účet: JMÉNO“** (s malým tlačítkem Přihlásit jiný účet).
-5. **Na PS5 přepni na uživatele JMÉNO** (tlačítko PS → ikona profilu → Přepnout uživatele) a v
+   Výsledek: **„✔ Ověřený účet: 🔵 JMÉNO“** (s malým tlačítkem Přihlásit jiný účet).
+5. **Na PS5 přepni na uživatele 🔵 JMÉNO** (tlačítko PS → ikona profilu → Přepnout uživatele) a v
    **Nastavení → Systém → Remote Play** zapni **Povolit Remote Play** a **Skrýt stav připojení Remote Play**
    (anglicky Hide Remote Play Connection Status – jinak ve hře svítí „Aplikace Remote Play je připojena“;
-   nastav ho i pod svým herním uživatelem). Když tam volba není, aktualizuj systém PS5.
-6. **Kód z PS5.** Pod uživatelem JMÉNO zvol Nastavení → Systém → Remote Play → **Propojit zařízení**.
+   nastav ho i pod svým 🟢 herním uživatelem). Když tam volba není, aktualizuj systém PS5.
+6. **Kód z PS5.** Pod uživatelem 🔵 JMÉNO zvol Nastavení → Systém → Remote Play → **Propojit zařízení**.
    Osmimístné číslo opiš do PlayLinga (v telefonu ho přečte kamerou) a zvol Spárovat. Po úspěchu:
-   „Spárováno (účet JMÉNO). Na ovladači se přepni zpět na herní účet.“
+   „Spárováno (účet 🔵 JMÉNO). Na ovladači se přepni zpět na 🟢 herní účet.“ Totéž připomene poslední
+   krok průvodce (Hotovo): „Na PS5 se přepni zpět na 🟢 herní účet“.
 
 **Chyba CE‑110032‑7 na PS5 / „Spárování se nepovedlo“ v aplikaci:** číslo nejspíš vyvolal jiný
-uživatel než JMÉNO. Aplikace to napíše a nabídne **Zkusit znovu** a **Přihlásit jiný účet**: buď se na PS5
-přepni na JMÉNO a vyvolej nové číslo, nebo se přihlas tím účtem, pod kterým číslo vyvoláváš (musí to být
-druhý účet, ne herní).
+uživatel než 🔵 JMÉNO. Aplikace to napíše a nabídne **Zkusit znovu** a **Přihlásit jiný účet**: buď se na PS5
+přepni na 🔵 JMÉNO a vyvolej nové číslo, nebo se přihlas tím účtem, pod kterým číslo vyvoláváš (musí to být
+🔵 druhý účet, ne 🟢 herní).
 
 **Probouzení z klidového režimu** je volba v ⚙ Nastavení → Obecné („Probouzet PlayStation“, výchozí
 vypnutá). Na PS5 k tomu: Nastavení → Systém → Úspora energie → Funkce dostupné v klidovém režimu →

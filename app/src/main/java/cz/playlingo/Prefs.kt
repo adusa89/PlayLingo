@@ -360,4 +360,7 @@ object Prefs {
 }
 
 /** Zkratka pro texty v jazyce, který si uživatel vybral. */
-fun Context.tx(key: String): String = I18n.t(Prefs.uiLang(this), key)
+fun Context.tx(key: String): String = I18n.t(Prefs.uiLang(this), key).let {
+    // značka herního účtu 🟢 je až v Androidu 10 – na starších TV a boxech zelené srdce, ať není prázdný čtvereček
+    if (android.os.Build.VERSION.SDK_INT < 29) it.replace(cz.playlingo.core.AccountMarks.GAME, cz.playlingo.core.AccountMarks.GAME_OLD) else it
+}

@@ -339,7 +339,11 @@ class MainActivity : Activity() {
         // seznam her: jen se zapnutou volbou „Seznam her automaticky“, nejvýš jednou za 6 h
         checkGameList(manual = false)
         // nastavení z telefonu (jen Android TV / box): stránka běží, dokud žije aplikace; změna z telefonu překreslí
-        if (RemoteHost.start(this)) RemoteHost.onChanged = { if (!isFinishing) { buildShell(); render(keepFocus = true) } }
+        // změna z telefonu (účet, spárování) → i rozepsané údaje spárování podle uloženého, ať je krok neukáže staré
+        if (RemoteHost.start(this)) RemoteHost.onChanged = { if (!isFinishing) {
+            draftPsn = Prefs.psnId(this); Prefs.ps5Ip(this).takeIf { it.isNotEmpty() }?.let { draftIp = it }
+            buildShell(); render(keepFocus = true)
+        } }
     }
 
     override fun onPause() {
@@ -597,7 +601,9 @@ class MainActivity : Activity() {
         content.addView(ui.text(t("wz_title"), 15f, Theme.ACCENT, bold = true))
         // kolik kroků zbývá (v telefonu není vidět levý seznam kroků)
         content.addView(ui.steps(wizard + 1, wizardSteps.size, steps(wizard + 1, wizardSteps.size)), ui.lp(top = 8))
-        content.addView(ui.text(ct(wizardSteps[wizard]), 30f, Theme.TEXT, bold = true), ui.lp(top = 10))
+        content.addView(ui.text(if (phoneSetup && wizard == W_LANGS) t("wz_how_phone") else ct(wizardSteps[wizard]), 30f, Theme.TEXT, bold = true), ui.lp(top = 10))
+        // rozcestník: nastavení telefonem – jedna stránka v telefonu, TV jen ukazuje, co je hotové
+        if (phoneSetup && wizard == W_LANGS) { phoneSetupScreen(focusedTag); return }
 
         val lang = Prefs.lang(this)
         var nextLabel = t("wz_next")
@@ -617,6 +623,13 @@ class MainActivity : Activity() {
                     }
                 }, "wuilang"), 18)
                 sourceRow("wsrc", 8)
+                // rozcestník (od 0.97.63, přání majitele): účet, PS5 a DeepL z telefonu na jedné stránce (Android TV / box
+                // s PlayStationem); výchozí je dál průvodce na TV – OK na Pokračovat jde jako dřív (zkouška kliká naslepo)
+                if (RemoteHost.eligible(this) && Prefs.console(this) == Console.PLAYSTATION) {
+                    add(ui.text(t("wz_how_q"), 20f, Theme.TEXT, bold = true), 18)
+                    option(t("wz_how_phone"), t("wz_how_phone_d"), false, "wphone") { phoneSetup = true; render() }
+                    option(t("wz_how_tv"), null, true, "wtvonly") { window.decorView.findViewWithTag<View>("wnext")?.requestFocus() }
+                }
             }
             W_DEVICE -> {
                 add(ui.text(t("wz_dev_q"), 20f, Theme.TEXT, bold = true), 18)
@@ -703,7 +716,11 @@ class MainActivity : Activity() {
             else -> {
                 add(ui.text(t("wz_done"), 17f, Theme.MUTED), 12)
                 // spárování právě skončilo a průvodce sem přešel sám → „Spárováno …“
-                if (justPaired && Prefs.consoleReady(this)) pairMsg?.let { add(ui.text("✔ $it", 16f, Theme.OK, bold = true), 12) }
+                val paired = Prefs.consoleReady(this)
+                val pairedMsg = if (justPaired && paired) pairMsg?.also { add(ui.text("✔ $it", 16f, Theme.OK, bold = true), 12) } else null
+                // PS5: na hraní se vrací na 🟢 herní účet – jednou, když to už neříká hláška o spárování
+                if (paired && Prefs.console(this) == Console.PLAYSTATION && pairedMsg?.let { it.contains(cz.playlingo.core.AccountMarks.GAME) || it.contains(cz.playlingo.core.AccountMarks.GAME_OLD) } != true)
+                    add(tagged(ui.text(t("acc_back_game"), 16f, Theme.TEXT, bold = true), "wbackgame"), 12)
                 add(ui.card().apply {
                     // jak se hraje – jinak u Android TV (přepnout HDMI) a u LG/Samsungu (aplikace v televizi)
                     addView(ui.text(t(if (Prefs.tvType(this@MainActivity) == TvType.ANDROID) "hc6_android" else "hc6_tv"), 16f))
@@ -742,6 +759,39 @@ class MainActivity : Activity() {
         val target = focusedTag?.let { window.decorView.findViewWithTag<View>(it) }
             ?: window.decorView.findViewWithTag<View>(if (pairing) "pnext" else "wnext")
         ui.restoringFocus()   // stejné tlačítko znovu vybrané – bez „pulzu“
+        target?.requestFocus()
+    }
+
+    /** Průvodce: nastavení telefonem (rozcestník v prvním kroku). */
+    private var phoneSetup = false
+
+    /**
+     * Nastavení telefonem: čtvereček na stránku z TV ([RemoteHost], [cz.playlingo.core.SetupPage]) a seznam, který se
+     * odškrtává podle toho, co přišlo z telefonu (🔵 účet, spárování PS5, DeepL). Pokračovat → jazyk překladu a dál
+     * průvodce na TV (hotové kroky se jen potvrdí; povolení pruhu musí být ovladačem v TV).
+     */
+    private fun phoneSetupScreen(focusedTag: Any?) {
+        val url = if (RemoteHost.start(this)) RemoteHost.pageUrl(this) else null
+        if (url != null) add(qrRow(url, t("wz_ph_scan")), 14) else add(ui.text(t("rs_nolan"), 16f, Theme.WARN), 14)
+        val st = RemoteHost.status(this)
+        add(ui.card().apply {
+            fun l(ok: Boolean, text: String) = addView(ui.text((if (ok) "✔ " else "○ ") + text, 18f, if (ok) Theme.OK else Theme.TEXT, bold = ok), ui.lp(top = 6))
+            l(st.account != null, t("wz_ph_acc") + (st.account?.takeIf { it.isNotEmpty() }?.let { " · $it" } ?: ""))
+            when (st.pair) {
+                cz.playlingo.core.SetupPage.Pair.BUSY -> addView(ui.text("⏳ " + t("sp_pair_busy"), 18f, Theme.ACCENT), ui.lp(top = 6))
+                else -> l(st.pair == cz.playlingo.core.SetupPage.Pair.OK, t("wz_ph_pair") + (st.console?.let { " · $it" } ?: ""))
+            }
+            l(st.deepl, t("wz_ph_deepl"))
+        }, 12)
+        val done = st.account != null && st.pair == cz.playlingo.core.SetupPage.Pair.OK
+        if (done) add(ui.text(t("sp_done"), 16f, Theme.OK), 10)
+        else add(ui.text(t("wz_ph_wait"), 16f, Theme.ACCENT, bold = true), 10)
+        val row = row()
+        row.addView(tagged(ui.button(t("wz_ph_go"), primary = done) { phoneSetup = false; wizard = W_LANG; render() }, "wphgo"))
+        row.addView(tagged(ui.button(t("wz_back")) { phoneSetup = false; render() }, "wback"), wrapLp())
+        add(row, 20)
+        val target = focusedTag?.let { window.decorView.findViewWithTag<View>(it) } ?: window.decorView.findViewWithTag<View>("wphgo")
+        ui.restoringFocus()
         target?.requestFocus()
     }
 
@@ -1199,6 +1249,8 @@ class MainActivity : Activity() {
             val c = ui.card()
             c.addView(ui.text(t("ps5_paired") + ": " + host.name, 20f, Theme.OK, bold = true))
             c.addView(ui.text(host.ip, 15f, Theme.MUTED), ui.lp(top = 4))
+            // kterým účtem je PlayLingo spárované – se značkou 🔵 účtu pro PlayLingo (jméno znají účty od 0.97.28)
+            Prefs.psnName(this).takeIf { it.isNotEmpty() }?.let { c.addView(ui.text(cz.playlingo.core.AccountMarks.named(it), 15f, Theme.MUTED), ui.lp(top = 4)) }
             add(c, 16)
             pairMsg?.let { add(ui.text(it, 15f, pairMsgColor), 10) }
         // hledání PS5, ověřování účtu, párování: pruh běhá, ať je vidět, že se něco děje
@@ -1248,7 +1300,12 @@ class MainActivity : Activity() {
             }
             // účet pro PlayLingo: druhý účet, na kterém se nehraje. Uložený se nikdy nepoužije potichu.
             7 -> {
-                add(ui.card().apply { addView(ui.text(t("pg_acc_text"), 17f, Theme.TEXT)) }, 10)
+                // legenda značek 🔵 účet pro PlayLingo / 🟢 herní účet (stejné značky v dalších krocích, Nápovědě
+                // i na stránce v telefonu); vysvětlení proč druhý účet je pod ní menším písmem, ať se krok vejde do TV
+                add(ui.card().apply {
+                    addView(tagged(ui.text(t("acc_legend"), 17f, Theme.TEXT, bold = true), "plegend"))
+                    addView(ui.text(t("pg_acc_text"), 15f, Theme.MUTED), ui.lp(top = 8))
+                }, 10)
                 if (have) nextLabel = t("pg_acc_use").replace("%s", name)
                 else {
                     // účty ověřené v tomhle telefonu (PlayLingo v telefonu jako čtečka) – se jmény, k výběru
@@ -2684,6 +2741,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.62"
-    const val VERSION_CODE = 159
+    const val VERSION = "verze 0.97.63"
+    const val VERSION_CODE = 160
 }
