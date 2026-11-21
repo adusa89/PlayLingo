@@ -1,0 +1,727 @@
+11-21 17:37:13.697 E/AndroidRuntime( 3352): FATAL EXCEPTION: AsyncDvrDbTask-0
+11-21 17:37:13.697 E/AndroidRuntime( 3352): Process: com.android.tv, PID: 3352
+11-21 17:37:13.697 E/AndroidRuntime( 3352): java.lang.RuntimeException: An error occurred while executing doInBackground()
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.os.AsyncTask$3.done(AsyncTask.java:354)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at java.util.concurrent.FutureTask.finishCompletion(FutureTask.java:383)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at java.util.concurrent.FutureTask.setException(FutureTask.java:252)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at java.util.concurrent.FutureTask.run(FutureTask.java:271)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at java.lang.Thread.run(Thread.java:764)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): Caused by: android.database.sqlite.SQLiteException: no such column: failed_reason (code 1 SQLITE_ERROR): , while compiling: SELECT _id, priority, type, input_id, channel_id, program_id, program_title, start_time_utc_millis, end_time_utc_millis, season_number, episode_number, episode_title, program_description, program_long_description, program_poster_art_uri, program_thumbnail_uri, state, failed_reason, series_recording_id FROM schedules
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteConnection.nativePrepareStatement(Native Method)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteConnection.acquirePreparedStatement(SQLiteConnection.java:903)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteConnection.prepare(SQLiteConnection.java:514)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteSession.prepare(SQLiteSession.java:588)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteProgram.<init>(SQLiteProgram.java:58)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteQuery.<init>(SQLiteQuery.java:37)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteDirectCursorDriver.query(SQLiteDirectCursorDriver.java:46)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteDatabase.rawQueryWithFactory(SQLiteDatabase.java:1408)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:399)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:294)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at com.android.tv.dvr.provider.DvrDatabaseHelper.query(DvrDatabaseHelper.java:276)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:128)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:115)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at com.android.tv.dvr.provider.AsyncDvrDbTask.doInBackground(AsyncDvrDbTask.java:65)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at android.os.AsyncTask$2.call(AsyncTask.java:333)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-21 17:37:13.697 E/AndroidRuntime( 3352): 	... 3 more
+11-21 17:37:14.594 I/TP_TEST ( 3379): REMOTE|page on port 8766
+11-21 17:37:24.201 D/AndroidRuntime( 3889): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:37:24.257 D/AndroidRuntime( 3889): Calling main entry com.android.commands.input.Input
+11-21 17:37:24.345 D/AndroidRuntime( 3889): Shutting down VM
+11-21 17:37:27.789 D/AndroidRuntime( 3921): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:37:27.874 D/AndroidRuntime( 3921): Calling main entry com.android.commands.input.Input
+11-21 17:37:27.897 D/AndroidRuntime( 3921): Shutting down VM
+11-21 17:37:31.206 D/AndroidRuntime( 3935): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:37:31.251 D/AndroidRuntime( 3935): Calling main entry com.android.commands.input.Input
+11-21 17:37:31.278 D/AndroidRuntime( 3935): Shutting down VM
+11-21 17:37:34.584 D/AndroidRuntime( 3950): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:37:34.631 D/AndroidRuntime( 3950): Calling main entry com.android.commands.input.Input
+11-21 17:37:34.654 D/AndroidRuntime( 3950): Shutting down VM
+11-21 17:38:23.151 D/AndroidRuntime( 4013): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:23.197 D/AndroidRuntime( 4013): Calling main entry com.android.commands.input.Input
+11-21 17:38:23.225 I/TP_TEST ( 3379): DEEPL|page page on port 8765
+11-21 17:38:23.278 D/AndroidRuntime( 4013): Shutting down VM
+11-21 17:38:26.593 D/AndroidRuntime( 4029): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:26.638 D/AndroidRuntime( 4029): Calling main entry com.android.commands.input.Input
+11-21 17:38:26.644 I/TP_TEST ( 3379): DEEPL|page page closed
+11-21 17:38:26.660 D/AndroidRuntime( 4029): Shutting down VM
+11-21 17:38:29.979 D/AndroidRuntime( 4044): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:30.026 D/AndroidRuntime( 4044): Calling main entry com.android.commands.input.Input
+11-21 17:38:30.049 D/AndroidRuntime( 4044): Shutting down VM
+11-21 17:38:33.422 D/AndroidRuntime( 4060): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:33.470 D/AndroidRuntime( 4060): Calling main entry com.android.commands.input.Input
+11-21 17:38:33.550 D/AndroidRuntime( 4060): Shutting down VM
+11-21 17:38:34.135 I/TP_TEST ( 3379): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:38:40.549 I/TP_TEST ( 3379): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:38:46.080 D/AndroidRuntime( 4088): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:46.124 D/AndroidRuntime( 4088): Calling main entry com.android.commands.input.Input
+11-21 17:38:46.131 D/AndroidRuntime( 4088): Shutting down VM
+11-21 17:38:47.272 D/AndroidRuntime( 4099): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:47.321 D/AndroidRuntime( 4099): Calling main entry com.android.commands.input.Input
+11-21 17:38:47.339 D/AndroidRuntime( 4099): Shutting down VM
+11-21 17:38:50.651 D/AndroidRuntime( 4115): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:50.697 D/AndroidRuntime( 4115): Calling main entry com.android.commands.input.Input
+11-21 17:38:50.709 D/AndroidRuntime( 4115): Shutting down VM
+11-21 17:38:51.836 D/AndroidRuntime( 4126): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:51.886 D/AndroidRuntime( 4126): Calling main entry com.android.commands.input.Input
+11-21 17:38:51.910 D/AndroidRuntime( 4126): Shutting down VM
+11-21 17:38:55.245 D/AndroidRuntime( 4141): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:55.294 D/AndroidRuntime( 4141): Calling main entry com.android.commands.input.Input
+11-21 17:38:55.302 D/AndroidRuntime( 4141): Shutting down VM
+11-21 17:38:56.437 D/AndroidRuntime( 4152): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:56.482 D/AndroidRuntime( 4152): Calling main entry com.android.commands.input.Input
+11-21 17:38:56.498 D/AndroidRuntime( 4152): Shutting down VM
+11-21 17:38:59.812 D/AndroidRuntime( 4168): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:38:59.858 D/AndroidRuntime( 4168): Calling main entry com.android.commands.input.Input
+11-21 17:38:59.865 D/AndroidRuntime( 4168): Shutting down VM
+11-21 17:39:00.983 D/AndroidRuntime( 4179): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:39:01.030 D/AndroidRuntime( 4179): Calling main entry com.android.commands.input.Input
+11-21 17:39:01.043 D/AndroidRuntime( 4179): Shutting down VM
+11-21 17:39:08.773 I/TP_TEST ( 4210): REMOTE|page on port 8766
+11-21 17:39:10.280 I/TP_TEST ( 4210): NET|připojeno WIFI_24
+11-21 17:39:10.319 I/TP_TEST ( 4210): A11Y|true
+11-21 17:39:10.327 I/TP_TEST ( 4210): START|video=1280x720|interval=100|screen=1920x1080|eco=true|decoder=OMX.google.h264.decoder (přímý výstup)|lib=ok 1280x720@30 10000kb
+11-21 17:39:10.404 I/TP_TEST ( 4210): NET|Wi-Fi na 2,4 GHz (2447 MHz, signál -50 dBm)
+11-21 17:39:10.404 I/TP_TEST ( 4210): VIDEO|fed=0|decoded=0|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:39:10.404 I/TP_TEST ( 4210): LINK|OFF||dec=OMX.google.h264.decoder (přímý výstup)|0x0|fed=0|decoded=0
+11-21 17:39:10.408 I/TP_TEST ( 4210): SOURCE|demo
+11-21 17:39:10.718 I/TP_TEST ( 4210): MODEL|cs|ok|pokus=1
+11-21 17:39:12.150 I/TP_TEST ( 4210): WARM|cs|první=1214ms|další=200ms
+11-21 17:39:17.824 I/TP_TEST ( 4210): READ|ocr=6346ms|zone=33%|Marek: We need money, Jonas.
+11-21 17:39:17.986 I/TP_TEST ( 4210): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:39:17.986 I/TP_TEST ( 4210): LAT|78ms|ocr=6346ms
+11-21 17:39:18.123 I/TP_TEST ( 4210): VIDEO|fed=75|decoded=70|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=75 raw=false err=null
+11-21 17:39:18.124 I/TP_TEST ( 4210): PERF|čtení=1|průměr=6346ms|poslední=6346ms|titulků=1|video=1280x720|oblast=33%|paměť=13+89MB|wifi=2447MHz/-50dBm
+11-21 17:39:24.532 I/TP_TEST ( 4210): COLOR|Marek|-|us=9658
+11-21 17:39:24.532 I/TP_TEST ( 4210): READ|ocr=6404ms|zone=33%|
+11-21 17:39:24.532 I/TP_TEST ( 4210): HIDE
+11-21 17:39:24.634 I/TP_TEST ( 4210): VIDEO|fed=141|decoded=137|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=141 raw=false err=null
+11-21 17:39:30.225 I/TP_TEST ( 4210): READ|ocr=5588ms|zone=33%|
+11-21 17:39:30.327 I/TP_TEST ( 4210): VIDEO|fed=197|decoded=192|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=197 raw=false err=null
+11-21 17:39:35.904 I/TP_TEST ( 4210): READ|ocr=5574ms|zone=33%|Get on your horse, we ride at dawn.
+11-21 17:39:36.118 I/TP_TEST ( 4210): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:39:36.118 I/TP_TEST ( 4210): LAT|3210ms|ocr=5574ms
+11-21 17:39:36.120 I/TP_TEST ( 4210): ZONE|learned 0.72-1.0
+11-21 17:39:36.235 I/TP_TEST ( 4210): VIDEO|fed=255|decoded=250|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=255 raw=false err=null
+11-21 17:39:42.387 I/TP_TEST ( 4210): READ|ocr=6146ms|zone=27%|Silas: If we keep going like this, the m
+11-21 17:39:42.679 I/TP_TEST ( 4210): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:39:42.679 I/TP_TEST ( 4210): LAT|2271ms|ocr=6146ms
+11-21 17:39:42.782 I/TP_TEST ( 4210): VIDEO|fed=321|decoded=316|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=321 raw=false err=null
+11-21 17:39:48.384 I/TP_TEST ( 4210): COLOR|Silas|-|us=1221
+11-21 17:39:48.384 I/TP_TEST ( 4210): READ|ocr=5597ms|zone=27%|MIRA: Are you sure this is the right way
+11-21 17:39:48.560 I/TP_TEST ( 4210): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:39:48.560 I/TP_TEST ( 4210): LAT|652ms|ocr=5597ms
+11-21 17:39:48.667 I/TP_TEST ( 4210): VIDEO|fed=380|decoded=375|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=380 raw=false err=null
+11-21 17:39:48.668 I/TP_TEST ( 4210): PERF|čtení=6|průměr=5942ms|poslední=5597ms|titulků=4|video=1280x720|oblast=27%|paměť=11+97MB|wifi=2447MHz/-50dBm
+11-21 17:39:54.131 I/TP_TEST ( 4210): COLOR|Mira|-|us=455
+11-21 17:39:54.131 I/TP_TEST ( 4210): READ|ocr=5456ms|zone=27%|Tobin: no idea, but we can't stay here
+11-21 17:39:54.357 I/TP_TEST ( 4210): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:39:54.357 I/TP_TEST ( 4210): LAT|449ms|ocr=5456ms
+11-21 17:39:54.460 I/TP_TEST ( 4210): VIDEO|fed=437|decoded=433|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=437 raw=false err=null
+11-21 17:40:00.202 I/TP_TEST ( 4210): COLOR|Tobin|-|us=338
+11-21 17:40:00.202 I/TP_TEST ( 4210): READ|ocr=5739ms|zone=27%|
+11-21 17:40:00.202 I/TP_TEST ( 4210): HIDE
+11-21 17:40:00.307 I/TP_TEST ( 4210): VIDEO|fed=494|decoded=489|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=494 raw=false err=null
+11-21 17:40:06.284 I/TP_TEST ( 4210): READ|ocr=5973ms|zone=27%|WE HAVE TO GET OUT OF HERE!
+11-21 17:40:06.412 I/TP_TEST ( 4210): SHOW|WE HAVE TO GET OUT OF HERE!|Musíme se odsud dostat!
+11-21 17:40:06.412 I/TP_TEST ( 4210): LAT|3504ms|ocr=5973ms
+11-21 17:40:06.516 I/TP_TEST ( 4210): VIDEO|fed=556|decoded=552|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=556 raw=false err=null
+11-21 17:40:13.166 I/TP_TEST ( 4210): READ|ocr=6648ms|zone=27%|Wait
+11-21 17:40:13.167 I/TP_TEST ( 4210): SHOW|Wait|Počkej
+11-21 17:40:13.167 I/TP_TEST ( 4210): LAT|2759ms|ocr=6648ms
+11-21 17:40:13.312 I/TP_TEST ( 4210): VIDEO|fed=624|decoded=620|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=624 raw=false err=null
+11-21 17:40:19.187 I/TP_TEST ( 4210): READ|ocr=5872ms|zone=27%|[Old Kessler] You two were never suppose
+11-21 17:40:19.347 I/TP_TEST ( 4210): SHOW|[Old Kessler] You two were never supposed to meet.|Old Kessler: Ty dva se nikdy neměli setkat.
+11-21 17:40:19.348 I/TP_TEST ( 4210): LAT|1439ms|ocr=5872ms
+11-21 17:40:19.451 I/TP_TEST ( 4210): VIDEO|fed=685|decoded=680|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=685 raw=false err=null
+11-21 17:40:19.453 I/TP_TEST ( 4210): PERF|čtení=11|průměr=5940ms|poslední=5872ms|titulků=8|video=1280x720|oblast=27%|paměť=14+97MB|wifi=2447MHz/-50dBm
+11-21 17:40:25.009 I/TP_TEST ( 4210): COLOR|Old Kessler|-|us=125
+11-21 17:40:25.010 I/TP_TEST ( 4210): READ|ocr=5551ms|zone=27%|Mira: I'll take the left door. Tobin: Th
+11-21 17:40:25.256 I/TP_TEST ( 4210): SHOW|Mira: I'll take the left door. Tobin: Then I'm going right.|Mira: Vezmu levé dveře. Tobin: Pak jdu v pořádku.
+11-21 17:40:25.256 I/TP_TEST ( 4210): LAT|1348ms|ocr=5551ms
+11-21 17:40:25.359 I/TP_TEST ( 4210): VIDEO|fed=744|decoded=740|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=743 raw=false err=null
+11-21 17:40:30.662 I/TP_TEST ( 4210): COLOR|Mira|-|us=80
+11-21 17:40:30.662 I/TP_TEST ( 4210): READ|ocr=5299ms|zone=27%|
+11-21 17:40:30.662 I/TP_TEST ( 4210): HIDE
+11-21 17:40:30.763 I/TP_TEST ( 4210): VIDEO|fed=798|decoded=794|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=798 raw=false err=null
+11-21 17:40:36.747 I/TP_TEST ( 4210): READ|ocr=5979ms|zone=27%|Lena: Keep your voice down, they can hea
+11-21 17:40:36.924 I/TP_TEST ( 4210): SHOW|Lena: Keep your voice down, they can hear us.|Lena: Mluv tiše, slyší nás.
+11-21 17:40:36.924 I/TP_TEST ( 4210): LAT|4016ms|ocr=5979ms
+11-21 17:40:37.028 I/TP_TEST ( 4210): VIDEO|fed=860|decoded=856|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=860 raw=false err=null
+11-21 17:40:42.786 I/TP_TEST ( 4210): SCALE|1.5
+11-21 17:40:42.788 I/TP_TEST ( 4210): COLOR|Lena|-|us=76
+11-21 17:40:42.788 I/TP_TEST ( 4210): READ|ocr=5755ms|zone=27%|I don't think anyone has been here for y
+11-21 17:40:42.983 I/TP_TEST ( 4210): SHOW|I don't think anyone has been here for years.|Nemyslím si, že by tu někdo byl roky.
+11-21 17:40:42.983 I/TP_TEST ( 4210): LAT|2575ms|ocr=5755ms
+11-21 17:40:43.086 I/TP_TEST ( 4210): VIDEO|fed=920|decoded=916|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=920 raw=false err=null
+11-21 17:40:48.964 I/TP_TEST ( 4210): READ|ocr=5875ms|zone=27%|Davor: Hand me the lantern and stay clos
+11-21 17:40:49.145 I/TP_TEST ( 4210): SHOW|Davor: Hand me the lantern and stay close.|Davor: Dej mi lucernu a zůstat blízko.
+11-21 17:40:49.145 I/TP_TEST ( 4210): LAT|1237ms|ocr=5875ms
+11-21 17:40:49.248 I/TP_TEST ( 4210): VIDEO|fed=982|decoded=978|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=982 raw=false err=null
+11-21 17:40:55.280 I/TP_TEST ( 4210): COLOR|Davor|-|us=319
+11-21 17:40:55.281 I/TP_TEST ( 4210): READ|ocr=6029ms|zone=27%|Lena: The bridge is out, we have to sWim
+11-21 17:40:55.487 I/TP_TEST ( 4210): SHOW|Lena: The bridge is out, we have to sWim.|Lena: Most je zničen, musíme plavat.
+11-21 17:40:55.487 I/TP_TEST ( 4210): LAT|79ms|ocr=6029ms
+11-21 17:40:55.589 I/TP_TEST ( 4210): VIDEO|fed=1045|decoded=1040|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1045 raw=false err=null
+11-21 17:40:55.590 I/TP_TEST ( 4210): PERF|čtení=17|průměr=5872ms|poslední=6029ms|titulků=13|video=1280x720|oblast=27%|paměť=12+105MB|wifi=2447MHz/-50dBm
+11-21 17:41:00.971 I/TP_TEST ( 4210): COLOR|Lena|-|us=73
+11-21 17:41:00.971 I/TP_TEST ( 4210): READ|ocr=5379ms|zone=27%|
+11-21 17:41:00.972 I/TP_TEST ( 4210): HIDE
+11-21 17:41:01.074 I/TP_TEST ( 4210): VIDEO|fed=1101|decoded=1097|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1100 raw=false err=null
+11-21 17:41:06.746 I/TP_TEST ( 4210): READ|ocr=5669ms|zone=27%|Davor: Run for the gate!
+11-21 17:41:06.747 I/TP_TEST ( 4210): SHOW|Davor: Run for the gate!|Davor: Utíkej k bráně!
+11-21 17:41:06.747 I/TP_TEST ( 4210): LAT|3839ms|ocr=5669ms
+11-21 17:41:06.849 I/TP_TEST ( 4210): VIDEO|fed=1157|decoded=1153|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1157 raw=false err=null
+11-21 17:41:12.139 I/TP_TEST ( 4210): COLOR|Davor|-|us=307
+11-21 17:41:12.140 I/TP_TEST ( 4210): READ|ocr=5269ms|zone=27%|Kessler: So, what will it be? • I'll tak
+11-21 17:41:12.614 I/TP_TEST ( 4210): SHOW|Kessler: So, what will it be? • I'll take the job. • Tell me more about the pay. • Not interested.|Kessler: Co to bude? Vezmu si práci. Řekni mi více o mzdě. Nezajímá.
+11-21 17:41:12.614 I/TP_TEST ( 4210): LAT|2206ms|ocr=5269ms
+11-21 17:41:12.718 I/TP_TEST ( 4210): VIDEO|fed=1216|decoded=1210|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1215 raw=false err=null
+11-21 17:41:18.330 I/TP_TEST ( 4210): COLOR|Kessler|-|us=97
+11-21 17:41:18.330 I/TP_TEST ( 4210): READ|ocr=5607ms|zone=27%|Marek: We need money, Jonas.
+11-21 17:41:18.331 I/TP_TEST ( 4210): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:41:18.331 I/TP_TEST ( 4210): LAT|423ms|ocr=5607ms
+11-21 17:41:18.433 I/TP_TEST ( 4210): VIDEO|fed=1273|decoded=1268|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1273 raw=false err=null
+11-21 17:41:24.292 I/TP_TEST ( 4210): COLOR|Marek|-|us=149
+11-21 17:41:24.292 I/TP_TEST ( 4210): READ|ocr=5856ms|zone=27%|Jonas: I reckon we won't find anything i
+11-21 17:41:24.517 I/TP_TEST ( 4210): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:41:24.517 I/TP_TEST ( 4210): LAT|609ms|ocr=5856ms
+11-21 17:41:24.622 I/TP_TEST ( 4210): VIDEO|fed=1334|decoded=1330|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1334 raw=false err=null
+11-21 17:41:30.407 I/TP_TEST ( 4210): COLOR|Jonas|-|us=126
+11-21 17:41:30.407 I/TP_TEST ( 4210): READ|ocr=5782ms|zone=27%|
+11-21 17:41:30.407 I/TP_TEST ( 4210): HIDE
+11-21 17:41:30.509 I/TP_TEST ( 4210): VIDEO|fed=1393|decoded=1389|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1393 raw=false err=null
+11-21 17:41:30.509 I/TP_TEST ( 4210): PERF|čtení=23|průměr=5799ms|poslední=5782ms|titulků=17|video=1280x720|oblast=27%|paměť=12+106MB|wifi=2447MHz/-50dBm
+11-21 17:41:36.446 I/TP_TEST ( 4210): READ|ocr=5934ms|zone=27%|Get on your horse, we ride at dawn.
+11-21 17:41:36.447 I/TP_TEST ( 4210): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:41:36.447 I/TP_TEST ( 4210): LAT|3539ms|ocr=5934ms
+11-21 17:41:36.550 I/TP_TEST ( 4210): VIDEO|fed=1453|decoded=1449|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1453 raw=false err=null
+11-21 17:41:43.378 I/TP_TEST ( 4210): READ|ocr=6822ms|zone=27%|Silas: If we keep going like this, the m
+11-21 17:41:43.378 I/TP_TEST ( 4210): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:41:43.378 I/TP_TEST ( 4210): LAT|2970ms|ocr=6822ms
+11-21 17:41:43.482 I/TP_TEST ( 4210): VIDEO|fed=1522|decoded=1518|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1522 raw=false err=null
+11-21 17:41:49.143 I/TP_TEST ( 4210): COLOR|Silas|-|us=199
+11-21 17:41:49.143 I/TP_TEST ( 4210): READ|ocr=5658ms|zone=27%|MIRA: Are you sure this is the right way
+11-21 17:41:49.143 I/TP_TEST ( 4210): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:41:49.144 I/TP_TEST ( 4210): LAT|1236ms|ocr=5658ms
+11-21 17:41:49.246 I/TP_TEST ( 4210): VIDEO|fed=1579|decoded=1575|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1579 raw=false err=null
+11-21 17:41:54.866 I/TP_TEST ( 4210): COLOR|Mira|-|us=137
+11-21 17:41:54.866 I/TP_TEST ( 4210): READ|ocr=5617ms|zone=27%|Tobin: no idea, but we can't stay here
+11-21 17:41:54.867 I/TP_TEST ( 4210): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:41:54.867 I/TP_TEST ( 4210): LAT|959ms|ocr=5617ms
+11-21 17:41:54.969 I/TP_TEST ( 4210): VIDEO|fed=1637|decoded=1634|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1637 raw=false err=null
+11-21 17:42:00.657 I/TP_TEST ( 4210): COLOR|Tobin|-|us=106
+11-21 17:42:00.657 I/TP_TEST ( 4210): READ|ocr=5685ms|zone=27%|
+11-21 17:42:00.657 I/TP_TEST ( 4210): HIDE
+11-21 17:42:00.759 I/TP_TEST ( 4210): VIDEO|fed=1694|decoded=1690|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1694 raw=false err=null
+11-21 17:42:00.759 I/TP_TEST ( 4210): PERF|čtení=28|průměr=5825ms|poslední=5685ms|titulků=21|video=1280x720|oblast=27%|paměť=11+106MB|wifi=2447MHz/-50dBm
+11-21 17:42:06.237 I/TP_TEST ( 4210): READ|ocr=5475ms|zone=27%|WE HAVE TO GET OUT OF HERE!
+11-21 17:42:06.238 I/TP_TEST ( 4210): SHOW|WE HAVE TO GET OUT OF HERE!|Musíme se odsud dostat!
+11-21 17:42:06.238 I/TP_TEST ( 4210): LAT|3330ms|ocr=5475ms
+11-21 17:42:06.341 I/TP_TEST ( 4210): VIDEO|fed=1749|decoded=1745|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1749 raw=false err=null
+11-21 17:42:12.311 I/TP_TEST ( 4210): READ|ocr=5964ms|zone=27%|Wait
+11-21 17:42:12.311 I/TP_TEST ( 4210): SHOW|Wait|Počkej
+11-21 17:42:12.312 I/TP_TEST ( 4210): LAT|1903ms|ocr=5964ms
+11-21 17:42:12.413 I/TP_TEST ( 4210): VIDEO|fed=1810|decoded=1806|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1810 raw=false err=null
+11-21 17:42:15.981 E/AndroidRuntime( 8280): FATAL EXCEPTION: AsyncDvrDbTask-0
+11-21 17:42:15.981 E/AndroidRuntime( 8280): Process: com.android.tv, PID: 8280
+11-21 17:42:15.981 E/AndroidRuntime( 8280): java.lang.RuntimeException: An error occurred while executing doInBackground()
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.os.AsyncTask$3.done(AsyncTask.java:354)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at java.util.concurrent.FutureTask.finishCompletion(FutureTask.java:383)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at java.util.concurrent.FutureTask.setException(FutureTask.java:252)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at java.util.concurrent.FutureTask.run(FutureTask.java:271)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at java.lang.Thread.run(Thread.java:764)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): Caused by: android.database.sqlite.SQLiteException: no such column: failed_reason (code 1 SQLITE_ERROR): , while compiling: SELECT _id, priority, type, input_id, channel_id, program_id, program_title, start_time_utc_millis, end_time_utc_millis, season_number, episode_number, episode_title, program_description, program_long_description, program_poster_art_uri, program_thumbnail_uri, state, failed_reason, series_recording_id FROM schedules
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteConnection.nativePrepareStatement(Native Method)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteConnection.acquirePreparedStatement(SQLiteConnection.java:903)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteConnection.prepare(SQLiteConnection.java:514)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteSession.prepare(SQLiteSession.java:588)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteProgram.<init>(SQLiteProgram.java:58)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteQuery.<init>(SQLiteQuery.java:37)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteDirectCursorDriver.query(SQLiteDirectCursorDriver.java:46)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteDatabase.rawQueryWithFactory(SQLiteDatabase.java:1408)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:399)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:294)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at com.android.tv.dvr.provider.DvrDatabaseHelper.query(DvrDatabaseHelper.java:276)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:128)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:115)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at com.android.tv.dvr.provider.AsyncDvrDbTask.doInBackground(AsyncDvrDbTask.java:65)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at android.os.AsyncTask$2.call(AsyncTask.java:333)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-21 17:42:15.981 E/AndroidRuntime( 8280): 	... 3 more
+11-21 17:42:18.154 I/TP_TEST ( 4210): READ|ocr=5738ms|zone=27%|[old Kessler] You two were never suppose
+11-21 17:42:18.154 I/TP_TEST ( 4210): SHOW|[old Kessler] You two were never supposed to meet.|Old Kessler: Ty dva se nikdy neměli setkat.
+11-21 17:42:18.154 I/TP_TEST ( 4210): LAT|246ms|ocr=5738ms
+11-21 17:42:18.256 I/TP_TEST ( 4210): VIDEO|fed=1869|decoded=1864|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1869 raw=false err=null
+11-21 17:42:23.782 I/TP_TEST ( 4210): COLOR|Old Kessler|-|us=110
+11-21 17:42:23.782 I/TP_TEST ( 4210): READ|ocr=5519ms|zone=27%|
+11-21 17:42:23.782 I/TP_TEST ( 4210): HIDE
+11-21 17:42:23.884 I/TP_TEST ( 4210): VIDEO|fed=1924|decoded=1919|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1924 raw=false err=null
+11-21 17:42:26.246 D/AndroidRuntime( 8538): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:42:26.369 D/AndroidRuntime( 8538): Calling main entry com.android.commands.input.Input
+11-21 17:42:26.378 D/AndroidRuntime( 8538): Shutting down VM
+11-21 17:42:30.295 I/TP_TEST ( 4210): READ|ocr=6407ms|zone=27%|Mira: I'll take the left door. Tobin: Th
+11-21 17:42:30.416 I/TP_TEST ( 4210): SHOW|Mira: I'll take the left door. Tobin: Then l'm going right.|Mira: Vezmu levé dveře. Tobin: Pak jsem v pořádku.
+11-21 17:42:30.416 I/TP_TEST ( 4210): LAT|5008ms|ocr=6407ms
+11-21 17:42:30.521 I/TP_TEST ( 4210): VIDEO|fed=1990|decoded=1986|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=1990 raw=false err=null
+11-21 17:42:30.823 I/TP_TEST ( 4210): PERF|čtení=33|průměr=5824ms|poslední=6407ms|titulků=25|video=1280x720|oblast=27%|paměť=13+107MB|wifi=2447MHz/-50dBm
+11-21 17:42:35.581 I/TP_TEST ( 4210): VIDEO|fed=2042|decoded=2038|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=2042 raw=false err=null
+11-21 17:42:36.476 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:42:36.478 I/TestPreklad( 4210): regist: [I] Regist starting search
+11-21 17:42:36.479 I/TestPreklad( 4210): regist: [I] Regist sending search packet
+11-21 17:42:39.480 I/TestPreklad( 4210): regist: [E] Regist timed out waiting for search response
+11-21 17:42:39.480 I/TestPreklad( 4210): regist: [E] Regist search failed
+11-21 17:42:39.481 I/TP_TEST ( 4210): PAIR|failed RegistEventFailed
+11-21 17:42:39.894 I/TP_TEST ( 4210): SOURCE|ps5 10.0.2.2
+11-21 17:42:40.630 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:42:43.933 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:42:43.933 I/TP_TEST ( 4210): PS5|v síti: žádná konzole
+11-21 17:42:43.933 I/TP_TEST ( 4210): PS5|spárováno: Zkouška 10.0.2.2 …0000 · účet ? · spárovaná konzole v síti nenalezena
+11-21 17:42:45.681 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:42:50.722 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:42:50.869 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:42:50.870 I/TP_TEST ( 4210): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:42:50.871 I/TP_TEST ( 4210): PS5|connect 10.0.2.2 → Success
+11-21 17:42:50.874 I/TP_TEST ( 4210): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=1
+11-21 17:42:50.875 I/TP_TEST ( 4210): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:42:50.923 I/TP_TEST ( 4210): LINK|WAITING|Connection Refused in Session Request|dec=OMX.google.h264.decoder (přímý výstup)|0x0|fed=2083|decoded=2079
+11-21 17:42:55.762 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:42:56.912 E/AndroidRuntime( 8833): FATAL EXCEPTION: AsyncDvrDbTask-0
+11-21 17:42:56.912 E/AndroidRuntime( 8833): Process: com.android.tv, PID: 8833
+11-21 17:42:56.912 E/AndroidRuntime( 8833): java.lang.RuntimeException: An error occurred while executing doInBackground()
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.os.AsyncTask$3.done(AsyncTask.java:354)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at java.util.concurrent.FutureTask.finishCompletion(FutureTask.java:383)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at java.util.concurrent.FutureTask.setException(FutureTask.java:252)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at java.util.concurrent.FutureTask.run(FutureTask.java:271)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at java.lang.Thread.run(Thread.java:764)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): Caused by: android.database.sqlite.SQLiteException: no such column: failed_reason (code 1 SQLITE_ERROR): , while compiling: SELECT _id, priority, type, input_id, channel_id, program_id, program_title, start_time_utc_millis, end_time_utc_millis, season_number, episode_number, episode_title, program_description, program_long_description, program_poster_art_uri, program_thumbnail_uri, state, failed_reason, series_recording_id FROM schedules
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteConnection.nativePrepareStatement(Native Method)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteConnection.acquirePreparedStatement(SQLiteConnection.java:903)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteConnection.prepare(SQLiteConnection.java:514)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteSession.prepare(SQLiteSession.java:588)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteProgram.<init>(SQLiteProgram.java:58)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteQuery.<init>(SQLiteQuery.java:37)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteDirectCursorDriver.query(SQLiteDirectCursorDriver.java:46)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteDatabase.rawQueryWithFactory(SQLiteDatabase.java:1408)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:399)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:294)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at com.android.tv.dvr.provider.DvrDatabaseHelper.query(DvrDatabaseHelper.java:276)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:128)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:115)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at com.android.tv.dvr.provider.AsyncDvrDbTask.doInBackground(AsyncDvrDbTask.java:65)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at android.os.AsyncTask$2.call(AsyncTask.java:333)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-21 17:42:56.912 E/AndroidRuntime( 8833): 	... 3 more
+11-21 17:42:57.898 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:42:57.899 I/TP_TEST ( 4210): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:42:57.900 I/TP_TEST ( 4210): PS5|connect 10.0.2.2 → Success
+11-21 17:42:57.907 I/TP_TEST ( 4210): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=2
+11-21 17:42:57.908 I/TP_TEST ( 4210): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:00.802 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:00.903 I/TP_TEST ( 4210): PERF|čtení=33|průměr=5824ms|poslední=6407ms|titulků=25|video=0x0|oblast=27%|paměť=16+109MB|wifi=2447MHz/-50dBm
+11-21 17:43:05.842 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:10.875 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:10.878 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:43:14.786 D/AndroidRuntime( 8878): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:43:14.835 D/AndroidRuntime( 8878): Calling main entry com.android.commands.input.Input
+11-21 17:43:14.842 D/AndroidRuntime( 8878): Shutting down VM
+11-21 17:43:15.918 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:15.966 D/AndroidRuntime( 8889): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:43:16.012 D/AndroidRuntime( 8889): Calling main entry com.android.commands.input.Input
+11-21 17:43:16.038 D/AndroidRuntime( 8889): Shutting down VM
+11-21 17:43:17.857 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:43:17.858 I/TP_TEST ( 4210): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:43:17.859 I/TP_TEST ( 4210): PS5|connect 10.0.2.2 → Success
+11-21 17:43:17.861 I/TP_TEST ( 4210): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=3
+11-21 17:43:17.862 I/TP_TEST ( 4210): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:17.929 I/TP_TEST ( 4210): LINK|FAILED|Connection Refused in Session Request|dec=OMX.google.h264.decoder (přímý výstup)|0x0|fed=2083|decoded=2079
+11-21 17:43:20.954 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:25.986 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:26.523 I/TP_TEST ( 4210): LOGIN|page on port 8765
+11-21 17:43:30.919 I/TP_TEST ( 4210): PERF|čtení=33|průměr=5824ms|poslední=6407ms|titulků=25|video=0x0|oblast=27%|paměť=10+106MB|wifi=2447MHz/-50dBm
+11-21 17:43:31.020 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:36.054 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:36.827 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:43:36.828 I/TP_TEST ( 4210): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:43:36.829 I/TP_TEST ( 4210): PS5|connect 10.0.2.2 → Success
+11-21 17:43:36.831 I/TP_TEST ( 4210): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=4
+11-21 17:43:36.832 I/TP_TEST ( 4210): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:37.197 I/TP_TEST ( 4210): LOGIN|page closed
+11-21 17:43:40.411 I/TP_TEST ( 4210): LOGIN|page on port 8765
+11-21 17:43:40.444 I/TP_TEST ( 4210): LOGIN|test page 200 form=true
+11-21 17:43:40.458 I/TP_TEST ( 4210): LOGIN|test wrong key 404
+11-21 17:43:40.482 I/TP_TEST ( 4210): LOGIN|page account from app
+11-21 17:43:40.483 I/TP_TEST ( 4210): LOGIN|page closed
+11-21 17:43:40.484 I/TP_TEST ( 4210): LOGIN|test app OK
+11-21 17:43:41.100 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:46.138 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:48.658 I/TP_TEST ( 4210): HELPER|start
+11-21 17:43:48.663 I/TP_TEST ( 4210): HELPER|link ok
+11-21 17:43:51.144 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:52.892 I/TP_TEST ( 4210): HELPER|link ok
+11-21 17:43:53.018 I/TP_TEST ( 4210): HELPER|login open
+11-21 17:43:53.082 I/TP_TEST ( 4210): HELPER|cookies cleared=false
+11-21 17:43:56.154 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:43:56.541 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:43:56.548 I/TP_TEST ( 4210): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:43:56.549 I/TP_TEST ( 4210): PS5|connect 10.0.2.2 → Success
+11-21 17:43:56.564 I/TP_TEST ( 4210): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=5
+11-21 17:43:56.565 I/TP_TEST ( 4210): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): FATAL EXCEPTION: AsyncDvrDbTask-0
+11-21 17:43:57.099 E/AndroidRuntime( 9054): Process: com.android.tv, PID: 9054
+11-21 17:43:57.099 E/AndroidRuntime( 9054): java.lang.RuntimeException: An error occurred while executing doInBackground()
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.os.AsyncTask$3.done(AsyncTask.java:354)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at java.util.concurrent.FutureTask.finishCompletion(FutureTask.java:383)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at java.util.concurrent.FutureTask.setException(FutureTask.java:252)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at java.util.concurrent.FutureTask.run(FutureTask.java:271)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at java.lang.Thread.run(Thread.java:764)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): Caused by: android.database.sqlite.SQLiteException: no such column: failed_reason (code 1 SQLITE_ERROR): , while compiling: SELECT _id, priority, type, input_id, channel_id, program_id, program_title, start_time_utc_millis, end_time_utc_millis, season_number, episode_number, episode_title, program_description, program_long_description, program_poster_art_uri, program_thumbnail_uri, state, failed_reason, series_recording_id FROM schedules
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteConnection.nativePrepareStatement(Native Method)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteConnection.acquirePreparedStatement(SQLiteConnection.java:903)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteConnection.prepare(SQLiteConnection.java:514)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteSession.prepare(SQLiteSession.java:588)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteProgram.<init>(SQLiteProgram.java:58)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteQuery.<init>(SQLiteQuery.java:37)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteDirectCursorDriver.query(SQLiteDirectCursorDriver.java:46)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteDatabase.rawQueryWithFactory(SQLiteDatabase.java:1408)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:399)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:294)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at com.android.tv.dvr.provider.DvrDatabaseHelper.query(DvrDatabaseHelper.java:276)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:128)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:115)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at com.android.tv.dvr.provider.AsyncDvrDbTask.doInBackground(AsyncDvrDbTask.java:65)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at android.os.AsyncTask$2.call(AsyncTask.java:333)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-21 17:43:57.099 E/AndroidRuntime( 9054): 	... 3 more
+11-21 17:43:57.931 I/TP_TEST ( 4210): HELPER|page my.account.sony.com
+11-21 17:43:58.324 I/TP_TEST ( 4210): HELPER|page my.account.sony.com
+11-21 17:44:00.959 I/TP_TEST ( 4210): PERF|čtení=33|průměr=5824ms|poslední=6407ms|titulků=25|video=0x0|oblast=27%|paměť=7+148MB|wifi=2447MHz/-50dBm
+11-21 17:44:01.169 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:06.264 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:11.355 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:16.197 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:44:16.390 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:19.971 D/AndroidRuntime( 9115): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:44:20.143 D/AndroidRuntime( 9115): Calling main entry com.android.commands.input.Input
+11-21 17:44:20.248 D/AndroidRuntime( 9115): Shutting down VM
+11-21 17:44:21.284 I/TP_TEST ( 4210): PAIR|discover nets=192.168.232.2/21 192.168.200.2/24 → 
+11-21 17:44:21.285 I/TP_TEST ( 4210): PS5|profile 1280x720 10000kb net=WIFI_24
+11-21 17:44:21.286 I/TP_TEST ( 4210): PS5|connect 10.0.2.2 → Success
+11-21 17:44:21.288 I/TP_TEST ( 4210): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=WIFI_24 | pokus=6
+11-21 17:44:21.289 I/TP_TEST ( 4210): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:44:21.427 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:22.396 D/AndroidRuntime( 9128): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:44:22.444 D/AndroidRuntime( 9128): Calling main entry com.android.commands.input.Input
+11-21 17:44:22.450 D/AndroidRuntime( 9128): Shutting down VM
+11-21 17:44:24.561 D/AndroidRuntime( 9139): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:44:24.606 D/AndroidRuntime( 9139): Calling main entry com.android.commands.input.Input
+11-21 17:44:24.612 D/AndroidRuntime( 9139): Shutting down VM
+11-21 17:44:26.515 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:26.744 I/TP_TEST ( 4210): TR|start cs model=true
+11-21 17:44:27.028 I/TP_TEST ( 4210): TR|What are you doing here?|Co tady děláš?
+11-21 17:44:27.162 I/TP_TEST ( 4210): TR|Are you sure about this?|Jsi si tím jistý?
+11-21 17:44:27.272 I/TP_TEST ( 4210): TR|Do you know who I am?|Víš, kdo jsem?
+11-21 17:44:27.360 I/TP_TEST ( 4210): TR|Can you help me?|Můžeš mi pomoci?
+11-21 17:44:27.447 I/TP_TEST ( 4210): TR|What do you want?|Co chceš?
+11-21 17:44:27.548 I/TP_TEST ( 4210): TR|Where did you get that?|Kde jsi to dostal?
+11-21 17:44:27.647 I/TP_TEST ( 4210): TR|Did you hear that?|Slyšel jsi to?
+11-21 17:44:27.647 I/TP_TEST ( 4210): TR|Are you out of your mind?|Zbláznil ses?
+11-21 17:44:27.755 I/TP_TEST ( 4210): TR|How much do you want for it?|Kolik chceš za to?
+11-21 17:44:27.868 I/TP_TEST ( 4210): TR|Have you seen my brother?|Viděl jsi mého bratra?
+11-21 17:44:27.987 I/TP_TEST ( 4210): TR|Why didn't you tell me?|Proč jsi mi to neřekl?
+11-21 17:44:28.108 I/TP_TEST ( 4210): TR|Will you come with me?|Půjdeš se mnou?
+11-21 17:44:28.109 I/TP_TEST ( 4210): TR|Get on your horse.|Nasedni na koně.
+11-21 17:44:28.109 I/TP_TEST ( 4210): TR|Follow me.|Za mnou!
+11-21 17:44:28.109 I/TP_TEST ( 4210): TR|Stay close.|Drž se u mě.
+11-21 17:44:28.109 I/TP_TEST ( 4210): TR|Hurry up!|Pospěš si!
+11-21 17:44:28.109 I/TP_TEST ( 4210): TR|Watch out!|Pozor!
+11-21 17:44:28.109 I/TP_TEST ( 4210): TR|Get down!|K zemi!
+11-21 17:44:28.110 I/TP_TEST ( 4210): TR|Take cover!|Kryjte se!
+11-21 17:44:28.110 I/TP_TEST ( 4210): TR|Hold on.|Vydrž.
+11-21 17:44:28.209 I/TP_TEST ( 4210): TR|Hang on a second.|Počkej sekundu.
+11-21 17:44:28.296 I/TP_TEST ( 4210): TR|Wait for me.|Počkej na mě.
+11-21 17:44:28.388 I/TP_TEST ( 4210): TR|Leave me alone.|Nech mě na pokoji.
+11-21 17:44:28.585 I/TP_TEST ( 4210): TR|Shut up.|Drž hubu.
+11-21 17:44:28.819 I/TP_TEST ( 4210): TR|Calm down.|Uklidni se.
+11-21 17:44:28.895 I/TP_TEST ( 4210): TR|Take it easy.|Uklidni se.
+11-21 17:44:29.000 I/TP_TEST ( 4210): TR|Give me your gun.|Dej mi zbraň.
+11-21 17:44:29.073 I/TP_TEST ( 4210): TR|Put your hands up!|Ruce!
+11-21 17:44:29.073 I/TP_TEST ( 4210): TR|Drop your weapon!|Zahoď zbraň!
+11-21 17:44:29.074 I/TP_TEST ( 4210): TR|Don't move!|Ani hnout.
+11-21 17:44:29.180 I/TP_TEST ( 4210): TR|Open the door.|Otevři dveře.
+11-21 17:44:29.180 I/TP_TEST ( 4210): TR|Give it back.|Vrať to!
+11-21 17:44:29.273 I/TP_TEST ( 4210): TR|Tell me the truth.|Řekni mi pravdu.
+11-21 17:44:29.352 I/TP_TEST ( 4210): TR|Trust me.|Věř mi.
+11-21 17:44:29.438 I/TP_TEST ( 4210): TR|Be careful.|Buď opatrný.
+11-21 17:44:29.531 I/TP_TEST ( 4210): TR|Look at me.|Podívej se na mě.
+11-21 17:44:29.606 I/TP_TEST ( 4210): TR|Come here.|Pojď sem.
+11-21 17:44:29.689 I/TP_TEST ( 4210): TR|Go away.|Jdi pryč.
+11-21 17:44:29.851 I/TP_TEST ( 4210): TR|Let him go.|Nech ho jít.
+11-21 17:44:30.096 I/TP_TEST ( 4210): TR|Keep your voice down, they can hear us.|Mluv tiše, slyší nás.
+11-21 17:44:30.380 I/TP_TEST ( 4210): TR|Hand me the lantern and stay close.|Dej mi lucernu a zůstat blízko.
+11-21 17:44:30.380 I/TP_TEST ( 4210): TR|Run for the gate!|Utíkej k bráně!
+11-21 17:44:30.461 I/TP_TEST ( 4210): TR|I don't know.|Nevím.
+11-21 17:44:30.486 I/TP_TEST ( 4210): ZONE|scan
+11-21 17:44:30.542 I/TP_TEST ( 4210): TR|No idea.|Nevím.
+11-21 17:44:30.695 I/TP_TEST ( 4210): TR|I have no idea what you're talking about.|Nevím, o čem mluvíš.
+11-21 17:44:30.774 I/TP_TEST ( 4210): TR|Come on, let's go!|Pojďme!
+11-21 17:44:30.774 I/TP_TEST ( 4210): TR|Never mind.|To je jedno.
+11-21 17:44:30.860 I/TP_TEST ( 4210): TR|Forget it.|Zapomeň na to.
+11-21 17:44:30.952 I/TP_TEST ( 4210): TR|It doesn't matter.|Nezáleží na tom.
+11-21 17:44:30.989 I/TP_TEST ( 4210): PERF|čtení=33|průměr=5824ms|poslední=6407ms|titulků=25|video=0x0|oblast=33%|paměť=12+126MB|wifi=2447MHz/-50dBm
+11-21 17:44:31.067 I/TP_TEST ( 4210): TR|I'll take care of it.|Postarám se o to.
+11-21 17:44:31.067 I/TP_TEST ( 4210): TR|You can count on me.|Můžeš se na mě spolehnout.
+11-21 17:44:31.067 I/TP_TEST ( 4210): TR|I owe you one.|Máš to u mě.
+11-21 17:44:31.168 I/TP_TEST ( 4210): TR|Thanks for your help.|Díky za pomoc.
+11-21 17:44:31.168 I/TP_TEST ( 4210): TR|You're welcome.|Není zač.
+11-21 17:44:31.255 I/TP_TEST ( 4210): TR|What's going on?|Co se děje?
+11-21 17:44:31.334 I/TP_TEST ( 4210): TR|What happened?|Co se stalo?
+11-21 17:44:31.421 I/TP_TEST ( 4210): TR|Where are we going?|Kam jedeme?
+11-21 17:44:31.522 I/TP_TEST ( 4210): TR|I'm going to kill you.|Zabiju tě.
+11-21 17:44:31.593 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:31.622 I/TP_TEST ( 4210): TR|You'll pay for this.|Za to zaplatíš.
+11-21 17:44:31.715 I/TP_TEST ( 4210): TR|I don't trust him.|Nevěřím mu.
+11-21 17:44:31.715 I/TP_TEST ( 4210): TR|He's lying.|Lže.
+11-21 17:44:31.801 I/TP_TEST ( 4210): TR|That's not true.|To není pravda.
+11-21 17:44:31.867 I/TP_TEST ( 4210): TR|You're right.|Máš pravdu.
+11-21 17:44:31.867 I/TP_TEST ( 4210): TR|You were right about him.|Měl jsi o něm pravdu.
+11-21 17:44:31.960 I/TP_TEST ( 4210): TR|I was wrong.|Mýlil jsem se.
+11-21 17:44:32.039 I/TP_TEST ( 4210): TR|I'm sorry.|Je mi líto.
+11-21 17:44:32.149 I/TP_TEST ( 4210): TR|It's not your fault.|Není to tvoje chyba.
+11-21 17:44:32.285 I/TP_TEST ( 4210): TR|We have to get out of here.|Musíme se odsud dostat.
+11-21 17:44:32.385 I/TP_TEST ( 4210): TR|We're running out of time.|Nemáme moc času.
+11-21 17:44:32.493 I/TP_TEST ( 4210): TR|There's no time to explain.|Není čas to vysvětlit.
+11-21 17:44:32.493 I/TP_TEST ( 4210): TR|I've got a bad feeling about this.|Mám z toho špatný pocit.
+11-21 17:44:32.493 I/TP_TEST ( 4210): TR|Something's wrong.|Něco tu nehraje.
+11-21 17:44:32.560 I/TP_TEST ( 4210): TR|Good job.|Dobrá práce.
+11-21 17:44:32.626 I/TP_TEST ( 4210): TR|Well done.|Dobrá práce.
+11-21 17:44:32.626 I/TP_TEST ( 4210): TR|Nice shot!|Dobrá rána!
+11-21 17:44:32.626 I/TP_TEST ( 4210): TR|See you later.|Tak zatím.
+11-21 17:44:32.626 I/TP_TEST ( 4210): TR|Take care of yourself.|Dávej na sebe pozor.
+11-21 17:44:32.626 I/TP_TEST ( 4210): TR|I need a drink.|Potřebuju se napít.
+11-21 17:44:32.735 I/TP_TEST ( 4210): TR|Let's get this over with.|Pojďme to dokončit.
+11-21 17:44:32.735 I/TP_TEST ( 4210): TR|That's enough!|To stačí!
+11-21 17:44:32.735 I/TP_TEST ( 4210): TR|Mind your own business.|Starej se o sebe.
+11-21 17:44:32.736 I/TP_TEST ( 4210): TR|What the hell is wrong with you?|Co to s tebou sakra je?
+11-21 17:44:32.736 I/TP_TEST ( 4210): TR|You've got to be kidding me.|To si děláš srandu.
+11-21 17:44:32.842 I/TP_TEST ( 4210): TR|I can't believe it.|Nemůžu tomu uvěřit.
+11-21 17:44:32.842 I/TP_TEST ( 4210): TR|It's a long story.|To je na dlouhé vyprávění.
+11-21 17:44:32.935 I/TP_TEST ( 4210): TR|We had a deal.|Měli jsme dohodu.
+11-21 17:44:33.035 I/TP_TEST ( 4210): TR|I've been looking for you.|Hledal jsem tě.
+11-21 17:44:33.149 I/TP_TEST ( 4210): TR|You shouldn't have come here.|Neměl bys sem přijít.
+11-21 17:44:33.218 I/TP_TEST ( 4210): TR|They're coming!|Jdou!
+11-21 17:44:33.305 I/TP_TEST ( 4210): TR|He got away.|Utekl.
+11-21 17:44:33.609 I/TP_TEST ( 4210): TR|I think we lost them.|Myslím, že jsme je ztratili.
+11-21 17:44:33.911 I/TP_TEST ( 4210): TR|The bridge is out, we have to swim.|Most je zničen, musíme plavat.
+11-21 17:44:34.098 I/TP_TEST ( 4210): TR|If we keep going like this, they will find us.|Pokud budeme takhle pokračovat, najdou nás.
+11-21 17:44:34.285 I/TP_TEST ( 4210): TR|I don't think anyone has been here for years.|Nemyslím si, že by tu někdo byl roky.
+11-21 17:44:34.491 I/TP_TEST ( 4210): TR|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:44:34.599 I/TP_TEST ( 4210): TR|LUCIA: I was ready for this.|Lucia: Byla jsem na to připraven.
+11-21 17:44:34.749 I/TP_TEST ( 4210): TR|LUCIA: I told you I would come back.|Lucia: Říkala jsem ti, že se vrátím.
+11-21 17:44:34.860 I/TP_TEST ( 4210): TR|LUCIA: I'm glad you're here.|Lucia: Jsem ráda, že jsi tady.
+11-21 17:44:35.035 I/TP_TEST ( 4210): TR|LUCIA: I thought you were dead, Jason.|Lucia: Myslela jsem, že jsi mrtvý, Jasone.
+11-21 17:44:35.176 I/TP_TEST ( 4210): TR|JASON: Lu, you were right.|Jason: Lu Měla jsi pravdu.
+11-21 17:44:35.310 I/TP_TEST ( 4210): TR|JASON: Are you crazy, Lucia?|Jason: Jsi blázen, Lucia?
+11-21 17:44:35.450 I/TP_TEST ( 4210): TR|JASON: Be careful, Lu.|Jason: Buď opatrná, Lu.
+11-21 17:44:35.565 I/TP_TEST ( 4210): TR|Lucia went home.|Lucia šla domů.
+11-21 17:44:35.672 I/TP_TEST ( 4210): TR|Lucia is ready.|Lucia je připravena.
+11-21 17:44:35.806 I/TP_TEST ( 4210): TR|You two, come with me.|Vy dva, pojď se mnou.
+11-21 17:44:35.807 I/TP_TEST ( 4210): TR|All of you, get out!|Všichni ven!
+11-21 17:44:35.940 I/TP_TEST ( 4210): TR|You and your friends should leave.|Vy a vaši přátelé by měli odejít.
+11-21 17:44:35.940 I/TP_TEST ( 4210): TR|Boys, get on your horses.|Chlapci, na koně.
+11-21 17:44:36.039 I/TP_TEST ( 4210): TR|Are you all ready?|Jste připraveni?
+11-21 17:44:36.039 I/TP_TEST ( 4210): TR|You guys wait here.|Vy počkejte tady.
+11-21 17:44:36.041 I/TP_TEST ( 4210): TR|What did you do?|Co jsi udělal?
+11-21 17:44:36.127 I/TP_TEST ( 4210): TR|Did you see that?|Viděl jsi to?
+11-21 17:44:36.228 I/TP_TEST ( 4210): TR|You lied to me.|Lhal jsi mi.
+11-21 17:44:36.369 I/TP_TEST ( 4210): TR|You could have told me.|Mohl jsi mi to říct.
+11-21 17:44:36.463 I/TP_TEST ( 4210): TR|Would you help me?|Pomohl bys mi?
+11-21 17:44:36.617 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:36.678 I/TP_TEST ( 4210): TR|If you had listened to me, we would be rich.|Kdybys mi poslouchal, byli bychom bohatí.
+11-21 17:44:36.806 I/TP_TEST ( 4210): TR|You said you would come.|Řekl jsi, že přijdeš.
+11-21 17:44:36.913 I/TP_TEST ( 4210): TR|Where have you been?|Kde jsi byl?
+11-21 17:44:37.057 I/TP_TEST ( 4210): TR|Run to the gate.|Běh na bránu.
+11-21 17:44:37.226 I/TP_TEST ( 4210): TR|Run towards the gate!|Běh směrem k bráně!
+11-21 17:44:37.389 I/TP_TEST ( 4210): TR|Hurry to the gate!|Pospěš si bránu!
+11-21 17:44:37.537 I/TP_TEST ( 4210): TR|Stay close to me.|Zůstaň blízko mě.
+11-21 17:44:37.686 I/TP_TEST ( 4210): TR|Stay by my side.|Zůstaň po mém boku.
+11-21 17:44:37.806 I/TP_TEST ( 4210): TR|Nobody was here for many years.|Nikdo nebyl tady mnoho let.
+11-21 17:44:37.932 I/TP_TEST ( 4210): TR|We ride out at dawn.|Jdeme ven za svítání.
+11-21 17:44:38.058 I/TP_TEST ( 4210): TR|We leave at sunrise.|Odejdeme při východu slunce.
+11-21 17:44:38.251 I/TP_TEST ( 4210): TR|Get on the horse, we leave in the morning.|Dostaň se na koni, odejdeme ráno.
+11-21 17:44:38.383 I/TP_TEST ( 4210): TR|You and your friends must leave.|Vy a vaši přátelé musíte odejít.
+11-21 17:44:38.523 I/TP_TEST ( 4210): TR|Come with me, both of you.|Pojď se mnou, oba.
+11-21 17:44:38.616 I/TP_TEST ( 4210): TR|It will be fine.|Bude to v pořádku.
+11-21 17:44:38.716 I/TP_TEST ( 4210): TR|Everything will be all right.|Všechno bude v pořádku.
+11-21 17:44:38.795 I/TP_TEST ( 4210): TR|I am fine.|Jsem v pořádku.
+11-21 17:44:38.888 I/TP_TEST ( 4210): TR|Leave it to me.|Nech to pro mě.
+11-21 17:44:38.984 I/TP_TEST ( 4210): TR|Watch your back.|Sleduj záda.
+11-21 17:44:38.984 I/TP_TEST ( 4210): TR|Cover me!|Kryj mě!
+11-21 17:44:39.094 I/TP_TEST ( 4210): TR|I am out of ammo.|Jsem z munice.
+11-21 17:44:39.097 I/TP_TEST ( 4210): TR|Reloading!|Překládce!
+11-21 17:44:39.174 I/TP_TEST ( 4210): TR|He is dead.|Je mrtvý.
+11-21 17:44:39.250 I/TP_TEST ( 4210): TR|Is anyone there?|Je tam někdo?
+11-21 17:44:39.332 I/TP_TEST ( 4210): TR|Who is there?|Kdo je tam?
+11-21 17:44:39.416 I/TP_TEST ( 4210): TR|Show yourself!|Ukaž se!
+11-21 17:44:39.491 I/TP_TEST ( 4210): TR|What was that?|Co to bylo?
+11-21 17:44:39.566 I/TP_TEST ( 4210): TR|This way!|Tímto způsobem!
+11-21 17:44:39.628 I/TP_TEST ( 4210): TR|Over here!|Tady!
+11-21 17:44:39.693 I/TP_TEST ( 4210): TR|Behind you!|Za tebou!
+11-21 17:44:39.693 I/TP_TEST ( 4210): TR|done 145
+11-21 17:44:41.644 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:43.162 D/AndroidRuntime( 9175): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:44:43.205 D/AndroidRuntime( 9175): Calling main entry com.android.commands.input.Input
+11-21 17:44:43.211 D/AndroidRuntime( 9175): Shutting down VM
+11-21 17:44:44.327 D/AndroidRuntime( 9186): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:44:44.372 D/AndroidRuntime( 9186): Calling main entry com.android.commands.input.Input
+11-21 17:44:44.381 D/AndroidRuntime( 9186): Shutting down VM
+11-21 17:44:46.501 D/AndroidRuntime( 9197): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:44:46.552 D/AndroidRuntime( 9197): Calling main entry com.android.commands.input.Input
+11-21 17:44:46.558 D/AndroidRuntime( 9197): Shutting down VM
+11-21 17:44:46.675 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:48.670 D/AndroidRuntime( 9208): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:44:48.718 D/AndroidRuntime( 9208): Calling main entry com.android.commands.input.Input
+11-21 17:44:48.728 I/TP_TEST ( 4210): DEEPL|page page on port 8765
+11-21 17:44:48.747 D/AndroidRuntime( 9208): Shutting down VM
+11-21 17:44:51.718 I/TP_TEST ( 4210): VIDEO|fed=2083|decoded=2079|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null
+11-21 17:44:52.053 D/AndroidRuntime( 9226): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:44:52.098 D/AndroidRuntime( 9226): Calling main entry com.android.commands.input.Input
+11-21 17:44:52.104 D/AndroidRuntime( 9226): Shutting down VM
+11-21 17:44:52.474 I/TP_TEST ( 4210): DEEPL|page page closed
+11-21 17:45:01.960 I/TP_TEST ( 9263): REMOTE|page on port 8766
+11-21 17:45:03.480 I/TP_TEST ( 9263): NET|připojeno WIFI_24
+11-21 17:45:03.519 I/TP_TEST ( 9263): A11Y|true
+11-21 17:45:03.527 I/TP_TEST ( 9263): START|video=1280x720|interval=100|screen=1280x720|eco=true|decoder=OMX.google.h264.decoder (přímý výstup)|lib=ok 1280x720@30 10000kb
+11-21 17:45:03.601 I/TP_TEST ( 9263): SOURCE|demo
+11-21 17:45:03.601 I/TP_TEST ( 9263): NET|Wi-Fi na 2,4 GHz (2447 MHz, signál -50 dBm)
+11-21 17:45:03.602 I/TP_TEST ( 9263): VIDEO|fed=0|decoded=0|0x0|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=0 raw=false err=null
+11-21 17:45:03.751 I/TP_TEST ( 9263): MODEL|cs|ok|pokus=1
+11-21 17:45:05.131 I/TP_TEST ( 9263): WARM|cs|první=1030ms|další=347ms
+11-21 17:45:12.677 I/TP_TEST ( 9263): READ|ocr=7851ms|zone=33%|Marek: We need money, Jonas.
+11-21 17:45:12.689 I/TP_TEST ( 9263): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:45:12.689 I/TP_TEST ( 9263): LAT|1588ms|ocr=7851ms
+11-21 17:45:12.801 I/TP_TEST ( 9263): VIDEO|fed=91|decoded=86|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=90 raw=false err=null
+11-21 17:45:12.803 I/TP_TEST ( 9263): PERF|čtení=1|průměr=7851ms|poslední=7851ms|titulků=1|video=1280x720|oblast=33%|paměť=13+88MB|wifi=2447MHz/-50dBm
+11-21 17:45:20.086 I/TP_TEST ( 9263): COLOR|Marek|-|us=17126
+11-21 17:45:20.087 I/TP_TEST ( 9263): READ|ocr=7277ms|zone=33%|Jonas: I reckon we won't find anything i
+11-21 17:45:20.087 I/TP_TEST ( 9263): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:45:20.087 I/TP_TEST ( 9263): LAT|1486ms|ocr=7277ms
+11-21 17:45:20.088 I/TP_TEST ( 9263): ZONE|learned 0.72-1.0
+11-21 17:45:20.225 I/TP_TEST ( 9263): VIDEO|fed=165|decoded=161|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=165 raw=false err=null
+11-21 17:45:25.996 I/TP_TEST ( 9263): COLOR|Jonas|-|us=593
+11-21 17:45:25.996 I/TP_TEST ( 9263): READ|ocr=5765ms|zone=27%|Get on your horse, we ride at dawn.
+11-21 17:45:25.997 I/TP_TEST ( 9263): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:45:25.997 I/TP_TEST ( 9263): LAT|1396ms|ocr=5765ms
+11-21 17:45:26.111 I/TP_TEST ( 9263): VIDEO|fed=223|decoded=218|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=223 raw=false err=null
+11-21 17:45:31.247 I/TP_TEST ( 9263): READ|ocr=5130ms|zone=27%|
+11-21 17:45:31.247 I/TP_TEST ( 9263): HIDE
+11-21 17:45:31.349 I/TP_TEST ( 9263): VIDEO|fed=275|decoded=271|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=275 raw=false err=null
+11-21 17:45:37.083 I/TP_TEST ( 9263): READ|ocr=5729ms|zone=27%|Silas: If we keep going like this, the m
+11-21 17:45:37.083 I/TP_TEST ( 9263): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:45:37.084 I/TP_TEST ( 9263): LAT|3483ms|ocr=5729ms
+11-21 17:45:37.188 I/TP_TEST ( 9263): VIDEO|fed=334|decoded=330|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=334 raw=false err=null
+11-21 17:45:42.857 I/TP_TEST ( 9263): COLOR|Silas|-|us=332
+11-21 17:45:42.857 I/TP_TEST ( 9263): READ|ocr=5647ms|zone=27%|MIRA: Are you sure this is the right way
+11-21 17:45:42.858 I/TP_TEST ( 9263): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:45:42.858 I/TP_TEST ( 9263): LAT|1757ms|ocr=5647ms
+11-21 17:45:42.962 I/TP_TEST ( 9263): VIDEO|fed=391|decoded=386|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=391 raw=false err=null
+11-21 17:45:42.965 I/TP_TEST ( 9263): PERF|čtení=6|průměr=6233ms|poslední=5647ms|titulků=5|video=1280x720|oblast=27%|paměť=16+97MB|wifi=2447MHz/-50dBm
+11-21 17:45:48.726 I/TP_TEST ( 9263): COLOR|Mira|-|us=213
+11-21 17:45:48.727 I/TP_TEST ( 9263): READ|ocr=5757ms|zone=27%|Tobin: no idea, but we can't stay here
+11-21 17:45:48.728 I/TP_TEST ( 9263): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:45:48.728 I/TP_TEST ( 9263): LAT|127ms|ocr=5757ms
+11-21 17:45:48.834 I/TP_TEST ( 9263): VIDEO|fed=450|decoded=446|1280x720|dec=OMX.google.h264.decoder (přímý výstup)|err=null|demo sent=449 raw=false err=null
+11-21 17:45:51.381 D/AndroidRuntime(10422): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:45:51.521 D/AndroidRuntime(10422): Calling main entry com.android.commands.input.Input
+11-21 17:45:51.531 D/AndroidRuntime(10422): Shutting down VM
+11-21 17:45:56.454 I/TP_TEST (10491): UPD|start file allowed=false
+11-21 17:45:56.547 I/TP_TEST (10491): REMOTE|page on port 8766
+11-21 17:45:56.847 I/TP_TEST (10491): UPD|apk code=165
+11-21 17:45:57.313 E/AndroidRuntime(10553): FATAL EXCEPTION: AsyncDvrDbTask-0
+11-21 17:45:57.313 E/AndroidRuntime(10553): Process: com.android.tv, PID: 10553
+11-21 17:45:57.313 E/AndroidRuntime(10553): java.lang.RuntimeException: An error occurred while executing doInBackground()
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.os.AsyncTask$3.done(AsyncTask.java:354)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at java.util.concurrent.FutureTask.finishCompletion(FutureTask.java:383)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at java.util.concurrent.FutureTask.setException(FutureTask.java:252)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at java.util.concurrent.FutureTask.run(FutureTask.java:271)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at java.lang.Thread.run(Thread.java:764)
+11-21 17:45:57.313 E/AndroidRuntime(10553): Caused by: android.database.sqlite.SQLiteException: no such column: failed_reason (code 1 SQLITE_ERROR): , while compiling: SELECT _id, priority, type, input_id, channel_id, program_id, program_title, start_time_utc_millis, end_time_utc_millis, season_number, episode_number, episode_title, program_description, program_long_description, program_poster_art_uri, program_thumbnail_uri, state, failed_reason, series_recording_id FROM schedules
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteConnection.nativePrepareStatement(Native Method)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteConnection.acquirePreparedStatement(SQLiteConnection.java:903)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteConnection.prepare(SQLiteConnection.java:514)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteSession.prepare(SQLiteSession.java:588)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteProgram.<init>(SQLiteProgram.java:58)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteQuery.<init>(SQLiteQuery.java:37)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteDirectCursorDriver.query(SQLiteDirectCursorDriver.java:46)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteDatabase.rawQueryWithFactory(SQLiteDatabase.java:1408)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:399)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.database.sqlite.SQLiteQueryBuilder.query(SQLiteQueryBuilder.java:294)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at com.android.tv.dvr.provider.DvrDatabaseHelper.query(DvrDatabaseHelper.java:276)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:128)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at com.android.tv.dvr.provider.AsyncDvrDbTask$AsyncDvrQueryScheduleTask.doInDvrBackground(AsyncDvrDbTask.java:115)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at com.android.tv.dvr.provider.AsyncDvrDbTask.doInBackground(AsyncDvrDbTask.java:65)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at android.os.AsyncTask$2.call(AsyncTask.java:333)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-21 17:45:57.313 E/AndroidRuntime(10553): 	... 3 more
+11-21 17:45:57.649 I/TP_TEST (10491): UPD|status=-1
+11-21 17:45:57.672 I/TP_TEST (10491): UPD|confirm shown
+11-21 17:45:57.673 I/TP_TEST (10491): UPD|committed session=2029980497
+11-21 17:46:08.502 D/AndroidRuntime(10624): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:46:08.559 D/AndroidRuntime(10624): Calling main entry com.android.commands.input.Input
+11-21 17:46:08.568 D/AndroidRuntime(10624): Shutting down VM
+11-21 17:46:11.710 D/AndroidRuntime(10638): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:46:11.756 D/AndroidRuntime(10638): Calling main entry com.android.commands.input.Input
+11-21 17:46:11.767 D/AndroidRuntime(10638): Shutting down VM
+11-21 17:46:15.304 I/TP_TEST (10660): UPD|start latest/PlayLingo.apk allowed=true
+11-21 17:46:15.397 I/TP_TEST (10660): REMOTE|page on port 8766
+11-21 17:46:24.045 I/TP_TEST (10660): UPD|downloaded bytes=41052181
+11-21 17:46:24.213 I/TP_TEST (10660): UPD|apk code=164
+11-21 17:46:24.239 I/TP_TEST (10660): UPD|status=3 old session
+11-21 17:46:24.667 I/TP_TEST (10660): UPD|status=-1
+11-21 17:46:24.668 I/TP_TEST (10660): UPD|committed session=2136346661
+11-21 17:46:24.671 I/TP_TEST (10660): UPD|confirm shown
+11-21 17:46:55.199 D/AndroidRuntime(10714): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:46:55.245 D/AndroidRuntime(10714): Calling main entry com.android.commands.input.Input
+11-21 17:46:55.257 D/AndroidRuntime(10714): Shutting down VM
+11-21 17:46:55.266 I/TP_TEST (10660): UPD|status=3 INSTALL_FAILED_ABORTED: User rejected permissions
+11-21 17:46:55.267 I/TP_TEST (10660): UPD|fail upd_cancel INSTALL_FAILED_ABORTED: User rejected permissions
+11-21 17:47:02.850 I/TP_TEST (10739): UPD|start file allowed=true
+11-21 17:47:02.977 I/TP_TEST (10739): REMOTE|page on port 8766
+11-21 17:47:03.121 I/TP_TEST (10739): UPD|apk code=165
+11-21 17:47:03.577 I/TP_TEST (10739): UPD|committed session=1763370775
+11-21 17:47:03.893 I/TP_TEST (10739): UPD|status=-1
+11-21 17:47:03.903 I/TP_TEST (10739): UPD|confirm shown
+11-21 17:47:14.856 D/AndroidRuntime(10799): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:47:14.912 D/AndroidRuntime(10799): Calling main entry com.android.commands.input.Input
+11-21 17:47:14.917 D/AndroidRuntime(10799): Shutting down VM
+11-21 17:47:16.049 D/AndroidRuntime(10810): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:47:16.095 D/AndroidRuntime(10810): Calling main entry com.android.commands.input.Input
+11-21 17:47:16.099 D/AndroidRuntime(10810): Shutting down VM
+11-21 17:47:17.221 D/AndroidRuntime(10820): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:47:17.268 D/AndroidRuntime(10820): Calling main entry com.android.commands.input.Input
+11-21 17:47:17.272 D/AndroidRuntime(10820): Shutting down VM
+11-21 17:47:18.375 D/AndroidRuntime(10830): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:47:18.420 D/AndroidRuntime(10830): Calling main entry com.android.commands.input.Input
+11-21 17:47:18.434 D/AndroidRuntime(10830): Shutting down VM
+11-21 17:47:20.369 I/TP_TEST (10856): UPD|replaced
+11-21 17:47:20.973 I/TP_TEST (10856): REMOTE|page on port 8766
+11-21 17:47:44.702 I/TP_TEST (10856): UPD|start file allowed=true
+11-21 17:47:44.836 I/TP_TEST (10856): UPD|apk code=165
+11-21 17:47:45.206 I/TP_TEST (10856): UPD|status=-1
+11-21 17:47:45.209 I/TP_TEST (10856): UPD|confirm shown
+11-21 17:47:45.248 I/TP_TEST (10856): UPD|committed session=1099238618
+11-21 17:48:09.983 D/AndroidRuntime(10961): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-21 17:48:10.028 D/AndroidRuntime(10961): Calling main entry com.android.commands.input.Input
+11-21 17:48:10.036 I/TP_TEST (10856): UPD|status=3 INSTALL_FAILED_ABORTED: User rejected permissions
+11-21 17:48:10.036 I/TP_TEST (10856): UPD|fail upd_cancel INSTALL_FAILED_ABORTED: User rejected permissions
+11-21 17:48:10.047 D/AndroidRuntime(10961): Shutting down VM

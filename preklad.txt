@@ -1,0 +1,147 @@
+start cs model=true
+What are you doing here?|Co tady děláš?
+Are you sure about this?|Jsi si tím jistý?
+Do you know who I am?|Víš, kdo jsem?
+Can you help me?|Můžeš mi pomoci?
+What do you want?|Co chceš?
+Where did you get that?|Kde jsi to dostal?
+Did you hear that?|Slyšel jsi to?
+Are you out of your mind?|Zbláznil ses?
+How much do you want for it?|Kolik chceš za to?
+Have you seen my brother?|Viděl jsi mého bratra?
+Why didn't you tell me?|Proč jsi mi to neřekl?
+Will you come with me?|Půjdeš se mnou?
+Get on your horse.|Nasedni na koně.
+Follow me.|Za mnou!
+Stay close.|Drž se u mě.
+Hurry up!|Pospěš si!
+Watch out!|Pozor!
+Get down!|K zemi!
+Take cover!|Kryjte se!
+Hold on.|Vydrž.
+Hang on a second.|Počkej sekundu.
+Wait for me.|Počkej na mě.
+Leave me alone.|Nech mě na pokoji.
+Shut up.|Drž hubu.
+Calm down.|Uklidni se.
+Take it easy.|Uklidni se.
+Give me your gun.|Dej mi zbraň.
+Put your hands up!|Ruce!
+Drop your weapon!|Zahoď zbraň!
+Don't move!|Ani hnout.
+Open the door.|Otevři dveře.
+Give it back.|Vrať to!
+Tell me the truth.|Řekni mi pravdu.
+Trust me.|Věř mi.
+Be careful.|Buď opatrný.
+Look at me.|Podívej se na mě.
+Come here.|Pojď sem.
+Go away.|Jdi pryč.
+Let him go.|Nech ho jít.
+Keep your voice down, they can hear us.|Mluv tiše, slyší nás.
+Hand me the lantern and stay close.|Dej mi lucernu a zůstat blízko.
+Run for the gate!|Utíkej k bráně!
+I don't know.|Nevím.
+No idea.|Nevím.
+I have no idea what you're talking about.|Nevím, o čem mluvíš.
+Come on, let's go!|Pojďme!
+Never mind.|To je jedno.
+Forget it.|Zapomeň na to.
+It doesn't matter.|Nezáleží na tom.
+I'll take care of it.|Postarám se o to.
+You can count on me.|Můžeš se na mě spolehnout.
+I owe you one.|Máš to u mě.
+Thanks for your help.|Díky za pomoc.
+You're welcome.|Není zač.
+What's going on?|Co se děje?
+What happened?|Co se stalo?
+Where are we going?|Kam jedeme?
+I'm going to kill you.|Zabiju tě.
+You'll pay for this.|Za to zaplatíš.
+I don't trust him.|Nevěřím mu.
+He's lying.|Lže.
+That's not true.|To není pravda.
+You're right.|Máš pravdu.
+You were right about him.|Měl jsi o něm pravdu.
+I was wrong.|Mýlil jsem se.
+I'm sorry.|Je mi líto.
+It's not your fault.|Není to tvoje chyba.
+We have to get out of here.|Musíme se odsud dostat.
+We're running out of time.|Nemáme moc času.
+There's no time to explain.|Není čas to vysvětlit.
+I've got a bad feeling about this.|Mám z toho špatný pocit.
+Something's wrong.|Něco tu nehraje.
+Good job.|Dobrá práce.
+Well done.|Dobrá práce.
+Nice shot!|Dobrá rána!
+See you later.|Tak zatím.
+Take care of yourself.|Dávej na sebe pozor.
+I need a drink.|Potřebuju se napít.
+Let's get this over with.|Pojďme to dokončit.
+That's enough!|To stačí!
+Mind your own business.|Starej se o sebe.
+What the hell is wrong with you?|Co to s tebou sakra je?
+You've got to be kidding me.|To si děláš srandu.
+I can't believe it.|Nemůžu tomu uvěřit.
+It's a long story.|To je na dlouhé vyprávění.
+We had a deal.|Měli jsme dohodu.
+I've been looking for you.|Hledal jsem tě.
+You shouldn't have come here.|Neměl bys sem přijít.
+They're coming!|Jdou!
+He got away.|Utekl.
+I think we lost them.|Myslím, že jsme je ztratili.
+The bridge is out, we have to swim.|Most je zničen, musíme plavat.
+If we keep going like this, they will find us.|Pokud budeme takhle pokračovat, najdou nás.
+I don't think anyone has been here for years.|Nemyslím si, že by tu někdo byl roky.
+Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+LUCIA: I was ready for this.|Lucia: Byla jsem na to připraven.
+LUCIA: I told you I would come back.|Lucia: Říkala jsem ti, že se vrátím.
+LUCIA: I'm glad you're here.|Lucia: Jsem ráda, že jsi tady.
+LUCIA: I thought you were dead, Jason.|Lucia: Myslela jsem, že jsi mrtvý, Jasone.
+JASON: Lu, you were right.|Jason: Lu Měla jsi pravdu.
+JASON: Are you crazy, Lucia?|Jason: Jsi blázen, Lucia?
+JASON: Be careful, Lu.|Jason: Buď opatrná, Lu.
+Lucia went home.|Lucia šla domů.
+Lucia is ready.|Lucia je připravena.
+You two, come with me.|Vy dva, pojď se mnou.
+All of you, get out!|Všichni ven!
+You and your friends should leave.|Vy a vaši přátelé by měli odejít.
+Boys, get on your horses.|Chlapci, na koně.
+Are you all ready?|Jste připraveni?
+You guys wait here.|Vy počkejte tady.
+What did you do?|Co jsi udělal?
+Did you see that?|Viděl jsi to?
+You lied to me.|Lhal jsi mi.
+You could have told me.|Mohl jsi mi to říct.
+Would you help me?|Pomohl bys mi?
+If you had listened to me, we would be rich.|Kdybys mi poslouchal, byli bychom bohatí.
+You said you would come.|Řekl jsi, že přijdeš.
+Where have you been?|Kde jsi byl?
+Run to the gate.|Běh na bránu.
+Run towards the gate!|Běh směrem k bráně!
+Hurry to the gate!|Pospěš si bránu!
+Stay close to me.|Zůstaň blízko mě.
+Stay by my side.|Zůstaň po mém boku.
+Nobody was here for many years.|Nikdo nebyl tady mnoho let.
+We ride out at dawn.|Jdeme ven za svítání.
+We leave at sunrise.|Odejdeme při východu slunce.
+Get on the horse, we leave in the morning.|Dostaň se na koni, odejdeme ráno.
+You and your friends must leave.|Vy a vaši přátelé musíte odejít.
+Come with me, both of you.|Pojď se mnou, oba.
+It will be fine.|Bude to v pořádku.
+Everything will be all right.|Všechno bude v pořádku.
+I am fine.|Jsem v pořádku.
+Leave it to me.|Nech to pro mě.
+Watch your back.|Sleduj záda.
+Cover me!|Kryj mě!
+I am out of ammo.|Jsem z munice.
+Reloading!|Překládce!
+He is dead.|Je mrtvý.
+Is anyone there?|Je tam někdo?
+Who is there?|Kdo je tam?
+Show yourself!|Ukaž se!
+What was that?|Co to bylo?
+This way!|Tímto způsobem!
+Over here!|Tady!
+Behind you!|Za tebou!
+done 145

@@ -1,0 +1,1 @@
+    mResumedActivity: ActivityRecord{d36882e u0 cz.playlingo/.MainActivity t13}
