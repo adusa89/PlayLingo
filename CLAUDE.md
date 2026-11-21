@@ -47,6 +47,9 @@ Hra sama jde do televize kabelem HDMI. Návod pro uživatele je v `NAVOD.md`.
     přes vzdálené hraní (WebRTC) a stránka konzole pro Xbox (viz Xbox)
   - `DeeplTranslator.kt`, `DeeplSection.kt` – DeepL (viz DeepL – Kvalita překladu)
   - `NetLogShare.kt` – záznam pro vývojáře v domácí síti, Kopírovat/Sdílet hlášení (viz Záznam ze zařízení)
+  - `RemoteHost.kt` (TV) a `RemoteClient.kt` (telefon, režim „Nastavuji TV“: `Prefs` čte `dalkove_tv`, každá změna
+    přenášené volby jde do TV; `core/RemoteSetup.kt`, `core/RemoteSync.kt`) – nastavení Android TV z telefonu
+    (`navrhy/nastaveni-z-telefonu.md`)
 - `app/src/main/cpp`, `app/src/main/java/com/metallic/chiaki/lib` – naše upravená vrstva nad
   knihovnou chiaki-ng (bez zvuku a nativního dekodéru).
 - `third_party/chiaki-ng` – submodul. Needituj ho; před sestavením se do něj kopíruje

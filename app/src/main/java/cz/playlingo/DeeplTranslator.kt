@@ -34,27 +34,38 @@ object DeeplKey {
     private const val AAD = "deepl:key"
     private val LOCK = Any()
 
-    private fun p(c: Context) = c.applicationContext.getSharedPreferences("deepl", Context.MODE_PRIVATE)
+    /** V telefonu v režimu „Nastavuji TV“ ([RemoteClient]) zvlášť – klíč telefonu jako čtečky zůstává. */
+    private fun p(c: Context) = c.applicationContext.getSharedPreferences(
+        if (RemoteClient.on(c)) RemoteClient.DEEPL_FILE else "deepl", Context.MODE_PRIVATE)
 
     /** Je pokus zapnutý? (výchozí vypnuto) */
     fun enabled(c: Context) = p(c).getBoolean("on", false)
-    fun setEnabled(c: Context, v: Boolean) = p(c).edit().putBoolean("on", v).apply()
+    fun setEnabled(c: Context, v: Boolean) {
+        p(c).edit().putBoolean("on", v).apply()
+        if (RemoteClient.on(c)) RemoteClient.deeplOn(v)   // režim TV: zapnout / vypnout i v TV
+    }
 
     fun get(c: Context): String? = p(c).getString("key", null)?.let {
         runCatching { String(LgVault.open(secret(), AAD, it), Charsets.UTF_8) }.getOrNull()
     }
 
-    fun has(c: Context) = p(c).contains("key")
+    /** Klíč je uložený; v režimu TV i tehdy, když ho má jen TV (klíč z TV se do telefonu neposílá). */
+    fun has(c: Context) = p(c).contains("key") || (RemoteClient.on(c) && RemoteClient.tvHasDeeplKey)
+
+    /** Režim TV: klíč má jen TV, telefon ho nezná (ukazuje se „Klíč DeepL je v TV“). */
+    fun onlyInTv(c: Context) = RemoteClient.on(c) && RemoteClient.tvHasDeeplKey && !p(c).contains("key")
 
     fun save(c: Context, key: String) {
         p(c).edit().putString("key", LgVault.seal(secret(), AAD, key.toByteArray(Charsets.UTF_8)))
             .remove("count").remove("limit").remove("problem").apply()
         DeeplTranslator.newKey()
+        if (RemoteClient.on(c)) RemoteClient.deeplKey(key)   // režim TV: klíč do TV (ověří si ho a uloží zašifrovaný)
     }
 
     fun remove(c: Context) {
         p(c).edit().remove("key").remove("count").remove("limit").remove("problem").putBoolean("on", false).apply()
         DeeplTranslator.newKey()
+        if (RemoteClient.on(c)) RemoteClient.deeplOn(false)   // režim TV: v TV klíč zůstane, DeepL se vypne
     }
 
     /** Výsledek posledního ověření klíče (zbývající znaky, nebo důvod, proč nešel). */

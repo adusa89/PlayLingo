@@ -57,6 +57,8 @@ class MainActivity : Activity() {
         private const val REQ_PS5_SCAN = 1003
         private const val REQ_PS5_CAMERA = 1004
         private const val REQ_PS5_IP_SCAN = 1005
+        /** Otevřeno z pomocníka po spojení s TV (režim „Nastavuji TV“, [RemoteClient]). */
+        const val EXTRA_REMOTE = "dalkove"
         // kroky průvodce prvním spuštěním (pořadí = pořadí v menu průvodce; zkouška jím prochází naslepo)
         /** Jazyky: jazyk aplikace a z čeho se překládá – hned při prvním spuštění (přání majitele, 21. 11. 2026). */
         private const val W_LANGS = 0
@@ -199,7 +201,8 @@ class MainActivity : Activity() {
         if (auto) main.postDelayed({ startDemo() }, 1500)
         ps5SelfTest(intent)
         checkForUpdate()
-        OfflineTranslator.ensureModel(Prefs.lang(this)) { runOnUiThread { if (section == Section.HOME || wizard >= 0) render(true) } }
+        // v režimu „Nastavuji TV“ si jazykový balíček stáhne TV sama – telefon ne
+        if (!remote) OfflineTranslator.ensureModel(Prefs.lang(this)) { runOnUiThread { if (section == Section.HOME || wizard >= 0) render(true) } }
         // Android 13+: povolení notifikací (tlačítka Pozastavit / Zastavit v notifikaci)
         if (Build.VERSION.SDK_INT >= 33) {
             try { requestPermissions(arrayOf("android.permission.POST_NOTIFICATIONS"), REQ_NOTIF) } catch (_: Exception) {}
@@ -209,6 +212,13 @@ class MainActivity : Activity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (Updater.onStatus(this, intent)) { render(true); return }
+        // pomocník právě spojil telefon s TV ([RemoteClient]): jiná sada nastavení → průvodce / Domů znovu
+        if (intent.getBooleanExtra(EXTRA_REMOTE, false)) {
+            wizard = if (Prefs.wizardDone(this)) -1 else 0
+            section = Section.HOME
+            buildShell(); render()
+            return
+        }
         ps5SelfTest(intent)
     }
 
@@ -318,9 +328,12 @@ class MainActivity : Activity() {
         checkGameList(manual = false)
         // nastavení z telefonu (jen Android TV / box): stránka běží, dokud žije aplikace; změna z telefonu překreslí
         if (RemoteHost.start(this)) RemoteHost.onChanged = { if (!isFinishing) { buildShell(); render(keepFocus = true) } }
+        // telefon nastavuje TV: změna stavu spojení (nedostupná / připojeno) jen přepíše pruh nahoře
+        RemoteClient.onState = { if (!isFinishing) updateRemoteBar() }
     }
 
     override fun onPause() {
+        RemoteClient.onState = null
         TvIdle.stop()
         UiState.previewWanted = false
         UiState.hidden()
@@ -509,6 +522,7 @@ class MainActivity : Activity() {
         if (wizard >= 0) { renderWizard(focusedTag); return }
         renderMenu()
         content.removeAllViews(); closeNests()
+        remoteBar()
         // nadpis stránky jen u Historie – ostatní stránky mají název v menu (přání majitele, od 0.97.6)
         if (section == Section.HISTORY) content.addView(ui.text(ct(section.key), 30f, Theme.TEXT, bold = true))
         when (section) {
@@ -572,6 +586,7 @@ class MainActivity : Activity() {
             }, menuLp())
         }
         content.removeAllViews(); closeNests()
+        remoteBar()
         content.addView(ui.text(t("wz_title"), 15f, Theme.ACCENT, bold = true))
         // kolik kroků zbývá (v telefonu není vidět levý seznam kroků)
         content.addView(ui.steps(wizard + 1, wizardSteps.size, steps(wizard + 1, wizardSteps.size)), ui.lp(top = 8))
@@ -613,7 +628,8 @@ class MainActivity : Activity() {
                 add(ui.text(t("wz_tv_q"), 20f, Theme.TEXT, bold = true), 18)
                 val type = Prefs.tvType(this)
                 // telefon pruh přes hru neukáže – jen posílá do televize LG / Samsung
-                for (tt in TvType.values()) if (tt != TvType.ANDROID || !Prefs.readerDevice(this)) {
+                // v režimu „Nastavuji TV“ jde o Android TV – jiný typ nenabízet
+                for (tt in TvType.values()) if ((tt != TvType.ANDROID || !Prefs.readerDevice(this)) && (!remote || tt == TvType.ANDROID)) {
                     option(TvChoice.label(this, tt), if (tt == TvType.ANDROID) t("tv_android_d") else null, tt == type, "wtv_${tt.key}") {
                         TvChoice.set(this, tt); render(true)
                     }
@@ -630,17 +646,18 @@ class MainActivity : Activity() {
                 }
             }
             W_LANG -> {
-                val ok = OfflineTranslator.isReady(lang)
+                // v režimu „Nastavuji TV“ si balíček stáhne TV sama (po změně jazyka) – v telefonu se nekontroluje
+                val ok = remote || OfflineTranslator.isReady(lang)
                 add(ui.text(t("wz_model"), 17f, Theme.MUTED), 12)
                 add(tagged(ui.settingRow(t("l_lang"), lang.label) {
                     val langs = cz.playlingo.core.Lang.targets
                     choose(t("l_lang"), langs.map { it.label }, langs.indexOf(lang)) { i ->
                         Prefs.setLang(this, langs[i])
-                        OfflineTranslator.ensureModel(langs[i]) { runOnUiThread { if (wizard >= 0) render(true) } }
+                        if (!remote) OfflineTranslator.ensureModel(langs[i]) { runOnUiThread { if (wizard >= 0) render(true) } }
                         render(true)
                     }
                 }, "wlang"), 16)
-                add(ui.card().apply {
+                if (!remote) add(ui.card().apply {
                     addView(ui.checkRow(ok, false, t("chk_model") + " (${Prefs.langPair(this@MainActivity)})", t("ok"), null, null))
                     if (!ok) addView(ui.text(busyText ?: t("prep_model"), 15f, Theme.WARN), ui.lp(top = 6))
                     // stahování jazykového balíčku (asi 30 MB): pruh běhá, dokud ML Kit neskončí
@@ -662,7 +679,8 @@ class MainActivity : Activity() {
                 if (!DeeplKey.has(this)) nextLabel = t("wz_tr_skip")
             }
             // titulky jdou do televize LG / Samsung → povolení pruhu na tomto zařízení není potřeba
-            W_PERM -> if (Prefs.tvSend(this)) add(ui.text(t("s_tv_desc"), 17f, Theme.MUTED), 12) else {
+            W_PERM -> if (remote) add(ui.text(t("rs_perm_tv"), 17f, Theme.MUTED), 12)
+            else if (Prefs.tvSend(this)) add(ui.text(t("s_tv_desc"), 17f, Theme.MUTED), 12) else {
                 val ok = SubtitleOverlay.canShow(this)
                 add(ui.text(t("wz_perm"), 17f, Theme.MUTED), 12)
                 add(ui.card().apply { addView(ui.checkRow(ok, false, t("chk_overlay"), t("ok"), null, null)) }, 16)
@@ -691,21 +709,21 @@ class MainActivity : Activity() {
             // Připojení konzole: jen jedna řada tlačítek – ta spárování (Pokračovat / Zpět, u Xboxu Přihlásit)
             // a pod ní malé „Spárovat později“ (přeskočí na Hotovo). U Xboxu, který vlastní Zpět nemá, i malé Zpět.
             val later = row()
-            if (Prefs.console(this) == Console.XBOX) later.addView(tagged(ui.smallButton(t("wz_back")) { wizard--; render() }, "wback"))
+            if (Prefs.console(this) == Console.XBOX) later.addView(tagged(ui.smallButton(t("wz_back")) { wizardMove(-1); render() }, "wback"))
             later.addView(tagged(ui.smallButton(t("wz_pair_later")) { wizard = wizardSteps.size - 1; render() }, "wlater"),
                 if (later.childCount > 0) wrapLp() else ui.lp())
             add(later, 20)
         } else {
             val row = row()
             row.addView(tagged(ui.button(nextLabel, primary = true) {
-                if (wizard < wizardSteps.size - 1) { wizard++; render() }
+                if (wizard < wizardSteps.size - 1) { wizardMove(1); render() }
                 else {
                     val paired = Prefs.consoleReady(this)
                     finishWizard()
                     if (paired) startFlow()
                 }
             }, "wnext"))
-            if (wizard > 0) row.addView(tagged(ui.button(t("wz_back")) { wizard--; render() }, "wback"), wrapLp())
+            if (wizard > 0) row.addView(tagged(ui.button(t("wz_back")) { wizardMove(-1); render() }, "wback"), wrapLp())
             // Lepší překlad: jen Přeskočit/Pokračovat a Zpět (průvodce se tu nepřeskakuje celý)
             if (wizard != W_TRANSLATE) row.addView(tagged(ui.button(t(if (wizard == wizardSteps.size - 1) "wz_finish" else "wz_skip")) { finishWizard() }, "wskip"), wrapLp())
             add(row, 28)
@@ -716,6 +734,16 @@ class MainActivity : Activity() {
             ?: window.decorView.findViewWithTag<View>(if (pairing) "pnext" else "wnext")
         ui.restoringFocus()   // stejné tlačítko znovu vybrané – bez „pulzu“
         target?.requestFocus()
+    }
+
+    /**
+     * Další / předchozí krok průvodce. V režimu „Nastavuji TV“ se krok Zařízení přeskakuje – nastavuje se
+     * Android TV, ne telefon ([RemoteClient]).
+     */
+    private fun wizardMove(d: Int) {
+        wizard += d
+        if (wizard == W_DEVICE && remote) wizard += d
+        wizard = wizard.coerceIn(0, wizardSteps.size - 1)
     }
 
     private fun finishWizard() {
@@ -784,16 +812,52 @@ class MainActivity : Activity() {
         if (narrow) ui.lp(top = 8)   // tlačítka pod sebou přes celou šířku
         else LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(left) }
 
+    // ======================= REŽIM „NASTAVUJI TV“ (telefon, RemoteClient) =======================
+
+    /** Telefon nastavuje Android TV: čte a zapisuje nastavení TV, každá změna odejde do TV. */
+    private val remote: Boolean get() = RemoteClient.on(this)
+    private var remoteBarText: android.widget.TextView? = null
+
+    /** Pruh nahoře na každé stránce i v průvodci: „Nastavuji: <TV> · připojeno“ a Odpojit. */
+    private fun remoteBar() {
+        remoteBarText = null
+        if (!remote) return
+        val line = ui.hbox().apply { gravity = Gravity.CENTER_VERTICAL }
+        val txt = ui.text("", 15f, Theme.OK, bold = true)
+        line.addView(txt, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        line.addView(tagged(ui.smallButton(t("rs_disconnect")) { disconnectRemote() }, "rsoff"),
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { leftMargin = ui.dp(10) })
+        content.addView(ui.card().apply { addView(line) }, ui.lp().apply { bottomMargin = ui.dp(10) })
+        remoteBarText = txt
+        updateRemoteBar()
+    }
+
+    /** Jen text a barva pruhu (bez překreslení stránky – hráč může zrovna psát). */
+    private fun updateRemoteBar() {
+        val v = remoteBarText ?: return
+        val (st, warn) = RemoteClient.stateText(this)
+        v.text = t("rs_bar").replace("%s", RemoteClient.tvName) + " · " + st
+        v.setTextColor(if (warn) Theme.WARN else Theme.OK)
+    }
+
+    /** Odpojit: telefon se vrátí ke svému nastavení a k pomocníkovi. */
+    private fun disconnectRemote() {
+        RemoteClient.disconnect(this)
+        startActivity(Intent(this, PhoneHelperActivity::class.java))
+        finish()
+    }
+
     // ======================= DOMŮ =======================
 
     private fun home() {
         val running = TranslatorService.running
         val paused = TranslatorService.paused
         val demoRun = running && TranslatorService.demo
-        // titulky jdou do televize LG → pruh na tomto zařízení není potřeba
-        val overlayOk = SubtitleOverlay.canShow(this) || Prefs.tvSend(this)
+        // titulky jdou do televize LG → pruh na tomto zařízení není potřeba; v režimu „Nastavuji TV“ pruh
+        // i jazykový balíček řeší TV sama (telefon to o ní neví)
+        val overlayOk = remote || SubtitleOverlay.canShow(this) || Prefs.tvSend(this)
         val lang = Prefs.lang(this)
-        val modelOk = OfflineTranslator.isReady(lang)
+        val modelOk = remote || OfflineTranslator.isReady(lang)
         val onXbox = Prefs.console(this) == Console.XBOX
         val paired = Prefs.consoleReady(this)
         val ready = overlayOk && modelOk && paired
@@ -861,7 +925,8 @@ class MainActivity : Activity() {
             }
             buttons.addView(tagged(ui.button(t("b_stop")) { stopTranslation() }, "stop"), wrapLp())
         }
-        add(buttons, 18)
+        // telefon, který nastavuje TV, sám nepřekládá – Spustit je v TV
+        if (!remote) add(buttons, 18)
 
         // upozornění, která nejsou v přehledu (končící vývojářský režim LG, licence)
         warnings()
@@ -929,7 +994,11 @@ class MainActivity : Activity() {
             row(if (paired) Theme.OK else Theme.WARN, conName + " · " + t(if (paired) "h_con_ready" else "sum_nopair"), "hcon", onClick = { chooseConsole() })
         }
         // televize
-        if (type == TvType.ANDROID) {
+        if (remote) {
+            // telefon nastavuje Android TV: jméno TV a stav spojení s ní
+            val (st, warn) = RemoteClient.stateText(this)
+            row(if (warn) Theme.WARN else Theme.OK, RemoteClient.tvName + " · " + st, "htv")
+        } else if (type == TvType.ANDROID) {
             if (overlayOk) row(Theme.OK, t("h_bar_ok"), "htv", onClick = { TvChoice.show(this) { render(true) } })
             else row(Theme.WARN, t("w_overlay"), "htv", t("fix"), { settingsTab = SettingsTab.GENERAL; section = Section.SETTINGS; render() })
         } else {
@@ -1292,7 +1361,7 @@ class MainActivity : Activity() {
             pairMsg = null; render()
         }, "pback"), wrapLp())
         // první krok spárování v průvodci: Zpět vede na předchozí krok průvodce (jedna řada tlačítek)
-        else if (wizard == W_PAIR) row.addView(tagged(ui.button(t("wz_back")) { wizard--; render() }, "pback"), wrapLp())
+        else if (wizard == W_PAIR) row.addView(tagged(ui.button(t("wz_back")) { wizardMove(-1); render() }, "pback"), wrapLp())
         // stránka z televize se v telefonu neotevřela → rovnou na záložní krok se čtverečkem na Sony
         if (step == 2) row.addView(tagged(ui.button(t("pa_stuck")) {
             saveDrafts()
@@ -1497,8 +1566,8 @@ class MainActivity : Activity() {
             val all = cz.playlingo.core.SourceLang.offered(Prefs.lang(this))
             choose(t("l_src_lang"), all.map { it.label }, all.indexOf(cur)) { i ->
                 Prefs.setSourceLang(this, all[i])
-                // jiný jazyk titulků = jiný jazykový balíček (stáhne se jednou)
-                OfflineTranslator.ensureModel(Prefs.lang(this)) { runOnUiThread { if (wizard >= 0 || section == Section.HOME) render(true) } }
+                // jiný jazyk titulků = jiný jazykový balíček (stáhne se jednou; v režimu „Nastavuji TV“ si ho stáhne TV)
+                if (!remote) OfflineTranslator.ensureModel(Prefs.lang(this)) { runOnUiThread { if (wizard >= 0 || section == Section.HOME) render(true) } }
                 applyToService(); render(true)
             }
         }, tag), top)
@@ -1510,7 +1579,7 @@ class MainActivity : Activity() {
             val langs = cz.playlingo.core.Lang.targets
             choose(t("l_lang"), langs.map { it.label }, langs.indexOf(Prefs.lang(this))) { i ->
                 Prefs.setLang(this, langs[i])
-                OfflineTranslator.ensureModel(langs[i]) { }
+                if (!remote) OfflineTranslator.ensureModel(langs[i]) { }
                 applyToService(); render(true)
             }
         }, tag), top)
@@ -1883,8 +1952,8 @@ class MainActivity : Activity() {
             if (idle) Theme.WARN else Theme.ACCENT) {
             openQuality()
         }, "tmode"), 8)
-        // jazykový balíček pro offline překlad: chybí → OK ho stáhne
-        add(tagged(ui.settingRow(t("chk_model") + " · " + lang.label, if (ready) t("ok") else t("download"),
+        // jazykový balíček pro offline překlad: chybí → OK ho stáhne (v režimu „Nastavuji TV“ ho řeší TV)
+        if (!remote) add(tagged(ui.settingRow(t("chk_model") + " · " + lang.label, if (ready) t("ok") else t("download"),
             if (ready) Theme.OK else Theme.WARN) { if (!ready) downloadModel() }, "dl"), 8)
 
         // statistika a historie
@@ -1989,8 +2058,9 @@ class MainActivity : Activity() {
             }, "ps5wake"), 8)
         }
         // Typ televize (Android TV / LG / Samsung) – stejná nabídka jako ze souhrnného řádku na Domů.
+        // V režimu „Nastavuji TV“ je to vždy Android TV; zařízení, baterie a povolení pruhu patří TV (schované).
         val type = Prefs.tvType(this)
-        add(tagged(ui.settingRow(t("tv_type"), TvChoice.label(this, type)) {
+        if (!remote) add(tagged(ui.settingRow(t("tv_type"), TvChoice.label(this, type)) {
             TvChoice.show(this) { render(true) }
         }, "tvtype"), 8)
         // jazyk aplikace je nezávislý na jazyku překladu (ten je na stránce Titulky)
@@ -2002,11 +2072,11 @@ class MainActivity : Activity() {
             }
         }, "uilang"), 8)
         val reader = Prefs.readerDevice(this)
-        add(tagged(ui.settingRow(t("wz_dev"), t(if (reader) "dev_phone" else "dev_tv")) {
+        if (!remote) add(tagged(ui.settingRow(t("wz_dev"), t(if (reader) "dev_phone" else "dev_tv")) {
             choose(t("wz_dev_q"), listOf(t("dev_tv"), t("dev_phone")), if (reader) 1 else 0) { i -> setReader(i == 1); render(true) }
         }, "device"), 8)
         // telefon jako čtečka: běh na pozadí (šetření baterie) – stav a cesta k povolení
-        if (!Prefs.isTv(this)) {
+        if (!Prefs.isTv(this) && !remote) {
             val bg = batteryUnrestricted()
             add(tagged(ui.settingRow(t("h_battery_fix"), onOff(bg), if (bg) Theme.OK else Theme.WARN) { askBatteryUnrestricted() }, "battery"), 8)
         }
@@ -2014,7 +2084,14 @@ class MainActivity : Activity() {
         if (NetInfo.isHandheld(this)) add(tagged(ui.settingRow(t("hp_back"), "›") { backToPhoneHelper() }, "tophone"), 8)
 
         // povolení pruhu potřebuje jen Android TV (u LG/Samsungu ukazuje titulky televize)
-        if (type == TvType.ANDROID) {
+        if (type == TvType.ANDROID && remote) {
+            // stav přes hru se přenáší do TV; Usnadnění, tlačítko ovladače a překrytí se nastavují v TV
+            val sm = Prefs.statusMode(this)
+            val modes = listOf(t("off"), t("so_dyn"), t("so_always"))
+            add(tagged(ui.settingRow(t("so_row"), modes[sm]) {
+                choose(t("so_row"), modes, sm) { i -> Prefs.setStatusMode(this, i); render(true) }
+            }, "statusov"), 8)
+        } else if (type == TvType.ANDROID) {
             val a11yOn = TitulkyAccessibility.instance != null
             add(tagged(ui.settingRow(t("s_a11y"), onOff(a11yOn), if (a11yOn) Theme.OK else Theme.WARN) {
                 openAccessibility()
@@ -2409,6 +2486,7 @@ class MainActivity : Activity() {
     }
 
     private fun startFlow() {
+        if (remote) { section = Section.HOME; render(); return }   // překládá TV, ne telefon, který ji nastavuje
         if (!Prefs.license(this).canRun) { section = Section.SETTINGS; render(); return }
         if (TranslatorService.running && !TranslatorService.demo) { moveTaskToBack(true); return }
         if (!SubtitleOverlay.canShow(this) && !Prefs.tvSend(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
@@ -2435,6 +2513,7 @@ class MainActivity : Activity() {
 
     /** Zkouška bez PlayStationu: ukázková hra jde do aplikace stejnou cestou jako video z konzole. */
     private fun startDemo() {
+        if (remote) return
         if (!Prefs.license(this).canRun) { section = Section.SETTINGS; render(); return }
         if (!SubtitleOverlay.canShow(this) && !Prefs.tvSend(this)) { toast(t("need_overlay")); section = Section.SETTINGS; render(); return }
         OfflineTranslator.ensureModel(Prefs.lang(this)) { }

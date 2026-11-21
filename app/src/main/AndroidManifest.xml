@@ -72,6 +72,13 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="playlingo" android:host="login" />
             </intent-filter>
+            <!-- čtvereček „Nastavit z telefonu“ v Android TV: PlayLingo v telefonu nastaví TV (RemoteClient) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="playlingo" android:host="tv" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

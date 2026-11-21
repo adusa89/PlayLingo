@@ -19,7 +19,7 @@ object RemoteSetup {
     /** Operace (pole `op` ve formuláři na stránku z televize). */
     const val OP_SNAPSHOT = "stav"      // telefon chce celé nastavení TV
     const val OP_SET = "zmen"           // telefon posílá změněné volby (pole `data`)
-    const val OP_DEEPL = "deepl"        // telefon posílá klíč DeepL (pole `key`)
+    const val OP_DEEPL = "deepl"        // telefon posílá klíč DeepL (pole `key`), nebo jen zapnuto/vypnuto (pole `on` = 1/0)
     const val ERR_VERSION = "VERZE"
     const val ERR_BAD = "BAD"
 
@@ -109,18 +109,23 @@ object RemoteSetup {
         return out
     }
 
-    /** Celé nastavení televize pro telefon: verze, jméno TV, volby a jestli má TV klíč DeepL. */
-    fun snapshot(tvName: String, values: Map<String, *>, hasDeeplKey: Boolean): String =
-        """{"v":$VERSION,"name":${json(tvName)},"deepl":$hasDeeplKey,"prefs":${encode(filter(values))}}"""
+    /**
+     * Celé nastavení televize pro telefon: verze, jméno TV, volby, jestli má TV klíč DeepL a jestli je DeepL zapnutý
+     * (`deepl_on` přibylo ve 3. dílu – bez něj telefon bere zapnuto, když je klíč).
+     */
+    fun snapshot(tvName: String, values: Map<String, *>, hasDeeplKey: Boolean, deeplOn: Boolean = hasDeeplKey): String =
+        """{"v":$VERSION,"name":${json(tvName)},"deepl":$hasDeeplKey,"deepl_on":$deeplOn,"prefs":${encode(filter(values))}}"""
 
-    data class Snapshot(val version: Int, val tvName: String, val hasDeeplKey: Boolean, val values: Map<String, Any?>)
+    data class Snapshot(val version: Int, val tvName: String, val hasDeeplKey: Boolean, val values: Map<String, Any?>,
+                        val deeplOn: Boolean = hasDeeplKey)
 
     fun parseSnapshot(text: String): Snapshot? {
         val obj = MiniJson.obj(text) ?: return null
         val v = (obj["v"] as? Number)?.toInt() ?: return null
         val prefs = obj["prefs"] as? Map<*, *> ?: return null
         val values = decode(reencode(prefs)) ?: return null
-        return Snapshot(v, obj["name"] as? String ?: "", obj["deepl"] == true, values)
+        val has = obj["deepl"] == true
+        return Snapshot(v, obj["name"] as? String ?: "", has, values, (obj["deepl_on"] as? Boolean) ?: has)
     }
 
     /** Vnořený objekt z [MiniJson] zpět na text, ať ho přečte [decode] (jediné místo s kontrolou typů). */

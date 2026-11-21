@@ -52,9 +52,10 @@ object NetInfo {
     /**
      * Je to telefon? Pak aplikace neslouží k překladu, ale jen jako pomocník pro přihlášení.
      * Televize a boxy se poznají bezpečně: nemají mobilní síť. Kdyby se přesto spletla,
-     * dá se to v pomocníkovi jedním tlačítkem opravit ([Prefs.forceTv]).
+     * dá se to v pomocníkovi jedním tlačítkem opravit ([Prefs.forceTv]). V režimu „Nastavuji TV“ ([RemoteClient])
+     * běží v telefonu celá aplikace (nastavuje se v ní TV).
      */
-    fun isPhone(ctx: Context): Boolean = isHandheld(ctx) && !Prefs.forceTv(ctx)
+    fun isPhone(ctx: Context): Boolean = isHandheld(ctx) && !Prefs.forceTv(ctx) && !RemoteClient.on(ctx)
 
     /**
      * Je to telefon – bez ohledu na to, jestli na něm zrovna běží pomocník, nebo celá aplikace
