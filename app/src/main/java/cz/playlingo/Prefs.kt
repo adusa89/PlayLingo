@@ -312,6 +312,39 @@ object Prefs {
     fun savedGlossarySignature(c: Context): String = p(c).getString("gloss_sig", "") ?: ""
     fun setSavedGlossarySignature(c: Context, v: String) = p(c).edit().putString("gloss_sig", v).apply()
 
+    // ---- nastavení Android TV z telefonu (core/RemoteSetup, RemoteHost) ----
+    /** Přenášené volby tohoto zařízení (pro telefon, který TV nastavuje). */
+    fun remoteValues(c: Context): Map<String, Any?> = cz.playlingo.core.RemoteSetup.filter(p(c).all)
+
+    /** Uloží volby poslané z telefonu (jen přenášené; null = volbu smazat). */
+    fun applyRemote(c: Context, values: Map<String, Any?>) {
+        val e = p(c).edit()
+        for ((k, v) in values) {
+            if (!cz.playlingo.core.RemoteSetup.transfers(k)) continue
+            @Suppress("UNCHECKED_CAST")
+            when (v) {
+                null -> e.remove(k)
+                is Boolean -> e.putBoolean(k, v)
+                is Int -> e.putInt(k, v)
+                is Long -> e.putLong(k, v)
+                is Float -> e.putFloat(k, v)
+                is String -> e.putString(k, v)
+                is Set<*> -> e.putStringSet(k, v as Set<String>)
+            }
+        }
+        e.commit()
+        OfflineTranslator.source = sourceLang(c)
+    }
+
+    /** Stálý klíč stránky nastavení v TV (ve čtverečku; telefon se s ním připojuje i později). */
+    fun remoteKey(c: Context): String {
+        val sp = c.applicationContext.getSharedPreferences("nastaveni_z_telefonu", Context.MODE_PRIVATE)
+        sp.getString("klic", null)?.takeIf { PhoneLogin.validKey(it) }?.let { return it }
+        val k = PhoneLogin.newKey() + PhoneLogin.newKey()
+        sp.edit().putString("klic", k).apply()
+        return k
+    }
+
     // ---- licence ----
     fun unlocked(c: Context) = bool(c, "unlocked", false)
     fun setUnlocked(c: Context, v: Boolean) = setBool(c, "unlocked", v)

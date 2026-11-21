@@ -65,4 +65,23 @@ class RemoteSetupTest {
         assertEquals(mapOf("lang" to "cs", "text_size" to 30), s.values)
         assertNull(RemoteSetup.parseSnapshot("""{"name":"x"}"""))
     }
+
+    @Test fun linkOnlyToHomeNetwork() {
+        val t = PhoneLogin.Target("192.168.1.20", 8766, "abcdefgh")
+        val l = RemoteSetup.parseLink(RemoteSetup.appLink(t, "Sony Bravia & Co"))!!
+        assertEquals(t, l.target)
+        assertEquals("Sony Bravia & Co", l.tvName)
+        // adresa mimo domácí síť, špatný klíč nebo jiný odkaz – nic
+        assertNull(RemoteSetup.parseLink("playlingo://tv?h=8.8.8.8&p=8766&k=abcdefgh"))
+        assertNull(RemoteSetup.parseLink("playlingo://tv?h=192.168.1.20&p=8766&k=a"))
+        assertNull(RemoteSetup.parseLink("playlingo://login?h=192.168.1.20&p=8766&k=abcdefgh"))
+    }
+
+    @Test fun pageHasAppButtonInEveryLanguage() {
+        for (lang in Lang.values()) {
+            val html = RemoteSetup.page(lang, "playlingo://tv?h=192.168.1.20&p=8766&k=abcdefgh&n=TV")
+            assertTrue(html.contains("href=\"playlingo://tv?h=192.168.1.20&amp;p=8766"))
+            assertTrue(html.contains(PhoneLogin.esc(I18n.t(lang, "rs_page_app"))))
+        }
+    }
 }

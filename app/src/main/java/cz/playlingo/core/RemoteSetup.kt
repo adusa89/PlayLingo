@@ -142,6 +142,41 @@ object RemoteSetup {
         else -> json(v.toString())
     }
 
+    // ---- čtvereček a stránka z televize ----
+
+    /** Odkaz, kterým stránka z TV otevře PlayLingo v telefonu v režimu „Nastavuji TV“. */
+    fun appLink(t: PhoneLogin.Target, tvName: String) =
+        "playlingo://tv?h=${t.host}&p=${t.port}&k=${t.key}&n=" + java.net.URLEncoder.encode(tvName, "UTF-8")
+
+    data class Link(val target: PhoneLogin.Target, val tvName: String)
+
+    /** Odkaz z čtverečku → kam se telefon připojí. Jen adresy v domácí síti (nikdy do internetu). */
+    fun parseLink(link: String?): Link? {
+        val s = link?.trim() ?: return null
+        if (!s.startsWith("playlingo://tv?")) return null
+        val q = PhoneLogin.parseForm(s.substringAfter('?').substringBefore('#'))
+        val host = q["h"] ?: return null
+        val port = q["p"]?.toIntOrNull() ?: return null
+        val key = q["k"] ?: return null
+        if (!PhoneLogin.isHomeAddress(host) || port !in 1..65535 || !PhoneLogin.validKey(key)) return null
+        return Link(PhoneLogin.Target(host, port, key), (q["n"] ?: "").take(60))
+    }
+
+    /** Stránka z TV pro telefon: tlačítko do aplikace (Android) a zatím jen poznámka pro iPhone. */
+    fun page(lang: Lang, appLink: String): String {
+        fun t(k: String) = PhoneLogin.esc(I18n.t(lang, k))
+        return "<!doctype html><html lang=\"${lang.code}\"><head><meta charset=\"utf-8\">" +
+            "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>PlayLingo</title><style>" +
+            "body{margin:0;background:#0e1014;color:#f2f2f2;font:17px/1.45 system-ui,sans-serif}" +
+            "main{max-width:34em;margin:0 auto;padding:18px 16px 44px}h1{font-size:24px;margin:6px 0 12px}" +
+            "p{margin:10px 0}.muted{color:#9aa4ae;font-size:15px}" +
+            "a.btn{display:block;text-align:center;background:#f2c14e;color:#1a1405;font:600 18px system-ui,sans-serif;" +
+            "border-radius:12px;padding:14px;margin:14px 0 6px;text-decoration:none}</style></head><body><main>" +
+            "<h1>" + t("rs_page_title") + "</h1>" +
+            "<a class=\"btn\" href=\"" + PhoneLogin.esc(appLink) + "\">" + t("rs_page_app") + "</a>" +
+            "<p class=\"muted\">" + t("rs_page_noapp") + "</p></main></body></html>"
+    }
+
     private fun StringBuilder.str(s: String) { append(json(s)) }
 
     fun json(s: String): String = buildString {
