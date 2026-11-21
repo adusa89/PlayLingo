@@ -366,6 +366,10 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   `SubtitleOverlay.show` ze stejných hodnot jako pruh na Android TV; televize (`vzhledPruhu` v `app.js`)
   pruh položí stejnými pravidly jako `ScreenLayout`. Do té doby televize kreslila pruh pořád stejně
   (černý, dole) bez ohledu na Nastavení. Písmo: sp × 50/22 = px na obrazovce 1080.
+- **Lepší krytí „Přes titulky“ (od 0.97.56, tester: občas vyčuhoval anglický text):** `core/CoverBox` (testy `CoverBoxTest`)
+  přidá kolem rámečku z OCR okraj (1,2 % výšky nahoře/dole, 2 % šířky vlevo/vpravo – obrys, stín a krajní písmena z rámečku
+  vyčuhují) a během souvislého rozhovoru plochu jen zvětšuje (po schování pruhu `reset`). `SubtitleOverlay.show` posílá
+  rozšířenou plochu i do TV (`TvLook.text`), takže kryje lépe i se starší aplikací v TV. Poloha „těsně nad“ se nemění.
 - **Poloha „Těsně nad anglickým titulkem“** (od 0.88, `ScreenLayout.hug`, `Position.ABOVE_TEXT`, v televizi
   `poloha: "tesne"`, aplikace v televizi 1.3.1): pruh jde těsně nad nalezený anglický řádek. „Nad oblastí
   čtení“ (`ABOVE`) stojí na místě nad celou oblastí. V uloženém rozložení je to 7. číslo = 2 (starší verze

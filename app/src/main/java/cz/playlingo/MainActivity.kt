@@ -2437,6 +2437,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.55"
-    const val VERSION_CODE = 152
+    const val VERSION = "verze 0.97.56"
+    const val VERSION_CODE = 153
 }

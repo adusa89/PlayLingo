@@ -114,6 +114,7 @@ class SubtitleOverlay(
     /** Je pruh právě zobrazený? */
     @Volatile var isShown = false
         private set
+    private val coverBox = cz.playlingo.core.CoverBox()
 
     init {
         main.post {
@@ -255,8 +256,8 @@ class SubtitleOverlay(
      * v režimu "přes titulky" se pruh položí přesně přes něj.
      */
     fun show(
-        allSegments: List<Segment>, original: String?, textTop: Float, textBottom: Float,
-        textLeft: Float = -1f, textRight: Float = -1f,
+        allSegments: List<Segment>, original: String?, rawTop: Float, rawBottom: Float,
+        rawLeft: Float = -1f, rawRight: Float = -1f,
         /** Výška řádku originálu jako zlomek výšky obrazu (0 = neznámá). */
         lineHeight: Float = 0f,
         /** Pevné místo (levý horní roh ve zlomcích obrazu, text vlevo) – překlad menu hry vedle menu (od 0.97.36). */
@@ -264,6 +265,14 @@ class SubtitleOverlay(
         /** Rozestup řádků menu ve hře (zlomek výšky) – každý řádek překladu ve výšce své položky (od 0.97.40). */
         step: Float = 0f,
     ) {
+        // „přes titulky“: zakrýt anglický text i s okrajem a v rozhovoru se nezmenšovat (CoverBox, od 0.97.56) –
+        // rozšířená plocha jde i do TV LG/Samsung, takže kryje lépe i se stávající aplikací v TV
+        if (!isShown) coverBox.reset()
+        val cb = if (layout.cover && box == null) coverBox.next(rawTop, rawBottom, rawLeft, rawRight) else null
+        val textTop = cb?.get(0) ?: rawTop
+        val textBottom = cb?.get(1) ?: rawBottom
+        val textLeft = cb?.get(2) ?: rawLeft
+        val textRight = cb?.get(3) ?: rawRight
         isShown = true
         val segments = if (showPrompts) allSegments else allSegments.filter { !it.prompt }
         val colors = if (coloredSpeaker) speakerColors.colorsFor(segments) else emptyMap()
