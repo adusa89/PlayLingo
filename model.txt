@@ -1,0 +1,1 @@
+11-21 17:39:20.008  4538  4538 I TP_TEST : MODEL|cs|ok|pokus=1

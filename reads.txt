@@ -1,0 +1,479 @@
+11-21 17:37:26.824 I/TP_TEST ( 3030): REMOTE|page on port 8766
+11-21 17:38:34.640 I/TP_TEST ( 3030): DEEPL|page page on port 8765
+11-21 17:38:37.866 I/TP_TEST ( 3030): DEEPL|page page closed
+11-21 17:38:45.061 I/TP_TEST ( 3030): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:38:54.468 I/TP_TEST ( 3030): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:39:18.174 I/TP_TEST ( 4538): REMOTE|page on port 8766
+11-21 17:39:19.712 I/TP_TEST ( 4538): NET|připojeno CABLE
+11-21 17:39:19.821 I/TP_TEST ( 4538): A11Y|true
+11-21 17:39:19.828 I/TP_TEST ( 4538): START|video=1280x720|interval=100|screen=1920x1080|eco=true|decoder=c2.goldfish.h264.decoder (přímý výstup)|lib=ok 1280x720@30 10000kb
+11-21 17:39:19.981 I/TP_TEST ( 4538): SOURCE|demo
+11-21 17:39:19.981 I/TP_TEST ( 4538): VIDEO|fed=0|decoded=0|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=0 raw=false err=null
+11-21 17:39:20.008 I/TP_TEST ( 4538): MODEL|cs|ok|pokus=1
+11-21 17:39:20.811 I/TP_TEST ( 4538): WARM|cs|první=715ms|další=82ms
+11-21 17:39:24.907 I/TP_TEST ( 4538): READ|ocr=3958ms|zone=33%|Marek: We need money, Jonas.
+11-21 17:39:25.006 I/TP_TEST ( 4538): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:39:25.006 I/TP_TEST ( 4538): LAT|5026ms|ocr=3958ms
+11-21 17:39:25.109 I/TP_TEST ( 4538): VIDEO|fed=49|decoded=48|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=49 raw=false err=null
+11-21 17:39:25.110 I/TP_TEST ( 4538): PERF|čtení=1|průměr=3958ms|poslední=3958ms|titulků=1|video=1280x720|oblast=33%|paměť=14+89MB
+11-21 17:39:28.777 I/TP_TEST ( 4538): COLOR|Marek|-|us=2764
+11-21 17:39:28.778 I/TP_TEST ( 4538): READ|ocr=3664ms|zone=33%|Marek: We need money, Jonas.
+11-21 17:39:32.193 I/TP_TEST ( 4538): COLOR|Marek|-|us=2730
+11-21 17:39:32.193 I/TP_TEST ( 4538): READ|ocr=3311ms|zone=33%|Jonas: I reckon we won't find anything i
+11-21 17:39:32.331 I/TP_TEST ( 4538): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:39:32.331 I/TP_TEST ( 4538): LAT|4850ms|ocr=3311ms
+11-21 17:39:32.332 I/TP_TEST ( 4538): ZONE|learned 0.72-1.0
+11-21 17:39:32.435 I/TP_TEST ( 4538): VIDEO|fed=123|decoded=120|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=123 raw=false err=null
+11-21 17:39:36.337 I/TP_TEST ( 4538): COLOR|Jonas|-|us=4852
+11-21 17:39:36.338 I/TP_TEST ( 4538): READ|ocr=3899ms|zone=27%|Jonas: I reckon we won't find anything i
+11-21 17:39:40.412 I/TP_TEST ( 4538): COLOR|Jonas|-|us=18533
+11-21 17:39:40.412 I/TP_TEST ( 4538): READ|ocr=3971ms|zone=27%|Get on your horse, we ride at dawn.
+11-21 17:39:40.531 I/TP_TEST ( 4538): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:39:40.531 I/TP_TEST ( 4538): LAT|5550ms|ocr=3971ms
+11-21 17:39:40.634 I/TP_TEST ( 4538): VIDEO|fed=203|decoded=202|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=203 raw=false err=null
+11-21 17:39:44.275 I/TP_TEST ( 4538): READ|ocr=3638ms|zone=27%|Get on your horse, we ride at dawn.
+11-21 17:39:48.355 I/TP_TEST ( 4538): READ|ocr=3974ms|zone=27%|Silas: If we keep going like this, the m
+11-21 17:39:48.497 I/TP_TEST ( 4538): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:39:48.497 I/TP_TEST ( 4538): LAT|16ms|ocr=3974ms
+11-21 17:39:48.600 I/TP_TEST ( 4538): VIDEO|fed=284|decoded=281|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=284 raw=false err=null
+11-21 17:39:52.467 I/TP_TEST ( 4538): COLOR|Silas|-|us=2097
+11-21 17:39:52.468 I/TP_TEST ( 4538): READ|ocr=3863ms|zone=27%|Silas: If we keep going like this, the m
+11-21 17:39:56.524 I/TP_TEST ( 4538): COLOR|Silas|-|us=1911
+11-21 17:39:56.525 I/TP_TEST ( 4538): READ|ocr=3947ms|zone=27%|MIRA: Are you sure this is the right way
+11-21 17:39:56.625 I/TP_TEST ( 4538): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:39:56.625 I/TP_TEST ( 4538): LAT|644ms|ocr=3947ms
+11-21 17:39:56.729 I/TP_TEST ( 4538): VIDEO|fed=365|decoded=363|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=365 raw=false err=null
+11-21 17:39:56.729 I/TP_TEST ( 4538): PERF|čtení=9|průměr=3802ms|poslední=3947ms|titulků=5|video=1280x720|oblast=27%|paměť=18+97MB
+11-21 17:40:00.213 I/TP_TEST ( 4538): COLOR|Mira|-|us=2569
+11-21 17:40:00.214 I/TP_TEST ( 4538): READ|ocr=3484ms|zone=27%|
+11-21 17:40:00.214 I/TP_TEST ( 4538): HIDE
+11-21 17:40:04.211 I/TP_TEST ( 4538): READ|ocr=3891ms|zone=27%|Tobin: no idea, but we can't stay here
+11-21 17:40:04.306 I/TP_TEST ( 4538): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:40:04.306 I/TP_TEST ( 4538): LAT|825ms|ocr=3891ms
+11-21 17:40:04.410 I/TP_TEST ( 4538): VIDEO|fed=440|decoded=438|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=440 raw=false err=null
+11-21 17:40:08.193 I/TP_TEST ( 4538): COLOR|Tobin|-|us=1487
+11-21 17:40:08.194 I/TP_TEST ( 4538): READ|ocr=3781ms|zone=27%|
+11-21 17:40:08.194 I/TP_TEST ( 4538): HIDE
+11-21 17:40:12.118 I/TP_TEST ( 4538): READ|ocr=3821ms|zone=27%|WE HAVE TO GET OUT OF HERE!
+11-21 17:40:12.195 I/TP_TEST ( 4538): SHOW|WE HAVE TO GET OUT OF HERE!|Musíme se odsud dostat!
+11-21 17:40:12.195 I/TP_TEST ( 4538): LAT|1214ms|ocr=3821ms
+11-21 17:40:12.298 I/TP_TEST ( 4538): VIDEO|fed=519|decoded=518|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=519 raw=false err=null
+11-21 17:40:15.848 I/TP_TEST ( 4538): READ|ocr=3549ms|zone=27%|
+11-21 17:40:15.849 I/TP_TEST ( 4538): HIDE
+11-21 17:40:19.806 I/TP_TEST ( 4538): SCALE|1.5
+11-21 17:40:19.807 I/TP_TEST ( 4538): READ|ocr=3856ms|zone=27%|Wait
+11-21 17:40:19.808 I/TP_TEST ( 4538): SHOW|Wait|Počkej
+11-21 17:40:19.808 I/TP_TEST ( 4538): LAT|1327ms|ocr=3856ms
+11-21 17:40:19.909 I/TP_TEST ( 4538): VIDEO|fed=595|decoded=594|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=595 raw=false err=null
+11-21 17:40:23.791 I/TP_TEST ( 4538): READ|ocr=3881ms|zone=27%|
+11-21 17:40:23.792 I/TP_TEST ( 4538): HIDE
+11-21 17:40:27.692 I/TP_TEST ( 4538): READ|ocr=3795ms|zone=27%|[Old Kessler] You two were never suppose
+11-21 17:40:27.781 I/TP_TEST ( 4538): SHOW|[Old Kessler] You two were never supposed to meet.|Old Kessler: Ty dva se nikdy neměli setkat.
+11-21 17:40:27.781 I/TP_TEST ( 4538): LAT|301ms|ocr=3795ms
+11-21 17:40:27.886 I/TP_TEST ( 4538): VIDEO|fed=676|decoded=674|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=676 raw=false err=null
+11-21 17:40:27.887 I/TP_TEST ( 4538): PERF|čtení=17|průměr=3781ms|poslední=3795ms|titulků=9|video=1280x720|oblast=27%|paměť=21+103MB
+11-21 17:40:31.817 I/TP_TEST ( 4538): COLOR|Old Kessler|-|us=3076
+11-21 17:40:31.818 I/TP_TEST ( 4538): READ|ocr=3926ms|zone=27%|Mira: I'll take the left door. Tobin: Th
+11-21 17:40:31.946 I/TP_TEST ( 4538): SHOW|Mira: I'll take the left door. Tobin: Then I'm going right.|Mira: Vezmu levé dveře. Tobin: Pak jdu v pořádku.
+11-21 17:40:31.946 I/TP_TEST ( 4538): LAT|4465ms|ocr=3926ms
+11-21 17:40:36.017 I/TP_TEST ( 4538): COLOR|Mira|-|us=1514
+11-21 17:40:36.018 I/TP_TEST ( 4538): READ|ocr=3962ms|zone=27%|Mira: I'll take the left door. Tobin: Th
+11-21 17:40:36.131 I/TP_TEST ( 4538): SHOW|Mira: I'll take the left door. Tobin: Then lI'm going right.|Mira: Vezmu levé dveře. Tobin: Pak Li'm jde vpravo.
+11-21 17:40:36.131 I/TP_TEST ( 4538): LAT|1150ms|ocr=3962ms
+11-21 17:40:36.238 I/TP_TEST ( 4538): VIDEO|fed=758|decoded=757|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=758 raw=false err=null
+11-21 17:40:40.057 I/TP_TEST ( 4538): COLOR|Mira|-|us=2511
+11-21 17:40:40.058 I/TP_TEST ( 4538): READ|ocr=3816ms|zone=27%|Lena: Keep your voice down, they can hea
+11-21 17:40:40.154 I/TP_TEST ( 4538): SHOW|Lena: Keep your voice down, they can hear us.|Lena: Mluv tiše, slyší nás.
+11-21 17:40:40.154 I/TP_TEST ( 4538): LAT|5173ms|ocr=3816ms
+11-21 17:40:44.214 I/TP_TEST ( 4538): COLOR|Lena|-|us=923
+11-21 17:40:44.215 I/TP_TEST ( 4538): READ|ocr=3954ms|zone=27%|Lena: Keep your voice down, they can hea
+11-21 17:40:44.316 I/TP_TEST ( 4538): VIDEO|fed=838|decoded=836|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=838 raw=false err=null
+11-21 17:40:48.062 I/TP_TEST ( 4538): COLOR|Lena|-|us=689
+11-21 17:40:48.062 I/TP_TEST ( 4538): READ|ocr=3742ms|zone=27%|I don't think anyone has been here for y
+11-21 17:40:48.171 I/TP_TEST ( 4538): SHOW|I don't think anyone has been here for years.|Nemyslím si, že by tu někdo byl roky.
+11-21 17:40:48.172 I/TP_TEST ( 4538): LAT|5691ms|ocr=3742ms
+11-21 17:40:52.365 I/TP_TEST ( 4538): READ|ocr=4087ms|zone=27%|I don't think anyone has been here for y
+11-21 17:40:52.467 I/TP_TEST ( 4538): VIDEO|fed=920|decoded=919|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=920 raw=false err=null
+11-21 17:40:56.362 I/TP_TEST ( 4538): READ|ocr=3891ms|zone=27%|Davor: Hand me the latern and stay close
+11-21 17:40:56.457 I/TP_TEST ( 4538): SHOW|Davor: Hand me the latern and stay close.|Davor: Dej mi latern a zůstaň blízko.
+11-21 17:40:56.457 I/TP_TEST ( 4538): LAT|476ms|ocr=3891ms
+11-21 17:41:00.151 I/TP_TEST ( 4538): COLOR|Davor|-|us=399
+11-21 17:41:00.152 I/TP_TEST ( 4538): READ|ocr=3591ms|zone=27%|
+11-21 17:41:00.153 I/TP_TEST ( 4538): HIDE
+11-21 17:41:00.255 I/TP_TEST ( 4538): VIDEO|fed=998|decoded=996|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=997 raw=false err=null
+11-21 17:41:00.256 I/TP_TEST ( 4538): PERF|čtení=25|průměr=3810ms|poslední=3591ms|titulků=14|video=1280x720|oblast=27%|paměť=24+105MB
+11-21 17:41:04.215 I/TP_TEST ( 4538): READ|ocr=3955ms|zone=27%|Lena: The bridge is out, we have to swim
+11-21 17:41:04.320 I/TP_TEST ( 4538): SHOW|Lena: The bridge is out, we have to swim.|Lena: Most je zničen, musíme plavat.
+11-21 17:41:04.320 I/TP_TEST ( 4538): LAT|839ms|ocr=3955ms
+11-21 17:41:08.187 I/TP_TEST ( 4538): COLOR|Lena|-|us=986
+11-21 17:41:08.187 I/TP_TEST ( 4538): READ|ocr=3764ms|zone=27%|
+11-21 17:41:08.187 I/TP_TEST ( 4538): HIDE
+11-21 17:41:08.288 I/TP_TEST ( 4538): VIDEO|fed=1078|decoded=1077|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1078 raw=false err=null
+11-21 17:41:12.288 I/TP_TEST ( 4538): READ|ocr=3997ms|zone=27%|Davor: Run for the gate!
+11-21 17:41:12.289 I/TP_TEST ( 4538): SHOW|Davor: Run for the gate!|Davor: Utíkej k bráně!
+11-21 17:41:12.289 I/TP_TEST ( 4538): LAT|1308ms|ocr=3997ms
+11-21 17:41:16.493 I/TP_TEST ( 4538): COLOR|Davor|-|us=5057
+11-21 17:41:16.493 I/TP_TEST ( 4538): READ|ocr=4102ms|zone=27%|
+11-21 17:41:16.493 I/TP_TEST ( 4538): HIDE
+11-21 17:41:16.595 I/TP_TEST ( 4538): VIDEO|fed=1161|decoded=1160|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1161 raw=false err=null
+11-21 17:41:20.638 I/TP_TEST ( 4538): READ|ocr=4034ms|zone=27%|Kessler: So, what will it be? • I'll tak
+11-21 17:41:20.889 I/TP_TEST ( 4538): SHOW|Kessler: So, what will it be? • I'll take the job. • Tell me more about the pay. • Not interested.|Kessler: Co to bude? Vezmu si práci. Řekni mi více o mzdě. Nezajímá.
+11-21 17:41:20.889 I/TP_TEST ( 4538): LAT|908ms|ocr=4034ms
+11-21 17:41:24.750 I/TP_TEST ( 4538): COLOR|Kessler|-|us=1909
+11-21 17:41:24.751 I/TP_TEST ( 4538): READ|ocr=3750ms|zone=27%|Marek: We need money, Jonas.
+11-21 17:41:24.752 I/TP_TEST ( 4538): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:41:24.752 I/TP_TEST ( 4538): LAT|4771ms|ocr=3750ms
+11-21 17:41:24.854 I/TP_TEST ( 4538): VIDEO|fed=1243|decoded=1241|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1243 raw=false err=null
+11-21 17:41:28.773 I/TP_TEST ( 4538): COLOR|Marek|-|us=2088
+11-21 17:41:28.773 I/TP_TEST ( 4538): READ|ocr=3916ms|zone=27%|Marek: We need money, Jonas.
+11-21 17:41:32.795 I/TP_TEST ( 4538): COLOR|Marek|-|us=2262
+11-21 17:41:32.796 I/TP_TEST ( 4538): READ|ocr=3917ms|zone=27%|Jonas: I reckon we won't find anything i
+11-21 17:41:32.797 I/TP_TEST ( 4538): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:41:32.797 I/TP_TEST ( 4538): LAT|5316ms|ocr=3917ms
+11-21 17:41:32.902 I/TP_TEST ( 4538): VIDEO|fed=1324|decoded=1322|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1324 raw=false err=null
+11-21 17:41:32.903 I/TP_TEST ( 4538): PERF|čtení=33|průměr=3839ms|poslední=3917ms|titulků=19|video=1280x720|oblast=27%|paměť=16+103MB
+11-21 17:41:36.888 I/TP_TEST ( 4538): COLOR|Jonas|-|us=11566
+11-21 17:41:36.889 I/TP_TEST ( 4538): READ|ocr=3982ms|zone=27%|Jonas: I reckon we won't find anything i
+11-21 17:41:40.733 I/TP_TEST ( 4538): COLOR|Jonas|-|us=1877
+11-21 17:41:40.733 I/TP_TEST ( 4538): READ|ocr=3739ms|zone=27%|Get on your horse, we ride at dawn.
+11-21 17:41:40.734 I/TP_TEST ( 4538): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:41:40.734 I/TP_TEST ( 4538): LAT|5753ms|ocr=3739ms
+11-21 17:41:40.837 I/TP_TEST ( 4538): VIDEO|fed=1402|decoded=1400|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1402 raw=false err=null
+11-21 17:41:44.608 I/TP_TEST ( 4538): READ|ocr=3768ms|zone=27%|Get on your horse, we ride at dawn.
+11-21 17:41:48.766 I/TP_TEST ( 4538): READ|ocr=4052ms|zone=27%|Silas: If we keep going like this, the m
+11-21 17:41:48.767 I/TP_TEST ( 4538): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:41:48.768 I/TP_TEST ( 4538): LAT|287ms|ocr=4052ms
+11-21 17:41:48.873 I/TP_TEST ( 4538): VIDEO|fed=1482|decoded=1479|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1482 raw=false err=null
+11-21 17:41:52.702 I/TP_TEST ( 4538): COLOR|Silas|-|us=2890
+11-21 17:41:52.702 I/TP_TEST ( 4538): READ|ocr=3821ms|zone=27%|
+11-21 17:41:52.702 I/TP_TEST ( 4538): HIDE
+11-21 17:41:56.754 I/TP_TEST ( 4538): READ|ocr=3949ms|zone=27%|MIRA: Are you sure this is the right way
+11-21 17:41:56.755 I/TP_TEST ( 4538): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:41:56.755 I/TP_TEST ( 4538): LAT|774ms|ocr=3949ms
+11-21 17:41:56.858 I/TP_TEST ( 4538): VIDEO|fed=1562|decoded=1560|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1562 raw=false err=null
+11-21 17:42:00.722 I/TP_TEST ( 4538): COLOR|Mira|-|us=900
+11-21 17:42:00.722 I/TP_TEST ( 4538): READ|ocr=3862ms|zone=27%|
+11-21 17:42:00.722 I/TP_TEST ( 4538): HIDE
+11-21 17:42:04.816 I/TP_TEST ( 4538): READ|ocr=3990ms|zone=27%|Tobin: no idea, but we can't stay here
+11-21 17:42:04.816 I/TP_TEST ( 4538): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:42:04.817 I/TP_TEST ( 4538): LAT|1336ms|ocr=3990ms
+11-21 17:42:04.926 I/TP_TEST ( 4538): VIDEO|fed=1643|decoded=1641|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1643 raw=false err=null
+11-21 17:42:04.927 I/TP_TEST ( 4538): PERF|čtení=41|průměr=3850ms|poslední=3990ms|titulků=23|video=1280x720|oblast=27%|paměť=18+104MB
+11-21 17:42:08.802 I/TP_TEST ( 4538): COLOR|Tobin|-|us=1002
+11-21 17:42:08.802 I/TP_TEST ( 4538): READ|ocr=3874ms|zone=27%|
+11-21 17:42:08.802 I/TP_TEST ( 4538): HIDE
+11-21 17:42:12.841 I/TP_TEST ( 4538): READ|ocr=3934ms|zone=27%|WE HAVE TO GET OUT OF HERE!
+11-21 17:42:12.841 I/TP_TEST ( 4538): SHOW|WE HAVE TO GET OUT OF HERE!|Musíme se odsud dostat!
+11-21 17:42:12.841 I/TP_TEST ( 4538): LAT|360ms|ocr=3934ms
+11-21 17:42:12.944 I/TP_TEST ( 4538): VIDEO|fed=1722|decoded=1721|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1722 raw=false err=null
+11-21 17:42:16.635 I/TP_TEST ( 4538): READ|ocr=3689ms|zone=27%|Wait
+11-21 17:42:16.635 I/TP_TEST ( 4538): SHOW|Wait|Počkej
+11-21 17:42:16.635 I/TP_TEST ( 4538): LAT|4154ms|ocr=3689ms
+11-21 17:42:20.571 I/TP_TEST ( 4538): READ|ocr=3834ms|zone=27%|Wait
+11-21 17:42:20.673 I/TP_TEST ( 4538): VIDEO|fed=1799|decoded=1798|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1799 raw=false err=null
+11-21 17:42:24.839 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:42:24.958 I/TP_TEST ( 4538): READ|ocr=4281ms|zone=27%|[old Kessler] You two were never suppose
+11-21 17:42:24.959 I/TP_TEST ( 4538): SHOW|[old Kessler] You two were never supposed to meet.|Old Kessler: Ty dva se nikdy neměli setkat.
+11-21 17:42:24.959 I/TP_TEST ( 4538): LAT|4978ms|ocr=4281ms
+11-21 17:42:25.765 I/TP_TEST ( 4538): VIDEO|fed=1851|decoded=1849|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1851 raw=false err=null
+11-21 17:42:27.852 I/TP_TEST ( 4538): PAIR|failed RegistEventFailed
+11-21 17:42:28.207 I/TP_TEST ( 4538): SOURCE|ps5 10.0.2.2
+11-21 17:42:28.281 I/TP_TEST ( 4538): LINK|OFF||dec=c2.goldfish.h264.decoder (přímý výstup)|0x0|fed=1875|decoded=1874
+11-21 17:42:30.794 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:42:32.198 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:42:32.198 I/TP_TEST ( 4538): PS5|v síti: žádná konzole
+11-21 17:42:32.199 I/TP_TEST ( 4538): PS5|spárováno: Zkouška 10.0.2.2 …0000 · účet ? · spárovaná konzole v síti nenalezena
+11-21 17:42:35.017 I/TP_TEST ( 4538): PERF|čtení=46|průměr=3857ms|poslední=4281ms|titulků=26|video=0x0|oblast=27%|paměť=22+103MB
+11-21 17:42:35.821 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:42:36.197 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:42:36.198 I/TP_TEST ( 4538): PS5|profile 1280x720 10000kb net=CABLE
+11-21 17:42:36.199 I/TP_TEST ( 4538): PS5|connect 10.0.2.2 → Success
+11-21 17:42:36.200 I/TP_TEST ( 4538): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=CABLE | pokus=1
+11-21 17:42:36.201 I/TP_TEST ( 4538): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:42:36.221 I/TP_TEST ( 4538): LINK|WAITING|Connection Refused in Session Request|dec=c2.goldfish.h264.decoder (přímý výstup)|0x0|fed=1875|decoded=1874
+11-21 17:42:40.844 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:42:43.172 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:42:43.172 I/TP_TEST ( 4538): PS5|profile 1280x720 10000kb net=CABLE
+11-21 17:42:43.173 I/TP_TEST ( 4538): PS5|connect 10.0.2.2 → Success
+11-21 17:42:43.174 I/TP_TEST ( 4538): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=CABLE | pokus=2
+11-21 17:42:43.174 I/TP_TEST ( 4538): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:42:45.870 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:42:50.898 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:42:53.155 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:42:55.924 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:42:57.126 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:42:57.127 I/TP_TEST ( 4538): PS5|profile 1280x720 10000kb net=CABLE
+11-21 17:42:57.127 I/TP_TEST ( 4538): PS5|connect 10.0.2.2 → Success
+11-21 17:42:57.128 I/TP_TEST ( 4538): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=CABLE | pokus=3
+11-21 17:42:57.129 I/TP_TEST ( 4538): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:42:57.129 I/TP_TEST ( 4538): LINK|CONNECTING|Connection Refused in Session Request|dec=c2.goldfish.h264.decoder (přímý výstup)|0x0|fed=1875|decoded=1874
+11-21 17:42:57.229 I/TP_TEST ( 4538): LINK|FAILED|Connection Refused in Session Request|dec=c2.goldfish.h264.decoder (přímý výstup)|0x0|fed=1875|decoded=1874
+11-21 17:43:00.946 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:05.065 I/TP_TEST ( 4538): PERF|čtení=46|průměr=3857ms|poslední=4281ms|titulků=26|video=0x0|oblast=27%|paměť=23+104MB
+11-21 17:43:05.971 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:10.989 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:13.124 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:43:13.125 I/TP_TEST ( 4538): PS5|profile 1280x720 10000kb net=CABLE
+11-21 17:43:13.126 I/TP_TEST ( 4538): PS5|connect 10.0.2.2 → Success
+11-21 17:43:13.126 I/TP_TEST ( 4538): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=CABLE | pokus=4
+11-21 17:43:13.127 I/TP_TEST ( 4538): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:16.009 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:17.373 I/TP_TEST ( 4538): LOGIN|page on port 8765
+11-21 17:43:21.046 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:26.074 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:27.962 I/TP_TEST ( 4538): LOGIN|page closed
+11-21 17:43:29.125 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:43:29.126 I/TP_TEST ( 4538): PS5|profile 1280x720 10000kb net=CABLE
+11-21 17:43:29.127 I/TP_TEST ( 4538): PS5|connect 10.0.2.2 → Success
+11-21 17:43:29.128 I/TP_TEST ( 4538): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=CABLE | pokus=5
+11-21 17:43:29.128 I/TP_TEST ( 4538): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:31.103 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:31.150 I/TP_TEST ( 4538): LOGIN|page on port 8765
+11-21 17:43:31.178 I/TP_TEST ( 4538): LOGIN|test page 200 form=true
+11-21 17:43:31.180 I/TP_TEST ( 4538): LOGIN|test wrong key 404
+11-21 17:43:31.182 I/TP_TEST ( 4538): LOGIN|page account from app
+11-21 17:43:31.182 I/TP_TEST ( 4538): LOGIN|test app OK
+11-21 17:43:31.220 I/TP_TEST ( 4538): LOGIN|page closed
+11-21 17:43:35.120 I/TP_TEST ( 4538): PERF|čtení=46|průměr=3857ms|poslední=4281ms|titulků=26|video=0x0|oblast=27%|paměť=14+101MB
+11-21 17:43:36.127 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:39.404 I/TP_TEST ( 4538): HELPER|start
+11-21 17:43:39.418 I/TP_TEST ( 4538): HELPER|link ok
+11-21 17:43:41.161 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:43.653 I/TP_TEST ( 4538): TR|start cs model=true
+11-21 17:43:43.806 I/TP_TEST ( 4538): TR|What are you doing here?|Co tady děláš?
+11-21 17:43:43.879 I/TP_TEST ( 4538): TR|Are you sure about this?|Jsi si tím jistý?
+11-21 17:43:43.946 I/TP_TEST ( 4538): TR|Do you know who I am?|Víš, kdo jsem?
+11-21 17:43:44.000 I/TP_TEST ( 4538): TR|Can you help me?|Můžeš mi pomoci?
+11-21 17:43:44.061 I/TP_TEST ( 4538): TR|What do you want?|Co chceš?
+11-21 17:43:44.125 I/TP_TEST ( 4538): TR|Where did you get that?|Kde jsi to dostal?
+11-21 17:43:44.183 I/TP_TEST ( 4538): TR|Did you hear that?|Slyšel jsi to?
+11-21 17:43:44.184 I/TP_TEST ( 4538): TR|Are you out of your mind?|Zbláznil ses?
+11-21 17:43:44.249 I/TP_TEST ( 4538): TR|How much do you want for it?|Kolik chceš za to?
+11-21 17:43:44.314 I/TP_TEST ( 4538): TR|Have you seen my brother?|Viděl jsi mého bratra?
+11-21 17:43:44.384 I/TP_TEST ( 4538): TR|Why didn't you tell me?|Proč jsi mi to neřekl?
+11-21 17:43:44.450 I/TP_TEST ( 4538): TR|Will you come with me?|Půjdeš se mnou?
+11-21 17:43:44.451 I/TP_TEST ( 4538): TR|Get on your horse.|Nasedni na koně.
+11-21 17:43:44.451 I/TP_TEST ( 4538): TR|Follow me.|Za mnou!
+11-21 17:43:44.452 I/TP_TEST ( 4538): TR|Stay close.|Drž se u mě.
+11-21 17:43:44.452 I/TP_TEST ( 4538): TR|Hurry up!|Pospěš si!
+11-21 17:43:44.452 I/TP_TEST ( 4538): TR|Watch out!|Pozor!
+11-21 17:43:44.453 I/TP_TEST ( 4538): TR|Get down!|K zemi!
+11-21 17:43:44.453 I/TP_TEST ( 4538): TR|Take cover!|Kryjte se!
+11-21 17:43:44.453 I/TP_TEST ( 4538): TR|Hold on.|Vydrž.
+11-21 17:43:44.513 I/TP_TEST ( 4538): TR|Hang on a second.|Počkej sekundu.
+11-21 17:43:44.563 I/TP_TEST ( 4538): TR|Wait for me.|Počkej na mě.
+11-21 17:43:44.617 I/TP_TEST ( 4538): TR|Leave me alone.|Nech mě na pokoji.
+11-21 17:43:44.663 I/TP_TEST ( 4538): TR|Shut up.|Drž hubu.
+11-21 17:43:44.719 I/TP_TEST ( 4538): TR|Calm down.|Uklidni se.
+11-21 17:43:44.761 I/TP_TEST ( 4538): TR|Take it easy.|Uklidni se.
+11-21 17:43:44.821 I/TP_TEST ( 4538): TR|Give me your gun.|Dej mi zbraň.
+11-21 17:43:44.867 I/TP_TEST ( 4538): TR|Put your hands up!|Ruce!
+11-21 17:43:44.868 I/TP_TEST ( 4538): TR|Drop your weapon!|Zahoď zbraň!
+11-21 17:43:44.868 I/TP_TEST ( 4538): TR|Don't move!|Ani hnout.
+11-21 17:43:44.934 I/TP_TEST ( 4538): TR|Open the door.|Otevři dveře.
+11-21 17:43:44.935 I/TP_TEST ( 4538): TR|Give it back.|Vrať to!
+11-21 17:43:44.990 I/TP_TEST ( 4538): TR|Tell me the truth.|Řekni mi pravdu.
+11-21 17:43:45.036 I/TP_TEST ( 4538): TR|Trust me.|Věř mi.
+11-21 17:43:45.086 I/TP_TEST ( 4538): TR|Be careful.|Buď opatrný.
+11-21 17:43:45.127 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:43:45.147 I/TP_TEST ( 4538): TR|Look at me.|Podívej se na mě.
+11-21 17:43:45.188 I/TP_TEST ( 4538): TR|Come here.|Pojď sem.
+11-21 17:43:45.237 I/TP_TEST ( 4538): TR|Go away.|Jdi pryč.
+11-21 17:43:45.285 I/TP_TEST ( 4538): TR|Let him go.|Nech ho jít.
+11-21 17:43:45.581 I/TP_TEST ( 4538): TR|Keep your voice down, they can hear us.|Mluv tiše, slyší nás.
+11-21 17:43:45.686 I/TP_TEST ( 4538): TR|Hand me the lantern and stay close.|Dej mi lucernu a zůstat blízko.
+11-21 17:43:45.687 I/TP_TEST ( 4538): TR|Run for the gate!|Utíkej k bráně!
+11-21 17:43:45.734 I/TP_TEST ( 4538): TR|I don't know.|Nevím.
+11-21 17:43:45.783 I/TP_TEST ( 4538): TR|No idea.|Nevím.
+11-21 17:43:45.877 I/TP_TEST ( 4538): TR|I have no idea what you're talking about.|Nevím, o čem mluvíš.
+11-21 17:43:45.926 I/TP_TEST ( 4538): TR|Come on, let's go!|Pojďme!
+11-21 17:43:45.927 I/TP_TEST ( 4538): TR|Never mind.|To je jedno.
+11-21 17:43:45.977 I/TP_TEST ( 4538): TR|Forget it.|Zapomeň na to.
+11-21 17:43:46.032 I/TP_TEST ( 4538): TR|It doesn't matter.|Nezáleží na tom.
+11-21 17:43:46.096 I/TP_TEST ( 4538): TR|I'll take care of it.|Postarám se o to.
+11-21 17:43:46.097 I/TP_TEST ( 4538): TR|You can count on me.|Můžeš se na mě spolehnout.
+11-21 17:43:46.097 I/TP_TEST ( 4538): TR|I owe you one.|Máš to u mě.
+11-21 17:43:46.155 I/TP_TEST ( 4538): TR|Thanks for your help.|Díky za pomoc.
+11-21 17:43:46.155 I/TP_TEST ( 4538): TR|You're welcome.|Není zač.
+11-21 17:43:46.205 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:46.206 I/TP_TEST ( 4538): TR|What's going on?|Co se děje?
+11-21 17:43:46.252 I/TP_TEST ( 4538): TR|What happened?|Co se stalo?
+11-21 17:43:46.302 I/TP_TEST ( 4538): TR|Where are we going?|Kam jedeme?
+11-21 17:43:46.360 I/TP_TEST ( 4538): TR|I'm going to kill you.|Zabiju tě.
+11-21 17:43:46.417 I/TP_TEST ( 4538): TR|You'll pay for this.|Za to zaplatíš.
+11-21 17:43:46.472 I/TP_TEST ( 4538): TR|I don't trust him.|Nevěřím mu.
+11-21 17:43:46.472 I/TP_TEST ( 4538): TR|He's lying.|Lže.
+11-21 17:43:46.522 I/TP_TEST ( 4538): TR|That's not true.|To není pravda.
+11-21 17:43:46.563 I/TP_TEST ( 4538): TR|You're right.|Máš pravdu.
+11-21 17:43:46.564 I/TP_TEST ( 4538): TR|You were right about him.|Měl jsi o něm pravdu.
+11-21 17:43:46.626 I/TP_TEST ( 4538): TR|I was wrong.|Mýlil jsem se.
+11-21 17:43:46.679 I/TP_TEST ( 4538): TR|I'm sorry.|Je mi líto.
+11-21 17:43:46.739 I/TP_TEST ( 4538): TR|It's not your fault.|Není to tvoje chyba.
+11-21 17:43:46.810 I/TP_TEST ( 4538): TR|We have to get out of here.|Musíme se odsud dostat.
+11-21 17:43:46.867 I/TP_TEST ( 4538): TR|We're running out of time.|Nemáme moc času.
+11-21 17:43:46.927 I/TP_TEST ( 4538): TR|There's no time to explain.|Není čas to vysvětlit.
+11-21 17:43:46.928 I/TP_TEST ( 4538): TR|I've got a bad feeling about this.|Mám z toho špatný pocit.
+11-21 17:43:46.928 I/TP_TEST ( 4538): TR|Something's wrong.|Něco tu nehraje.
+11-21 17:43:46.966 I/TP_TEST ( 4538): TR|Good job.|Dobrá práce.
+11-21 17:43:47.005 I/TP_TEST ( 4538): TR|Well done.|Dobrá práce.
+11-21 17:43:47.005 I/TP_TEST ( 4538): TR|Nice shot!|Dobrá rána!
+11-21 17:43:47.006 I/TP_TEST ( 4538): TR|See you later.|Tak zatím.
+11-21 17:43:47.006 I/TP_TEST ( 4538): TR|Take care of yourself.|Dávej na sebe pozor.
+11-21 17:43:47.007 I/TP_TEST ( 4538): TR|I need a drink.|Potřebuju se napít.
+11-21 17:43:47.072 I/TP_TEST ( 4538): TR|Let's get this over with.|Pojďme to dokončit.
+11-21 17:43:47.072 I/TP_TEST ( 4538): TR|That's enough!|To stačí!
+11-21 17:43:47.073 I/TP_TEST ( 4538): TR|Mind your own business.|Starej se o sebe.
+11-21 17:43:47.073 I/TP_TEST ( 4538): TR|What the hell is wrong with you?|Co to s tebou sakra je?
+11-21 17:43:47.074 I/TP_TEST ( 4538): TR|You've got to be kidding me.|To si děláš srandu.
+11-21 17:43:47.144 I/TP_TEST ( 4538): TR|I can't believe it.|Nemůžu tomu uvěřit.
+11-21 17:43:47.144 I/TP_TEST ( 4538): TR|It's a long story.|To je na dlouhé vyprávění.
+11-21 17:43:47.205 I/TP_TEST ( 4538): TR|We had a deal.|Měli jsme dohodu.
+11-21 17:43:47.263 I/TP_TEST ( 4538): TR|I've been looking for you.|Hledal jsem tě.
+11-21 17:43:47.330 I/TP_TEST ( 4538): TR|You shouldn't have come here.|Neměl bys sem přijít.
+11-21 17:43:47.370 I/TP_TEST ( 4538): TR|They're coming!|Jdou!
+11-21 17:43:47.421 I/TP_TEST ( 4538): TR|He got away.|Utekl.
+11-21 17:43:47.494 I/TP_TEST ( 4538): TR|I think we lost them.|Myslím, že jsme je ztratili.
+11-21 17:43:47.598 I/TP_TEST ( 4538): TR|The bridge is out, we have to swim.|Most je zničen, musíme plavat.
+11-21 17:43:47.706 I/TP_TEST ( 4538): TR|If we keep going like this, they will find us.|Pokud budeme takhle pokračovat, najdou nás.
+11-21 17:43:47.819 I/TP_TEST ( 4538): TR|I don't think anyone has been here for years.|Nemyslím si, že by tu někdo byl roky.
+11-21 17:43:47.936 I/TP_TEST ( 4538): TR|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:43:47.999 I/TP_TEST ( 4538): TR|LUCIA: I was ready for this.|Lucia: Byla jsem na to připraven.
+11-21 17:43:48.084 I/TP_TEST ( 4538): TR|LUCIA: I told you I would come back.|Lucia: Říkala jsem ti, že se vrátím.
+11-21 17:43:48.146 I/TP_TEST ( 4538): TR|LUCIA: I'm glad you're here.|Lucia: Jsem ráda, že jsi tady.
+11-21 17:43:48.245 I/TP_TEST ( 4538): TR|LUCIA: I thought you were dead, Jason.|Lucia: Myslela jsem, že jsi mrtvý, Jasone.
+11-21 17:43:48.325 I/TP_TEST ( 4538): TR|JASON: Lu, you were right.|Jason: Lu Měla jsi pravdu.
+11-21 17:43:48.402 I/TP_TEST ( 4538): TR|JASON: Are you crazy, Lucia?|Jason: Jsi blázen, Lucia?
+11-21 17:43:48.484 I/TP_TEST ( 4538): TR|JASON: Be careful, Lu.|Jason: Buď opatrná, Lu.
+11-21 17:43:48.550 I/TP_TEST ( 4538): TR|Lucia went home.|Lucia šla domů.
+11-21 17:43:48.613 I/TP_TEST ( 4538): TR|Lucia is ready.|Lucia je připravena.
+11-21 17:43:48.687 I/TP_TEST ( 4538): TR|You two, come with me.|Vy dva, pojď se mnou.
+11-21 17:43:48.688 I/TP_TEST ( 4538): TR|All of you, get out!|Všichni ven!
+11-21 17:43:48.762 I/TP_TEST ( 4538): TR|You and your friends should leave.|Vy a vaši přátelé by měli odejít.
+11-21 17:43:48.762 I/TP_TEST ( 4538): TR|Boys, get on your horses.|Chlapci, na koně.
+11-21 17:43:48.818 I/TP_TEST ( 4538): TR|Are you all ready?|Jste připraveni?
+11-21 17:43:48.819 I/TP_TEST ( 4538): TR|You guys wait here.|Vy počkejte tady.
+11-21 17:43:48.821 I/TP_TEST ( 4538): TR|What did you do?|Co jsi udělal?
+11-21 17:43:48.870 I/TP_TEST ( 4538): TR|Did you see that?|Viděl jsi to?
+11-21 17:43:48.927 I/TP_TEST ( 4538): TR|You lied to me.|Lhal jsi mi.
+11-21 17:43:48.995 I/TP_TEST ( 4538): TR|You could have told me.|Mohl jsi mi to říct.
+11-21 17:43:49.051 I/TP_TEST ( 4538): TR|Would you help me?|Pomohl bys mi?
+11-21 17:43:49.125 I/TP_TEST ( 4538): PAIR|discover nets=10.0.2.15/24 → 
+11-21 17:43:49.126 I/TP_TEST ( 4538): PS5|profile 1280x720 10000kb net=CABLE
+11-21 17:43:49.126 I/TP_TEST ( 4538): PS5|connect 10.0.2.2 → Success
+11-21 17:43:49.128 I/TP_TEST ( 4538): PS5|quit Connection Refused in Session Request  | trvalo=-1s | síť=CABLE | pokus=6
+11-21 17:43:49.128 I/TP_TEST ( 4538): PS5|refusal ? (host 10.0.2.2, spárováno Zkouška)
+11-21 17:43:49.172 I/TP_TEST ( 4538): TR|If you had listened to me, we would be rich.|Kdybys mi poslouchal, byli bychom bohatí.
+11-21 17:43:49.244 I/TP_TEST ( 4538): TR|You said you would come.|Řekl jsi, že přijdeš.
+11-21 17:43:49.289 I/TP_TEST ( 4538): TR|Where have you been?|Kde jsi byl?
+11-21 17:43:49.351 I/TP_TEST ( 4538): TR|Run to the gate.|Běh na bránu.
+11-21 17:43:49.418 I/TP_TEST ( 4538): TR|Run towards the gate!|Běh směrem k bráně!
+11-21 17:43:49.482 I/TP_TEST ( 4538): TR|Hurry to the gate!|Pospěš si bránu!
+11-21 17:43:49.543 I/TP_TEST ( 4538): TR|Stay close to me.|Zůstaň blízko mě.
+11-21 17:43:49.613 I/TP_TEST ( 4538): TR|Stay by my side.|Zůstaň po mém boku.
+11-21 17:43:49.684 I/TP_TEST ( 4538): TR|Nobody was here for many years.|Nikdo nebyl tady mnoho let.
+11-21 17:43:49.767 I/TP_TEST ( 4538): TR|We ride out at dawn.|Jdeme ven za svítání.
+11-21 17:43:49.838 I/TP_TEST ( 4538): TR|We leave at sunrise.|Odejdeme při východu slunce.
+11-21 17:43:49.946 I/TP_TEST ( 4538): TR|Get on the horse, we leave in the morning.|Dostaň se na koni, odejdeme ráno.
+11-21 17:43:50.022 I/TP_TEST ( 4538): TR|You and your friends must leave.|Vy a vaši přátelé musíte odejít.
+11-21 17:43:50.101 I/TP_TEST ( 4538): TR|Come with me, both of you.|Pojď se mnou, oba.
+11-21 17:43:50.157 I/TP_TEST ( 4538): TR|It will be fine.|Bude to v pořádku.
+11-21 17:43:50.219 I/TP_TEST ( 4538): TR|Everything will be all right.|Všechno bude v pořádku.
+11-21 17:43:50.270 I/TP_TEST ( 4538): TR|I am fine.|Jsem v pořádku.
+11-21 17:43:50.325 I/TP_TEST ( 4538): TR|Leave it to me.|Nech to pro mě.
+11-21 17:43:50.381 I/TP_TEST ( 4538): TR|Watch your back.|Sleduj záda.
+11-21 17:43:50.381 I/TP_TEST ( 4538): TR|Cover me!|Kryj mě!
+11-21 17:43:50.442 I/TP_TEST ( 4538): TR|I am out of ammo.|Jsem z munice.
+11-21 17:43:50.444 I/TP_TEST ( 4538): TR|Reloading!|Překládce!
+11-21 17:43:50.485 I/TP_TEST ( 4538): TR|He is dead.|Je mrtvý.
+11-21 17:43:50.527 I/TP_TEST ( 4538): TR|Is anyone there?|Je tam někdo?
+11-21 17:43:50.572 I/TP_TEST ( 4538): TR|Who is there?|Kdo je tam?
+11-21 17:43:50.620 I/TP_TEST ( 4538): TR|Show yourself!|Ukaž se!
+11-21 17:43:50.664 I/TP_TEST ( 4538): TR|What was that?|Co to bylo?
+11-21 17:43:50.708 I/TP_TEST ( 4538): TR|This way!|Tímto způsobem!
+11-21 17:43:50.743 I/TP_TEST ( 4538): TR|Over here!|Tady!
+11-21 17:43:50.779 I/TP_TEST ( 4538): TR|Behind you!|Za tebou!
+11-21 17:43:50.779 I/TP_TEST ( 4538): TR|done 145
+11-21 17:43:51.232 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:56.255 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:43:59.912 I/TP_TEST ( 4538): DEEPL|page page on port 8765
+11-21 17:44:01.298 I/TP_TEST ( 4538): VIDEO|fed=1875|decoded=1874|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null
+11-21 17:44:03.291 I/TP_TEST ( 4538): DEEPL|page page closed
+11-21 17:44:05.153 I/TP_TEST ( 4538): PERF|čtení=46|průměr=3857ms|poslední=4281ms|titulků=26|video=0x0|oblast=27%|paměť=9+97MB
+11-21 17:44:13.007 I/TP_TEST ( 7118): REMOTE|page on port 8766
+11-21 17:44:14.555 I/TP_TEST ( 7118): NET|připojeno CABLE
+11-21 17:44:14.613 I/TP_TEST ( 7118): A11Y|true
+11-21 17:44:14.617 I/TP_TEST ( 7118): START|video=1280x720|interval=100|screen=1280x720|eco=true|decoder=c2.goldfish.h264.decoder (přímý výstup)|lib=ok 1280x720@30 10000kb
+11-21 17:44:14.772 I/TP_TEST ( 7118): SOURCE|demo
+11-21 17:44:14.772 I/TP_TEST ( 7118): VIDEO|fed=0|decoded=0|0x0|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=0 raw=false err=null
+11-21 17:44:14.811 I/TP_TEST ( 7118): MODEL|cs|ok|pokus=1
+11-21 17:44:15.402 I/TP_TEST ( 7118): WARM|cs|první=542ms|další=47ms
+11-21 17:44:19.971 I/TP_TEST ( 7118): READ|ocr=4175ms|zone=33%|Marek: We need money, Jonas.
+11-21 17:44:19.978 I/TP_TEST ( 7118): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:44:19.978 I/TP_TEST ( 7118): LAT|5206ms|ocr=4175ms
+11-21 17:44:20.082 I/TP_TEST ( 7118): VIDEO|fed=53|decoded=50|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=53 raw=false err=null
+11-21 17:44:20.083 I/TP_TEST ( 7118): PERF|čtení=1|průměr=4175ms|poslední=4175ms|titulků=1|video=1280x720|oblast=33%|paměť=14+89MB
+11-21 17:44:23.845 I/TP_TEST ( 7118): COLOR|Marek|-|us=3121
+11-21 17:44:23.846 I/TP_TEST ( 7118): READ|ocr=3760ms|zone=33%|Marek: We need money, Jonas.
+11-21 17:44:27.812 I/TP_TEST ( 7118): COLOR|Marek|-|us=2812
+11-21 17:44:27.813 I/TP_TEST ( 7118): READ|ocr=3861ms|zone=33%|Jonas: I reckon we won't find anything i
+11-21 17:44:27.814 I/TP_TEST ( 7118): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:44:27.814 I/TP_TEST ( 7118): LAT|5542ms|ocr=3861ms
+11-21 17:44:27.816 I/TP_TEST ( 7118): ZONE|learned 0.72-1.0
+11-21 17:44:27.919 I/TP_TEST ( 7118): VIDEO|fed=130|decoded=129|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=130 raw=false err=null
+11-21 17:44:31.770 I/TP_TEST ( 7118): COLOR|Jonas|-|us=2884
+11-21 17:44:31.771 I/TP_TEST ( 7118): READ|ocr=3844ms|zone=27%|Jonas: I reckon we won't find anything i
+11-21 17:44:35.960 I/TP_TEST ( 7118): COLOR|Jonas|-|us=3957
+11-21 17:44:35.960 I/TP_TEST ( 7118): READ|ocr=4085ms|zone=27%|Get on your horse, we ride at dawn.
+11-21 17:44:35.961 I/TP_TEST ( 7118): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:44:35.961 I/TP_TEST ( 7118): LAT|189ms|ocr=4085ms
+11-21 17:44:36.065 I/TP_TEST ( 7118): VIDEO|fed=211|decoded=210|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=211 raw=false err=null
+11-21 17:44:39.757 I/TP_TEST ( 7118): READ|ocr=3691ms|zone=27%|
+11-21 17:44:39.758 I/TP_TEST ( 7118): HIDE
+11-21 17:44:43.527 I/TP_TEST ( 7118): READ|ocr=3664ms|zone=27%|Silas: If we keep going like this, the m
+11-21 17:44:43.528 I/TP_TEST ( 7118): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:44:43.528 I/TP_TEST ( 7118): LAT|257ms|ocr=3664ms
+11-21 17:44:43.636 I/TP_TEST ( 7118): VIDEO|fed=287|decoded=284|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=286 raw=false err=null
+11-21 17:44:47.370 I/TP_TEST ( 7118): COLOR|Silas|-|us=2712
+11-21 17:44:47.370 I/TP_TEST ( 7118): READ|ocr=3732ms|zone=27%|
+11-21 17:44:47.370 I/TP_TEST ( 7118): HIDE
+11-21 17:44:51.048 I/TP_TEST ( 7118): READ|ocr=3574ms|zone=27%|MIRA: Are you sure this is the right way
+11-21 17:44:51.049 I/TP_TEST ( 7118): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:44:51.049 I/TP_TEST ( 7118): LAT|277ms|ocr=3574ms
+11-21 17:44:51.152 I/TP_TEST ( 7118): VIDEO|fed=362|decoded=361|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=362 raw=false err=null
+11-21 17:44:51.153 I/TP_TEST ( 7118): PERF|čtení=9|průměr=3820ms|poslední=3574ms|titulků=5|video=1280x720|oblast=27%|paměť=18+96MB
+11-21 17:44:54.959 I/TP_TEST ( 7118): COLOR|Mira|-|us=4075
+11-21 17:44:54.959 I/TP_TEST ( 7118): READ|ocr=3805ms|zone=27%|
+11-21 17:44:54.959 I/TP_TEST ( 7118): HIDE
+11-21 17:44:58.939 I/TP_TEST ( 7118): READ|ocr=3877ms|zone=27%|Tobin: no idea, but we can't stay here
+11-21 17:44:58.940 I/TP_TEST ( 7118): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:44:58.940 I/TP_TEST ( 7118): LAT|668ms|ocr=3877ms
+11-21 17:44:59.045 I/TP_TEST ( 7118): VIDEO|fed=440|decoded=439|1280x720|dec=c2.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=440 raw=false err=null
+11-21 17:45:02.749 I/TP_TEST ( 7118): COLOR|Tobin|-|us=1852
+11-21 17:45:02.750 I/TP_TEST ( 7118): READ|ocr=3703ms|zone=27%|
+11-21 17:45:02.750 I/TP_TEST ( 7118): HIDE
+11-21 17:45:06.139 I/TP_TEST ( 7819): UPD|start file allowed=false
+11-21 17:45:06.225 I/TP_TEST ( 7819): REMOTE|page on port 8766
+11-21 17:45:06.461 I/TP_TEST ( 7819): UPD|apk code=165
+11-21 17:45:06.550 I/TP_TEST ( 7819): UPD|committed session=670092088
+11-21 17:45:06.959 I/TP_TEST ( 7819): UPD|status=-1
+11-21 17:45:06.967 I/TP_TEST ( 7819): UPD|confirm shown
+11-21 17:45:17.879 I/TP_TEST ( 7819): UPD|status=3 INSTALL_FAILED_ABORTED: User rejected permissions
+11-21 17:45:17.879 I/TP_TEST ( 7819): UPD|fail upd_cancel INSTALL_FAILED_ABORTED: User rejected permissions
+11-21 17:45:24.665 I/TP_TEST ( 7919): UPD|start latest/PlayLingo.apk allowed=true
+11-21 17:45:24.739 I/TP_TEST ( 7919): REMOTE|page on port 8766
+11-21 17:45:26.302 I/TP_TEST ( 7919): UPD|downloaded bytes=41052181
+11-21 17:45:26.434 I/TP_TEST ( 7919): UPD|apk code=164
+11-21 17:45:26.507 I/TP_TEST ( 7919): UPD|committed session=775983153
+11-21 17:45:26.941 I/TP_TEST ( 7919): UPD|status=4 INSTALL_FAILED_VERSION_DOWNGRADE: Downgrade detected: Update version code 164 is older than current 165
+11-21 17:45:26.941 I/TP_TEST ( 7919): UPD|fail upd_fail INSTALL_FAILED_VERSION_DOWNGRADE: Downgrade detected: Update version code 164 is older than current 165
+11-21 17:46:11.956 I/TP_TEST ( 8001): UPD|start file allowed=true
+11-21 17:46:12.037 I/TP_TEST ( 8001): REMOTE|page on port 8766
+11-21 17:46:12.067 I/TP_TEST ( 8001): UPD|apk code=165
+11-21 17:46:12.256 I/TP_TEST ( 8001): UPD|committed session=990710438
+11-21 17:46:14.045 I/TP_TEST ( 8090): UPD|replaced
+11-21 17:46:14.621 I/TP_TEST ( 8090): REMOTE|page on port 8766
+11-21 17:46:49.042 I/TP_TEST ( 8090): UPD|start file allowed=true
+11-21 17:46:49.127 I/TP_TEST ( 8090): UPD|apk code=165
+11-21 17:46:49.192 I/TP_TEST ( 8090): UPD|committed session=202730000
+11-21 17:46:50.782 I/TP_TEST ( 8242): UPD|replaced
+11-21 17:46:51.262 I/TP_TEST ( 8242): REMOTE|page on port 8766

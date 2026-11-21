@@ -1,0 +1,1 @@
+    topResumedActivity=ActivityRecord{1d5ca94 u0 cz.playlingo/.MainActivity t12}
