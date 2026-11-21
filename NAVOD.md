@@ -35,15 +35,20 @@ ukáže až krok Připojení konzole (bod 4).
 2. **Konzole:** PlayStation 5, nebo Xbox (viz bod 7b).
 3. **Televize:** Android TV (pruh ukazuje toto zařízení), LG, nebo Samsung. U LG a Samsungu tu je tlačítko
    pro nahrání aplikace do televize – můžeš ho přeskočit a nahrát ji později (Domů, Instalace).
+   V telefonu průvodce sám hledá televizi v domácí síti: najde-li jen LG, nebo jen Samsung, rovnou ji
+   předvybere a ukáže „✔ V síti · …“ (volbu jde změnit).
 4. **Jazyk:** jazyk překladu; počkej na stažení jazykového balíčku (jednou, asi 30 MB).
 5. **Lepší překlad (DeepL):** jedna věta proč a tři čtverečky pro telefon (registrace na DeepL, stránka
    s klíčem, vložení klíče) – viz bod 9. Bez klíče zvol **Přeskočit – zůstat u offline překladu**; DeepL
    jde nastavit kdykoli později v Titulkách → Kvalita překladu. Po přijetí klíče se ukáže „✔ DeepL je
    nastavený“ a Pokračovat.
 6. **Zobrazení titulků** (jen Android TV): zapni aplikaci v nastavení televize: Usnadnění →
-   PlayLingo → Zapnout. U LG a Samsungu jen krátké vysvětlení.
+   PlayLingo → Zapnout. Po návratu do PlayLinga s povolením průvodce sám pokračuje. U LG a Samsungu jen
+   krátké vysvětlení.
 7. **Připojení konzole:** spárování PlayStationu v šesti malých krocích – viz bod 4 (Xbox: bod 7b). Má
-   jen tlačítka spárování a pod nimi malé **Spárovat později** (průvodce skočí na Hotovo).
+   jen tlačítka spárování a pod nimi malé **Spárovat později** (průvodce skočí na Hotovo). Co jde, udělá
+   sám: zapnutou PS5 najde v síti hned na prvním kroku a přeskočí hledání; po napsání (nebo přečtení
+   kamerou) osmimístného čísla z PS5 rovnou spáruje a po spárování přejde na Hotovo.
 8. **Hotovo:** jak se hraje; se spárovanou konzolí tlačítko Spustit.
 
 Máš-li víc televizí LG nebo Samsung, pamatuje si PlayLingo vzhled titulků a oblasti pro každou zvlášť

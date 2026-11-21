@@ -117,3 +117,15 @@ object SamsungInstall {
         return SamsungBundle(id, v, file, hash, data)
     }
 }
+
+/**
+ * Průvodce, krok Televize (telefon jako čtečka): podle televizí nalezených v domácí síti (LG přes SSDP webOS
+ * [LgSetup], Samsung přes SSDP Tizen [SamsungSetup]) předvybere typ – jen když je v síti jediný druh, jinak nic.
+ */
+object TvDetect {
+    fun suggest(lg: List<String>, samsung: List<String>): TvType? = when {
+        lg.isNotEmpty() && samsung.isEmpty() -> TvType.LG
+        samsung.isNotEmpty() && lg.isEmpty() -> TvType.SAMSUNG
+        else -> null
+    }
+}

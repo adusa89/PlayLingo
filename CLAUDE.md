@@ -776,6 +776,13 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   (`pnext`, `pback`; v kroku 1 spárování vede Zpět na předchozí krok průvodce) a pod ní malé „Spárovat později“
   (`wlater`, skočí na Hotovo); u Xboxu (`XboxForm`) navíc malé Zpět. Vnější Pokračovat/Zpět/Přeskočit průvodce
   se ukáže, až je konzole spárovaná. Krok Konzole nezmiňuje Remote Play.
+  **Co průvodce udělá sám (od 0.97.53, přání majitele):** krok Televize v telefonu (`readerDevice`) hledá jednou TV v síti
+  (`findTv`: `LgFinder.ssdp` + `LgFinder.samsung`, `core/TvDetect.suggest` – jen jediný druh) a předvybere ji, když hráč
+  nevolil sám a na zvolené TV se PlayLingo ještě neohlásilo („✔ V síti · …“, `wz_tv_found`); krok Povolení po návratu
+  z Usnadnění s povolením pokračuje sám (`permAsked` v `onResume`); spárování: krok 1 (zapni PS5) tiše hledá PS5
+  (`autoFindPs5`, jednou za 20 s, jen jedna PS5 → rovnou krok 3 Účet, po „Zpět“ už ne), jediná PS5 z tlačítka Najít nebo
+  adresa z kamery → krok 3, osm číslic v políčku / z kamery → spárovat hned (`autoPairOk`: účet, adresa, bez kódu účtu PS5),
+  spárováno v průvodci → rovnou Hotovo se „✔ Spárováno …“. Emulátor PS5 ani TV v síti nemá, zkoušku to nemění.
   Příprava PS5 (druhý účet, Remote Play, skrytí hlášky, probouzení ze sítě, čtvereček na `pomoc/ps5.md`)
   je od 0.93 až v prvním kroku párování (Připojení konzole), ne u volby konzole – tam byla moc brzo.
 - **Domů** (od 0.97): velký stav + Spustit/Zastavit a pod nadpisem přehled v bodech (`statusRows`, tečka

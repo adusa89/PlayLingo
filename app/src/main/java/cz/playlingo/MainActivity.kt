@@ -27,6 +27,7 @@ import cz.playlingo.core.Segment
 import cz.playlingo.core.DiagLog
 import cz.playlingo.core.GameProfiles
 import cz.playlingo.core.LoginClient
+import cz.playlingo.core.TvDetect
 import cz.playlingo.core.LoginServer
 import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.Console
@@ -131,6 +132,21 @@ class MainActivity : Activity() {
     private var pairStep = 0
     private var draftAuth = ""
     private var skipDraftSave = false
+    // co průvodce udělá sám (přání majitele): najde TV v síti, PS5 v síti, po povolení pruhu a spárování pokračuje
+    /** Krok Televize: hledání televize v síti už proběhlo (jednou za běh průvodce). */
+    private var tvSearched = false
+    /** Krok Televize: hráč typ televize zvolil sám – nalezená televize ho už nepřepíše. */
+    private var tvPicked = false
+    /** Krok Televize: televize nalezená v síti („LG · 192.168.1.40“), null = nic. */
+    private var tvFound: String? = null
+    /** Krok Povolení: hráč otevřel Usnadnění – po návratu s povolením průvodce pokračuje sám. */
+    private var permAsked = false
+    /** Krok 1 spárování: kdy naposledy proběhlo tiché hledání PS5 (zapnutá PS5 = rovnou dál). */
+    private var ps5AutoFindAt = 0L
+    /** Tiché hledání už jednou posunulo dál – po „Zpět“ na krok 1 už hráče znovu neposouvat. */
+    private var ps5AutoFound = false
+    /** Spárování právě proběhlo (krok Hotovo v průvodci ukáže „Spárováno …“). */
+    private var justPaired = false
     /** Stránka pro telefon; běží jen po dobu kroků přihlášení účtem (null = neběží). */
     private var loginServer: LoginServer? = null
     private var lastLink = Ps5.Link.OFF
@@ -309,6 +325,7 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         UiState.shown()
+        if (wizard == W_PERM && permAsked && SubtitleOverlay.canShow(this)) { permAsked = false; wizard++ }
         render(keepFocus = true)
         main.removeCallbacks(ticker)
         main.postDelayed(ticker, 1000)
@@ -595,9 +612,12 @@ class MainActivity : Activity() {
                 // telefon pruh přes hru neukáže – jen posílá do televize LG / Samsung
                 for (tt in TvType.values()) if (tt != TvType.ANDROID || !Prefs.readerDevice(this)) {
                     option(TvChoice.label(this, tt), if (tt == TvType.ANDROID) t("tv_android_d") else null, tt == type, "wtv_${tt.key}") {
-                        TvChoice.set(this, tt); render(true)
+                        tvPicked = true; TvChoice.set(this, tt); render(true)
                     }
                 }
+                // telefon jako čtečka: televizi v síti najde a předvybere sám (jen jediný druh, hráč může změnit)
+                if (Prefs.readerDevice(this)) findTv()
+                tvFound?.let { add(ui.text("✔ " + t("wz_tv_found").replace("%s", it), 16f, Theme.OK, bold = true), 12) }
                 if (type.sends) {
                     add(ui.text(t("s_tv_desc"), 15f, Theme.MUTED), 14)
                     // v televizi už je aktuální PlayLingo: nic nenabízet (nahrát / opravit jde v ⚙ Nastavení)
@@ -647,7 +667,7 @@ class MainActivity : Activity() {
                 add(ui.text(t("wz_perm"), 17f, Theme.MUTED), 12)
                 add(ui.card().apply { addView(ui.checkRow(ok, false, t("chk_overlay"), t("ok"), null, null)) }, 16)
                 if (!ok) {
-                    add(tagged(ui.button(t("wz_perm_open"), primary = true) { openAccessibility() }, "wperm"), 16)
+                    add(tagged(ui.button(t("wz_perm_open"), primary = true) { permAsked = true; openAccessibility() }, "wperm"), 16)
                     nextLabel = t("wz_skip_step")
                 }
             }
@@ -657,6 +677,8 @@ class MainActivity : Activity() {
             }
             else -> {
                 add(ui.text(t("wz_done"), 17f, Theme.MUTED), 12)
+                // spárování právě skončilo a průvodce sem přešel sám → „Spárováno …“
+                if (justPaired && Prefs.consoleReady(this)) pairMsg?.let { add(ui.text("✔ $it", 16f, Theme.OK, bold = true), 12) }
                 add(ui.card().apply {
                     // jak se hraje – jinak u Android TV (přepnout HDMI) a u LG/Samsungu (aplikace v televizi)
                     addView(ui.text(t(if (Prefs.tvType(this@MainActivity) == TvType.ANDROID) "hc6_android" else "hc6_tv"), 16f))
@@ -1060,10 +1082,16 @@ class MainActivity : Activity() {
         val code = data?.getStringExtra(LgScanActivity.EXTRA_CODE)
         if (resultCode == RESULT_OK && code != null) {
             saveDrafts()
-            if (requestCode == REQ_PS5_IP_SCAN) { draftIp = code; Prefs.setPs5Ip(this, code); pairMsg = null } else draftPin = code
+            if (requestCode == REQ_PS5_IP_SCAN) {
+                draftIp = code; Prefs.setPs5Ip(this, code); pairMsg = null
+                // adresa přečtená kamerou → rovnou na volbu účtu
+                if (pairStep == 1) pairStep = 7
+            } else draftPin = code
             // políčko s číslem ještě drží starý text – nepřepsat jím přečtené číslo
             skipDraftSave = true
             try { render(true) } finally { skipDraftSave = false }
+            // číslo z PS5 přečtené kamerou → spárovat hned
+            if (requestCode == REQ_PS5_SCAN && autoPairOk()) pairPs5()
         } else if (data?.getBooleanExtra(LgScanActivity.EXTRA_FAILED, false) == true) toast(t("km_cam_fail"))
     }
 
@@ -1127,7 +1155,11 @@ class MainActivity : Activity() {
         var nextOk = true
         var nextLabel = t("wz_next")
         when (step) {
-            0 -> add(ui.card().apply { addView(ui.text(t("pg_0_text"), 17f, Theme.TEXT)) }, 10)
+            0 -> {
+                add(ui.card().apply { addView(ui.text(t("pg_0_text"), 17f, Theme.TEXT)) }, 10)
+                // PS5 už je zapnutá: najít ji potichu a rovnou na volbu účtu (adresa se vyplní sama)
+                autoFindPs5()
+            }
             1 -> {
                 add(ui.card().apply { addView(ui.text(t("pg_2_text"), 17f, Theme.TEXT)) }, 10)
                 add(input("ps5_ip", draftIp, "pip", number = true).also { IpField.setup(it) }, 10)
@@ -1193,7 +1225,17 @@ class MainActivity : Activity() {
             else -> {
                 accountLine(name, other = !pairFailed)
                 add(ui.card().apply { addView(ui.text(t("pg_4_text").replace("%s", name), 17f, Theme.TEXT)) }, 10)
-                add(input("ps5_pin", draftPin, "ppin", number = true), 10)
+                // osm číslic napsaných → spárovat hned, bez hledání tlačítka (jen když PS5 nechce i kód účtu)
+                add(input("ps5_pin", draftPin, "ppin", number = true).apply {
+                    addTextChangedListener(object : android.text.TextWatcher {
+                        override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+                        override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+                        override fun afterTextChanged(e: android.text.Editable?) {
+                            val v = e?.toString().orEmpty()
+                            if (v.count(Char::isDigit) == 8 && Ps5.parsePin(v) != null && autoPairOk()) post { if (!pairBusy) pairPs5() }
+                        }
+                    })
+                }, 10)
                 // telefon s kamerou: osmimístné číslo přečíst z obrazovky PlayStationu
                 if (LgScanActivity.available(this)) add(tagged(ui.smallButton("📷 " + t("km_scan_ps5")) { scanPs5Code() }, "pscan"), 6)
                 if (loginPinWanted()) add(input("ps5_login", draftLogin, "plogin", number = true), 8)
@@ -1381,9 +1423,61 @@ class MainActivity : Activity() {
             val first = list.firstOrNull()
             if (first != null) {
                 Prefs.setPs5Ip(this, first.ip)
-                pairNote(t("ps5_found") + " " + list.joinToString { it.name + " (" + it.ip + ")" }, Theme.OK) { draftIp = first.ip; ps5NotFound = false }
+                // jediná PS5 v síti → rovnou na volbu účtu (víc PS5: adresa první, hráč může přepsat)
+                pairNote(t("ps5_found") + " " + list.joinToString { it.name + " (" + it.ip + ")" }, Theme.OK) {
+                    draftIp = first.ip; ps5NotFound = false
+                    if (list.size == 1 && pairStep == 1) pairStep = 7
+                }
             } else pairNote(t("ps5_notfound"), Theme.WARN) { ps5NotFound = true }
         }, "tp-find").start()
+    }
+
+    /** Spárovat samo (osm číslic napsaných nebo přečtených kamerou)? Jen na kroku s číslem, s účtem a bez kódu účtu PS5. */
+    private fun autoPairOk() = !pairBusy && pairStep == 5 && Ps5.validHost(draftIp) &&
+        Ps5.parseAccountId(draftPsn) != null && !loginPinWanted()
+
+    /**
+     * Krok 1 spárování (zapni PS5): tiché hledání v síti, nejvýš jednou za 20 s. Najde se právě jedna PS5 → adresa se
+     * vyplní a průvodce jde rovnou na volbu účtu (krok „najdi PS5“ odpadne). Nic nenajde = nic se nezmění.
+     */
+    private fun autoFindPs5() {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (pairBusy || ps5AutoFound || now - ps5AutoFindAt < 20_000L) return
+        ps5AutoFindAt = now
+        Thread({
+            val list = Ps5Pairing.discover(3000)
+            val one = list.singleOrNull() ?: return@Thread
+            runOnUiThread {
+                if (isFinishing || pairBusy || pairStep != 0 || Prefs.ps5Host(this) != null) return@runOnUiThread
+                if (!(wizard == W_PAIR || (wizard < 0 && section == Section.PS5))) return@runOnUiThread
+                Prefs.setPs5Ip(this, one.ip)
+                ps5AutoFound = true
+                pairNote(t("ps5_found") + " " + one.name + " (" + one.ip + ")", Theme.OK) { draftIp = one.ip; ps5NotFound = false; pairStep = 7 }
+            }
+        }, "tp-autofind").start()
+    }
+
+    /**
+     * Krok Televize v průvodci (telefon jako čtečka): najít televizi LG / Samsung v síti a předvybrat ji – jen jediný
+     * druh, jen když ho hráč nezvolil sám a na zvolené televizi se PlayLingo ještě neohlásilo.
+     */
+    private fun findTv() {
+        if (tvSearched) return
+        tvSearched = true
+        Thread({
+            val lg = LgFinder.ssdp(this, 2000)
+            val samsung = LgFinder.samsung(this, 2000)
+            val type = TvDetect.suggest(lg, samsung) ?: return@Thread
+            val ip = (if (type == TvType.LG) lg else samsung).first()
+            runOnUiThread {
+                if (isFinishing) return@runOnUiThread
+                val cur = Prefs.tvType(this)
+                val seen = cur.platform?.let { Prefs.tvSeen(this, it) } != null
+                if (!tvPicked && !seen && cur != type) TvChoice.set(this, type)
+                tvFound = TvChoice.label(this, type) + " · " + ip
+                if (wizard == W_TV) render(true)
+            }
+        }, "tp-findtv").start()
     }
 
     private fun pairPs5() {
@@ -1404,7 +1498,11 @@ class MainActivity : Activity() {
                     " · účet $name" + (Ps5Pairing.lastError?.takeIf { h == null }?.let { " · $it" } ?: ""))
                 if (h != null) {
                     Prefs.setPs5Host(this, h)
-                    pairNote(t("ps5_ok").replace("%s", name), Theme.OK) { draftPin = ""; pairStep = 0; pairFailed = false }
+                    pairNote(t("ps5_ok").replace("%s", name), Theme.OK) {
+                        draftPin = ""; pairStep = 0; pairFailed = false; justPaired = true
+                        // průvodce: spárováno → sám na poslední krok (Hotovo se Spustit)
+                        if (wizard == W_PAIR) wizard = wizardSteps.size - 1
+                    }
                 } else {
                     // nejčastější příčina: číslo vyvolal na PS5 jiný uživatel než účet v aplikaci (CE-110032-7)
                     val why = t("ps5_fail") + "\n" + t("ps5_fail_user").replace("%s", name) + (Ps5Pairing.lastError?.let { "\n($it)" } ?: "")
@@ -2379,6 +2477,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.52"
-    const val VERSION_CODE = 149
+    const val VERSION = "verze 0.97.53"
+    const val VERSION_CODE = 150
 }
