@@ -86,11 +86,13 @@ class DiagActivity : Activity() {
         buttons.addView(ui.button(tx("dg_top")) { scroll.smoothScrollTo(0, 0); scroll.requestFocus() }.apply { tag = "diagtop" })
         // celé hlášení (jako soubor) do schránky nebo přes Sdílet – záloha, když nejde záznam v síti
         // do telefonu přes čtvereček (stejná Wi-Fi) – hráč pak hlášení pošle autorovi chatem nebo e-mailem
+        // na úložiště vývojáře s kódem (ReportSender, core/ReportUpload.kt) – i s dávkou snímků ze hry
+        buttons.addView(ui.button(tx("rs_btn")) { ReportSender.open(this, ui, report.full) }.apply { tag = "diagsend" }, gap())
         buttons.addView(ui.button(tx("zz_qr_btn")) { NetLogShare.showQr(this, ui) }.apply { tag = "diagqr" }, gap())
         buttons.addView(ui.button(tx("zz_copy")) { NetLogShare.copy(this, report.full) }.apply { tag = "diagcopy" }, gap())
         buttons.addView(ui.button(tx("zz_share")) { NetLogShare.share(this, report.full) }.apply { tag = "diagshare" }, gap())
         buttons.addView(ui.button(tx("dg_close"), primary = true) { finish() }.apply { tag = "diagclose" }, gap())
-        // v úzkém telefonu se čtyři tlačítka nevejdou – dají se posunout do strany
+        // v úzkém telefonu se tlačítka nevejdou – dají se posunout do strany
         root.addView(android.widget.HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(buttons) }, ui.lp(top = 12))
         setContentView(root)
         scroll.post { scroll.requestFocus() }

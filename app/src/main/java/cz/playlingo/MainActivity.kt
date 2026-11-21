@@ -2357,6 +2357,8 @@ class MainActivity : Activity() {
             Prefs.setDebug(this, !Prefs.debug(this)); applyToService(); render(true)
         }, "debug"), 8)
         add(tagged(ui.settingRow(t("rep_btn"), "›") { makeReport() }, "sreport"), 8)
+        // hlášení (a případně dávka snímků) vývojáři přes internet, výsledkem je kód (ReportSender)
+        add(tagged(ui.settingRow(t("rs_btn"), "›") { ReportSender.open(this, ui) }, "rsend"), 8)
         // záznam v domácí síti je taky ladění (od 0.97.15 tady, dřív samostatně v Experimentální)
         logShareRow()
         snapRow()
@@ -2863,6 +2865,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.67"
-    const val VERSION_CODE = 164
+    const val VERSION = "verze 0.97.68"
+    const val VERSION_CODE = 165
 }

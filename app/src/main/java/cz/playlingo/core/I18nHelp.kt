@@ -9,7 +9,7 @@ package cz.playlingo.core
 internal val HELP_S: Map<String, Pair<String, String>> = mapOf(
     "help_for" to ("Instalace pro" to "Inštalácia pre"),
     "hc1" to ("1. Instalace PlayLinga" to "1. Inštalácia PlayLinga"),
-    "hc1_android" to ("PlayLingo patří do Android TV nebo boxu s Androidem, který je zapojený v televizi. Soubor PlayLingo.apk se nahraje aplikací Downloader (adresa je na stránce s návodem), nebo z flash disku správcem souborů. Další verze už se nabídnou samy na Domů." to "PlayLingo patrí do Android TV alebo boxu s Androidom, ktorý je zapojený v televízore. Súbor PlayLingo.apk sa nahrá aplikáciou Downloader (adresa je na stránke s návodom), alebo z flash disku správcom súborov. Ďalšie verzie sa už ponúknu samy na Domov."),
+    "hc1_android" to ("PlayLingo patří do Android TV nebo boxu s Androidem, který je zapojený v televizi. Soubor PlayLingo.apk se nahraje aplikací Downloader – v ní stačí zadat kód 6340991 (záložně adresa ze stránky s návodem), nebo z flash disku správcem souborů. Další verze už se nabídnou samy na Domů." to "PlayLingo patrí do Android TV alebo boxu s Androidom, ktorý je zapojený v televízore. Súbor PlayLingo.apk sa nahrá aplikáciou Downloader – v nej stačí zadať kód 6340991 (záložne adresa zo stránky s návodom), alebo z flash disku správcom súborov. Ďalšie verzie sa už ponúknu samy na Domov."),
     "hc1_reader" to ("Televize LG a Samsung si obraz hry samy nepřečtou. PlayLingo proto běží v telefonu s Androidem (nebo v boxu): čte obraz z konzole, překládá a hotové titulky posílá do aplikace PlayLingo v televizi. Do telefonu se stáhne a nainstaluje PlayLingo.apk (odkaz je na stránce s návodem)." to "Televízory LG a Samsung si obraz hry samy neprečítajú. PlayLingo preto beží v telefóne s Androidom (alebo v boxe): číta obraz z konzoly, prekladá a hotové titulky posiela do aplikácie PlayLingo v televízore. Do telefónu sa stiahne a nainštaluje PlayLingo.apk (odkaz je na stránke s návodom)."),
     "hc2" to ("2. Příprava konzole" to "2. Príprava konzoly"),
     "hc2_ps" to ("Na PS5 je potřeba založit druhého uživatele s jiným účtem PlayStation (zdarma) – 🔵 účet pro PlayLingo. Aplikace se připojuje jím – kdyby se připojila 🟢 herním účtem, konzole by při hraní vypínala ovladač. Pod 🔵 druhým uživatelem zapnout Nastavení → Systém → Remote Play → Povolit Remote Play. Hraje se pak normálně pod 🟢 herním účtem." to "Na PS5 treba založiť druhého používateľa s iným účtom PlayStation (zadarmo) – 🔵 účet pre PlayLingo. Aplikácia sa pripája ním – keby sa pripojila 🟢 herným účtom, konzola by pri hraní vypínala ovládač. Pod 🔵 druhým používateľom zapnúť Nastavenia → Systém → Remote Play → Povoliť Remote Play. Hrá sa potom normálne pod 🟢 herným účtom."),
@@ -44,7 +44,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
         "help_for" to "Setup for",
         "hc1" to "1. Installing PlayLingo",
-        "hc1_android" to "PlayLingo goes on the Android TV or Android box connected to the TV. Install PlayLingo.apk with the Downloader app (the address is on the guide page) or from a USB stick with a file manager. Later versions are offered automatically on Home.",
+        "hc1_android" to "PlayLingo goes on the Android TV or Android box connected to the TV. Install PlayLingo.apk with the Downloader app – just enter the code 6340991 there (fallback: the address on the guide page) or from a USB stick with a file manager. Later versions are offered automatically on Home.",
         "hc1_reader" to "LG and Samsung TVs can’t read the game picture themselves. So PlayLingo runs on an Android phone (or a box): it reads the picture from the console, translates and sends the finished subtitles to the PlayLingo app on the TV. Download PlayLingo.apk to the phone and install it (the link is on the guide page).",
         "hc2" to "2. Preparing the console",
         "hc2_ps" to "On the PS5 add a second user with another PlayStation account (free) – the 🔵 account for PlayLingo. The app connects with it – if it used your 🟢 gaming account, the console would turn off your controller while you play. Under the 🔵 second user turn on Settings → System → Remote Play → Enable Remote Play. You then play as usual under your own 🟢 gaming account.",
@@ -77,7 +77,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.PL to mapOf(
         "help_for" to "Instalacja dla",
         "hc1" to "1. Instalacja PlayLingo",
-        "hc1_android" to "PlayLingo instaluje się na Android TV lub przystawce z Androidem podłączonej do telewizora. PlayLingo.apk wgrywa się aplikacją Downloader (adres jest na stronie z instrukcją) albo z pendrive’a menedżerem plików. Kolejne wersje pojawią się same na Start.",
+        "hc1_android" to "PlayLingo instaluje się na Android TV lub przystawce z Androidem podłączonej do telewizora. PlayLingo.apk wgrywa się aplikacją Downloader – wystarczy wpisać w niej kod 6340991 (awaryjnie adres ze strony z instrukcją) albo z pendrive’a menedżerem plików. Kolejne wersje pojawią się same na Start.",
         "hc1_reader" to "Telewizory LG i Samsung same nie odczytają obrazu gry. Dlatego PlayLingo działa w telefonie z Androidem (lub w przystawce): czyta obraz z konsoli, tłumaczy i wysyła gotowe napisy do aplikacji PlayLingo w telewizorze. Na telefon trzeba pobrać i zainstalować PlayLingo.apk (link jest na stronie z instrukcją).",
         "hc2" to "2. Przygotowanie konsoli",
         "hc2_ps" to "Na PS5 dodać 🔵 drugiego użytkownika z innym kontem PlayStation (za darmo). Aplikacja łączy się nim – gdyby użyła 🟢 konta do gry, konsola wyłączałaby kontroler podczas gry. U 🔵 drugiego użytkownika włączyć Ustawienia → System → Remote Play → Włącz Remote Play. Gra się potem normalnie na 🟢 koncie do gry.",
@@ -110,7 +110,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.DE to mapOf(
         "help_for" to "Einrichtung für",
         "hc1" to "1. PlayLingo installieren",
-        "hc1_android" to "PlayLingo gehört auf das Android TV oder die Android-Box am Fernseher. PlayLingo.apk wird mit der App Downloader (die Adresse steht auf der Anleitungsseite) oder per USB-Stick mit einem Dateimanager installiert. Neue Versionen werden danach auf Start angeboten.",
+        "hc1_android" to "PlayLingo gehört auf das Android TV oder die Android-Box am Fernseher. PlayLingo.apk wird mit der App Downloader – dort genügt der Code 6340991 (ersatzweise die Adresse von der Anleitungsseite) oder per USB-Stick mit einem Dateimanager installiert. Neue Versionen werden danach auf Start angeboten.",
         "hc1_reader" to "LG- und Samsung-Fernseher können das Spielbild nicht selbst lesen. PlayLingo läuft deshalb auf einem Android-Telefon (oder einer Box): Es liest das Bild der Konsole, übersetzt und schickt die fertigen Untertitel an die PlayLingo-App auf dem Fernseher. PlayLingo.apk aufs Telefon laden und installieren (Link auf der Anleitungsseite).",
         "hc2" to "2. Konsole vorbereiten",
         "hc2_ps" to "Auf der PS5 einen 🔵 zweiten Benutzer mit einem anderen PlayStation-Konto anlegen (kostenlos). Die App verbindet sich damit – mit dem 🟢 Spielkonto würde die Konsole beim Spielen den Controller trennen. Beim 🔵 zweiten Benutzer Einstellungen → System → Remote Play → Remote Play aktivieren einschalten. Gespielt wird dann wie gewohnt mit dem 🟢 Spielkonto.",
@@ -143,7 +143,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.HU to mapOf(
         "help_for" to "Telepítés ehhez",
         "hc1" to "1. A PlayLingo telepítése",
-        "hc1_android" to "A PlayLingo a tévére kötött Android TV-re vagy androidos boxra kerül. A PlayLingo.apk a Downloader alkalmazással (a cím az útmutató oldalán van) vagy pendrive-ról fájlkezelővel telepíthető. A későbbi verziókat a Kezdőlap magától felajánlja.",
+        "hc1_android" to "A PlayLingo a tévére kötött Android TV-re vagy androidos boxra kerül. A PlayLingo.apk a Downloader alkalmazással – abban elég megadni a 6340991 kódot (tartalékként az útmutató oldalán lévő címet) vagy pendrive-ról fájlkezelővel telepíthető. A későbbi verziókat a Kezdőlap magától felajánlja.",
         "hc1_reader" to "Az LG és Samsung tévék maguk nem tudják olvasni a játék képét. Ezért a PlayLingo androidos telefonon (vagy boxon) fut: olvassa a konzol képét, fordít, és a kész feliratokat elküldi a tévén futó PlayLingo alkalmazásnak. A PlayLingo.apk-t le kell tölteni a telefonra és telepíteni (a link az útmutató oldalán van).",
         "hc2" to "2. A konzol előkészítése",
         "hc2_ps" to "A PS5-ön létre kell hozni egy 🔵 második felhasználót másik PlayStation-fiókkal (ingyenes). Az alkalmazás ezzel csatlakozik – ha a 🟢 játékfiókkal tenné, a konzol játék közben lekapcsolná a kontrollert. A 🔵 második felhasználónál be kell kapcsolni: Beállítások → Rendszer → Remote Play → Remote Play engedélyezése. Utána a játék a 🟢 játékfiókkal megy, mint eddig.",
@@ -176,7 +176,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.UK to mapOf(
         "help_for" to "Встановлення для",
         "hc1" to "1. Встановлення PlayLingo",
-        "hc1_android" to "PlayLingo встановлюється на Android TV або Android-приставку, підключену до телевізора. Завантажити PlayLingo.apk можна застосунком Downloader (адреса на сторінці з інструкцією) або з флешки файловим менеджером. Наступні версії запропонуються самі на Головній.",
+        "hc1_android" to "PlayLingo встановлюється на Android TV або Android-приставку, підключену до телевізора. Завантажити PlayLingo.apk можна застосунком Downloader – у ньому достатньо ввести код 6340991 (запасний варіант – адреса зі сторінки з інструкцією) або з флешки файловим менеджером. Наступні версії запропонуються самі на Головній.",
         "hc1_reader" to "Телевізори LG і Samsung не можуть самі читати зображення гри. Тому PlayLingo працює на Android-телефоні (або приставці): читає зображення з консолі, перекладає й надсилає готові субтитри в застосунок PlayLingo на телевізорі. PlayLingo.apk треба завантажити в телефон і встановити (посилання на сторінці з інструкцією).",
         "hc2" to "2. Підготовка консолі",
         "hc2_ps" to "На PS5 додати 🔵 другого користувача з іншим обліковим записом PlayStation (безкоштовно). Застосунок підключається через нього – якби він використав 🟢 ігровий запис, консоль вимикала б контролер під час гри. У 🔵 другого користувача увімкнути Налаштування → Система → Remote Play → Увімкнути Remote Play. Грати потім як завжди під 🟢 ігровим записом.",
@@ -209,7 +209,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.ES to mapOf(
         "help_for" to "Instalación para",
         "hc1" to "1. Instalar PlayLingo",
-        "hc1_android" to "PlayLingo se instala en el Android TV o la caja Android conectada al televisor. PlayLingo.apk se instala con la app Downloader (la dirección está en la página de la guía) o desde un USB con un gestor de archivos. Las versiones nuevas se ofrecen solas en Inicio.",
+        "hc1_android" to "PlayLingo se instala en el Android TV o la caja Android conectada al televisor. PlayLingo.apk se instala con la app Downloader – basta con introducir en ella el código 6340991 (como alternativa, la dirección de la página de la guía) o desde un USB con un gestor de archivos. Las versiones nuevas se ofrecen solas en Inicio.",
         "hc1_reader" to "Los televisores LG y Samsung no pueden leer la imagen del juego por sí mismos. Por eso PlayLingo funciona en un teléfono Android (o una caja): lee la imagen de la consola, traduce y envía los subtítulos terminados a la app PlayLingo del televisor. Descargar PlayLingo.apk en el teléfono e instalarlo (el enlace está en la página de la guía).",
         "hc2" to "2. Preparar la consola",
         "hc2_ps" to "En la PS5, añadir un 🔵 segundo usuario con otra cuenta de PlayStation (gratis). La app se conecta con él: si usara la 🟢 cuenta de juego, la consola apagaría el mando durante la partida. Con el 🔵 segundo usuario, activar Ajustes → Sistema → Juego remoto → Habilitar juego remoto. Luego se juega como siempre con la 🟢 cuenta de juego.",
@@ -242,7 +242,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.FR to mapOf(
         "help_for" to "Installation pour",
         "hc1" to "1. Installer PlayLingo",
-        "hc1_android" to "PlayLingo s’installe sur l’Android TV ou le boîtier Android branché au téléviseur. PlayLingo.apk s’installe avec l’appli Downloader (l’adresse est sur la page du guide) ou depuis une clé USB avec un gestionnaire de fichiers. Les versions suivantes sont proposées toutes seules sur Accueil.",
+        "hc1_android" to "PlayLingo s’installe sur l’Android TV ou le boîtier Android branché au téléviseur. PlayLingo.apk s’installe avec l’appli Downloader – il suffit d’y saisir le code 6340991 (à défaut, l’adresse de la page du guide) ou depuis une clé USB avec un gestionnaire de fichiers. Les versions suivantes sont proposées toutes seules sur Accueil.",
         "hc1_reader" to "Les téléviseurs LG et Samsung ne savent pas lire eux-mêmes l’image du jeu. PlayLingo tourne donc sur un téléphone Android (ou un boîtier) : il lit l’image de la console, traduit et envoie les sous-titres prêts à l’appli PlayLingo du téléviseur. Télécharger PlayLingo.apk sur le téléphone et l’installer (le lien est sur la page du guide).",
         "hc2" to "2. Préparer la console",
         "hc2_ps" to "Sur la PS5, ajouter un 🔵 deuxième utilisateur avec un autre compte PlayStation (gratuit). L’appli se connecte avec lui : avec le 🟢 compte de jeu, la console déconnecterait la manette pendant la partie. Pour le 🔵 deuxième utilisateur, activer Paramètres → Système → Remote Play → Activer Remote Play. On joue ensuite normalement avec le 🟢 compte de jeu.",
@@ -275,7 +275,7 @@ internal val HELP_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.IT to mapOf(
         "help_for" to "Installazione per",
         "hc1" to "1. Installare PlayLingo",
-        "hc1_android" to "PlayLingo va sull’Android TV o sul box Android collegato al televisore. PlayLingo.apk si installa con l’app Downloader (l’indirizzo è nella pagina della guida) o da una chiavetta USB con un file manager. Le versioni successive vengono proposte da sole in Home.",
+        "hc1_android" to "PlayLingo va sull’Android TV o sul box Android collegato al televisore. PlayLingo.apk si installa con l’app Downloader – basta inserire il codice 6340991 (in alternativa l’indirizzo della pagina della guida) o da una chiavetta USB con un file manager. Le versioni successive vengono proposte da sole in Home.",
         "hc1_reader" to "I televisori LG e Samsung non sanno leggere da soli l’immagine del gioco. Per questo PlayLingo funziona su un telefono Android (o un box): legge l’immagine della console, traduce e invia i sottotitoli pronti all’app PlayLingo sul televisore. Scaricare PlayLingo.apk sul telefono e installarlo (il link è nella pagina della guida).",
         "hc2" to "2. Preparare la console",
         "hc2_ps" to "Sulla PS5 aggiungere un 🔵 secondo utente con un altro account PlayStation (gratis). L’app si collega con quello: con l’🟢 account di gioco la console scollegherebbe il controller durante il gioco. Per il 🔵 secondo utente attivare Impostazioni → Sistema → Riproduzione remota → Abilita Riproduzione remota. Poi si gioca come sempre con l’🟢 account di gioco.",

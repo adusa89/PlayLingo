@@ -791,6 +791,17 @@ Záznam z televize umí aplikace v televizi od verze 1.2.0.
 Bez sítě: obrazovka hlášení má tlačítka **Kopírovat** (schránka) a **Sdílet** (soubor přes
 `ReportProvider`, jediný soubor v `cacheDir/sdileni`, jen ke čtení).
 
+**Poslat vývojáři (od 0.97.68, přání majitele – testeři her, které majitel nemá):** obrazovka hlášení (tlačítko `diagsend`) a ⚙ →
+Experimentální → Ladění a hlášení (řádek `rsend`) → `ReportSender` (dialog: Jen hlášení / Hlášení + dávka snímků → potvrzení → průběh →
+kód `K7M2-QX9P`, Kopírovat/Sdílet). ZIP = `hlaseni.txt` (jako Kopírovat, přes `Redact`), `info.json`, případně `snimky/` (velká dávka se
+zmenší na 960 px / JPEG 70 a vezme se každý n-tý snímek, `index.txt` celý). Logika `core/ReportUpload.kt` (testy `ReportUploadTest`), texty `rs_…`
+v `core/I18nSend.kt`. Adresa serveru se čte z `pomoc/hlaseni.json` (`url` prázdné = „Odesílání · zatím nenastavené“) – nová adresa nepotřebuje APK.
+Server = **schránka na Cloudflare** `server/hlaseni/` (Worker + R2, návod k nasazení `server/hlaseni/CTI-ME.md`, zkouška `node --test
+server/hlaseni/test/server.test.mjs`): `POST /v1/nahrat` bez klíče (≤ 45 MB, 6/h z adresy, 300 balíků / 3 GB denně, mazání po 30 dnech),
+čtení/seznam/mazání jen s `CTENI_KLIC` (jen v Cloudflare a u majitele v `%USERPROFILE%\.playlingo\hlaseni.txt` – nikam nekopírovat). Stažení:
+`ci/stahni-hlaseni.ps1 <kód>` / `ci/stahni-hlaseni.sh <kód>` (`-Seznam`) → `zaznamy/hlaseni-<kód>/`. V cloudovém sezení: host schránky povolit
+v síti prostředí a klíč uložit jako síťový tajný údaj (`request_credential`). Po rozboru balík smazat. Na skutečném serveru zatím neověřeno.
+
 **Hlášení od jiných hráčů (od 0.90):** tlačítko **Do telefonu** na obrazovce hlášení zapne záznam v síti
 (když neběží) a ukáže čtvereček na `GET /hlaseni?k=…` – stránka pro telefon (i iPhone) s tlačítkem ke
 stažení (`/hlaseni.txt`, `Content-Disposition: attachment`) a textem k označení. Hráč soubor pošle chatem
@@ -865,6 +876,7 @@ Každý nový text musí být ve všech deseti jazycích, jinak neprojde test `A
 - záznam pro vývojáře, oddíl Televize a Kopírovat/Sdílet v hlášení (`zz_…`): `core/I18nZaznam.kt`
   (`ZAZNAM_S`, `ZAZNAM_X`).
 - načtení údajů televize LG kamerou (`km_…`): `core/I18nKamera.kt` (`KAMERA_S`, `KAMERA_X`).
+- odeslání hlášení vývojáři (`rs_…`): `core/I18nSend.kt` (`SEND_S`, `SEND_X`).
 
 Texty, které se přestaly používat, smaž ze všech jazyků. Když se mění postup pro uživatele,
 uprav i `NAVOD.md` a stránku Nápověda v aplikaci.
