@@ -1918,6 +1918,11 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("s_test"), onOff(Prefs.testChannel(this))) {
             Prefs.setTestChannel(this, !Prefs.testChannel(this)); checkForUpdate(); render(true)
         }, "testch"), 8)
+        // pokus: čtení jen pásu s textem (rychlejší rozpoznání), výchozí vypnuto – popis v dialogu při zapnutí
+        add(tagged(ui.settingRow(t("fr_row"), onOff(Prefs.fastRead(this))) {
+            if (Prefs.fastRead(this)) { Prefs.setFastRead(this, false); applyToService(); render(true) }
+            else confirmOn(t("fr_row"), t("fr_desc")) { Prefs.setFastRead(this, true); applyToService(); render(true) }
+        }, "fastread"), 8)
         // DeepL je od 0.97.28 v Titulkách → Kvalita překladu (už ne pokus)
         settingsDiag()
     }
@@ -2347,6 +2352,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.46"
-    const val VERSION_CODE = 143
+    const val VERSION = "verze 0.97.47"
+    const val VERSION_CODE = 144
 }

@@ -13,6 +13,8 @@ internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
     "obj_pos_game" to ("na místě ve hře" to "na mieste v hre"),
     "pos_height" to ("Vlastní výška" to "Vlastná výška"),
     "l_min_show" to ("Nejkratší doba titulku" to "Najkratší čas titulku"),
+    "fr_row" to ("Rychlejší čtení" to "Rýchlejšie čítanie"),
+    "fr_desc" to ("Pokus: z oblasti titulků se čte jen pás, kde jsou řádky textu, takže jedno čtení trvá kratší dobu a titulky rychle za sebou se méně vynechávají. Když se titulky začnou číst hůř nebo chybět, vypni to. Čas čtení je na Domů (Čtení titulků)." to "Pokus: z oblasti titulkov sa číta len pás, kde sú riadky textu, takže jedno čítanie trvá kratšie a titulky rýchlo za sebou sa menej vynechávajú. Keď sa titulky začnú čítať horšie alebo chýbať, vypni to. Čas čítania je na Domov (Čítanie titulkov)."),
     // stav vlevo nahoře přes hru (StatusPanel)
     "so_row" to ("Stav přes hru" to "Stav cez hru"),
     "so_desc" to ("Jen Android TV: vlevo nahoře přes obraz hry krátký stav – konzole, překlad, hra. Ukáže se při každé změně a s nabídkou vzhledu, zelený po chvíli zmizí, oranžový zůstává, dokud se to nespraví. Vypnuto: stav je jen na Domů v aplikaci." to "Len Android TV: vľavo hore cez obraz hry krátky stav – konzola, preklad, hra. Ukáže sa pri každej zmene a s ponukou vzhľadu, zelený po chvíli zmizne, oranžový zostáva, kým sa to neopraví. Vypnuté: stav je len na Domov v aplikácii."),
@@ -32,6 +34,8 @@ internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "fr_row" to "Faster reading",
+        "fr_desc" to "Experiment: only the strip with lines of text is read from the subtitle area, so one read takes less time and fast consecutive subtitles are skipped less often. If subtitles start reading worse or go missing, turn it off. The reading time is on Home (Reading subtitles).",
         "l_min_show" to "Minimum subtitle time",
         "obj_row" to "Objective under subtitles",
         "obj_size" to "Objective font",
@@ -54,6 +58,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "This is how the translation will look.",
     ),
     Lang.PL to mapOf(
+        "fr_row" to "Szybszy odczyt",
+        "fr_desc" to "Eksperyment: z obszaru napisów odczytywany jest tylko pas z wierszami tekstu, więc jeden odczyt trwa krócej, a szybkie kolejne napisy rzadziej są pomijane. Jeśli napisy zaczną być czytane gorzej lub znikać, wyłącz to. Czas odczytu jest na stronie Start (Odczyt napisów).",
         "l_min_show" to "Najkrótszy czas napisu",
         "obj_row" to "Zadanie pod napisami",
         "obj_size" to "Czcionka zadania",
@@ -76,6 +82,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Tak będzie wyglądać tłumaczenie napisów.",
     ),
     Lang.DE to mapOf(
+        "fr_row" to "Schnelleres Lesen",
+        "fr_desc" to "Versuch: Aus dem Untertitelbereich wird nur der Streifen mit Textzeilen gelesen, ein Lesevorgang dauert kürzer und schnell aufeinanderfolgende Untertitel werden seltener ausgelassen. Wenn Untertitel schlechter gelesen werden oder fehlen, schalte es aus. Die Lesezeit steht unter Start (Untertitel lesen).",
         "l_min_show" to "Mindestdauer des Untertitels",
         "obj_row" to "Aufgabe unter Untertiteln",
         "obj_size" to "Schrift der Aufgabe",
@@ -98,6 +106,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "So wird die Übersetzung aussehen.",
     ),
     Lang.HU to mapOf(
+        "fr_row" to "Gyorsabb olvasás",
+        "fr_desc" to "Kísérlet: a feliratterületből csak a szövegsorokat tartalmazó sáv olvasódik be, így egy olvasás rövidebb, és a gyorsan egymást követő feliratok ritkábban maradnak ki. Ha a feliratok olvasása romlik vagy kimaradnak, kapcsold ki. Az olvasási idő a Kezdőlapon látható (Feliratok olvasása).",
         "l_min_show" to "Felirat minimális ideje",
         "obj_row" to "Feladat a felirat alatt",
         "obj_size" to "Feladat betűmérete",
@@ -120,6 +130,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Így fog kinézni a felirat fordítása.",
     ),
     Lang.UK to mapOf(
+        "fr_row" to "Швидше читання",
+        "fr_desc" to "Експеримент: з області субтитрів читається лише смуга з рядками тексту, тож одне читання триває менше, а швидкі субтитри поспіль рідше пропускаються. Якщо субтитри почнуть читатися гірше або зникати, вимкніть це. Час читання – на Головній (Читання субтитрів).",
         "l_min_show" to "Найкоротший час субтитру",
         "obj_row" to "Завдання під субтитрами",
         "obj_size" to "Шрифт завдання",
@@ -142,6 +154,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Ось так виглядатиме переклад субтитрів.",
     ),
     Lang.ES to mapOf(
+        "fr_row" to "Lectura más rápida",
+        "fr_desc" to "Experimento: de la zona de subtítulos solo se lee la franja con líneas de texto, así cada lectura tarda menos y los subtítulos rápidos seguidos se pierden menos. Si los subtítulos empiezan a leerse peor o faltan, desactívalo. El tiempo de lectura está en Inicio (Lectura de subtítulos).",
         "l_min_show" to "Tiempo mínimo del subtítulo",
         "obj_row" to "Objetivo bajo los subtítulos",
         "obj_size" to "Letra del objetivo",
@@ -164,6 +178,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Así se verá la traducción de los subtítulos.",
     ),
     Lang.FR to mapOf(
+        "fr_row" to "Lecture plus rapide",
+        "fr_desc" to "Essai : seule la bande contenant les lignes de texte est lue dans la zone des sous-titres, une lecture prend donc moins de temps et les sous-titres rapides qui se suivent sont moins souvent sautés. Si les sous-titres se lisent moins bien ou manquent, désactivez-le. Le temps de lecture est sur Accueil (Lecture des sous-titres).",
         "l_min_show" to "Durée minimale du sous-titre",
         "obj_row" to "Objectif sous les sous-titres",
         "obj_size" to "Police de l’objectif",
@@ -186,6 +202,8 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Voici à quoi ressemblera la traduction.",
     ),
     Lang.IT to mapOf(
+        "fr_row" to "Lettura più veloce",
+        "fr_desc" to "Prova: dall'area dei sottotitoli si legge solo la fascia con le righe di testo, quindi ogni lettura dura meno e i sottotitoli rapidi uno dopo l'altro vengono saltati meno spesso. Se i sottotitoli iniziano a essere letti peggio o mancano, disattivalo. Il tempo di lettura è nella Home (Lettura sottotitoli).",
         "l_min_show" to "Durata minima del sottotitolo",
         "obj_row" to "Obiettivo sotto i sottotitoli",
         "obj_size" to "Carattere dell’obiettivo",

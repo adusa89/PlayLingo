@@ -190,7 +190,10 @@ aspoň „Nejkratší doba titulku“ (Titulky → Pruh s překladem, `Prefs.min
 nezařadí), `pollQueue` na hlavním vlákně podle `dueIn`, schování po zmizení titulku přes `requestHide(teď + Nechat déle)`. S frontou
 se pozdní odpověď DeepL nezahodí (`deeplThenShow`), dokud se neukázalo nic novějšího. Fronta se maže při pauze, menu hry a nové volbě.
 V záznamu `QUEUE|wait n` / `QUEUE|next n`. Čtení samo běží hned po sobě (pauza 50–200 ms, `Perf`), brzdí ho délka OCR (~1 s na TV);
-PlayCaption zrychluje OCR výřezem jen řádků s textem (`pasSTextem`) – u nás zatím ne.
+PlayCaption zrychluje OCR výřezem jen řádků s textem (`pasSTextem`) – u nás od 0.97.47 jako pokus **„Rychlejší čtení“**
+(⚙ → Experimentální, `Prefs.fastRead`, výchozí vypnuto, popis v dialogu `fr_desc`): `core/TextBand` (testy `TextBandTest`) najde
+řádky se světlými ostrými body, OCR čte jen ten pás (nová bitmapa, posun v `toBlocks`); nenalezeno = celá oblast jako dřív.
+V záznamu `READ|ocr=…ms|band=ŠxV` (nebo `band=cela`) – podle toho porovnat čas čtení s volbou a bez ní.
 **Vlastní výška pruhu (od 0.97.45):** v nabídce Poloha poslední volba „Vlastní výška“ → střed pruhu 0–100 % po 5 (`withBarCenter`,
 `Position.CUSTOM`, do TV `stred`); jemně dál v Jemném doladění.
 

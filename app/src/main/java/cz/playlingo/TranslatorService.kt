@@ -435,6 +435,7 @@ class TranslatorService : Service() {
         deeplKey = DeeplTranslator.activeKey(this)
         holdMs = Prefs.holdMs(this).toLong()
         showQueue.minMs = Prefs.minShowMs(this).toLong()
+        fastRead = Prefs.fastRead(this)
         clearQueue()
         showOriginal = Prefs.showOriginal(this)
         hideAt = 0
@@ -855,14 +856,20 @@ class TranslatorService : Service() {
         val ocrStart = SystemClock.uptimeMillis()
         // drobné titulky: výřez se před čtením zvětší (viz TextScale)
         val k = textScale.scale
-        val input = if (k > 1f) Bitmap.createScaledBitmap(crop, (crop.width * k).toInt(), (crop.height * k).toInt(), true) else crop
-        val result = recognizer.process(InputImage.fromBitmap(input, 0)).await()
-        if (input !== crop) input.recycle()
+        // pokus „Rychlejší čtení“ (výchozí vypnuto): čte se jen pás s řádky textu, ne celá oblast (core/TextBand)
+        val band = if (fastRead) textBand(crop) else null
+        val src = if (band != null) Bitmap.createBitmap(crop, band.left, band.top, band.width, band.height) else crop
+        val input = if (k > 1f) Bitmap.createScaledBitmap(src, (src.width * k).toInt(), (src.height * k).toInt(), true) else src
+        val result = try { recognizer.process(InputImage.fromBitmap(input, 0)).await() } finally {
+            if (input !== crop && input !== src) input.recycle()
+            if (src !== crop) src.recycle()
+        }
+        lastTextBand = band?.let { "${it.width}x${it.height}" } ?: if (fastRead) "cela" else ""
         // mezitím se čtení začalo znovu (pauza, jiná oblast, nové nastavení) → výsledek je zastaralý
         if (!tracker.isCurrent(token)) return
         ocrRuns++
         lastOcrMs = SystemClock.uptimeMillis() - ocrStart
-        val blocks = toBlocks(result, k)
+        val blocks = toBlocks(result, k, band?.left ?: 0, band?.top ?: 0)
         if (textScale.update(blocks.flatMap { b -> b.lines.filter { it.text.count { c -> c.isLetter() } >= 3 }.map { it.height } }, crop.width * crop.height))
             tp("SCALE|${textScale.scale}")
 
@@ -897,7 +904,8 @@ class TranslatorService : Service() {
             return
         }
         // záznam pro automatickou zkoušku (jen prvních pár set čtení)
-        if (ticksLogged++ < 400) tp("READ|ocr=${lastOcrMs}ms|zone=${(z.height * 100).toInt()}%|" + picked.text.replace('\n', ' ').take(40))
+        if (ticksLogged++ < 400) tp("READ|ocr=${lastOcrMs}ms|zone=${(z.height * 100).toInt()}%|" +
+            (if (lastTextBand.isNotEmpty()) "band=$lastTextBand|" else "") + picked.text.replace('\n', ' ').take(40))
 
         ocrMsSum += lastOcrMs
         readMs = if (readMs == 0L) lastOcrMs else (readMs * 4 + lastOcrMs) / 5
@@ -989,11 +997,32 @@ class TranslatorService : Service() {
     }
 
     /** Řádky z čtečky; souřadnice se přepočítají zpět na nezvětšený výřez ([k] = zvětšení). */
-    private fun toBlocks(t: Text, k: Float): List<OcrBlock> = t.textBlocks.map { block ->
+    /** Řádky z čtení v bodech oblasti: [k] = zvětšení, [dx]/[dy] = posun pásu s textem (Rychlejší čtení). */
+    private fun toBlocks(t: Text, k: Float, dx: Int = 0, dy: Int = 0): List<OcrBlock> = t.textBlocks.map { block ->
         OcrBlock(block.lines.mapNotNull { l ->
             val bb = l.boundingBox ?: return@mapNotNull null
-            OcrLine(l.text, (bb.left / k).toInt(), (bb.top / k).toInt(), (bb.right / k).toInt(), (bb.bottom / k).toInt())
+            OcrLine(l.text, (bb.left / k).toInt() + dx, (bb.top / k).toInt() + dy, (bb.right / k).toInt() + dx, (bb.bottom / k).toInt() + dy)
         })
+    }
+
+    // ---------------- pokus: Rychlejší čtení (od 0.97.47) ----------------
+
+    @Volatile private var fastRead = false
+    /** Velikost posledního pásu („1200x90“, „cela“ = text nenalezen, čte se celá oblast) – do záznamu READ. */
+    @Volatile private var lastTextBand = ""
+    private var bandPixels = IntArray(0)
+
+    /** Pás s řádky textu ve výřezu, nebo null (čte se celý výřez jako dřív). */
+    private fun textBand(crop: Bitmap): cz.playlingo.core.TextBand.Band? {
+        val w = crop.width; val h = crop.height
+        if (bandPixels.size < w * h) bandPixels = IntArray(w * h)
+        val px = bandPixels
+        crop.getPixels(px, 0, w, 0, 0, w, h)
+        for (i in 0 until w * h) {
+            val c = px[i]
+            px[i] = (((c shr 16) and 0xFF) * 77 + ((c shr 8) and 0xFF) * 150 + (c and 0xFF) * 29) shr 8
+        }
+        return cz.playlingo.core.TextBand.find(px, w, h)
     }
 
     // ---------------- úkol pod titulky (GTA, od 0.97.43) ----------------
