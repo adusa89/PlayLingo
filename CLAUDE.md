@@ -388,7 +388,7 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   přidá kolem rámečku z OCR okraj (1,2 % výšky nahoře/dole, 2 % šířky vlevo/vpravo – obrys, stín a krajní písmena z rámečku
   vyčuhují) a během souvislého rozhovoru plochu jen zvětšuje (po schování pruhu `reset`). `SubtitleOverlay.show` posílá
   rozšířenou plochu i do TV (`TvLook.text`), takže kryje lépe i se starší aplikací v TV. Poloha „těsně nad“ se nemění.
-- **Zakrýt celou oblast titulků (od 0.97.58, přání majitele, aplikace v TV 1.5.14):** volba v Titulky → Pruh s překladem jen u polohy
+- **Zakrýt celou oblast titulků (od 0.97.59, přání majitele, aplikace v TV 1.5.14):** volba v Titulky → Pruh s překladem jen u polohy
   Přes titulky (`Prefs.coverAll`, klíč `cover_all` v `TvProfiles.KEYS`, výchozí vypnuto, popis v `confirmOn`, texty `l_cover_all…`
   v `I18nQuick.kt`). `core/CoverArea` (testy `CoverAreaTest`, jedna sdílená instance `SubtitleOverlay.coverArea`) kryje obálku
   posledních titulků místo právě přečteného řádku: nejvýš 12 titulků za 90 s, jen ty svisle do 0,12 od právě zobrazeného, odlehlá
