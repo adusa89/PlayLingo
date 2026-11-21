@@ -282,7 +282,7 @@ class TranslatorService : Service() {
             ACTION_PAUSE -> {
                 if (running) {
                     paused = !paused
-                    if (paused) { overlay?.hide(); dropObjective() } else resetReading()
+                    if (paused) { clearQueue(); overlay?.hide(); dropObjective() } else resetReading()
                     updateNotification()
                 }
                 return START_NOT_STICKY
@@ -434,6 +434,8 @@ class TranslatorService : Service() {
         }
         deeplKey = DeeplTranslator.activeKey(this)
         holdMs = Prefs.holdMs(this).toLong()
+        showQueue.minMs = Prefs.minShowMs(this).toLong()
+        clearQueue()
         showOriginal = Prefs.showOriginal(this)
         hideAt = 0
         overlay?.destroy()
@@ -788,6 +790,7 @@ class TranslatorService : Service() {
             val desc = view.description?.let { menuTranslate(it) }
             val text = cz.playlingo.core.GameMenu.text(view.kind, items, view.selected, title, desc)
             synchronized(showLock) {
+                showQueue.clear()   // repliky z fronty by menu přepsaly
                 // vedle menu, řádky pod sebou (od 0.97.36)
                 ov.show(text.split('\n').map { Segment(null, it) }, null, -1f, -1f, box = view.box,
                     step = if (view.kind == "pause" && view.title == null) view.step else 0f)
@@ -795,7 +798,7 @@ class TranslatorService : Service() {
             }
             tp("MENU|${view.kind}|${view.items.joinToString(",")}|vybraná=${view.selected}|popis=${view.title ?: "-"}")
         }
-        if (!menuShown) { resetReading(); dropObjective() }
+        if (!menuShown) { resetReading(); dropObjective(); clearQueue() }
         menuShown = true
         hideAt = 0
         return true
@@ -944,13 +947,10 @@ class TranslatorService : Service() {
                 if (deeplJob != null && fromDeepl == null && DeeplTranslator.tryStart()) {
                     val seq = synchronized(showLock) { ++showSeq }
                     deeplThenShow(deeplJob, segs, token, seq, ov) { chosen ->
-                        ov.show(chosen, original, top, bottom, left, right, lineHeight = lineH)
+                        present(Shown(ov, chosen, original, top, bottom, left, right, lineH), seq)
                     }
-                } else synchronized(showLock) {
-                    sampleShown = false   // skutečný titulek nahradil ukázku rychlé nabídky
-                    StatusPanel.onSubtitle()
-                    ov.show(segs, original, top, bottom, left, right, lineHeight = lineH)
-                    ++showSeq
+                } else {
+                    synchronized(showLock) { present(Shown(ov, segs, original, top, bottom, left, right, lineH), ++showSeq) }
                 }
                 statsFor(this).line()
                 // automatika: zapamatuj si, kde na obrazovce titulky jsou
@@ -964,11 +964,16 @@ class TranslatorService : Service() {
             // anglický titulek zmizel – překlad nech chvíli dočíst
             SubtitleTracker.Action.Hide -> {
                 tp("HIDE")
-                if (holdMs <= 0) ov.hide() else hideAt = SystemClock.uptimeMillis() + holdMs
+                if (showQueue.minMs > 0) { showQueue.requestHide(SystemClock.uptimeMillis() + holdMs); scheduleQueue() }
+                else if (holdMs <= 0) ov.hide() else hideAt = SystemClock.uptimeMillis() + holdMs
             }
             SubtitleTracker.Action.None -> {
                 // na obrazovce je už jiný titulek → starý překlad hned schovej
-                if (tracker.isChanging && picked.text.isNotEmpty() && ov.isShown) { hideAt = 0; ov.hide() }
+                // (s frontou až po nejkratší době a když nic nečeká – jinak by se rychlá replika nestihla přečíst)
+                if (tracker.isChanging && picked.text.isNotEmpty() && ov.isShown &&
+                    (showQueue.minMs <= 0 || (showQueue.minElapsed(SystemClock.uptimeMillis()) && showQueue.waitingCount == 0))) {
+                    hideAt = 0; ov.hide(); showQueue.clear()
+                }
                 prefetch(tracker.pendingText)
             }
         }
@@ -1084,6 +1089,59 @@ class TranslatorService : Service() {
     @Volatile private var deeplKey: String? = null
     /** Pořadí zobrazení v pruhu: odpověď DeepL smí vyměnit jen ten řádek, ke kterému patří. */
     private val showLock = Any()
+
+    /** Jeden titulek k zobrazení (pro frontu [showQueue]). */
+    private class Shown(val ov: SubtitleOverlay, val segs: List<Segment>, val original: String?,
+                        val top: Float, val bottom: Float, val left: Float, val right: Float, val lineH: Float)
+
+    /** Fronta rychlých replik s nejkratší dobou zobrazení ([cz.playlingo.core.ShowQueue], od 0.97.46). */
+    private val showQueue = cz.playlingo.core.ShowQueue<Shown>(1500)
+    /** Pořadí posledního titulku, který šel do pruhu nebo do fronty – starší se už nezařadí. */
+    private var presentedSeq = 0L
+    private val queueHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val queueTick = Runnable { pollQueue() }
+
+    /** Titulek do pruhu: hned, nebo do fronty, když předchozí ještě nebyl vidět nejkratší dobu. Volat pod [showLock]. */
+    private fun present(s: Shown, seq: Long) {
+        if (seq <= presentedSeq) return
+        presentedSeq = seq
+        when (val a = showQueue.submit(s, SystemClock.uptimeMillis())) {
+            is cz.playlingo.core.ShowQueue.Action.Show -> display(a.value)
+            else -> tp("QUEUE|wait ${showQueue.waitingCount}")
+        }
+        hideAt = 0
+        scheduleQueue()
+    }
+
+    private fun display(s: Shown) {
+        if (overlay !== s.ov) return
+        sampleShown = false   // skutečný titulek nahradil ukázku rychlé nabídky
+        StatusPanel.onSubtitle()
+        s.ov.show(s.segs, s.original, s.top, s.bottom, s.left, s.right, lineHeight = s.lineH)
+    }
+
+    private fun pollQueue() {
+        synchronized(showLock) {
+            when (val a = showQueue.poll(SystemClock.uptimeMillis())) {
+                is cz.playlingo.core.ShowQueue.Action.Show -> { display(a.value); tp("QUEUE|next ${showQueue.waitingCount}") }
+                cz.playlingo.core.ShowQueue.Action.Hide -> overlay?.hide()
+                else -> {}
+            }
+        }
+        scheduleQueue()
+    }
+
+    private fun scheduleQueue() {
+        queueHandler.removeCallbacks(queueTick)
+        val d = showQueue.dueIn(SystemClock.uptimeMillis())
+        if (d >= 0) queueHandler.postDelayed(queueTick, d + 10)
+    }
+
+    /** Fronta pryč (pauza, menu hry, nové nastavení, konec). */
+    private fun clearQueue() {
+        queueHandler.removeCallbacks(queueTick)
+        synchronized(showLock) { showQueue.clear() }
+    }
     private var showSeq = 0L
 
     /**
@@ -1100,7 +1158,9 @@ class TranslatorService : Service() {
             val texts = r?.texts
             val chosen = if (texts != null) DeeplTranslator.merge(offline, job, texts) else offline
             val shown = synchronized(showLock) {
-                (tracker.isCurrent(token) && seq == showSeq && overlay === ov).also { if (it) show(chosen) }
+                // s frontou se pozdní překlad nezahodí (rychlé repliky za sebou), jen když se už ukázalo něco novějšího
+                ((if (showQueue.minMs > 0) seq > presentedSeq else tracker.isCurrent(token) && seq == showSeq) && overlay === ov)
+                    .also { if (it) show(chosen) }
             }
             val ms = r?.ms ?: (SystemClock.uptimeMillis() - started)
             val label = when {
@@ -1203,6 +1263,7 @@ class TranslatorService : Service() {
     }
 
     override fun onDestroy() {
+        queueHandler.removeCallbacks(queueTick)
         tvStatusHandler.removeCallbacks(tvStatusTick)
         tvStatusHandler.removeCallbacks(panelTick)
         StatusPanel.reset()

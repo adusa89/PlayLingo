@@ -115,6 +115,10 @@ object Prefs {
     val HOLD_TIMES = intArrayOf(0, 1000, 2000)
     fun holdMs(c: Context): Int = p(c).getInt("hold_ms", 1000)
     fun setHoldMs(c: Context, v: Int) = p(c).edit().putInt("hold_ms", v).apply()
+    /** Nejkratší doba titulku v pruhu (fronta rychlých replik, od 0.97.46); 0 = vypnuto. */
+    val MIN_SHOW_TIMES = intArrayOf(0, 1000, 1500, 2000, 3000)
+    fun minShowMs(c: Context): Int = p(c).getInt("min_show_ms", 1500).let { v -> MIN_SHOW_TIMES.minByOrNull { kotlin.math.abs(it - v) } ?: 1500 }
+    fun setMinShowMs(c: Context, v: Int) = p(c).edit().putInt("min_show_ms", v).apply()
 
     fun layout(c: Context): ScreenLayout = ScreenLayout.parse(p(c).getString("layout", null))
     fun setLayout(c: Context, v: ScreenLayout) = p(c).edit().putString("layout", v.serialize()).apply()

@@ -12,6 +12,7 @@ internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
     "obj_pos" to ("Poloha úkolu" to "Poloha úlohy"),
     "obj_pos_game" to ("na místě ve hře" to "na mieste v hre"),
     "pos_height" to ("Vlastní výška" to "Vlastná výška"),
+    "l_min_show" to ("Nejkratší doba titulku" to "Najkratší čas titulku"),
     // stav vlevo nahoře přes hru (StatusPanel)
     "so_row" to ("Stav přes hru" to "Stav cez hru"),
     "so_desc" to ("Jen Android TV: vlevo nahoře přes obraz hry krátký stav – konzole, překlad, hra. Ukáže se při každé změně a s nabídkou vzhledu, zelený po chvíli zmizí, oranžový zůstává, dokud se to nespraví. Vypnuto: stav je jen na Domů v aplikaci." to "Len Android TV: vľavo hore cez obraz hry krátky stav – konzola, preklad, hra. Ukáže sa pri každej zmene a s ponukou vzhľadu, zelený po chvíli zmizne, oranžový zostáva, kým sa to neopraví. Vypnuté: stav je len na Domov v aplikácii."),
@@ -31,6 +32,7 @@ internal val QUICK_S: Map<String, Pair<String, String>> = mapOf(
 
 internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
     Lang.EN to mapOf(
+        "l_min_show" to "Minimum subtitle time",
         "obj_row" to "Objective under subtitles",
         "obj_size" to "Objective font",
         "obj_pos" to "Objective position",
@@ -52,6 +54,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "This is how the translation will look.",
     ),
     Lang.PL to mapOf(
+        "l_min_show" to "Najkrótszy czas napisu",
         "obj_row" to "Zadanie pod napisami",
         "obj_size" to "Czcionka zadania",
         "obj_pos" to "Położenie zadania",
@@ -73,6 +76,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Tak będzie wyglądać tłumaczenie napisów.",
     ),
     Lang.DE to mapOf(
+        "l_min_show" to "Mindestdauer des Untertitels",
         "obj_row" to "Aufgabe unter Untertiteln",
         "obj_size" to "Schrift der Aufgabe",
         "obj_pos" to "Position der Aufgabe",
@@ -94,6 +98,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "So wird die Übersetzung aussehen.",
     ),
     Lang.HU to mapOf(
+        "l_min_show" to "Felirat minimális ideje",
         "obj_row" to "Feladat a felirat alatt",
         "obj_size" to "Feladat betűmérete",
         "obj_pos" to "Feladat helye",
@@ -115,6 +120,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Így fog kinézni a felirat fordítása.",
     ),
     Lang.UK to mapOf(
+        "l_min_show" to "Найкоротший час субтитру",
         "obj_row" to "Завдання під субтитрами",
         "obj_size" to "Шрифт завдання",
         "obj_pos" to "Положення завдання",
@@ -136,6 +142,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Ось так виглядатиме переклад субтитрів.",
     ),
     Lang.ES to mapOf(
+        "l_min_show" to "Tiempo mínimo del subtítulo",
         "obj_row" to "Objetivo bajo los subtítulos",
         "obj_size" to "Letra del objetivo",
         "obj_pos" to "Posición del objetivo",
@@ -157,6 +164,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Así se verá la traducción de los subtítulos.",
     ),
     Lang.FR to mapOf(
+        "l_min_show" to "Durée minimale du sous-titre",
         "obj_row" to "Objectif sous les sous-titres",
         "obj_size" to "Police de l’objectif",
         "obj_pos" to "Position de l’objectif",
@@ -178,6 +186,7 @@ internal val QUICK_X: Map<Lang, Map<String, String>> = mapOf(
         "qk_sample" to "Voici à quoi ressemblera la traduction.",
     ),
     Lang.IT to mapOf(
+        "l_min_show" to "Durata minima del sottotitolo",
         "obj_row" to "Obiettivo sotto i sottotitoli",
         "obj_size" to "Carattere dell’obiettivo",
         "obj_pos" to "Posizione dell’obiettivo",

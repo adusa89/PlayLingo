@@ -1676,6 +1676,14 @@ class MainActivity : Activity() {
                 Prefs.setHoldMs(this, Prefs.HOLD_TIMES[i]); applyToService(); render(true)
             }
         }, "hold"), 6)
+        // nejkratší doba titulku: rychlé repliky za sebou čekají ve frontě, ať jdou přečíst (od 0.97.46)
+        val minShow = Prefs.minShowMs(this)
+        fun secs(ms: Int) = if (ms == 0) t("off") else (if (ms % 1000 == 0) "${ms / 1000}" else "%.1f".format(ms / 1000f)) + " s"
+        add(tagged(ui.settingRow(t("l_min_show"), secs(minShow)) {
+            choose(t("l_min_show"), Prefs.MIN_SHOW_TIMES.map { secs(it) }, Prefs.MIN_SHOW_TIMES.indexOf(minShow)) { i ->
+                Prefs.setMinShowMs(this, Prefs.MIN_SHOW_TIMES[i]); applyToService(); render(true)
+            }
+        }, "minshow"), 6)
         add(tagged(ui.settingRow(t("l_fine"), "›") { startActivity(Intent(this, CalibrationActivity::class.java)) }, "fine"), 6)
     }
 
@@ -2339,6 +2347,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.45"
-    const val VERSION_CODE = 142
+    const val VERSION = "verze 0.97.46"
+    const val VERSION_CODE = 143
 }
