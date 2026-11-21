@@ -388,13 +388,46 @@ object TextLogic {
      * 0,6 výšky řádku a nejvýš 2,5 (volný řádek mezi titulkem a úkolem), nebo – když nad ním nic není – ležící
      * na naučeném místě úkolu ([objectiveTop], ± 0,7 výšky řádku).
      */
+    /**
+     * Vypadá text jako úkol pro hráče? Úkol v GTA je krátký pokyn s velkým písmenem na začátku („Take your shot“,
+     * „Follow Lucia“). Ne: začíná malým písmenem nebo spojkou (pokračování věty), končí čárkou/středníkem, má mluvčího
+     * „Jméno:“ (i s chybou čtení) nebo zvuk v hranatých závorkách („[thudding]“). Od 0.97.58 – do té doby se jako úkol
+     * brala druhá část dvouřádkového titulku a zůstávala viset (záznam majitele 21. 11. 2026).
+     */
+    fun objectiveShape(text: String): Boolean {
+        val t = clean(text).trim()
+        val first = t.firstOrNull { it.isLetterOrDigit() } ?: return false
+        if (first.isLetter() && first.isLowerCase()) return false
+        if (t.endsWith(",") || t.endsWith(";")) return false
+        if ('[' in t || ']' in t) return false
+        if (SPEAKERISH.containsMatchIn(t)) return false
+        val w = t.split(Regex("\\s+")).firstOrNull()?.lowercase()?.trim(',', '.', '!', '?', '"', '“', '”')
+        if (w in CONTINUATIONS) return false
+        return true
+    }
+
+    /** Končí řádek větou (tečka, !, ?, …, uvozovka/závorka za nimi)? */
+    fun endsSentence(text: String): Boolean {
+        val t = clean(text).trim().trimEnd('"', '“', '”', '\'', ')', '’')
+        return t.isEmpty() || t.last() in ".!?…" || t.endsWith("..")
+    }
+
+    /** „Protester:“, „Security Guard:“ i přečtené s chybou – slovo/slova s velkým písmenem a dvojtečka na začátku. */
+    private val SPEAKERISH = Regex("^[A-Z][\\p{L}.'’ -]{0,30}:")
+    /** Spojky a slova, kterými v titulcích začíná pokračování věty na dalším řádku. */
+    private val CONTINUATIONS = setOf("and", "or", "but", "so", "because", "cause", "then", "that", "which", "who", "to", "of", "with", "for")
+
     fun objectiveLine(lines: List<OcrLine>, objectiveTop: Int = -1): OcrLine? {
         if (lines.isEmpty()) return null
         val last = lines.maxByOrNull { it.top } ?: return null
         if (splitSpeaker(clean(last.text)).speaker != null || last.text.trim().startsWith(CHOICE_MARK.trim())) return null
         if (last.text.count { it.isLetter() } < 3) return null
+        if (!objectiveShape(last.text)) return null
         val h = last.height.coerceAtLeast(1)
         val nearest = lines.filter { it !== last && it.bottom <= last.top + h / 4 }.maxByOrNull { it.bottom }
+        // řádek nad ním nekončí větou → spodní řádek je pokračování téhož titulku, ne úkol
+        // („…our Mother Earth and“ / „all her children,“ – záznam majitele 21. 11. 2026, GTA VI)
+        if (nearest != null && !endsSentence(nearest.text)) return null
         if (nearest != null) {
             val gap = last.top - nearest.bottom
             val ref = maxOf(h, nearest.height)
