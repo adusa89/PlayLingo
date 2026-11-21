@@ -1,0 +1,146 @@
+prelozenych_titulku=19 ruznych_titulku=15/15 pady=0 dekodovano_snimku=1424 pomocnik=9 odkaz_z_televize=8 cela_aplikace=1
+VYSLEDEK=OK
+11-21 17:37:28.240 I/TP_TEST ( 3240): HELPER|start
+11-21 17:37:38.259 I/TP_TEST ( 3240): HELPER|link ok
+11-21 17:37:43.124 I/TP_TEST ( 3240): HELPER|link ok
+11-21 17:37:43.367 I/TP_TEST ( 3240): HELPER|login open
+11-21 17:37:43.426 I/TP_TEST ( 3240): HELPER|cookies cleared=false
+11-21 17:37:47.994 I/TP_TEST ( 3240): HELPER|page my.account.sony.com
+11-21 17:37:48.381 I/TP_TEST ( 3240): HELPER|page my.account.sony.com
+11-21 17:38:10.823 I/TP_TEST ( 3240): HELPER|page my.account.sony.com
+11-21 17:38:21.793 I/TP_TEST ( 5805): HELPER|start
+11-21 17:38:21.921 I/TP_TEST ( 5805): HELPER|link ok
+11-21 17:38:31.296 I/TP_TEST ( 5890): HELPER|start
+11-21 17:38:31.387 I/TP_TEST ( 5890): HELPER|link ok
+11-21 17:38:39.537 I/TP_TEST ( 5975): HELPER|start
+11-21 17:38:39.662 I/TP_TEST ( 5975): HELPER|link ok
+11-21 17:38:49.772 I/TP_TEST ( 6159): HELPER|start
+11-21 17:38:49.880 I/TP_TEST ( 6159): HELPER|link ok
+11-21 17:38:59.501 I/TP_TEST ( 6245): HELPER|start
+11-21 17:38:59.582 I/TP_TEST ( 6245): HELPER|link ok
+11-21 17:39:09.288 I/TP_TEST ( 6330): HELPER|start
+11-21 17:39:09.436 I/TP_TEST ( 6330): HELPER|link ok
+11-21 17:39:14.692 I/TP_TEST ( 6330): HELPER|start
+11-21 17:39:19.750 I/TP_TEST ( 6418): HELPER|start
+11-21 17:39:20.168 I/TP_TEST ( 6418): HELPER|lg mode
+11-21 17:39:55.520 I/TP_TEST ( 6520): PAIR|discover nets=10.0.2.15/24 10.0.2.16/24 → 
+11-21 17:40:02.702 I/TP_TEST ( 6520): LOGIN|page on port 8765
+11-21 17:40:09.034 I/TP_TEST ( 6520): LOGIN|page closed
+11-21 17:40:46.564 I/TP_TEST ( 6829): PAIR|discover nets=10.0.2.15/24 10.0.2.16/24 → 
+11-21 17:40:54.044 I/TP_TEST ( 6829): LOGIN|page on port 8765
+11-21 17:41:00.569 I/TP_TEST ( 6829): LOGIN|page closed
+11-21 17:41:39.451 I/TP_TEST ( 7132): PAIR|discover nets=10.0.2.15/24 10.0.2.16/24 → 
+11-21 17:41:44.714 I/TP_TEST ( 7132): LOGIN|page on port 8765
+11-21 17:41:51.250 I/TP_TEST ( 7132): LOGIN|page closed
+11-21 17:42:30.371 I/TP_TEST ( 7441): PAIR|discover nets=10.0.2.15/24 10.0.2.16/24 → 
+11-21 17:42:38.252 I/TP_TEST ( 7441): LOGIN|page on port 8765
+11-21 17:42:45.002 I/TP_TEST ( 7441): LOGIN|page closed
+11-21 17:43:24.347 I/TP_TEST ( 8345): PAIR|discover nets=10.0.2.15/24 10.0.2.16/24 → 
+11-21 17:43:29.608 I/TP_TEST ( 8345): LOGIN|page on port 8765
+11-21 17:43:36.150 I/TP_TEST ( 8345): LOGIN|page closed
+11-21 17:44:16.252 I/TP_TEST ( 8668): PAIR|discover nets=10.0.2.15/24 10.0.2.16/24 → 
+11-21 17:44:21.781 I/TP_TEST ( 8668): LOGIN|page on port 8765
+11-21 17:44:28.472 I/TP_TEST ( 8668): LOGIN|page closed
+11-21 17:44:46.954 I/TP_TEST ( 8989): NET|připojeno WIFI_24
+11-21 17:44:47.008 I/TP_TEST ( 8989): A11Y|true
+11-21 17:44:47.021 I/TP_TEST ( 8989): START|video=1920x1080|interval=50|screen=1080x2400|eco=false|decoder=OMX.android.goldfish.h264.decoder (přímý výstup)|lib=ok 1280x720@30 10000kb
+11-21 17:44:47.073 I/TP_TEST ( 8989): TV|tv on port 8787
+11-21 17:44:47.078 I/TP_TEST ( 8989): SOURCE|demo
+11-21 17:44:47.078 I/TP_TEST ( 8989): NET|Wi-Fi na 2,4 GHz (2437 MHz, signál -50 dBm)
+11-21 17:44:47.079 I/TP_TEST ( 8989): VIDEO|fed=0|decoded=0|0x0|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=0 raw=false err=null
+11-21 17:44:47.244 I/TP_TEST ( 8989): MODEL|cs|ok|pokus=1
+11-21 17:44:49.986 I/TP_TEST ( 8989): WARM|cs|první=2578ms|další=163ms
+11-21 17:44:52.297 I/TP_TEST ( 8989): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:44:52.297 I/TP_TEST ( 8989): LAT|5220ms|ocr=4414ms
+11-21 17:44:52.428 I/TP_TEST ( 8989): VIDEO|fed=51|decoded=49|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=51 raw=false err=null
+11-21 17:44:52.432 I/TP_TEST ( 8989): PERF|čtení=1|průměr=4414ms|poslední=4414ms|titulků=1|video=1920x1080|oblast=33%|paměť=23+97MB|wifi=2437MHz/-50dBm
+11-21 17:44:55.689 I/TP_TEST ( 8989): COLOR|Marek|-|us=6188
+11-21 17:44:59.158 I/TP_TEST ( 8989): COLOR|Marek|-|us=3809
+11-21 17:44:59.334 I/TP_TEST ( 8989): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:44:59.334 I/TP_TEST ( 8989): LAT|4757ms|ocr=3363ms
+11-21 17:44:59.335 I/TP_TEST ( 8989): ZONE|learned 0.72-1.0
+11-21 17:44:59.441 I/TP_TEST ( 8989): VIDEO|fed=121|decoded=119|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=121 raw=false err=null
+11-21 17:45:03.164 I/TP_TEST ( 8989): COLOR|Jonas|-|us=310
+11-21 17:45:05.869 I/TP_TEST ( 8989): COLOR|Jonas|-|us=190
+11-21 17:45:06.282 I/TP_TEST ( 8989): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:45:06.282 I/TP_TEST ( 8989): LAT|4204ms|ocr=2601ms
+11-21 17:45:06.388 I/TP_TEST ( 8989): VIDEO|fed=191|decoded=188|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=191 raw=false err=null
+11-21 17:45:14.103 I/TP_TEST ( 8989): SHOW|Silas: If we keep going like this, the marshals will find us.|Silas: Pokud budeme takhle pokračovat, maršálové nás najdou.
+11-21 17:45:14.103 I/TP_TEST ( 8989): LAT|4525ms|ocr=3809ms
+11-21 17:45:14.209 I/TP_TEST ( 8989): VIDEO|fed=268|decoded=267|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=268 raw=false err=null
+11-21 17:45:17.704 I/TP_TEST ( 8989): COLOR|Silas|-|us=180
+11-21 17:45:21.531 I/TP_TEST ( 8989): COLOR|Silas|-|us=188
+11-21 17:45:21.673 I/TP_TEST ( 8989): SHOW|MIRA: Are you sure this is the right way?|Mira: Jsi si jistý, že je to správná cesta?
+11-21 17:45:21.673 I/TP_TEST ( 8989): LAT|4596ms|ocr=3722ms
+11-21 17:45:21.780 I/TP_TEST ( 8989): VIDEO|fed=343|decoded=342|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=342 raw=false err=null
+11-21 17:45:25.118 I/TP_TEST ( 8989): COLOR|Mira|-|us=282
+11-21 17:45:25.220 I/TP_TEST ( 8989): PERF|čtení=10|průměr=3527ms|poslední=3334ms|titulků=5|video=1920x1080|oblast=27%|paměť=21+108MB|wifi=2437MHz/-50dBm
+11-21 17:45:28.769 I/TP_TEST ( 8989): COLOR|Mira|-|us=166
+11-21 17:45:28.892 I/TP_TEST ( 8989): SHOW|Tobin: no idea, but we can't stay here|Tobin: Nevím, ale nemůžeme tady zůstat
+11-21 17:45:28.892 I/TP_TEST ( 8989): LAT|4314ms|ocr=3547ms
+11-21 17:45:28.994 I/TP_TEST ( 8989): VIDEO|fed=416|decoded=413|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=416 raw=false err=null
+11-21 17:45:32.793 I/TP_TEST ( 8989): COLOR|Tobin|-|us=242
+11-21 17:45:35.952 I/TP_TEST ( 8989): COLOR|Tobin|-|us=293
+11-21 17:45:36.059 I/TP_TEST ( 8989): SHOW|WE HAVE TO GET OUT OF HERE!|Musíme se odsud dostat!
+11-21 17:45:36.059 I/TP_TEST ( 8989): LAT|3981ms|ocr=3055ms
+11-21 17:45:36.164 I/TP_TEST ( 8989): VIDEO|fed=486|decoded=484|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=486 raw=false err=null
+11-21 17:45:42.697 I/TP_TEST ( 8989): HIDE
+11-21 17:45:42.799 I/TP_TEST ( 8989): VIDEO|fed=552|decoded=551|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=552 raw=false err=null
+11-21 17:45:45.861 I/TP_TEST ( 8989): SHOW|Wait|Počkej
+11-21 17:45:45.861 I/TP_TEST ( 8989): LAT|284ms|ocr=3060ms
+11-21 17:45:49.076 I/TP_TEST ( 8989): HIDE
+11-21 17:45:49.177 I/TP_TEST ( 8989): VIDEO|fed=616|decoded=614|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=616 raw=false err=null
+11-21 17:45:52.638 I/TP_TEST ( 8989): SHOW|[Old Kessler] You two were never supposed to meet.|Old Kessler: Ty dva se nikdy neměli setkat.
+11-21 17:45:52.638 I/TP_TEST ( 8989): LAT|5560ms|ocr=3345ms
+11-21 17:45:56.522 I/TP_TEST ( 8989): COLOR|Old Kessler|-|us=192
+11-21 17:45:56.633 I/TP_TEST ( 8989): VIDEO|fed=690|decoded=688|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=690 raw=false err=null
+11-21 17:45:56.634 I/TP_TEST ( 8989): PERF|čtení=19|průměr=3441ms|poslední=3772ms|titulků=9|video=1920x1080|oblast=27%|paměť=25+109MB|wifi=2437MHz/-50dBm
+11-21 17:46:00.321 I/TP_TEST ( 8989): COLOR|Old Kessler|-|us=130
+11-21 17:46:00.530 I/TP_TEST ( 8989): SHOW|Mira: III take the left door. Tobin: Then I'm going right.|Mira: III Vezmi levé dveře. Tobin: Pak jdu v pořádku.
+11-21 17:46:00.530 I/TP_TEST ( 8989): LAT|5952ms|ocr=3683ms
+11-21 17:46:04.598 I/TP_TEST ( 8989): COLOR|Mira|-|us=154
+11-21 17:46:04.700 I/TP_TEST ( 8989): VIDEO|fed=771|decoded=768|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=771 raw=false err=null
+11-21 17:46:08.023 I/TP_TEST ( 8989): COLOR|Mira|-|us=140
+11-21 17:46:08.183 I/TP_TEST ( 8989): SHOW|Lena: Keep your voice down, they can hear us.|Lena: Mluv tiše, slyší nás.
+11-21 17:46:08.183 I/TP_TEST ( 8989): LAT|105ms|ocr=3319ms
+11-21 17:46:11.550 I/TP_TEST ( 8989): COLOR|Lena|-|us=109
+11-21 17:46:11.653 I/TP_TEST ( 8989): VIDEO|fed=839|decoded=837|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=839 raw=false err=null
+11-21 17:46:15.231 I/TP_TEST ( 8989): COLOR|Lena|-|us=85
+11-21 17:46:15.394 I/TP_TEST ( 8989): SHOW|I don't think anyone has been here for years.|Nemyslím si, že by tu někdo byl roky.
+11-21 17:46:15.394 I/TP_TEST ( 8989): LAT|5816ms|ocr=3575ms
+11-21 17:46:19.319 I/TP_TEST ( 8989): VIDEO|fed=916|decoded=914|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=916 raw=false err=null
+11-21 17:46:22.328 I/TP_TEST ( 8989): SHOW|Davor: Hand me the lantern and stay close.|Davor: Dej mi lucernu a zůstat blízko.
+11-21 17:46:22.328 I/TP_TEST ( 8989): LAT|5250ms|ocr=2843ms
+11-21 17:46:25.998 I/TP_TEST ( 8989): COLOR|Davor|-|us=69
+11-21 17:46:26.100 I/TP_TEST ( 8989): VIDEO|fed=984|decoded=981|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=984 raw=false err=null
+11-21 17:46:29.622 I/TP_TEST ( 8989): COLOR|Davor|#7490A5|us=1060
+11-21 17:46:29.768 I/TP_TEST ( 8989): SHOW|Lena: The bridge is out, we have to sWim.|Lena: Most je zničen, musíme plavat.
+11-21 17:46:29.768 I/TP_TEST ( 8989): LAT|5191ms|ocr=3518ms
+11-21 17:46:29.871 I/TP_TEST ( 8989): PERF|čtení=28|průměr=3456ms|poslední=3518ms|titulků=14|video=1920x1080|oblast=27%|paměť=30+111MB|wifi=2437MHz/-50dBm
+11-21 17:46:33.346 I/TP_TEST ( 8989): COLOR|Lena|-|us=162
+11-21 17:46:33.448 I/TP_TEST ( 8989): VIDEO|fed=1057|decoded=1054|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1057 raw=false err=null
+11-21 17:46:37.106 I/TP_TEST ( 8989): COLOR|Lena|-|us=124
+11-21 17:46:37.106 I/TP_TEST ( 8989): SHOW|Davor: Run for the gate!|Davor: Utíkej k bráně!
+11-21 17:46:37.106 I/TP_TEST ( 8989): LAT|5029ms|ocr=3654ms
+11-21 17:46:40.662 I/TP_TEST ( 8989): COLOR|Davor|-|us=265
+11-21 17:46:40.764 I/TP_TEST ( 8989): VIDEO|fed=1129|decoded=1126|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1129 raw=false err=null
+11-21 17:46:44.619 I/TP_TEST ( 8989): COLOR|Davor|-|us=151
+11-21 17:46:44.976 I/TP_TEST ( 8989): SHOW|Kessler: So, what will it be? • I'll take the job. • Tell me more about the pay. • Not interested.|Kessler: Co to bude? Vezmu si práci. Řekni mi více o mzdě. Nezajímá.
+11-21 17:46:44.976 I/TP_TEST ( 8989): LAT|5399ms|ocr=3850ms
+11-21 17:46:48.614 I/TP_TEST ( 8989): COLOR|Kessler|-|us=195
+11-21 17:46:48.716 I/TP_TEST ( 8989): VIDEO|fed=1208|decoded=1205|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1208 raw=false err=null
+11-21 17:46:51.910 I/TP_TEST ( 8989): COLOR|Kessler|-|us=142
+11-21 17:46:51.910 I/TP_TEST ( 8989): SHOW|Marek: We need money, Jonas.|Marek: Potřebujeme peníze, Jonas.
+11-21 17:46:51.910 I/TP_TEST ( 8989): LAT|4833ms|ocr=3190ms
+11-21 17:46:55.792 I/TP_TEST ( 8989): COLOR|Marek|-|us=339
+11-21 17:46:55.893 I/TP_TEST ( 8989): VIDEO|fed=1281|decoded=1279|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1281 raw=false err=null
+11-21 17:46:59.557 I/TP_TEST ( 8989): COLOR|Marek|-|us=219
+11-21 17:46:59.558 I/TP_TEST ( 8989): SHOW|Jonas: I reckon we won't find anything in Greyford.|Jonas: Myslím, že v Greyfordu nenajdeme nic.
+11-21 17:46:59.558 I/TP_TEST ( 8989): LAT|4980ms|ocr=3661ms
+11-21 17:47:03.001 I/TP_TEST ( 8989): COLOR|Jonas|-|us=392
+11-21 17:47:03.104 I/TP_TEST ( 8989): VIDEO|fed=1351|decoded=1350|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1351 raw=false err=null
+11-21 17:47:03.105 I/TP_TEST ( 8989): PERF|čtení=37|průměr=3478ms|poslední=3337ms|titulků=18|video=1920x1080|oblast=27%|paměť=35+114MB|wifi=2437MHz/-50dBm
+11-21 17:47:06.629 I/TP_TEST ( 8989): COLOR|Jonas|-|us=168
+11-21 17:47:06.630 I/TP_TEST ( 8989): SHOW|Get on your horse, we ride at dawn.|Dostaň se na koni, jezdíme za svítání.
+11-21 17:47:06.630 I/TP_TEST ( 8989): LAT|4552ms|ocr=3522ms
+11-21 17:47:10.657 I/TP_TEST ( 8989): VIDEO|fed=1426|decoded=1424|1920x1080|dec=OMX.android.goldfish.h264.decoder (přímý výstup)|err=null|demo sent=1426 raw=false err=null

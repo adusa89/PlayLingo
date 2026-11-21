@@ -1,0 +1,5 @@
+11
+sdk_gphone_x86
+Physical size: 1080x2400
+Physical density: 420
+mobilni_sit=2
