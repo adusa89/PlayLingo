@@ -30,7 +30,7 @@ Po odpovědi na dvě otázky se ukážou jen kroky, které se dané sestavy týk
 <div class="cesta" data-tv="atv" data-na="pc" markdown="1">
 
 ### Android TV + 💻 počítač
-1. **PlayLingo do TV:** v TV aplikace **Downloader** a adresa `adusa89.github.io/PlayLingo/tv` –
+1. **PlayLingo do TV:** v TV aplikace **Downloader** a kód **6340991** –
    [návod krok za krokem](android-tv.md#downloader). (S nástrojem `adb`: `adb connect <adresa TV>` a
    `adb install PlayLingo.apk` – [soubor](https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk).)
 2. **Spustit PlayLingo v TV** a v prvním kroku zvolit **Nastavit telefonem nebo počítačem**.
@@ -55,7 +55,7 @@ Po odpovědi na dvě otázky se ukážou jen kroky, které se dané sestavy týk
 <div class="cesta" data-tv="atv" data-na="iphone" markdown="1">
 
 ### Android TV + 📱 iPhone
-1. **PlayLingo do TV:** aplikace **Downloader** v TV a adresa `adusa89.github.io/PlayLingo/tv` –
+1. **PlayLingo do TV:** aplikace **Downloader** v TV a kód **6340991** –
    [návod](android-tv.md#downloader).
 2. **Spustit PlayLingo v TV** → **Nastavit telefonem nebo počítačem** → naskenovat čtvereček iPhonem
    (stejná Wi‑Fi). V Safari se otevře **PlayLingo · nastavení TV**: přihlášení 🔵 účtem pro PlayLingo,
@@ -66,7 +66,7 @@ Po odpovědi na dvě otázky se ukážou jen kroky, které se dané sestavy týk
 <div class="cesta" data-tv="atv" data-na="tv" markdown="1">
 
 ### Android TV + 📺 jen ovladač
-1. **PlayLingo do TV:** aplikace **Downloader** a adresa `adusa89.github.io/PlayLingo/tv` – [návod](android-tv.md#downloader).
+1. **PlayLingo do TV:** aplikace **Downloader** a kód **6340991** – [návod](android-tv.md#downloader).
 2. **Spustit PlayLingo v TV** → **Nastavit přímo na TV** – průvodce provede vším ovladačem.
 3. Jen na **přihlášení účtem PlayStation** je jednou potřeba telefon nebo počítač (Sony přihlášení v TV
    nepustí) – TV ukáže čtvereček nebo adresu.
@@ -162,7 +162,7 @@ opraví se odkaz tady a aplikace se měnit nemusí.
 
 ---
 *English – Getting started: pick your TV and the device you set up with. **Android TV**: get PlayLingo onto the TV
-(Downloader app with `adusa89.github.io/PlayLingo/tv`, or from an Android phone with PlayLingo → “Install PlayLingo
+(Downloader app with code **6340991**, or from an Android phone with PlayLingo → “Install PlayLingo
 on Android TV”), start it and choose **Set up with a phone or computer** – a page with the 🔵 PlayLingo account sign-in,
 the PS5 eight-digit number and the DeepL key opens on your phone or in a computer browser on the same network.
 **LG / Samsung**: the TV cannot read the game picture itself – an **Android phone** with PlayLingo reads and translates

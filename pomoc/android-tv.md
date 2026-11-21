@@ -4,7 +4,7 @@ PlayLingo se do televize nebo boxu s Androidem nahraje jen **jednou**. Další v
 samy z aplikace: na stránce Domů se ukáže **Aktualizovat**, stačí ho zvolit a instalaci potvrdit.
 Spárování i nastavení zůstanou.
 
-**Krátká adresa pro televizi:** `adusa89.github.io/PlayLingo/tv`
+**Kód pro Downloader:** **6340991** · krátká adresa (záloha): `adusa89.github.io/PlayLingo/tv`
 **Přímý odkaz na aplikaci:** https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk
 
 <a id="instalace"></a>
@@ -26,8 +26,8 @@ do televize. Nic se neposílá z telefonu ani nenahrává na flash disk.
 
 1. V Downloaderu je vlevo vybraná položka **Home** a vpravo řádek pro adresu. Po jeho zvolení se objeví
    klávesnice.
-2. Napsat **`adusa89.github.io/PlayLingo/tv`** (bez `https://`, velká písmena P a L nevadí)
-   a zvolit **Go**.
+2. Napsat kód **6340991** a zvolit **Go**. (Záloha, kdyby kód nešel: adresa **`adusa89.github.io/PlayLingo/tv`**
+   – bez `https://`, velká písmena P a L nevadí.)
 3. Stažení se rozběhne samo (ukazují se procenta). Trvá chvíli – soubor má desítky MB.
    - Když se místo stahování ukáže stránka s nápisem „Stahuji PlayLingo…“, zvolit na ní žlutý
      odkaz **PlayLingo.apk**.
@@ -110,7 +110,7 @@ Zatím to není hotové – zbývá Downloader.
 
 ---
 *English: on the TV, install **Downloader** (by AFTVnews) from Google Play. In Downloader type
-`adusa89.github.io/PlayLingo/tv` and choose **Go**; the download starts by itself. When asked,
+code **6340991** (or `adusa89.github.io/PlayLingo/tv`) and choose **Go**; the download starts by itself. When asked,
 allow Downloader to install unknown apps (Google TV: **Settings** in the pop-up → Downloader →
 Allowed; older Android TV: Settings → Apps → Security & restrictions → Unknown sources), then choose
 **Install** and **Open**. If Play Protect warns you, choose More details → Install anyway. You only do

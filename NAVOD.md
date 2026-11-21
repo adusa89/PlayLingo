@@ -15,7 +15,8 @@ https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk
 Nejjednodušší je aplikace **Downloader** (od AFTVnews, zdarma v Google Play v televizi) – nic se
 neposílá z telefonu:
 1. V televizi nainstalovat z Google Play **Downloader** a otevřít ho (přístup k souborům → Povolit).
-2. Do řádku pro adresu napsat `adusa89.github.io/PlayLingo/tv` a zvolit **Go** – PlayLingo se stáhne.
+2. Do řádku pro adresu napsat kód **6340991** a zvolit **Go** – PlayLingo se stáhne. (Záloha: adresa
+   `adusa89.github.io/PlayLingo/tv`.)
 3. Povolit Downloaderu instalaci: na Google TV v okně, které se ukáže, **Nastavení** → Downloader →
    Povoleno; na starší Android TV Nastavení → Aplikace → Zabezpečení a omezení → Neznámé zdroje.
 4. Zvolit **Instalovat** a pak **Otevřít**. Stažený soubor pak Downloader nabídne smazat.
