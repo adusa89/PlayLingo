@@ -10,7 +10,7 @@ internal val I18N_ES: Map<String, String> = mapOf(
     "m_history" to "Historial",
     "wz_title" to "Asistente de configuración",
     "wz_s1" to "Mostrar subtítulos",
-    "wz_s2" to "Idioma de traducción",
+    "wz_s2" to "Traducción sin conexión",
     "wz_s3" to "Conexión de la PlayStation",
     "wz_s4" to "Listo",
     "wz_perm" to "Para que la aplicación pueda mostrar subtítulos sobre el juego, actívala en los ajustes del televisor: Accesibilidad → PlayLingo → Activar. Después vuelve aquí con el botón Atrás.",

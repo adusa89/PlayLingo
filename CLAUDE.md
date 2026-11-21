@@ -910,6 +910,10 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   Konzole → Televize (u LG/Samsungu tlačítko nahrání) → Jazyk překladu → Kvalita překladu (od 0.94,
   `W_TRANSLATE`, od 0.97.28 „Lepší překlad (DeepL)“ bez volby DeepL / offline – rovnou věta proč, čtverečky a čekání na
   klíč, viz DeepL) → Zobrazení titulků (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
+  **Od 0.97.65 (majitel: „Jazyky“ a „Jazyk překladu“ se kryly – kontroluj názvy kroků):** krok 1 Jazyky má všechny tři jazyky
+  (aplikace, Překládat z, Jazyk překladu `langRow("wlang")`), krok 5 se jmenuje **Offline překlad** (`wz_s2`) a je jen stažení
+  balíčku. Rozcestník bez nadpisu: „Nastavit telefonem nebo počítačem (doporučeno)“ / „Nastavit přímo na TV“; obrazovka nastavení
+  telefonem ukáže pod čtverečkem i adresu pro počítač (💻). Při změně kroků průvodce projdi názvy všech kroků v jazycích – nesmí se krýt.
   **Připojení konzole (od 0.97.28):** nahoře jen „Krok 8 z 9“, spárování místo druhého pruhu malý podtitul
   „Spárování · 3 z 6“ (`pg_sub`, tag `psub`; mimo průvodce dál pruh `ui.steps`). Jedna řada tlačítek – ta ze spárování
   (`pnext`, `pback`; v kroku 1 spárování vede Zpět na předchozí krok průvodce) a pod ní malé „Spárovat později“

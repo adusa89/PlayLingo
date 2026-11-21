@@ -13,7 +13,7 @@ object I18n {
         "m_history" to ("Historie" to "História"),
         "wz_title" to ("Průvodce nastavením" to "Sprievodca nastavením"),
         "wz_s1" to ("Zobrazení titulků" to "Zobrazenie titulkov"),
-        "wz_s2" to ("Jazyk překladu" to "Jazyk prekladu"),
+        "wz_s2" to ("Offline překlad" to "Offline preklad"),
         "wz_s3" to ("Připojení PlayStationu" to "Pripojenie PlayStationu"),
         "wz_s4" to ("Hotovo" to "Hotovo"),
         "wz_perm" to ("Aby aplikace mohla ukázat titulky přes hru, zapni ji v nastavení televize: Usnadnění → PlayLingo → Zapnout. Pak se tlačítkem Zpět vrať sem." to "Aby aplikácia mohla ukázať titulky cez hru, zapni ju v nastaveniach televízora: Zjednodušenie ovládania → PlayLingo → Zapnúť. Potom sa tlačidlom Späť vráť sem."),

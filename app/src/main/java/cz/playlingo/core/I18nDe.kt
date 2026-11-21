@@ -10,7 +10,7 @@ internal val I18N_DE: Map<String, String> = mapOf(
     "m_history" to "Verlauf",
     "wz_title" to "Einrichtungsassistent",
     "wz_s1" to "Untertitel anzeigen",
-    "wz_s2" to "Übersetzungssprache",
+    "wz_s2" to "Offline-Übersetzung",
     "wz_s3" to "PlayStation-Anschluss",
     "wz_s4" to "Fertig",
     "wz_perm" to "Damit die App Untertitel über dem Spiel anzeigen kann, aktiviere sie in den TV-Einstellungen: Bedienungshilfen → PlayLingo → Einschalten. Kehre dann mit der Zurück-Taste hierher zurück.",

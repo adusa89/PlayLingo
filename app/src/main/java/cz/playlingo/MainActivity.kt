@@ -638,11 +638,14 @@ class MainActivity : Activity() {
                     }
                 }, "wuilang"), 18)
                 sourceRow("wsrc", 8)
-                // rozcestník (od 0.97.63, přání majitele): účet, PS5 a DeepL z telefonu na jedné stránce (Android TV / box
-                // s PlayStationem); výchozí je dál průvodce na TV – OK na Pokračovat jde jako dřív (zkouška kliká naslepo)
+                // všechny tři jazyky na jednom místě (od 0.97.65 – majitel: krok „Jazyky“ a pozdější „Jazyk překladu“ se kryly);
+                // krok 5 je teď jen offline překlad (stažení balíčku pro zvolenou dvojici)
+                langRow("wlang", 8)
+                // rozcestník (od 0.97.63, přání majitele): účet, PS5 a DeepL z telefonu / počítače na jedné stránce (Android TV / box
+                // s PlayStationem); výchozí je dál průvodce na TV – OK na Pokračovat jde jako dřív (zkouška kliká naslepo).
+                // Bez nadpisu a popisu – volby jsou celé věty, ať se krok vejde na obrazovku TV i s tlačítky.
                 if (RemoteHost.eligible(this) && Prefs.console(this) == Console.PLAYSTATION) {
-                    add(ui.text(t("wz_how_q"), 20f, Theme.TEXT, bold = true), 18)
-                    option(t("wz_how_phone"), t("wz_how_phone_d"), false, "wphone") { phoneSetup = true; render() }
+                    option(t("wz_how_phone"), null, false, "wphone") { phoneSetup = true; render() }
                     option(t("wz_how_tv"), null, true, "wtvonly") { window.decorView.findViewWithTag<View>("wnext")?.requestFocus() }
                 }
             }
@@ -686,15 +689,8 @@ class MainActivity : Activity() {
             W_LANG -> {
                 // v režimu „Nastavuji TV“ si balíček stáhne TV sama (po změně jazyka) – v telefonu se nekontroluje
                 val ok = remote || OfflineTranslator.isReady(lang)
+                // jazyky se volí v kroku 1 (Jazyky) – tady jen balíček pro zvolenou dvojici (od 0.97.65)
                 add(ui.text(t("wz_model"), 17f, Theme.MUTED), 12)
-                add(tagged(ui.settingRow(t("l_lang"), lang.label) {
-                    val langs = cz.playlingo.core.Lang.targets
-                    choose(t("l_lang"), langs.map { it.label }, langs.indexOf(lang)) { i ->
-                        Prefs.setLang(this, langs[i])
-                        if (!remote) OfflineTranslator.ensureModel(langs[i]) { runOnUiThread { if (wizard >= 0) render(true) } }
-                        render(true)
-                    }
-                }, "wlang"), 16)
                 if (!remote) add(ui.card().apply {
                     addView(ui.checkRow(ok, false, t("chk_model") + " (${Prefs.langPair(this@MainActivity)})", t("ok"), null, null))
                     if (!ok) addView(ui.text(busyText ?: t("prep_model"), 15f, Theme.WARN), ui.lp(top = 6))
@@ -790,7 +786,7 @@ class MainActivity : Activity() {
      */
     private fun phoneSetupScreen(focusedTag: Any?) {
         val url = if (RemoteHost.start(this)) RemoteHost.pageUrl(this) else null
-        if (url != null) add(qrRow(url, t("wz_ph_scan") + "\n\n" + t("sp_where")), 14) else add(ui.text(t("rs_nolan"), 16f, Theme.WARN), 14)
+        if (url != null) add(qrRow(url, t("wz_ph_scan") + "\n💻 " + url + "\n\n" + t("sp_where")), 14) else add(ui.text(t("rs_nolan"), 16f, Theme.WARN), 14)
         val st = RemoteHost.status(this)
         add(ui.card().apply {
             fun l(ok: Boolean, text: String) = addView(ui.text((if (ok) "✔ " else "○ ") + text, 18f, if (ok) Theme.OK else Theme.TEXT, bold = ok), ui.lp(top = 6))
@@ -2827,6 +2823,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.64"
-    const val VERSION_CODE = 161
+    const val VERSION = "verze 0.97.65"
+    const val VERSION_CODE = 162
 }

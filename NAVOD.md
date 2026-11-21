@@ -48,11 +48,13 @@ Platí od verze 0.61; starší verzi je potřeba jednou odinstalovat a novou nah
 Průvodce má 9 kroků, na každé obrazovce jedna věc. Na PlayStationu zatím nic nenastavuj – co je potřeba,
 ukáže až krok Připojení konzole (bod 4).
 
-1. **Jazyky:** jazyk aplikace (texty se hned přepnou) a **Překládat z** – v jakém jazyce jsou titulky
-   ve hře. Výchozí je angličtina; nabízejí se jen jazyky v latince (čtení obrazu jiné písmo neumí).
-   Obojí jde později změnit (jazyk aplikace v ⚙ Nastavení → Obecné, Překládat z v Titulkách).
-   **Jak nastavit?** (Android TV s PlayStationem): **Telefonem (doporučeno)**, nebo **Přímo na TV**. Telefonem
-   ukáže TV jeden čtvereček – v telefonu (i iPhonu, stejná Wi‑Fi) se otevře stránka **PlayLingo · nastavení TV**
+1. **Jazyky:** všechny tři jazyky na jednom místě – jazyk aplikace (texty se hned přepnou), **Překládat z**
+   (v jakém jazyce jsou titulky ve hře; výchozí angličtina, jen jazyky v latince – čtení obrazu jiné písmo neumí)
+   a **Jazyk překladu** (do čeho se překládá). Vše jde později změnit (jazyk aplikace v ⚙ Nastavení → Obecné,
+   ostatní v Titulkách).
+   Pod tím (Android TV s PlayStationem) **Nastavit telefonem nebo počítačem (doporučeno)**, nebo **Nastavit přímo
+   na TV**. Telefonem či počítačem ukáže TV jeden čtvereček a pod ním adresu pro počítač – v telefonu (i iPhonu)
+   nebo v prohlížeči počítače ve stejné síti se otevře stránka **PlayLingo · nastavení TV**
    se vším, co se jinak píše ovladačem:
    - **1 · 🔵 Účet pro PlayLingo** – Android: tlačítko **Otevřít v aplikaci PlayLingo** (nic se nekopíruje);
      iPhone: přihlášení v prohlížeči s obrázkem, kde adresu „redirect“ zkopírovat, nebo zkratka **PlayLingo**
@@ -78,7 +80,7 @@ ukáže až krok Připojení konzole (bod 4).
    pro nahrání aplikace do televize – můžeš ho přeskočit a nahrát ji později (Domů, Instalace).
    V telefonu průvodce sám hledá televizi v domácí síti: najde-li jen LG, nebo jen Samsung, rovnou ji
    předvybere a ukáže „✔ V síti · …“ (volbu jde změnit).
-5. **Jazyk:** jazyk překladu; počkej na stažení jazykového balíčku (jednou, asi 30 MB).
+5. **Offline překlad:** počkej na stažení jazykového balíčku pro zvolenou dvojici jazyků (jednou, asi 30 MB).
 6. **Lepší překlad (DeepL):** jedna věta proč a jeden čtvereček pro telefon – stránka v telefonu provede
    registrací na DeepL, zkopírováním klíče i jeho vložením – viz bod 9. Bez klíče zvol **Přeskočit – zůstat
    u offline překladu**; DeepL jde nastavit kdykoli později v Titulkách → Kvalita překladu. Po přijetí klíče

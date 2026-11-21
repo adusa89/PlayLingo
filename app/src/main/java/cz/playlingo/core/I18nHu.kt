@@ -10,7 +10,7 @@ internal val I18N_HU: Map<String, String> = mapOf(
     "m_history" to "Előzmények",
     "wz_title" to "Beállítási útmutató",
     "wz_s1" to "Feliratok megjelenítése",
-    "wz_s2" to "Fordítás nyelve",
+    "wz_s2" to "Offline fordítás",
     "wz_s3" to "PlayStation csatlakoztatása",
     "wz_s4" to "Kész",
     "wz_perm" to "Ahhoz, hogy az alkalmazás a játék fölött feliratot mutathasson, kapcsold be a tévé beállításaiban: Kisegítő lehetőségek → PlayLingo → Bekapcsolás. Ezután a Vissza gombbal térj vissza ide.",

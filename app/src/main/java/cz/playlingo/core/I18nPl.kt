@@ -10,7 +10,7 @@ internal val I18N_PL: Map<String, String> = mapOf(
     "m_history" to "Historia",
     "wz_title" to "Kreator konfiguracji",
     "wz_s1" to "Wyświetlanie napisów",
-    "wz_s2" to "Język tłumaczenia",
+    "wz_s2" to "Tłumaczenie offline",
     "wz_s3" to "Podłączenie PlayStation",
     "wz_s4" to "Gotowe",
     "wz_perm" to "Aby aplikacja mogła pokazywać napisy na grze, włącz ją w ustawieniach telewizora: Ułatwienia dostępu → PlayLingo → Włącz. Potem wróć tutaj przyciskiem Wstecz.",
