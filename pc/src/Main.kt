@@ -27,6 +27,7 @@ fun main(args: Array<String>) {
     // jen hledání PS5 v síti a spárované konzole z chiaki-ng (ladění Hrát)
     if ("--hledej-ps5" in args) {
         log("chiaki-ng: ${Chiaki.exe() ?: "chybí"}; spárované: ${Chiaki.konzole().joinToString { it.jmeno + if (it.probuzeni != null) " (probuzení ok)" else "" }.ifEmpty { "žádné" }}")
+        log("čtečka pro TV (profil ${Chiaki.PROFIL_CTECKY}): ${Chiaki.konzole(Chiaki.PROFIL_CTECKY).joinToString { it.jmeno }.ifEmpty { "nespárováno" }}")
         Chiaki.hledej(3000).ifEmpty { log("PS5 v síti nenalezena."); emptyList() }
             .forEach { log("PS5 ${it.jmeno} · ${it.adresa} · " + if (it.pripravena) "zapnutá" else if (it.klid) "klidový režim" else "?") }
         return

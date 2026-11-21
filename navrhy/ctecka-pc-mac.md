@@ -16,7 +16,7 @@ Kdo má jen iPhone, dnes čtečku nemá. Počítač, který je doma stejně zapn
 
 ## Díly
 
-1. **Režim „Čtečka pro TV“ v PlayLingu pro Windows** (`pc/`, volba Použití, výchozí dosavadní „Hraji na PC“) – rozpracováno.
+1. **Režim „Čtečka pro TV“ v PlayLingu pro Windows** (`pc/`, ⚙ → Použití, výchozí dosavadní „Hraji na PC“) – hotovo, čeká na zkoušku majitele na Windows. Čtečka má vlastní profil chiaki-ng `playlingo` (spárování 🔵 účtem zvlášť, zvuk 0).
    Ověří jen majitel: Windows + PS5 + TV LG.
 2. **Balíček ke stažení pro Windows** – dnes `pc/` běží z repozitáře (Java 17 + Python). Pro hráče: ZIP / instalátor
    ve vydání (`PlayLingo-PC.zip`: Java z jlink, vložený Python s RapidOCR a modelem překladu, chiaki-ng se stáhne sám),

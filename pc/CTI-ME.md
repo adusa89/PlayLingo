@@ -9,6 +9,9 @@ chiaki-ng na svém **hlavním účtu** a PlayLingo se k PlayStationu vůbec nep�
 z okna. Druhý účet ani přihlášení přes telefon tu nejsou potřeba. Zatím běží z repozitáře
 (potřebuje Javu 17 a Python), ne jako samostatný instalační balíček.
 
+Druhé použití (⚙ → **Použití → Čtečka pro TV**): PC místo telefonu s Androidem jako čtečka pro TV LG /
+Samsung – hra běží na PS5 v TV, PC se připojí druhým účtem a posílá překlad do TV. Viz oddíl Čtečka pro TV.
+
 ## Spuštění
 
 **Dvojklik na `pc\PlayLingo.cmd`** otevře okno aplikace (při prvním spuštění a po změně kódu se
@@ -27,7 +30,7 @@ předtím asi minutu sestavuje). Potřebuje Javu 17 (Temurin) a pro Připravit i
   obrys), okraj pruhu 0–3, poloha (přes titulky / nad titulky / nahoře / dole), originál pod překladem
   a Zkušební pruh na 4 s. Vzhled platí hned, i za běhu; změna hry nebo rozsahu čtení spustí čtení znovu.
   Zvolená hra je i na Domů („Hra · Grand Theft Auto VI“; univerzální = řádek není).
-- **⚙ Nastavení** – okno hry (část titulku okna, Vybrat = nabídka oken, kde může běžet hra:
+- **⚙ Nastavení** – nahoře **Použití** (Hraji na PC – výchozí / Čtečka pro TV), okno hry (část titulku okna, Vybrat = nabídka oken, kde může běžet hra:
   chiaki / PS Remote Play / Xbox nahoře, skrytá systémová okna ne), ukázková hra
   bez PlayStationu, jazyk překladu, výstup (Pruh na PC / TV LG / Samsung / PC i TV), příprava,
   DeepL (zapnutí, klíč, odkaz na klíče v účtu DeepL) a Záznam (výpis čtení). Změna okna, jazyka,
@@ -77,7 +80,7 @@ Nastavení se ukládá do `%LOCALAPPDATA%\PlayLingoTools\aplikace.properties`.
       Uloží se jen číslo a jméno účtu (`aplikace.properties`), příště se krok rovnou odškrtne („Jiný účet“).
       Windows se při prvním otevření stránky může zeptat na povolení sítě pro Javu – bez něj funguje
       jen přihlášení v prohlížeči PC.
-   3. **Kód z PS5** – 8 číslic (PS5: Nastavení → Systém → Remote Play → Spárovat zařízení) → Spárovat.
+   3. **Kód z PS5** – 8 číslic (PS5: Nastavení → Systém → Remote Play → Propojit zařízení) → Spárovat.
    Spárování dělá PlayLingo samo (`src/Registrace.kt`, protokol z `chiaki-ng/lib/src/regist.c`
    a `rpcrypt.c` pro PS5) a výsledek zapíše tam, kam si ho ukládá chiaki-ng
    (`HKCU\Software\Chiaki\Chiaki\registered_hosts`, `Chiaki.uloz` – stejný tvar jako QSettings
@@ -86,7 +89,7 @@ Nastavení se ukládá do `%LOCALAPPDATA%\PlayLingoTools\aplikace.properties`.
    Chyby jsou krátké stavy: „Kód · neplatný“, „PS5 · obrazovka s kódem zavřená“, „Účet · neplatný“…
 3. **Hrát**: PlayLingo najde PS5 v síti (zpráva z `core/Ps5.kt`), z klidového režimu ji probudí
    (zpráva WAKEUP jako v `chiaki-ng/lib/src/discovery.c`), spustí
-   `chiaki stream <konzole> <adresa> --fullscreen --exit-app-on-stream-exit` a čte okno toho procesu
+   `chiaki --exit-app-on-stream-exit --fullscreen stream <konzole> <adresa>` a čte okno toho procesu
    (`pid:<číslo>` v `OknoHry` i `cteni.py`). Konec hry v chiaki-ng = konec čtení; Zastavit zavře obojí.
    Výpis chiaki-ng je v `%LOCALAPPDATA%\PlayLingoTools\chiaki-vystup.txt`.
 
@@ -96,10 +99,56 @@ Ladění: `playlingo-pc.bat --hledej-ps5` vypíše chiaki-ng, spárované konzol
 podle části titulku. Okno může být přes celou obrazovku (ne výhradní režim celé obrazovky) nebo
 zakryté jiným oknem, ale nesmí být minimalizované.
 
+## Čtečka pro TV (PS5 v TV, PC místo telefonu)
+
+Pro hráče s iPhonem (iPhone čtečkou být nemůže) nebo bez telefonu s Androidem: PC dělá totéž co čtečka
+na Androidu pro TV LG / Samsung. Zapíná se v ⚙ → **Použití → Čtečka pro TV (hra na PS5 v TV)**
+(klíč `pouziti` = `ctecka`; výchozí `pc` = dosavadní hraní na PC, uložené klíče se nemění). Při
+zapnutí se ukáže krátký popis v dialogu.
+
+- **Hra** jde z PS5 kabelem HDMI do TV a hraje se dál 🟢 herním účtem. PC se k PS5 připojí přes
+  Remote Play 🔵 **účtem pro PlayLingo** – druhým uživatelem na PS5 s povoleným Remote Play (jako
+  čtečka na Androidu; herním účtem by PS5 hráči vypnula ovladač a zhasla obraz).
+- **Spárování** (Domů → PS5 · nespárováno → Spárovat) je tentýž průvodce, jen krok 2 chce 🔵 účet pro
+  PlayLingo (uloží se zvlášť: `ucetCteckaId` / `ucetCteckaJmeno`; účet z hraní na PC, `ucetId`, se jako
+  herní nepřijme: „Účet · herní účet · přihlásit účtem pro PlayLingo“) a krok 3 radí na PS5 přepnout na
+  uživatele 🔵, povolit Remote Play, skrýt stav připojení a Propojit zařízení. Na konci: přepnout zpět
+  na 🟢 herní účet. Konzole se zapíše do **vlastního profilu chiaki-ng** `playlingo`
+  (`HKCU\Software\Chiaki\Chiaki-playlingo`, `Chiaki.PROFIL_CTECKY`) – spárování herním účtem pro hraní na
+  PC zůstává a přepínání použití nic nemaže. Kterým účtem se párovalo, je v `parovaniUcet.<pc|ctecka>.<konzole>`;
+  když je to herní účet, Domů ukáže „PS5 · spárováno herním účtem“ s tlačítkem Spárovat znovu.
+- **Spustit** (`src/CteckaTv.kt`): čtení (`Ctecka`, výstup jen do TV, pruh na PC ne) běží hned – TV se
+  připojí a dostává stav – a čeká na obraz (okno `pid:0`). PS5 se **nebudí** (probuzení by ji zapnulo
+  na účet 🔵): každé ~4 s se jen zjistí, jestli je zapnutá („Čeká na zapnutí PS5“), a po zapnutí
+  ovladačem se spustí `chiaki --profile playlingo --exit-app-on-stream-exit stream <konzole> <adresa>`
+  v okně (bez `--fullscreen`). Okno chiaki-ng dostane čtení za běhu (`cteni.py` příkaz `OKNO`).
+  Když PS5 během hry usne, chiaki-ng skončí a znovu se nepřipojuje, dokud PS5 není zase zapnutá
+  (druhé „zapnutá“ po 15 s + 3 s). Po 4 spojeních kratších než minuta za sebou se pokusy zastaví.
+- **Zvuk z PC je vypnutý**: v profilu `playlingo` je `settings/audio_volume = 0` (chiaki-ng s nulovou
+  hlasitostí zvuk vůbec nepouští, `StreamSession::PushAudioFrame`). Profil se při prvním spuštění
+  založí s hráčovým nastavením obrazu z výchozího profilu (vykreslování, dekodér, rozlišení), bez okna,
+  zvuku a přihlášení PSN, okno „Selected Resolution“. Hráčův výchozí profil chiaki-ng se nemění.
+  chiaki-ng s `--profile` si přepíše „naposledy použitý profil“ (`settings/current_profile`) – PlayLingo
+  ho po otevření okna a po konci vrátí. Profil `playlingo` zůstane vidět v seznamu profilů chiaki-ng.
+- **Okno chiaki-ng** se otevře maximalizované (chiaki-ng bez `--fullscreen` a bez uložené polohy) a čte
+  se i za jinými okny; PlayLingo se po ~12 s vrátí dopředu. Minimalizované se číst nedá: Domů ukáže
+  „chiaki-ng · minimalizované“ s tlačítkem **Obnovit okno** (bez převzetí zaměření). Zmenšit okno lze
+  ručně; pro čtení stačí obsah aspoň kolem 1280×720.
+- **Domů** ve čtečce: Použití · Čtečka pro TV, chiaki-ng (chybí / bez zvuku · připojeno / minimalizované),
+  PS5 (nespárováno / zapnutá / v klidovém režimu / nenalezena / připojeno), překlad, hra a
+  **TV** podle ohlášení aplikace v TV („LG OLED55B7 · připojeno / nepřipojeno“; jméno se pamatuje
+  v `tvNazev`). Stav vlevo nahoře v TV má první řádek PS5 („PS5-151 · v klidovém režimu“).
+- Výstup je ve čtečce vždy TV LG / Samsung (uložená volba výstupu pro hraní na PC se nemění);
+  řádky „Hra běží v“ a „Okno hry“ jsou schované.
+- Přihlašovací kód účtu 🔵 na PS5 (4 číslice) PlayLingo nezadává – když ho PS5 chce, zeptá se okno chiaki-ng.
+
+Ověřeno jen překladem kódu; spojení, zvuk, okno a čtení na skutečném PC s PS5 a TV ověří majitel.
+
 ## Z čeho se skládá
 
 - `src/Aplikace.kt` – okno aplikace (barvy jako `Theme` v aplikaci pro Android, Swing). Ovládá se
   myší, dotykem i klávesnicí (Tab / šipky, Enter); vybraný prvek má zlatý rámeček.
+- `src/CteckaTv.kt` – čtečka pro TV: hlídání PS5 bez buzení, chiaki-ng v okně bez zvuku, předání okna čtení.
 - `src/Ctecka.kt` – čtení a překlad. Výběr titulků, rozhodování, kdy větu ukázat a schovat,
   i posílání do televize jsou **tytéž soubory** jako v aplikaci (`app/src/main/java/cz/playlingo/core`),
   jen přeložené pro počítač. Oprava v `core` se tak projeví na Androidu i tady.

@@ -39,13 +39,20 @@ import kotlin.concurrent.thread
  * 2. **Účet** – číslo účtu PlayStation (hlavní účet, na kterém se hraje) bez opisování: buď telefonem
  *    přes stránku z PC (čtvereček, `core/LoginServer` jako na Android TV), nebo přihlášením v prohlížeči
  *    tohoto PC – PlayLingo si adresu „redirect“ samo vezme ze schránky. Uloží se jen číslo a jméno účtu.
- * 3. **Kód** – 8 číslic z PS5 (Nastavení → Systém → Remote Play → Spárovat zařízení), spárování
+ * 3. **Kód** – 8 číslic z PS5 (Nastavení → Systém → Remote Play → Propojit zařízení), spárování
  *    [Registrace.sparuj] a zápis pro chiaki-ng [Chiaki.uloz].
+ *
+ * S [ctecka] (čtečka pro TV) se páruje **účtem pro PlayLingo** – druhým uživatelem na PS5 s povoleným
+ * Remote Play, ne herním účtem (ten by PS5 při hraní vypnul ovladač). Účet se ukládá zvlášť
+ * (`ucetCteckaId`), herní účet z hraní na PC se nepřijme a konzole se zapíše do profilu chiaki-ng
+ * čtečky ([Chiaki.PROFIL_CTECKY]), takže spárování pro hraní na PC zůstává.
  */
 class Parovani(
     private val vlastnik: JFrame,
     private val nast: Nastaveni,
     private val log: (String) -> Unit,
+    /** Čtečka pro TV: účet pro PlayLingo a profil chiaki-ng čtečky. */
+    private val ctecka: Boolean = false,
     private val zavreno: () -> Unit = {},
     /** Po úspěchu: jméno spárované konzole. */
     private val hotovo: (String) -> Unit,
@@ -63,10 +70,13 @@ class Parovani(
     private val ps5: Chiaki.Nalez? get() = nalezene.getOrNull(vybrana)
 
     // 2. účet
-    @Volatile private var ucet: PhoneLogin.Account? = nast.ucetId.takeIf { it.isNotEmpty() }
-        ?.let { PhoneLogin.cleanAccount(it, nast.ucetJmeno) }
+    @Volatile private var ucet: PhoneLogin.Account? =
+        (if (ctecka) nast.ucetCteckaId else nast.ucetId).takeIf { it.isNotEmpty() && !(ctecka && it == nast.ucetId) }
+            ?.let { PhoneLogin.cleanAccount(it, if (ctecka) nast.ucetCteckaJmeno else nast.ucetJmeno) }
     @Volatile private var overovani = false
     @Volatile private var spatnaAdresa = false
+    /** Čtečka: přihlášený účet je herní (ten, na kterém se hraje na PC) – nepřijme se. */
+    @Volatile private var herniUcet = false
     private var server: LoginServer? = null
     private var posledniSchranka = ""
 
@@ -132,7 +142,7 @@ class Parovani(
         if (k == 2 && ucet == null) spustStranku() else zastavStranku()
         val (nadpis, telo) = when (k) {
             1 -> "PS5 v síti" to stranka1()
-            2 -> "Účet PlayStation" to stranka2()
+            2 -> (if (ctecka) "<html>$MODRA Účet pro PlayLingo</html>" else "Účet PlayStation") to stranka2()
             3 -> "Kód z PS5" to stranka3()
             else -> "Hotovo" to stranka4()
         }
@@ -169,9 +179,12 @@ class Parovani(
 
     private fun stranka2(): JComponent {
         val u = ucet
+        val legenda = popisek("<html>$MODRA Účet pro PlayLingo – druhý uživatel na PS5, jen pro PlayLingo<br>" +
+            "$ZELENA Herní účet – ten, na kterém se hraje</html>", 15, B.MUTED).vlevo()
         if (u != null) {
             return sloupec(Karta().apply { add(rUcet) }, Box.createVerticalStrut(14),
-                popisek("Hlavní účet · ten, na kterém se na PS5 hraje", 15, B.MUTED).vlevo(), Box.createVerticalGlue())
+                if (ctecka) legenda else popisek("Hlavní účet · ten, na kterém se na PS5 hraje", 15, B.MUTED).vlevo(),
+                Box.createVerticalGlue())
         }
         val qr = server?.let { s -> mojeAdresa(ps5?.adresa)?.let { PhoneLogin.pageUrl(PhoneLogin.Target(it, s.port, s.key)) } }
         val telefon = sloupec(
@@ -191,7 +204,8 @@ class Parovani(
                 add(Tlacitko("Přihlásit v prohlížeči") { prihlasitVPc() })
             },
             Box.createVerticalStrut(12),
-            popisek("<html>1. Hlavní účet PS5<br>2. Passkey → Remind Me Later<br>3. Zkopírovat adresu<br>&nbsp;&nbsp;&nbsp;&nbsp;stránky „redirect“</html>", 15, B.MUTED).vlevo(),
+            popisek("<html>1. " + (if (ctecka) "$MODRA Účet pro PlayLingo, ne herní" else "Hlavní účet PS5") +
+                "<br>2. Passkey → Remind Me Later<br>3. Zkopírovat adresu<br>&nbsp;&nbsp;&nbsp;&nbsp;stránky „redirect“</html>", 15, B.MUTED).vlevo(),
         )
         val dvaSloupce = JPanel().apply {
             isOpaque = false; alignmentX = Component.LEFT_ALIGNMENT
@@ -201,11 +215,18 @@ class Parovani(
             add(pc.apply { alignmentY = Component.TOP_ALIGNMENT })
             add(Box.createHorizontalGlue())
         }
-        return sloupec(Karta().apply { add(rUcet) }, Box.createVerticalStrut(16), dvaSloupce, Box.createVerticalGlue())
+        return if (ctecka) sloupec(Karta().apply { add(rUcet) }, Box.createVerticalStrut(10), legenda,
+            Box.createVerticalStrut(14), dvaSloupce, Box.createVerticalGlue())
+        else sloupec(Karta().apply { add(rUcet) }, Box.createVerticalStrut(16), dvaSloupce, Box.createVerticalGlue())
     }
 
     private fun stranka3(): JComponent = sloupec(
-        popisek("PS5: Nastavení → Systém → Remote Play → Spárovat zařízení", 15, B.MUTED).vlevo(),
+        if (ctecka) popisek("<html>Na PS5:<br>1. Přepnout na uživatele $MODRA ${PhoneLogin.esc(ucet?.name?.ifEmpty { null } ?: "pro PlayLingo")}" +
+            " (tlačítko PS → profil → Přepnout uživatele)<br>" +
+            "2. Nastavení → Systém → Remote Play → zapnout Povolit Remote Play<br>" +
+            "3. Tamtéž zapnout Skrýt stav připojení Remote Play<br>" +
+            "4. Propojit zařízení → osmimístné číslo opsat sem</html>", 15, B.MUTED).vlevo()
+        else popisek("PS5: Nastavení → Systém → Remote Play → Propojit zařízení", 15, B.MUTED).vlevo(),
         Box.createVerticalStrut(18),
         popisek("Kód · 8 číslic", 16).vlevo(),
         Box.createVerticalStrut(6),
@@ -219,6 +240,9 @@ class Parovani(
 
     private fun stranka4(): JComponent = sloupec(
         Karta().apply { add(StavRadek().apply { nastav(B.OK, "${vysledek ?: "PS5"} · spárováno") }) },
+        Box.createVerticalStrut(14),
+        if (ctecka) popisek("<html>Na PS5 se přepnout zpět na $ZELENA herní účet</html>", 15, B.MUTED).vlevo()
+        else Box.createVerticalStrut(0),
         Box.createVerticalGlue(),
     )
 
@@ -244,6 +268,7 @@ class Parovani(
                 when {
                     u != null -> rUcet.nastav(B.OK, "Účet · ${u.name.ifEmpty { "ověřen" }}", "Jiný účet") { jinyUcet() }
                     overovani -> rUcet.nastav(B.MUTED, "Účet · ověřování")
+                    herniUcet -> rUcet.nastav(B.WARN, "Účet · herní účet · přihlásit účtem pro PlayLingo")
                     spatnaAdresa -> rUcet.nastav(B.WARN, "Účet · adresa neplatí · přihlásit znovu")
                     else -> rUcet.nastav(B.WARN, "Účet · čeká na přihlášení")
                 }
@@ -295,19 +320,27 @@ class Parovani(
     // ---- 2. účet ----
 
     private fun prijmiUcet(a: PhoneLogin.Account) {
-        ucet = a
         overovani = false
         spatnaAdresa = false
-        nast.ucetId = a.id
-        nast.ucetJmeno = a.name
+        // čtečka: herní účet (ten, na kterém se hraje na PC) by PS5 při hraní vypnul ovladač
+        herniUcet = ctecka && nast.ucetId.isNotEmpty() && a.id == nast.ucetId
+        if (herniUcet) {
+            log("Přihlášen herní účet · pro čtečku je potřeba účet pro PlayLingo (druhý uživatel na PS5).")
+            SwingUtilities.invokeLater { tik() }
+            return
+        }
+        ucet = a
+        if (ctecka) { nast.ucetCteckaId = a.id; nast.ucetCteckaJmeno = a.name }
+        else { nast.ucetId = a.id; nast.ucetJmeno = a.name }
         log("Účet PlayStation ověřen" + if (a.name.isNotEmpty()) " (${a.name})." else ".")
         SwingUtilities.invokeLater { if (krok == 2) ukaz(2) }
     }
 
     private fun jinyUcet() {
         ucet = null
-        nast.ucetId = ""
-        nast.ucetJmeno = ""
+        herniUcet = false
+        if (ctecka) { nast.ucetCteckaId = ""; nast.ucetCteckaJmeno = "" }
+        else { nast.ucetId = ""; nast.ucetJmeno = "" }
         ukaz(2)
     }
 
@@ -355,16 +388,16 @@ class Parovani(
 
     /** Stránka pro telefon: přihlášení u Sony a vložení adresy „redirect“ (hlavní účet, výsledek jde do PC). */
     private inner class StrankaPc(private val prijato: (PhoneLogin.Account) -> Unit) : LoginServer.Custom {
-        override fun get(path: String) = strankaTelefonu(path, null)
-        override fun gone() = strankaTelefonu("", false)
+        override fun get(path: String) = strankaTelefonu(path, null, ctecka)
+        override fun gone() = strankaTelefonu("", false, ctecka)
         override fun post(path: String, form: Map<String, String>): String {
-            val kod = Ps5.authCodeFromTyped(form["url"] ?: "") ?: return strankaTelefonu(path, false)
+            val kod = Ps5.authCodeFromTyped(form["url"] ?: "") ?: return strankaTelefonu(path, false, ctecka)
             overovani = true
             SwingUtilities.invokeLater { tik() }
             val a = PsnPc.ucet(kod, log)
             if (a == null) { overovani = false; spatnaAdresa = true; SwingUtilities.invokeLater { tik() } }
             else prijato(a)
-            return strankaTelefonu(path, a != null)
+            return strankaTelefonu(path, a != null && !herniUcet, ctecka, herni = a != null && herniUcet)
         }
     }
 
@@ -383,7 +416,9 @@ class Parovani(
             try {
                 log("Párování s ${n.jmeno} (${n.adresa})…")
                 val k = Registrace.sparuj(n.adresa, cislo, pin, log)
-                Chiaki.uloz(k)
+                Chiaki.uloz(k, if (ctecka) Chiaki.PROFIL_CTECKY else null)
+                // kterým účtem se párovalo – Domů pak pozná spárování herním účtem ve čtečce
+                nast.ucetParovani(if (ctecka) "ctecka" else "pc", k.jmeno, u.id)
                 log("Spárováno: ${k.jmeno}.")
                 vysledek = k.jmeno
                 SwingUtilities.invokeLater { hotovo(k.jmeno); ukaz(4) }
@@ -406,6 +441,10 @@ class Parovani(
     }
 
     companion object {
+        /** Barevné tečky účtů (jako 🔵 / 🟢 na Androidu – barevné emoji Swing neumí). */
+        const val MODRA = "<font color='#5AA9FF'>●</font>"
+        const val ZELENA = "<font color='#4ADE80'>●</font>"
+
         /** Adresa PC v domácí síti pro čtvereček – přednostně ve stejné síti jako PS5. */
         fun mojeAdresa(ps5: String?): String? {
             val adresy = runCatching {
@@ -435,7 +474,7 @@ class Parovani(
          * Stránka pro telefon (vzhled jako `PhoneLogin.page` v aplikaci). [ok] = null postup,
          * true hotovo, false chyba (u prázdné cesty: odkaz už neplatí).
          */
-        fun strankaTelefonu(path: String, ok: Boolean?): String {
+        fun strankaTelefonu(path: String, ok: Boolean?, ctecka: Boolean = false, herni: Boolean = false): String {
             val e = PhoneLogin::esc
             val sb = StringBuilder()
             sb.append("<!doctype html><html lang=\"cs\"><head><meta charset=\"utf-8\">")
@@ -453,8 +492,10 @@ class Parovani(
                 ok == true -> sb.append("<p class=\"ok\">Hotovo ✔ Účet ověřen · pokračování v PC</p>")
                 path.isEmpty() -> sb.append("<p class=\"bad\">Odkaz už neplatí · v PC znovu otevřít Spárovat</p>")
                 else -> {
-                    if (ok == false) sb.append("<p class=\"bad\">Adresa neplatí nebo vypršela · přihlásit znovu</p>")
-                    sb.append("<div class=\"card note\">Hlavní účet PlayStation · ten, na kterém se na PS5 hraje</div><div class=\"card\">")
+                    if (herni) sb.append("<p class=\"bad\">Tohle je 🟢 herní účet · přihlásit 🔵 účtem pro PlayLingo</p>")
+                    else if (ok == false) sb.append("<p class=\"bad\">Adresa neplatí nebo vypršela · přihlásit znovu</p>")
+                    sb.append(if (ctecka) "<div class=\"card note\">🔵 Účet pro PlayLingo · druhý uživatel na PS5, ne 🟢 herní účet</div><div class=\"card\">"
+                        else "<div class=\"card note\">Hlavní účet PlayStation · ten, na kterém se na PS5 hraje</div><div class=\"card\">")
                         .append("<p>1. Přihlášení u Sony (nová karta)</p>")
                         .append("<a id=\"l\" class=\"btn\" target=\"_blank\" rel=\"noopener\" href=\"").append(e(PsnPc.LOGIN_URL)).append("\">Přihlásit se u PlayStation</a>")
                         .append("<p class=\"muted\">Passkey → Remind Me Later. Na konci zůstane prázdná stránka „redirect“.</p>")

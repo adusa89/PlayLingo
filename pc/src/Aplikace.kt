@@ -4,6 +4,8 @@ package cz.playlingo.pc
 import cz.playlingo.core.Deepl
 import cz.playlingo.core.GameProfiles
 import cz.playlingo.core.TvSettings
+import cz.playlingo.core.TvAnnounce
+import cz.playlingo.core.TvSender
 import cz.playlingo.core.Lang
 import java.awt.BasicStroke
 import java.awt.BorderLayout
@@ -286,6 +288,15 @@ private class Aplikace {
     @Volatile private var ps5: Chiaki.Nalez? = null
     @Volatile private var ps5Hledano = false
     private var tiku = 0
+
+    // čtečka pro TV (Použití = čtečka): PS5 v TV, PC čte obraz z chiaki-ng a posílá překlad do TV
+    @Volatile private var cteckaTv: CteckaTv? = null
+    private var cteckaVlakno: Thread? = null
+    /** Okno chiaki-ng čtečky je minimalizované (hlídá se každou sekundu, čte i vlákno čtení pro stav v TV). */
+    @Volatile private var chiakiMinim = false
+    private fun cteckaBezi() = cteckaVlakno?.isAlive == true
+    /** Řádky Nastavení jen pro hraní na PC (schovávají se ve čtečce). */
+    private val jenPc = ArrayList<JComponent>()
     private val zaznam = JTextArea().apply {
         isEditable = false; background = B.CARD; foreground = B.MUTED
         font = Font("Consolas", Font.PLAIN, 13); border = EmptyBorder(10, 12, 10, 12); lineWrap = true
@@ -298,6 +309,7 @@ private class Aplikace {
         isIndeterminate = true; isVisible = false; foreground = B.ACCENT; background = B.CARD2
         border = null; maximumSize = Dimension(360, 6); preferredSize = Dimension(360, 6); alignmentX = Component.LEFT_ALIGNMENT
     }
+    private val rPouziti = StavRadek()
     private val rOkno = StavRadek()
     private val rPs5 = StavRadek()
     private val rPreklad = StavRadek()
@@ -436,7 +448,7 @@ private class Aplikace {
     // ---- Domů ----
 
     private fun domu(): JComponent {
-        val karta = Karta().apply { listOf(rOkno, rPs5, rPreklad, rHra, rVystup, rCteni, rTitulek).forEach { add(it) } }
+        val karta = Karta().apply { listOf(rPouziti, rOkno, rPs5, rPreklad, rHra, rVystup, rCteni, rTitulek).forEach { add(it) } }
         return stranka(
             velkyStav.vlevo(),
             Box.createVerticalStrut(10),
@@ -453,6 +465,7 @@ private class Aplikace {
     private fun jazyk() = Lang.of(nast.jazyk)
 
     private fun obnovDomu() {
+        if (nast.ctecka) { obnovDomuCtecka(); return }
         val s = stav
         val bezi = vlakno?.isAlive == true
         val hraje = chiaki?.isAlive == true
@@ -472,11 +485,7 @@ private class Aplikace {
             s.faze == Stav.Faze.BEZ_OKNA -> "Čeká na okno hry"
             else -> "Běží"
         }
-        velkyStav.foreground = when (velkyStav.text) {
-            "Běží" -> B.OK
-            "Chybí příprava", "Čeká na okno hry", "Chyba" -> B.WARN
-            else -> B.TEXT
-        }
+        obarviStav()
         postup.isVisible = pripravuje || k != null || stahovani != null || (bezi && s.faze == Stav.Faze.NACITANI)
         postup.isIndeterminate = stahovani == null
         stahovani?.let { postup.value = it }
@@ -488,6 +497,7 @@ private class Aplikace {
         }
         hlavniTlacitko.isEnabled = !pripravuje && (zaneprazdneno ||
             (pripraveno && (!sChiaki || (exe != null && konzole != null && stahovani == null))))
+        rPouziti.nastav(B.MUTED, "Použití · " + nazevPouziti())
 
         // zdroj obrazu
         when (nast.zdroj) {
@@ -516,7 +526,31 @@ private class Aplikace {
             }
         }
 
-        // překlad
+        obnovPreklad(s, pripravuje, pripraveno)
+
+        // výstup
+        val nazevVystupu = Nastaveni.VYSTUPY.firstOrNull { it.first == nast.vystup }?.second ?: "Pruh na PC"
+        when {
+            nast.vystup == "pc" -> rVystup.nastav(B.OK, "Výstup · $nazevVystupu")
+            !bezi -> rVystup.nastav(B.MUTED, "Výstup · $nazevVystupu")
+            s.televize > 0 -> rVystup.nastav(B.OK, "TV · připojeno")
+            else -> rVystup.nastav(B.WARN, "TV · nepřipojeno")
+        }
+
+        obnovCteni(s, bezi, null)
+        okno.contentPane.revalidate()
+    }
+
+    private fun obarviStav() {
+        velkyStav.foreground = when (velkyStav.text) {
+            "Běží" -> B.OK
+            "Chybí příprava", "Čeká na okno hry", "Chyba", "Čeká na zapnutí PS5", "Čeká na PS5" -> B.WARN
+            else -> B.TEXT
+        }
+    }
+
+    /** Překlad a hra – stejné řádky pro hraní na PC i čtečku pro TV. */
+    private fun obnovPreklad(s: Stav, pripravuje: Boolean, pripraveno: Boolean) {
         val rezim = if (deeplZapnuty()) "DeepL online + offline" else "offline"
         when {
             pripravuje -> rPreklad.nastav(B.MUTED, "Překlad · ${jazyk().label} · stahování")
@@ -534,39 +568,132 @@ private class Aplikace {
         // hra (univerzální profil = řádek není, jako na Androidu)
         if (nast.hra != "all") rHra.nastav(B.OK, "Hra · " + nazevHry(nast.hra) + if (nast.textyHry) "" else " · jen titulky")
         else rHra.nastav(B.MUTED, "")
+    }
 
-        // výstup
-        val nazevVystupu = Nastaveni.VYSTUPY.firstOrNull { it.first == nast.vystup }?.second ?: "Pruh na PC"
-        when {
-            nast.vystup == "pc" -> rVystup.nastav(B.OK, "Výstup · $nazevVystupu")
-            !bezi -> rVystup.nastav(B.MUTED, "Výstup · $nazevVystupu")
-            s.televize > 0 -> rVystup.nastav(B.OK, "TV · připojeno")
-            else -> rVystup.nastav(B.WARN, "TV · nepřipojeno")
-        }
-
-        // čtení a poslední titulek
+    /** Rychlost čtení a poslední titulek (nebo chyba; [chybaNavic] = chyba čtečky pro TV). */
+    private fun obnovCteni(s: Stav, bezi: Boolean, chybaNavic: String?) {
         if (bezi && s.ms > 0) {
             rCteni.nastav(B.MUTED, "Čtení · ${s.ms} ms" + if (deeplZapnuty() && s.deeplMs > 0) " · DeepL ${s.deeplMs} ms" else "")
         } else rCteni.nastav(B.MUTED, "")
         when {
+            chybaNavic != null -> rTitulek.nastav(B.WARN, "Chyba · $chybaNavic")
             s.faze == Stav.Faze.CHYBA && s.chyba.isNotEmpty() -> rTitulek.nastav(B.WARN, "Chyba · ${s.chyba}")
             s.preklad.isNotEmpty() -> rTitulek.nastav(B.MUTED, "Titulek · ${s.preklad}")
             else -> rTitulek.nastav(B.MUTED, "")
         }
+    }
+
+    private fun nazevPouziti() = Nastaveni.POUZITI.firstOrNull { it.first == nast.pouziti }?.second?.substringBefore(" (") ?: "Hraji na PC"
+
+    /** „LG OLED55B7“ / „Samsung …“ z ohlášení aplikace v TV. */
+    private fun nazevTv(a: TvAnnounce): String {
+        val znacka = when (a.platform) { TvAnnounce.WEBOS -> "LG"; TvAnnounce.TIZEN -> "Samsung"; else -> "TV" }
+        return znacka + (a.model?.let { " $it" } ?: "")
+    }
+
+    /**
+     * Domů ve čtečce pro TV: PS5 (spárovaná účtem pro PlayLingo, nebudí se), chiaki-ng v okně bez zvuku,
+     * TV LG / Samsung podle ohlášení, překlad. Stejné krátké stavy jako čtečka na Androidu.
+     */
+    private fun obnovDomuCtecka() {
+        val s = stav
+        val bezi = vlakno?.isAlive == true
+        val tBezi = cteckaBezi()
+        val t = cteckaTv
+        val faze = t?.faze
+        val pripravuje = priprava?.isAlive == true
+        val pripraveno = Nastroje.pripraveno(nast.jazyk)
+        val exe = Chiaki.exe()
+        val konzole = vybranaKonzole()
+        val chybaTv = t?.takeIf { it.faze == CteckaTv.Faze.CHYBA }?.chyba?.ifEmpty { null }
+        velkyStav.text = when {
+            pripravuje -> "Příprava…"
+            stahovani != null -> "Stahování chiaki-ng…"
+            !pripraveno -> "Chybí příprava"
+            !tBezi && !bezi -> if (chybaTv != null || s.faze == Stav.Faze.CHYBA) "Chyba" else "Připraveno"
+            faze == CteckaTv.Faze.KLID -> "Čeká na zapnutí PS5"
+            faze == CteckaTv.Faze.NENALEZENA -> "Čeká na PS5"
+            faze == CteckaTv.Faze.HLEDANI -> "Hledání PS5…"
+            faze == CteckaTv.Faze.PRIPOJOVANI -> "Připojování k PS5…"
+            s.faze == Stav.Faze.NACITANI -> "Načítání…"
+            chiakiMinim || s.faze == Stav.Faze.BEZ_OKNA -> "Čeká na okno hry"
+            else -> "Běží"
+        }
+        obarviStav()
+        postup.isVisible = pripravuje || stahovani != null || (bezi && s.faze == Stav.Faze.NACITANI) ||
+            (tBezi && (faze == CteckaTv.Faze.HLEDANI || faze == CteckaTv.Faze.PRIPOJOVANI))
+        postup.isIndeterminate = stahovani == null
+        stahovani?.let { postup.value = it }
+        val zaneprazdneno = bezi || tBezi
+        hlavniTlacitko.text = if (zaneprazdneno) "Zastavit" else "Spustit"
+        hlavniTlacitko.isEnabled = !pripravuje && (zaneprazdneno ||
+            (pripraveno && exe != null && konzole != null && stahovani == null))
+        rPouziti.nastav(B.MUTED, "Použití · " + nazevPouziti())
+
+        // chiaki-ng: okno smí být za jinými, ne minimalizované
+        val spojeno = tBezi && faze == CteckaTv.Faze.BEZI
+        when {
+            stahovani != null -> rOkno.nastav(B.MUTED, "chiaki-ng · stahování ${stahovani} %")
+            exe == null -> rOkno.nastav(B.WARN, "chiaki-ng · chybí", "Stáhnout") { stahnoutChiaki() }
+            spojeno && chiakiMinim -> rOkno.nastav(B.WARN, "chiaki-ng · minimalizované", "Obnovit okno") {
+                thread(isDaemon = true) { cteckaTv?.okno?.obnov() }
+            }
+            // např. „okno je moc malé“ (z cteni.py)
+            spojeno && bezi && s.faze == Stav.Faze.BEZ_OKNA && s.chyba.isNotEmpty() && !s.chyba.contains(CEKA_NA_OKNO) ->
+                rOkno.nastav(B.WARN, "chiaki-ng · ${s.chyba}")
+            spojeno -> rOkno.nastav(B.OK, "chiaki-ng · bez zvuku · připojeno")
+            else -> rOkno.nastav(B.OK, "chiaki-ng · připraveno")
+        }
+
+        // PS5 – spárovaná účtem pro PlayLingo; nebudí se
+        val n = ps5
+        val herni = konzole != null && nast.ucetId.isNotEmpty() && nast.ucetParovani("ctecka", konzole.jmeno) == nast.ucetId
+        when {
+            exe == null -> rPs5.nastav(B.MUTED, "")
+            konzole == null -> rPs5.nastav(B.WARN, "PS5 · nespárováno", "Spárovat") { sparovat() }
+            herni -> rPs5.nastav(B.WARN, "PS5 · spárováno herním účtem", "Spárovat znovu") { sparovat() }
+            tBezi -> when (faze) {
+                CteckaTv.Faze.BEZI -> rPs5.nastav(B.OK, "PS5 · ${konzole.jmeno} · připojeno")
+                CteckaTv.Faze.KLID -> rPs5.nastav(B.WARN, "PS5 · ${konzole.jmeno} · v klidovém režimu")
+                CteckaTv.Faze.NENALEZENA -> rPs5.nastav(B.WARN, "PS5 · ${konzole.jmeno} · nenalezena")
+                CteckaTv.Faze.PRIPOJOVANI -> rPs5.nastav(B.MUTED, "PS5 · ${konzole.jmeno} · připojování")
+                else -> rPs5.nastav(B.MUTED, "PS5 · ${konzole.jmeno} · hledání")
+            }
+            n?.pripravena == true -> rPs5.nastav(B.OK, "PS5 · ${konzole.jmeno} · zapnutá")
+            n?.klid == true -> rPs5.nastav(B.MUTED, "PS5 · ${konzole.jmeno} · v klidovém režimu")
+            ps5Hledano -> rPs5.nastav(B.WARN, "PS5 · ${konzole.jmeno} · nenalezena", "Hledat") { hledatPs5() }
+            else -> rPs5.nastav(B.MUTED, "PS5 · ${konzole.jmeno} · hledání")
+        }
+
+        obnovPreklad(s, pripravuje, pripraveno)
+
+        // TV LG / Samsung podle ohlášení aplikace v TV
+        val tv = nast.tvNazev.ifEmpty { "TV LG / Samsung" }
+        when {
+            bezi && s.televize > 0 -> rVystup.nastav(B.OK, "$tv · připojeno")
+            bezi -> rVystup.nastav(B.WARN, "$tv · nepřipojeno")
+            else -> rVystup.nastav(B.MUTED, "$tv · nepřipojeno")
+        }
+
+        obnovCteni(s, bezi && spojeno, chybaTv)
         okno.contentPane.revalidate()
     }
 
     /** Je okno hry otevřené? Hlídá se i před Spustit, ať Domů hned ukáže, jestli ho aplikace vidí. */
     private fun hlidejOkno() {
-        oknoNalezeno = nast.zdroj == "okno" && hra.oblast() != null
-        // u chiaki-ng: spárované konzole hned, PS5 v síti každých 10 s (jen když se nehraje)
-        if (nast.zdroj == "chiaki" && tiku++ % 10 == 0 && chiaki?.isAlive != true && krok == null) hledatPs5()
+        oknoNalezeno = !nast.ctecka && nast.zdroj == "okno" && hra.oblast() != null
+        // u chiaki-ng: spárované konzole hned, PS5 v síti každých 10 s (jen když se nehraje / čtečka nehledá sama)
+        if ((nast.ctecka || nast.zdroj == "chiaki") && tiku++ % 10 == 0 && chiaki?.isAlive != true && krok == null && !cteckaBezi()) hledatPs5()
+        chiakiMinim = cteckaTv?.okno?.minimalizovane() == true
+        // poslední ohlášená TV („LG OLED55B7“) – na Domů i před dalším spuštěním
+        TvSender.lastSeen?.announce?.let { a -> nazevTv(a).let { if (it != nast.tvNazev) nast.tvNazev = it } }
         obnovDomu()
     }
 
     private fun spustitNeboZastavit() {
         when {
-            vlakno?.isAlive == true || chiaki?.isAlive == true || krok != null -> zastavit()
+            vlakno?.isAlive == true || chiaki?.isAlive == true || krok != null || cteckaBezi() -> zastavit()
+            nast.ctecka -> cistProTv()
             nast.zdroj == "chiaki" -> hrat()
             else -> spustit()
         }
@@ -574,8 +701,13 @@ private class Aplikace {
 
     // ---- chiaki-ng ----
 
-    private fun vybranaKonzole(): Chiaki.Konzole? =
-        konzoleSeznam.firstOrNull { it.jmeno == nast.konzole } ?: konzoleSeznam.firstOrNull()
+    private fun vybranaKonzole(): Chiaki.Konzole? {
+        val jmeno = if (nast.ctecka) nast.konzoleCtecka else nast.konzole
+        return konzoleSeznam.firstOrNull { it.jmeno == jmeno } ?: konzoleSeznam.firstOrNull()
+    }
+
+    /** Profil chiaki-ng: čtečka pro TV má vlastní (spárování účtem pro PlayLingo), hraní na PC výchozí. */
+    private fun profilChiaki() = if (nast.ctecka) Chiaki.PROFIL_CTECKY else null
 
     private fun najdiPs5(k: Chiaki.Konzole): Chiaki.Nalez? {
         val nalezene = Chiaki.hledej()
@@ -589,7 +721,7 @@ private class Aplikace {
         hledaSe = true
         thread(isDaemon = true) {
             try {
-                konzoleSeznam = Chiaki.konzole()
+                konzoleSeznam = Chiaki.konzole(profilChiaki())
                 ps5 = vybranaKonzole()?.let { najdiPs5(it) }
                 ps5Hledano = true
             } finally { hledaSe = false }
@@ -616,8 +748,9 @@ private class Aplikace {
 
     private fun sparovat() {
         if (parovani != null) return
-        parovani = Parovani(okno, nast, ::zapis, zavreno = { parovani = null }) { jmeno ->
-            nast.konzole = jmeno
+        val ctecka = nast.ctecka
+        parovani = Parovani(okno, nast, ::zapis, ctecka = ctecka, zavreno = { parovani = null }) { jmeno ->
+            if (ctecka) nast.konzoleCtecka = jmeno else nast.konzole = jmeno
             ps5 = null
             hledatPs5()
         }
@@ -683,9 +816,31 @@ private class Aplikace {
         }
     }
 
+    /**
+     * Čtečka pro TV: čtení běží hned (TV se připojí, modely se načtou) a čeká na okno chiaki-ng;
+     * [CteckaTv] hlídá PS5, připojí se, až je zapnutá, a předá čtení okno.
+     */
+    private fun cistProTv() {
+        val exe = Chiaki.exe() ?: return
+        val k = vybranaKonzole() ?: return
+        if (cteckaBezi()) return
+        spustit(CEKA_NA_OKNO)
+        val t = CteckaTv(exe, k, { ctecka }, ::zapis) { SwingUtilities.invokeLater { obnovDomu() } }
+        cteckaTv = t
+        cteckaVlakno = thread(name = "ctecka-tv", isDaemon = true) {
+            t.bez()
+            SwingUtilities.invokeLater { obnovDomu() }
+        }
+        // okno chiaki-ng se otevře přes celou plochu – PlayLingo zpět dopředu, ať je vidět stav
+        Timer(12_000) { if (cteckaTv?.faze == CteckaTv.Faze.BEZI) okno.toFront() }.apply { isRepeats = false; start() }
+        obnovDomu()
+    }
+
     private fun spustit(oknoHry: String? = null) {
         if (vlakno?.isAlive == true) return
         stav = Stav(Stav.Faze.NACITANI)
+        // čtečka pro TV: výstup jen do TV, pruh na PC ne
+        val vystup = if (nast.ctecka) "tv" else nast.vystup
         val c = Ctecka(
             jazyk = nast.jazyk,
             okno = when {
@@ -693,8 +848,8 @@ private class Aplikace {
                 oknoHry != null -> oknoHry
                 else -> nast.okno
             },
-            vystup = nast.vystup,
-            pruh = if (nast.vystup == "tv") null else pruh,
+            vystup = vystup,
+            pruh = if (vystup == "tv") null else pruh,
             log = ::zapis,
             zmena = { s -> stav = s; SwingUtilities.invokeLater { obnovDomu() } },
             chyby = Nastroje.chyby,
@@ -709,6 +864,8 @@ private class Aplikace {
         ctecka = c
         vlakno = thread(name = "ctecka", isDaemon = true) {
             c.bez()
+            // čtečka pro TV bez čtení nemá smysl (např. port pro TV obsazený) – nepřipojovat se k PS5
+            if (stav.faze == Stav.Faze.CHYBA) cteckaTv?.zastav()
             SwingUtilities.invokeLater { obnovDomu() }
         }
         obnovDomu()
@@ -718,6 +875,7 @@ private class Aplikace {
         krok = null
         ctecka?.zastav()
         chiaki?.destroy()
+        cteckaTv?.zastav()
         thread(isDaemon = true) {
             vlakno?.join(3000)
             SwingUtilities.invokeLater { obnovDomu() }
@@ -732,7 +890,8 @@ private class Aplikace {
         ctecka?.zastav()
         thread(isDaemon = true) {
             vlakno?.join(5000)
-            SwingUtilities.invokeLater { spustit(hraOkno) }
+            // čtečka pro TV: okno chiaki-ng ví CteckaTv (spojení s PS5 se kvůli novému nastavení nepřeruší)
+            SwingUtilities.invokeLater { spustit(if (cteckaBezi()) cteckaTv?.oknoNazev ?: CEKA_NA_OKNO else hraOkno) }
         }
     }
 
@@ -817,7 +976,17 @@ private class Aplikace {
     /** Stav pro TV vlevo nahoře – stejné body jako Domů (konzole, překlad, hra). */
     private fun stavProTv(): List<Pair<String, String>> {
         val out = ArrayList<Pair<String, String>>()
-        if (nast.zdroj == "chiaki") vybranaKonzole()?.let { k ->
+        if (nast.ctecka) vybranaKonzole()?.let { k ->
+            val t = cteckaTv
+            out += when (t?.faze) {
+                CteckaTv.Faze.BEZI -> if (chiakiMinim) "pozor" to "chiaki-ng · minimalizované" else "ok" to "${k.jmeno} · připojeno"
+                CteckaTv.Faze.KLID -> "pozor" to "${k.jmeno} · v klidovém režimu"
+                CteckaTv.Faze.NENALEZENA -> "pozor" to "${k.jmeno} · nenalezena"
+                CteckaTv.Faze.CHYBA -> "pozor" to "${k.jmeno} · spojení selhalo"
+                CteckaTv.Faze.PRIPOJOVANI -> "info" to "${k.jmeno} · připojování"
+                else -> "info" to "${k.jmeno} · hledání"
+            }
+        } else if (nast.zdroj == "chiaki") vybranaKonzole()?.let { k ->
             out += (if (chiaki?.isAlive == true) "ok" to "${k.jmeno} · hraje se" else "info" to "${k.jmeno} · spárováno")
         }
         val s = stav
@@ -863,32 +1032,46 @@ private class Aplikace {
             add(popisek("Okno hry", 16)); add(Box.createHorizontalGlue()); add(pole); add(Box.createHorizontalStrut(10))
             add(Tlacitko("Vybrat") { vyberOkno(this) })
         }
+        val pouziti = Karta().apply {
+            add(volba("Použití", Nastaveni.POUZITI.map { it.second },
+                { Nastaveni.POUZITI.indexOfFirst { z -> z.first == nast.pouziti }.coerceAtLeast(0) }) { zmenPouziti(it) })
+        }
         val zdroj = Karta().apply {
             add(volba("Hra běží v", Nastaveni.ZDROJE.map { it.second },
                 { Nastaveni.ZDROJE.indexOfFirst { z -> z.first == nast.zdroj }.coerceAtLeast(0) }) {
                 if (vlakno?.isAlive == true || chiaki?.isAlive == true) zastavit()
                 nast.zdroj = Nastaveni.ZDROJE[it].first
                 if (nast.zdroj == "chiaki") hledatPs5() else hra = OknoHry(nast.okno)
-            })
+            }.also { jenPc += it })
             add(Radek("Konzole", { vybranaKonzole()?.jmeno ?: "nespárováno" }) { r ->
                 val jmena = konzoleSeznam.map { it.jmeno }
                 if (jmena.isEmpty()) sparovat()
-                else vyber(r, jmena, jmena.indexOf(vybranaKonzole()?.jmeno)) { nast.konzole = jmena[it]; ps5 = null; hledatPs5(); r.obnov() }
+                else vyber(r, jmena, jmena.indexOf(vybranaKonzole()?.jmeno)) {
+                    if (nast.ctecka) nast.konzoleCtecka = jmena[it] else nast.konzole = jmena[it]
+                    ps5 = null; hledatPs5(); r.obnov()
+                }
             }.also { radky += it })
             add(Radek("Spárovat PS5", { "" }) { sparovat() }.also { radky += it })
             add(Radek("chiaki-ng", { if (stahovani != null) "stahování" else if (Chiaki.exe() != null) "připraveno" else "chybí" }) {
                 if (Chiaki.exe() == null) stahnoutChiaki() else Chiaki.exe()?.parentFile?.let { runCatching { java.awt.Desktop.getDesktop().open(it) } }
             }.also { radky += it })
-            add(oknoRadek)
+            add(oknoRadek.also { jenPc += it })
         }
+        jenPc.forEach { it.isVisible = !nast.ctecka }
         val preklad = Karta().apply {
             add(volba("Jazyk překladu", Lang.targets.map { it.label }, { Lang.targets.indexOf(jazyk()) }) {
                 nast.jazyk = Lang.targets[it].code; pripravaChyba = false; restart()
             })
-            add(volba("Výstup", Nastaveni.VYSTUPY.map { it.second },
-                { Nastaveni.VYSTUPY.indexOfFirst { v -> v.first == nast.vystup }.coerceAtLeast(0) }) {
-                nast.vystup = Nastaveni.VYSTUPY[it].first; restart()
-            })
+            // čtečka pro TV posílá jen do TV (uložená volba pro hraní na PC se nemění)
+            add(Radek("Výstup", {
+                if (nast.ctecka) "TV LG / Samsung"
+                else Nastaveni.VYSTUPY.firstOrNull { v -> v.first == nast.vystup }?.second ?: "Pruh na PC"
+            }) { r ->
+                if (!nast.ctecka) vyber(r, Nastaveni.VYSTUPY.map { it.second },
+                    Nastaveni.VYSTUPY.indexOfFirst { v -> v.first == nast.vystup }.coerceAtLeast(0)) {
+                    nast.vystup = Nastaveni.VYSTUPY[it].first; r.obnov(); obnovDomu(); restart()
+                }
+            }.also { radky += it })
             add(Radek("Příprava", { if (Nastroje.pripraveno(nast.jazyk)) "hotová" else "chybí" }) { pripravit() }.also { radky += it })
         }
         val deeplKarta = Karta().apply {
@@ -919,6 +1102,8 @@ private class Aplikace {
             runCatching { java.awt.Desktop.getDesktop().open(f) }
         }.also { radky += it })
         return stranka(
+            popisek("Použití", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), pouziti,
+            Box.createVerticalStrut(20),
             popisek("Hra", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), zdroj,
             Box.createVerticalStrut(20),
             popisek("Překlad", 15, B.MUTED, true).vlevo(), Box.createVerticalStrut(8), preklad,
@@ -930,6 +1115,35 @@ private class Aplikace {
     }
 
     private var poleOkna: JTextField? = null
+
+    /**
+     * Použití: hraní na PC / čtečka pro TV. Spárování je pro každé zvlášť (čtečka má vlastní profil
+     * chiaki-ng s účtem pro PlayLingo), takže přepnutí nic nemaže; popis čtečky v dialogu při zapnutí.
+     */
+    private fun zmenPouziti(i: Int) {
+        val nove = Nastaveni.POUZITI[i].first
+        if (nove == nast.pouziti) return
+        if (vlakno?.isAlive == true || chiaki?.isAlive == true || krok != null || cteckaBezi()) zastavit()
+        nast.pouziti = nove
+        konzoleSeznam = emptyList()
+        ps5 = null
+        ps5Hledano = false
+        cteckaTv = null
+        jenPc.forEach { it.isVisible = !nast.ctecka }
+        hledatPs5()
+        radky.forEach { it.obnov() }
+        obnovDomu()
+        okno.contentPane.revalidate()
+        if (nast.ctecka) javax.swing.JOptionPane.showMessageDialog(okno,
+            "<html><b>Čtečka pro TV LG / Samsung</b><br><br>" +
+                "Hra jde z PS5 do TV a hraje se dál ${Parovani.ZELENA} herním účtem.<br>" +
+                "PC se připojí přes Remote Play ${Parovani.MODRA} účtem pro PlayLingo (druhý uživatel na PS5)<br>" +
+                "a překlad pošle do aplikace PlayLingo v TV.<br><br>" +
+                "PS5 se pro čtečku páruje zvlášť tímto druhým účtem · spárování pro hraní na PC zůstává.<br>" +
+                "PS5 se nebudí · připojení až po zapnutí ovladačem.<br>" +
+                "Okno chiaki-ng smí být za jinými okny, ne minimalizované · zvuk z PC vypnutý.</html>",
+            "PlayLingo", javax.swing.JOptionPane.PLAIN_MESSAGE)
+    }
 
     // ---- DeepL ----
 
@@ -985,10 +1199,12 @@ private class Aplikace {
     private fun konec() {
         ctecka?.zastav()
         chiaki?.destroy()
+        cteckaTv?.zastav()
         priprava?.destroy()
         okno.isVisible = false
         thread {
             vlakno?.join(3000)
+            cteckaVlakno?.join(2000)
             System.exit(0)
         }
     }

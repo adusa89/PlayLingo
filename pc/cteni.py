@@ -14,6 +14,8 @@ Pouští ho čtečka (pc/src/Main.kt) a mluví s ním po řádcích přes standa
   BARVA <tab> vlevo <tab> nahoře <tab> vpravo <tab> dole      (v celém posledním snímku)
       -> OK <tab> r <tab> g <tab> b    průměrná barva nejsvětlejších bodů (písmo jména mluvčího)
       -> NIC                          málo bodů / žádný snímek
+  OKNO <tab> nazev
+      -> OK                           dál se čte jiné okno (stejný zápis jako --okno, např. pid:1234)
   MENU
       -> OK <tab> N <tab> šířka <tab> výška <tab> ms  a za tím N řádků:
          vlevo <tab> nahoře <tab> vpravo <tab> dole <tab> jas <tab> text
@@ -296,7 +298,16 @@ def main():
     for radek in sys.stdin:
         cast = radek.rstrip("\n").split("\t")
         try:
-            if cast[0] == "BARVA":
+            if cast[0] == "OKNO":
+                # čtečka pro TV: po každém připojení k PS5 je chiaki-ng nový proces s novým oknem
+                if isinstance(zdroj, Okno) and len(cast) > 1 and cast[1]:
+                    zdroj = Okno(cast[1])
+                    minule = None
+                    posledni = None
+                    ven("OK")
+                else:
+                    ven("CHYBA", "okno nejde změnit")
+            elif cast[0] == "BARVA":
                 ven(*barva_jmena(posledni, [int(float(c)) for c in cast[1:5]]))
             elif cast[0] == "MENU":
                 if posledni is None:

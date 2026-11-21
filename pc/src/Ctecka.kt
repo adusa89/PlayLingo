@@ -44,6 +44,8 @@ import kotlin.math.min
 private const val STALE_MS = 15_000L      // text, který stojí beze změny déle, je nápis nebo menu
 private const val HOLD_MS = 1_000L        // překlad zůstane chvíli po zmizení angličtiny, ať se dá dočíst
 private const val INTERVAL_MS = 120L
+/** Okno, které neexistuje: čtečka pro TV běží (TV připojená, modely načtené) a čeká na chiaki-ng. */
+const val CEKA_NA_OKNO = "pid:0"
 
 /** Kde leží nástroje z přípravy (`priprava.ps1`) a soubory čtečky. */
 object Nastroje {
@@ -117,6 +119,9 @@ private class Helper(python: String, script: File, model: String, lang: String, 
             else -> Read.Error(head.getOrElse(1) { "?" })
         }
     }
+
+    /** Jiné okno hry za běhu (čtečka pro TV: nové okno chiaki-ng po každém připojení k PS5). */
+    fun window(name: String) { ask("OKNO", name.replace('\t', ' ')) }
 
     fun translate(text: String): String? {
         val r = ask("PRELOZ", text.replace('\t', ' ').replace('\n', ' ')).split('\t', limit = 2)
@@ -230,6 +235,10 @@ class Ctecka(
 
     fun zastav() { konec = true }
 
+    /** Okno, ze kterého se má číst dál („pid:1234“) – převezme se před dalším čtením. */
+    @Volatile private var noveOkno: String? = null
+    fun okno(nazev: String) { noveOkno = nazev }
+
     /** Běží, dokud se nezavolá [zastav]. Vrací se po úklidu (pruh schovaný, port zavřený). */
     fun bez() {
         val demo = okno.isEmpty()
@@ -257,7 +266,7 @@ class Ctecka(
             log("Načítám čtení textu a překladač…")
             helper = Helper(python, pomocnik, model.path, jazyk, okno, chyby, slozka)
             if (konec) return
-            hlas((if (demo) "Běží ukázka (bez PlayStationu)." else "Čtu okno „$okno“.") +
+            hlas((if (demo) "Běží ukázka (bez PlayStationu)." else if (okno == CEKA_NA_OKNO) "Čeká na obraz z PS5." else "Čtu okno „$okno“.") +
                 (if (deepl) " Překlad DeepL online + offline." else " Překlad offline."))
             stav = Stav(Stav.Faze.BEZI)
             smycka(helper, sender, demo)
@@ -446,6 +455,12 @@ class Ctecka(
 
         while (!konec) {
             val now = System.currentTimeMillis()
+            noveOkno?.let { o ->
+                noveOkno = null
+                helper.window(o)
+                hideAt = 0; hide(); tracker.reset(); lastError = ""
+                if (o != CEKA_NA_OKNO) hlas("Čtu okno „$o“.")
+            }
             if (sender != null) {
                 if (sender.connected != lastTvs) {
                     lastTvs = sender.connected
@@ -467,7 +482,8 @@ class Ctecka(
             when (r) {
                 Helper.Read.Same -> {}
                 is Helper.Read.Error -> {
-                    if (r.text != lastError) { lastError = r.text; hlas("obraz není: ${r.text}") }
+                    // čtečka pro TV před spojením s PS5 okno nemá – to není chyba
+                    if (r.text != lastError) { lastError = r.text; if (!r.text.contains(CEKA_NA_OKNO)) hlas("obraz není: ${r.text}") }
                     stav = stav.copy(faze = Stav.Faze.BEZ_OKNA, chyba = r.text)
                     hideAt = 0; hide(); tracker.reset()
                 }
