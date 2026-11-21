@@ -256,6 +256,15 @@ text z OCR a co se z něj vzalo). Během hraní na PC: `.\ci\sbirej-hru.ps1 <adr
 (jen změněné) a záznam do `zaznamy\hra-<čas>\`. Podle toho se ladí `hud`, `menu`, jména a pojmy – ne odhadem.
 Jednodušší cesta je PlayLingo pro PC (`pc/`, hra v chiaki-ng) se zapnutým ⚙ → Ladění → Záznam hry do složky:
 barevné snímky celé hry a `zaznam.txt` s přečteným textem a polohou jdou rovnou do `zaznamy\pc-<čas>\` (viz `pc/CTI-ME.md`).
+**Záznam snímků po dávkách (od 0.97.59, přání majitele):** ⚙ → Experimentální → Ladění a hlášení → „Záznam snímků“ (výchozí
+vypnuto, jen při běžícím překladu; se zapnutým záznamem v síti i tlačítko „● Snímky“/„■ Snímky“ v notifikaci, `ACTION_SNAPS`).
+Každé Start…Stop = dávka `filesDir/snimky/davka-<n>-<HHmmss>/` (`snimek-0001.jpg`…, `index.txt`: čas, důvod, řádky `DiagLog`
+od minulého snímku – `DiagLog.mark/since` – a `CTENI:` ze `ScreenReads`, přes `Redact`). `SnapRecorder` = vlastní vlákno každých
+250 ms: `StreamReader.thumb` (mřížka 64×36) → `SnapPacer` (změna nejvýš 1×/s, velká změna po klidu hned) → `colorStill` (barevně
+≤ 1280 px z nejbližšího snímku, záložní dekodér a ukázka šedě přes `still`). Stop po 10 min / se službou; všechny dávky ≤ 300 MB
+(nejstarší se mažou). Vypnuté = nic za snímek (jen kontrola `stillWanted`). Logika a testy: `core/SnapBatches.kt`, `SnapBatchesTest`.
+Stažení na PC (záznam v síti zapnutý): `.\ci\stahni-davky.ps1 <IP> <kód>` (`-Davka 3`, `-Vse`) → `GET /davky?k=…` (JSON)
+a `GET /davka?k=…&n=3` (ZIP posílaný průběžně) → `zaznamy\davky-<čas>\davka-<n>-<HHmmss>\`; nahrávaná dávka se přeskočí.
 
 Zkouška na Android TV navíc nechá přeložit typické herní repliky (`core/TranslationProbe.kt`)
 a uloží je do `preklad.txt` ve větvích s výsledky – podle něj se ladí přirozenost překladu.
@@ -656,7 +665,7 @@ Obsah = celé hlášení o stavu (`DiagReport.build` → `parts`): aplikace a za
 (`pady.txt`), záznam událostí `udalosti.txt`, události z paměti, spojení s PlayStationem a záznam
 z televize. Vše prochází `Redact` s `DiagReport.secrets` (i v JSON). Server (`core/LogShare.kt`:
 `LogShare` rozhodování s testy `LogShareTest`, `LogServer` sockety podle `LoginServer`) umí jen
-`GET /zaznam?k=…` a `/zaznam.json?k=…`, odpovídá jen loopbacku a privátním adresám, nic nepřijímá.
+`GET /zaznam?k=…` a `/zaznam.json?k=…` (a `/hlaseni`, `/snimek.jpg`, `/davky`, `/davka` – viz Ladění profilu ze hry), odpovídá jen loopbacku a privátním adresám, nic nepřijímá.
 Konec platnosti a kód jsou uložené (`NetLogShare`, vlastní SharedPreferences `zaznam_sit`), takže po
 pádu a novém spuštění běží dál se stejným kódem, ale jen do konce 2 hodin.
 

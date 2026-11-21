@@ -17,7 +17,8 @@ import java.util.concurrent.Executors
  *  - `GET /zaznam.json?k=KÓD` → totéž po oddílech v JSON,
  *  - `GET /hlaseni?k=KÓD` → stránka pro telefon (čtvereček na obrazovce hlášení): odkaz ke stažení
  *    a text k označení – hráč ho pak pošle autorovi chatem nebo e-mailem (bez serveru a klíčů),
- *  - `GET /hlaseni.txt?k=KÓD` → text jako soubor ke stažení (i iPhone ho uloží a nasdílí).
+ *  - `GET /hlaseni.txt?k=KÓD` → text jako soubor ke stažení (i iPhone ho uloží a nasdílí),
+ *  - `GET /davky?k=KÓD` → seznam dávek ze Záznamu snímků (JSON), `GET /davka?k=KÓD&n=3` → dávka jako ZIP ([SnapBatches]).
  * Kód je krátký a náhodný, ukazuje se na obrazovce. Jen čtení, jen adresy domácí sítě.
  * Rozhodování je tady bez Androidu (testy `LogShareTest`); server je [LogServer].
  */
@@ -44,7 +45,7 @@ object LogShare {
         return d == 0
     }
 
-    enum class Route { TEXT, JSON, PAGE, DOWNLOAD, IMAGE, BAD_CODE, NOT_FOUND, BAD_METHOD, BAD_REQUEST }
+    enum class Route { TEXT, JSON, PAGE, DOWNLOAD, IMAGE, BATCHES, BATCH, BAD_CODE, NOT_FOUND, BAD_METHOD, BAD_REQUEST }
 
     /** Co udělat s požadavkem (první řádek HTTP) při platném kódu [code]. */
     fun route(requestLine: String, code: String): Route {
@@ -59,6 +60,8 @@ object LogShare {
             "/hlaseni" -> Route.PAGE
             "/hlaseni.txt" -> Route.DOWNLOAD
             "/snimek.jpg" -> Route.IMAGE
+            "/davky" -> Route.BATCHES
+            "/davka", "/davka.zip" -> Route.BATCH
             else -> return Route.NOT_FOUND
         }
         val k = query(target)["k"]
@@ -166,6 +169,9 @@ class LogServer(
     private val lang: () -> Lang = { Lang.CS },
     /** Snímek obrazovky hry (JPEG) pro ladění; null = žádný obraz. */
     private val image: () -> ByteArray? = { null },
+    /** Záznam snímků: seznam dávek (JSON, viz [SnapBatches.json]) a složka dávky podle čísla (null = není). */
+    private val batches: () -> String = { "{\"davky\":[]}" },
+    private val batchDir: (Int) -> java.io.File? = { null },
 ) {
     @Volatile var port = 0
         private set
@@ -232,6 +238,21 @@ class LogServer(
                     val img = image()
                     if (img == null) send(c, 404, "?")
                     else { c.getOutputStream().apply { write(LogShare.jpeg(img)); flush() }; log("log served image") }
+                }
+                LogShare.Route.BATCHES -> { send(c, 200, batches(), json = true); log("log served batches") }
+                LogShare.Route.BATCH -> {
+                    val target = head.substringBefore("\r\n").split(' ').getOrNull(1) ?: ""
+                    val dir = SnapBatches.requested(target)?.let(batchDir)
+                    if (dir == null) send(c, 404, "?")
+                    else {
+                        // ZIP se posílá průběžně (dávka může mít desítky MB), konec = zavření spojení
+                        c.soTimeout = 60_000
+                        val out = java.io.BufferedOutputStream(c.getOutputStream(), 64 * 1024)
+                        out.write(SnapBatches.zipHead(dir.name))
+                        SnapBatches.zip(dir, out)
+                        out.flush()
+                        log("log served batch ${dir.name}")
+                    }
                 }
                 LogShare.Route.BAD_CODE -> {
                     send(c, 403, "?")

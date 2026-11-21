@@ -112,6 +112,17 @@ class TranslatorService : Service() {
 
         @Volatile private var self: TranslatorService? = null
 
+        /** Záznam snímků Start/Stop z notifikace (tlačítko je jen se zapnutým záznamem v domácí síti nebo při nahrávání). */
+        const val ACTION_SNAPS = "cz.playlingo.SNAPS"
+
+        /** Čtečka obrazu pro záznam snímků ([SnapRecorder]); null = obraz nechodí. */
+        val frameReader: StreamReader? get() = activeReader
+
+        /** Obnoví notifikaci (záznam snímků se zapnul / vypnul, záznam v síti se zapnul). */
+        fun refreshNotification() {
+            android.os.Handler(android.os.Looper.getMainLooper()).post { self?.takeIf { running }?.updateNotification() }
+        }
+
         /** Změna vzhledu z rychlé nabídky ovladačem na Android TV ([QuickLook]) – stejně jako z TV LG. */
         fun quickChange(ch: TvSettings.Change) {
             android.os.Handler(android.os.Looper.getMainLooper()).post { self?.takeIf { running }?.let { it.applyTvChange(ch); it.quickSample() } }
@@ -293,6 +304,10 @@ class TranslatorService : Service() {
             }
             ACTION_RELOAD -> {
                 if (running) reloadSettings()
+                return START_NOT_STICKY
+            }
+            ACTION_SNAPS -> {
+                if (running) SnapRecorder.toggle(this)
                 return START_NOT_STICKY
             }
         }
@@ -584,7 +599,7 @@ class TranslatorService : Service() {
         val pausePi = PendingIntent.getService(this, 2, Intent(this, TranslatorService::class.java).setAction(ACTION_PAUSE), flags)
         val openPi = PendingIntent.getActivity(this, 3, Intent(this, MainActivity::class.java), flags)
         val noIcon: android.graphics.drawable.Icon? = null
-        return Notification.Builder(this, CHANNEL)
+        val b = Notification.Builder(this, CHANNEL)
             .setContentTitle(I18n.t(l, if (paused) "n_paused" else "n_running"))
             .setContentText(I18n.t(l, "n_text"))
             .setSmallIcon(R.drawable.ic_notify)
@@ -592,7 +607,12 @@ class TranslatorService : Service() {
             .setOngoing(true)
             .addAction(Notification.Action.Builder(noIcon, I18n.t(l, if (paused) "b_resume" else "b_pause"), pausePi).build())
             .addAction(Notification.Action.Builder(noIcon, I18n.t(l, "b_stop"), stopPi).build())
-            .build()
+        // záznam snímků pro ladění: jen pro vývojáře (zapnutý záznam v domácí síti), hráč tlačítko nevidí
+        if (SnapRecorder.active || NetLogShare.active(this)) {
+            val snapPi = PendingIntent.getService(this, 4, Intent(this, TranslatorService::class.java).setAction(ACTION_SNAPS), flags)
+            b.addAction(Notification.Action.Builder(noIcon, I18n.t(l, if (SnapRecorder.active) "sn_n_stop" else "sn_n_start"), snapPi).build())
+        }
+        return b.build()
     }
 
     private fun updateNotification() {
@@ -1454,6 +1474,7 @@ class TranslatorService : Service() {
         netCallback = null
         try { screenReceiver?.let { unregisterReceiver(it) } } catch (_: Throwable) {}
         screenReceiver = null
+        SnapRecorder.stop("překlad zastaven")
         if (running) tp("STOP|čtení=$ocrRuns|průměr=${if (ocrRuns > 0) ocrMsSum / ocrRuns else 0}ms|titulků=$shows")
         running = false
         paused = false

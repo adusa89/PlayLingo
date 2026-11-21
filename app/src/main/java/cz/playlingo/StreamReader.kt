@@ -124,6 +124,66 @@ class StreamReader(private val width: Int, private val height: Int) {
         deliverColor(req, rgb, (System.nanoTime() - t0) / 1000)
     }
 
+    // ---------------- záznam snímků (SnapRecorder) ----------------
+
+    /** Čekající žádost o barevný snímek celé obrazovky (záznam snímků); null = nic – za snímek jen tahle kontrola. */
+    @Volatile private var stillWanted: ((Bitmap?) -> Unit)? = null
+
+    /** Vezme žádost o barevný snímek (nejvýš jednou). */
+    private fun takeStill(): ((Bitmap?) -> Unit)? {
+        if (stillWanted == null) return null
+        synchronized(colorRequests) { val s = stillWanted; stillWanted = null; return s }
+    }
+
+    /**
+     * Barevný snímek celé obrazovky (nanejvýš [maxW] široký) z nejbližšího snímku videa; čeká nejvýš [waitMs].
+     * null = dekodér barvy nedává (záložní cesta bez popisu obrázku) nebo nic nepřišlo – pak [still] (šedý).
+     * Volá jen záznam snímků, mimo hlavní vlákno.
+     */
+    fun colorStill(maxW: Int, waitMs: Long): Bitmap? {
+        val got = java.util.concurrent.atomic.AtomicReference<Bitmap?>(null)
+        val done = java.util.concurrent.CountDownLatch(1)
+        val late = java.util.concurrent.atomic.AtomicBoolean(false)
+        val cb: (Bitmap?) -> Unit = { b ->
+            if (late.get()) b?.recycle() else got.set(b)
+            done.countDown()
+        }
+        stillMaxW = maxW
+        synchronized(colorRequests) { stillWanted = cb }
+        val ok = try { done.await(waitMs, java.util.concurrent.TimeUnit.MILLISECONDS) } catch (_: InterruptedException) { false }
+        if (!ok) {
+            synchronized(colorRequests) { if (stillWanted === cb) stillWanted = null }
+            late.set(true)
+            got.getAndSet(null)?.let { return it }
+            return null
+        }
+        return got.get()
+    }
+    @Volatile private var stillMaxW = 1280
+
+    /** Barevný obraz zmenšený po celých krocích na nejvýš [maxW]; [y] čte jas, [u]/[v] barvu v polovičním rozlišení. */
+    private inline fun colorScaled(w: Int, h: Int, maxW: Int, y: (Int, Int) -> Int, u: (Int, Int) -> Int, v: (Int, Int) -> Int): Bitmap? = try {
+        val step = maxOf(1, (w + maxW - 1) / maxW)
+        val ow = w / step; val oh = h / step
+        val out = IntArray(ow * oh)
+        var o = 0
+        for (row in 0 until oh) {
+            val r = row * step
+            for (x in 0 until ow) {
+                val c = x * step
+                out[o++] = Yuv.pixel(y(c, r), u(c / 2, r / 2), v(c / 2, r / 2))
+            }
+        }
+        Bitmap.createBitmap(ow, oh, Bitmap.Config.ARGB_8888).also { it.setPixels(out, 0, ow, 0, 0, ow, oh) }
+    } catch (_: Throwable) { null }
+
+    /** Mřížka jasu posledního snímku pro porovnání (viz [cz.playlingo.core.SnapBatches.thumb]); null = obraz zatím není. */
+    fun thumb(): IntArray? = try {
+        synchronized(frameLock) {
+            if (frameW <= 0 || frameH <= 0) null else cz.playlingo.core.SnapBatches.thumb(yBuf, yStride, frameW, frameH)
+        }
+    } catch (_: Throwable) { null }
+
     /** Barevný náhled (poloviční velikost) – pro obrazovku aplikace a nastavení oblastí. */
     @Volatile var colorSnapshot: Bitmap? = null
         private set
@@ -322,6 +382,7 @@ class StreamReader(private val width: Int, private val height: Int) {
         decoded++
         val now = SystemClock.uptimeMillis()
         lastFrameAt = now
+        takeStill()?.invoke(null)    // tady barvy nejsou – záznam snímků vezme šedý
         if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) { lastColorAt = now; colorSnapshot = grayHalf() }
     }
 
@@ -382,6 +443,17 @@ class StreamReader(private val width: Int, private val height: Int) {
                     { x, r -> vB.get(r * vP.rowStride + x * vP.pixelStride).toInt() and 0xFF })
             } catch (_: Throwable) { deliverColor(req, null, 0) }
         }
+        takeStill()?.let { cb ->
+            val b = try {
+                val yP = img.planes[0]; val uP = img.planes[1]; val vP = img.planes[2]
+                val yB = yP.buffer; val uB = uP.buffer; val vB = vP.buffer
+                colorScaled(w, h, stillMaxW,
+                    { x, r -> yB.get(r * yP.rowStride + x * yP.pixelStride).toInt() and 0xFF },
+                    { x, r -> uB.get(r * uP.rowStride + x * uP.pixelStride).toInt() and 0xFF },
+                    { x, r -> vB.get(r * vP.rowStride + x * vP.pixelStride).toInt() and 0xFF })
+            } catch (_: Throwable) { null }
+            cb(b)
+        }
         // barevný náhled jen pro obrazovku aplikace – při hraní se nedělá
         if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) {
             lastColorAt = now
@@ -401,6 +473,7 @@ class StreamReader(private val width: Int, private val height: Int) {
         }
         decoded++
         lastFrameAt = SystemClock.uptimeMillis()
+        takeStill()?.invoke(null)
     }
 
     /**
@@ -409,7 +482,7 @@ class StreamReader(private val width: Int, private val height: Int) {
      */
     fun wantsFrame(): Boolean {
         if (UiState.visible && UiState.previewWanted && SystemClock.uptimeMillis() - lastColorAt > 1500) return true
-        if (colorPending) return true
+        if (colorPending || stillWanted != null) return true
         return synchronized(frameLock) { frameW == 0 || grabbedSerial == frameSerial }
     }
 
@@ -444,6 +517,12 @@ class StreamReader(private val width: Int, private val height: Int) {
                     { x, r -> u.get(r * uStride + x).toInt() and 0xFF },
                     { x, r -> v.get(r * vStride + x).toInt() and 0xFF })
             } catch (_: Throwable) { deliverColor(req, null, 0) }
+        }
+        takeStill()?.let { cb ->
+            cb(colorScaled(w, h, stillMaxW,
+                { x, r -> y.get(r * stride + x).toInt() and 0xFF },
+                { x, r -> u.get(r * uStride + x).toInt() and 0xFF },
+                { x, r -> v.get(r * vStride + x).toInt() and 0xFF }))
         }
         if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) {
             lastColorAt = now
