@@ -118,11 +118,22 @@ object Prefs {
     fun origSp(c: Context): Int = p(c).getInt("orig_sp", 0).let { v -> if (v <= 0) 0 else TEXT_SIZES.minByOrNull { kotlin.math.abs(it - v) } ?: 0 }
     fun setOrigSp(c: Context, v: Int) = p(c).edit().putInt("orig_sp", v).apply()
     /** Úkol pod titulky (GTA) jako samostatný pruh (od 0.97.45): zapnuto, písmo (0 = podle hry), poloha (-1 = na místě úkolu ve hře, jinak 0–100 % výšky). */
+    /**
+     * Texty hry navíc k titulkům (Titulky → Hra, od 0.97.58): každý má vlastní přepínač, žádná obecná volba ho nepřebije.
+     * Kdo měl do 0.97.57 „Rozsah čtení: jen titulky“ (`game_texts` = false), má je vypnuté, dokud některý sám nepřepne
+     * (značky `game_prompts` uložená / `obj_volba` / `game_menu_volba`) – viz [cz.playlingo.core.GameScope].
+     * Klíče jsou společné pro všechny hry; přepínače se ukazují jen u her, jejichž profil daný text zná.
+     */
+    private fun legacyTexts(c: Context): Boolean? = if (p(c).contains("game_texts")) bool(c, "game_texts", true) else null
+    /** Pokyny pro hráče pod titulky (GTA: „Take your shot“) – menší šedý řádek; výchozí zapnuto (jako dřív). */
+    fun gamePrompts(c: Context) = cz.playlingo.core.GameScope.resolve(legacyTexts(c), p(c).contains("game_prompts"), bool(c, "game_prompts", true))
+    fun setGamePrompts(c: Context, v: Boolean) = setBool(c, "game_prompts", v)
     /** Překlad menu hry (GTA VI: Mapa, Hra, Nastavení…), od 0.97.57 volba – výchozí vypnuto (přání majitele). */
-    fun gameMenu(c: Context) = bool(c, "game_menu", false)
-    fun setGameMenu(c: Context, v: Boolean) = setBool(c, "game_menu", v)
-    fun objectiveOn(c: Context) = bool(c, "obj_on", true)
-    fun setObjectiveOn(c: Context, v: Boolean) = setBool(c, "obj_on", v)
+    fun gameMenu(c: Context) = cz.playlingo.core.GameScope.resolve(legacyTexts(c), bool(c, "game_menu_volba", false), bool(c, "game_menu", false))
+    fun setGameMenu(c: Context, v: Boolean) { setBool(c, "game_menu", v); setBool(c, "game_menu_volba", true) }
+    /** Úkol pod titulky zapnutý (`obj_on` je zvlášť pro každou TV, značka `obj_volba` společná). */
+    fun objectiveOn(c: Context) = cz.playlingo.core.GameScope.resolve(legacyTexts(c), bool(c, "obj_volba", false), bool(c, "obj_on", true))
+    fun setObjectiveOn(c: Context, v: Boolean) { setBool(c, "obj_on", v); setBool(c, "obj_volba", true) }
     fun objSize(c: Context): Int = p(c).getInt("obj_size", 0)
     fun setObjSize(c: Context, v: Int) = p(c).edit().putInt("obj_size", v).apply()
     /** -1 na místě ve hře, -2 těsně nad úkolem, -3 nad pruhem s titulky, -4 nahoře (od 0.97.50), jinak střed 0–100 %. */
@@ -229,9 +240,7 @@ object Prefs {
     fun setReaderDevice(c: Context, v: Boolean) = setBool(c, "reader_device", v)
 
     // ---- hra a slovník ----
-    /** Rozsah čtení u hry s profilem: true = titulky a texty hry (prompty…), false = jen titulky. Výchozí ano. */
-    fun gameTexts(c: Context): Boolean = bool(c, "game_texts", true)
-    fun setGameTexts(c: Context, v: Boolean) = setBool(c, "game_texts", v)
+    // `game_texts` (Rozsah čtení do 0.97.57) se už nenastavuje, čte se jen pro přechod – viz [gamePrompts].
 
     /** Okraj pruhu nad a pod textem 0–3 (násobek velikosti písma, viz [BAR_PADS]); výchozí 1. */
     val BAR_PADS = floatArrayOf(0.04f, 0.16f, 0.32f, 0.5f)

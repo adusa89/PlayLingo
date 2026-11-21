@@ -1543,17 +1543,28 @@ class MainActivity : Activity() {
                 } catch (_: Exception) {}
             }, "gameguess"), 8)
         }
-        // rozsah čtení: jen titulky, nebo i texty hry z profilu (prompty v GTA…)
-        // rozsah čtení mění něco jen u her, které mají úkol/pokyny nebo překlad menu (zatím GTA)
-        if (game.prompts || game.menuSpec != null) add(tagged(ui.settingRow(t("gp_scope"), t(if (Prefs.gameTexts(this)) "gp_scope_all" else "gp_scope_subs")) {
-            Prefs.setGameTexts(this, !Prefs.gameTexts(this)); applyToService(); render(true)
-        }, "gamescope"), 8)
-        // překlad menu hry: jen u her, které ho umí, a jen s „Titulky a texty hry“; výchozí vypnuto
-        if (game.menuSpec != null && Prefs.gameTexts(this)) add(tagged(ui.settingRow(t("gp_menu"), onOff(Prefs.gameMenu(this))) {
+        // rada, jak hru nastavit, aby se titulky četly (GTA VI: pozadí titulků) – OK = vysvětlení v dialogu
+        game.hint?.let { h ->
+            add(tagged(ui.settingRow(t(h), t(h + "_val") + " ›", Theme.MUTED) {
+                try {
+                    AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                        .setTitle(t(h)).setMessage(t(h + "_desc"))
+                        .setPositiveButton(android.R.string.ok) { d, _ -> d.dismiss() }
+                        .show()
+                } catch (_: Exception) {}
+            }, "gamehint"), 8)
+        }
+        // co se překládá navíc k titulkům: každý text hry má vlastní přepínač (od 0.97.58, dřív jedna volba „Rozsah čtení“);
+        // ukáže se jen u her, jejichž profil ten text zná
+        if (game.prompts) add(tagged(ui.settingRow(t("gp_prompts"), onOff(Prefs.gamePrompts(this))) {
+            Prefs.setGamePrompts(this, !Prefs.gamePrompts(this)); applyToService(); render(true)
+        }, "gameprompts"), 8)
+        // překlad menu hry: jen u her, které ho umí; výchozí vypnuto
+        if (game.menuSpec != null) add(tagged(ui.settingRow(t("gp_menu"), onOff(Prefs.gameMenu(this))) {
             Prefs.setGameMenu(this, !Prefs.gameMenu(this)); applyToService(); render(true)
         }, "gamemenu"), 8)
-        // úkol pod titulky (GTA): zapnout, písmo, poloha – jen s „Titulky a texty hry“ (od 0.97.45)
-        if (game.prompts && Prefs.gameTexts(this)) {
+        // úkol pod titulky (GTA): zapnout, písmo, poloha, pozadí, barvy (od 0.97.45)
+        if (game.prompts) {
             val on = Prefs.objectiveOn(this)
             add(tagged(ui.settingRow(t("obj_row"), onOff(on)) {
                 Prefs.setObjectiveOn(this, !on); applyToService(); render(true)
@@ -2193,7 +2204,10 @@ class MainActivity : Activity() {
             body("hc5_text").apply { button(ct("m_ps5"), "hpair") { section = Section.PS5; render() } }
         })
         // 6. hraní
-        chapters += Triple("hc6", null, { body(if (tv == TvType.ANDROID) "hc6_android" else "hc6_tv") })
+        // + rady k nastavení her z profilů (GTA VI: pozadí titulků) – pro všechny hry, i když je vybraný univerzální profil
+        chapters += Triple("hc6", null, {
+            body(*(listOf(if (tv == TvType.ANDROID) "hc6_android" else "hc6_tv") + GameProfiles.GAMES.mapNotNull { g -> g.hint?.let { it + "_desc" } }).toTypedArray())
+        })
         // 7. když něco nejde
         chapters += Triple("hc7", null, {
             ui.card().apply {

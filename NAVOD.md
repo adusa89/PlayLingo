@@ -134,9 +134,18 @@ Když telefon sám čte pro televizi LG / Samsung, uložené účty nabídne kro
    (očíslované nebo zarovnané vlevo), ukáže je pruh jako seznam s odrážkami, každou přeloženou
    zvlášť. Menu hry a pokyny k ovládání se dál nepřekládají.
 
+**Co se u hry překládá navíc (Titulky → Hra):** titulky vždy. U her, jejichž profil to zná (zatím GTA), má každý další
+text vlastní přepínač: **Pokyny pod titulky** (krátký šedý řádek „Take your shot“ pod replikou), **Úkol pod titulky**
+(řádek úkolu jako samostatný pruh, s volbami písma, polohy a pozadí) a u GTA VI **Překlad menu hry** (výchozí vypnuto).
+Žádná jiná volba je nepřebíjí. Kdo měl do verze 0.97.57 „Rozsah čtení: jen titulky“, má je po aktualizaci vypnuté.
+
+**GTA VI: pozadí titulků musí být zapnuté.** Bez něj se text ztrácí v obraze a PlayLingo nic nepřečte. Ve hře:
+Settings → UI → Subtitles & Captions → Background – cokoli kromě Off. Připomíná to i řádek „Ve hře: pozadí titulků“
+v Titulky → Hra a Nápověda → Hraní.
+
 **Menu hry (zatím GTA VI, základ):** když otevřeš menu zleva (Mapa, Hra, Obchod, Nápověda, Fotostudio, Nastavení) nebo
 Nastavení hry, ukáže pruh přeložené položky – vybraná je se šipkou ▸ – a u Nastavení i přeložený nadpis a popis vybrané volby.
-Jednotlivé volby Nastavení se zatím nepřekládají. Funguje s profilem hry GTA VI a s Titulky → Hra → Rozsah čtení „Titulky a texty hry“.
+Jednotlivé volby Nastavení se zatím nepřekládají. Funguje s profilem hry GTA VI a se zapnutým Titulky → Hra → Překlad menu hry.
 
 Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪, se nepřekládají.
 
