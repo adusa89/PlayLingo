@@ -77,6 +77,7 @@ jobs:
       - name: Zkouška – přibalený Python přečte a přeloží titulek
         shell: pwsh
         run: |
+          $env:PYTHONUTF8 = "1"
           powershell -NoProfile -ExecutionPolicy Bypass -File out\PlayLingo\app\priprava.ps1 -Jazyk cs -BezSestaveni -Python out\PlayLingo\app\python\python.exe
           $model = Get-ChildItem "$env:LOCALAPPDATA\PlayLingoTools\modely\en_cs" -Directory | Select-Object -First 1
           python pc\zkouska_balicku.py out\PlayLingo\app\python\python.exe out\PlayLingo\app\cteni.py $model.FullName
