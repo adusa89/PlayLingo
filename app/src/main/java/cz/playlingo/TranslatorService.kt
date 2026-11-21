@@ -469,6 +469,7 @@ class TranslatorService : Service() {
             debug, Prefs.coloredSpeaker(this),
             Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this),
             barPad = Prefs.barPad(this),
+            coverAll = Prefs.coverAll(this),
             origSp = Prefs.origSp(this),
             objSizeSp = Prefs.objSize(this),
             objPosPercent = Prefs.objPos(this),

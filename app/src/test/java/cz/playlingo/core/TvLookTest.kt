@@ -28,6 +28,15 @@ class TvLookTest {
         assertTrue(top, top.contains("\"poloha\":\"stred\",\"stred\":0.0800"))
     }
 
+    @Test fun zakrytCelouOblast() {
+        val j = TvLook.json(ScreenLayout(), 100, 50, white, false, 0.8f, 0.9f, 0.2f, 0.8f, null, coverAll = true)
+        assertTrue(j, j.contains("\"poloha\":\"pres\",\"kryt\":true"))
+        // bez volby, bez titulku nebo v jiné poloze se pole neposílá
+        assertFalse(TvLook.json(ScreenLayout(), 100, 50, white, false, 0.8f, 0.9f, 0.2f, 0.8f, null).contains("kryt"))
+        assertFalse(TvLook.json(ScreenLayout(), 100, 50, white, false, -1f, -1f, -1f, -1f, null, coverAll = true).contains("kryt"))
+        assertFalse(TvLook.json(ScreenLayout().withPosition(ScreenLayout.Position.ABOVE), 100, 50, white, false, 0.8f, 0.9f, 0.2f, 0.8f, null, coverAll = true).contains("kryt"))
+    }
+
     @Test fun originalAPismo() {
         val j = TvLook.json(ScreenLayout(), 100, 50, white, false, 0.8f, 0.9f, -1f, -1f, "He said \"no\"\nok")
         assertTrue(j, j.contains("\"original\":\"He said \\\"no\\\"\\nok\""))   // řádek = mluvčí (od 0.97.20)

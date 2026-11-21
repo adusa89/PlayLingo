@@ -395,7 +395,10 @@
     // šířka podle textu (ne přes celou obrazovku), nejvýš podle nastavení
     maxW = Math.round(W * cislo(v.sirka, 0.2, 1, 0.84));
     s.bottom = 'auto'; s.top = '0px'; s.left = '0px'; s.width = 'auto'; s.maxWidth = maxW + 'px';
-    if (pres) {
+    if (pres && text && v.kryt === true) {
+      // zakrýt celou oblast titulků (od 1.5.14): text = celé pole posledních titulků i s okrajem → pruh přesně tak vysoký
+      s.minHeight = Math.round(Math.max(0.02, Math.min(0.33, text[1] - text[0])) * H) + 'px';
+    } else if (pres) {
       // přes titulky: pruh aspoň tak vysoký, aby zakryl anglický text, nejvýš čtvrtina obrazovky
       x = text ? text[1] - text[0] : cteni[1] - cteni[0];
       s.minHeight = Math.min(Math.round(Math.max(0.02, Math.min(1, x + 0.024)) * H), H / 4) + 'px';
@@ -405,7 +408,7 @@
     // zaokrouhlit nahoru: o zlomek pixelu užší pruh by zalomil poslední slovo na další řádek
     w = p.getBoundingClientRect ? Math.ceil(p.getBoundingClientRect().width) : p.offsetWidth;
     w = w || maxW;
-    if (pres && text && text[3] > text[2]) { w = Math.max(w, Math.round((text[3] - text[2]) * W) + 40); }
+    if (pres && text && text[3] > text[2]) { w = Math.max(w, Math.round((text[3] - text[2]) * W) + (v.kryt === true ? 0 : 40)); }
     w = Math.max(160, Math.min(W, w));
     s.width = w + 'px';
     s.maxWidth = '';

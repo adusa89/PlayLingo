@@ -1773,6 +1773,11 @@ class MainActivity : Activity() {
                 }
             }
         }, "pos"), 6)
+        // „Přes titulky“: pruh přes celé pole, kde titulky naposledy byly (i dvouřádkové), ne jen přes právě přečtený řádek
+        if (lay.position == cz.playlingo.core.ScreenLayout.Position.OVER) add(tagged(ui.settingRow(t("l_cover_all"), onOff(Prefs.coverAll(this))) {
+            if (Prefs.coverAll(this)) { Prefs.setCoverAll(this, false); applyToService(); render(true) }
+            else confirmOn(t("l_cover_all"), t("l_cover_all_desc")) { Prefs.setCoverAll(this, true); applyToService(); render(true) }
+        }, "coverall"), 6)
         val widthPct = Math.round(lay.barWidth * 100)
         add(tagged(ui.settingRow(t("l_width"), "$widthPct %") {
             choose(t("l_width"), Prefs.BAR_WIDTHS.map { "$it %" }, Prefs.BAR_WIDTHS.indexOf(widthPct)) { i ->

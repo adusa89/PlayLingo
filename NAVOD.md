@@ -151,6 +151,7 @@ Texty písní (rádio v autě, hudba ve scéně), které hra označuje notou ♪
 - **Účet na PS5 má přihlašovací kód** – PlayStation ho při spojení odmítne a na stránce PlayStation se objeví políčko pro kód (4 číslice); zadej ho tam.
 - **Pruh se neukáže** – zkontroluj Usnadnění (bod 3.5, nebo ⚙ Nastavení → Obecné → Povolení) a v Titulcích nastav vzhled – pruh se při tom ukáže na zkoušku.
 - **Vzhled titulků během hry (Android TV)**: v ⚙ Nastavení → Obecné zvol „Tlačítko vzhledu titulků“ a stiskni tlačítko ovladače, které ve hře nepoužíváš (barevné, Info…). Při hře pak otevře nabídku vzhledu přímo přes obraz; šipky mění hodnoty, Zpět zavře. (V TV LG/Samsung je totéž pod OK při hře nebo v nabídce Vzhled titulků.)
+- **Anglický titulek vyčuhuje nad pruh nebo po stranách** (hlavně dvouřádkový) – v Titulky → Pruh s překladem nech polohu „Přes anglické titulky“ a zapni „Zakrýt celou oblast titulků“: pruh pak kryje celé místo, kde se titulky naposledy ukazovaly, ne jen právě přečtený řádek (Android TV i TV LG/Samsung s aplikací v TV od 1.5.14).
 - **Nic se nečte** – zapni ⚙ Nastavení → Experimentální → Ladění a hlášení → Diagnostický režim; uvidíš, co aplikace čte.
 - **Na PS5 pořád naskakuje „ovladač odpojen / účet připojen“** – s druhým účtem se připojuje i jiné zařízení
   (třeba aplikace PS Remote Play) a PS5 pak spojení přehazuje. Domů to od 0.97 napíše. Druhý účet ať slouží jen PlayLingu.
