@@ -747,8 +747,8 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
 
 ## Obrazovky a průvodce
 
-- **Menu** (`Section` v MainActivity, v tomto pořadí): Domů, Konzole (nadpis stránky PlayStation /
-  Xbox), Titulky (vzhled, jazyk překladu, oblasti), Nápověda a jako poslední **⚙ Nastavení** – to není
+- **Menu** (`Section` v MainActivity, v tomto pořadí; od 0.97.52 Titulky před Konzolí – přání majitele): Domů, Titulky
+  (vzhled, jazyk překladu, oblasti), Konzole (nadpis stránky PlayStation / Xbox), Nápověda a jako poslední **⚙ Nastavení** – to není
   v řadě menu, ale ozubené kolo vidět pořád (`gear`): v telefonu vpravo nahoře v liště, na televizi dole
   v levém sloupci (pořád poslední položka při procházení šipkou dolů – zkouška `07_menu_4`). Historie se
   otevírá z Nastavení (záložka Čtení a překlad).
@@ -856,7 +856,7 @@ jen podtitul „Spárování · 3 z 6“, ať nejsou dva pruhy nad sebou) a pomo
   a průvodce). Na každém kroku průvodce je po vykreslení vybrané tlačítko Pokračovat (`wnext`, u párování
   `pnext`), takže OK posune dál. Snímky průvodce: `01_pruvodce_zarizeni`, `01b_…konzole`,
   `01c_…televize`, `03_…jazyk`, `03b_…po_stazeni`, `03c_…preklad`, `02_…povoleni`, `04_…ps5_krok1`, `04b_…hledani`;
-  stránky menu `07_menu_1`–`4` (Konzole, Titulky, Nápověda, Nastavení).
+  stránky menu `07_menu_1`–`4` (od 0.97.52 Titulky, Konzole, Nápověda, Nastavení).
 - Zbytky starého názvu „TestPreklad“ (značka logu, `rootProject.name`, názvy souborů
   v sestavování, `TestPreklad.apk` ve vydání, sůl odemykacího kódu v `License.kt`).
   Nepřejmenovávej je: visí na nich zkouška, odkaz ve starších verzích a platnost kódů.

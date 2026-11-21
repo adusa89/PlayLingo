@@ -76,7 +76,8 @@ class MainActivity : Activity() {
      * z Nastavení, v menu není.
      */
     private enum class Section(val key: String, val menuKey: String = key) {
-        HOME("m_home"), PS5("m_ps5", "c_console"), LOOK("m_look"), HELP("m_help"),
+        // pořadí = pořadí v menu; od 0.97.52 Titulky před Konzolí (přání majitele) – zkouška v emulátoru na něm stojí
+        HOME("m_home"), LOOK("m_look"), PS5("m_ps5", "c_console"), HELP("m_help"),
         SETTINGS("m_settings"), HISTORY("m_history")
     }
 
@@ -2374,6 +2375,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.51"
-    const val VERSION_CODE = 148
+    const val VERSION = "verze 0.97.52"
+    const val VERSION_CODE = 149
 }

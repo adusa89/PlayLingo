@@ -110,9 +110,9 @@ fi
 adb shell am start -n $PKG/.MainActivity --ez trtest true
 for i in $(seq 1 60); do sleep 3; adb logcat -d | grep -q "TP_TEST.*TR|done" && break; done
 
-# 7) nabídka se seznamem (jazyk): stránka Titulky → první řádek → OK
+# 7) nabídka se seznamem (jazyk): stránka Titulky (od 0.97.52 hned pod Domů) → první řádek → OK
 adb shell am start -n $PKG/.MainActivity --ez nowizard true
-sleep 2; key 20; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk
+sleep 2; key 20; key 23; sleep 1; key 22; sleep 1; key 23; sleep 2; shot 13_nabidka_jazyk
 key 4; sleep 1
 
 # 8) jiné rozlišení obrazovky televize: 720p. Pruh se má i tam postavit přesně na titulek.
