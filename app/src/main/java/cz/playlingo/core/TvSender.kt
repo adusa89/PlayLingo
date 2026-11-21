@@ -318,7 +318,7 @@ class TvSender(private val log: (String) -> Unit = {}) {
 
     /** Popis volby Nastavení hry ([menuDescMessage]) – posílá se jen změna; nové televize ho dostanou po připojení. */
     @Synchronized fun sendMenuDesc(message: String) {
-        val m = if (message.contains("\"text\":\"\"}")) null else message
+        val m = if (message == menuDescMessage(null, null)) null else message
         if (m == menuDesc) return
         menuDesc = m
         broadcast(message)

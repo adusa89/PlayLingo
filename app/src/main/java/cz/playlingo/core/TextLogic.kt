@@ -382,15 +382,6 @@ object TextLogic {
     }
 
     /**
-     * Není to angličtina? (Obsahuje písmena s diakritikou nebo jiné písmo, např. „Potřebujeme peníze“.)
-     * Takový text je skoro jistě náš vlastní překlad přečtený z obrazovky – nikdy se nepřekládá znovu.
-     */
-    /**
-     * Řádek s úkolem z řádků, které prošly jako titulek: nejspodnější řádek bez mluvčího, nad nímž je mezera aspoň
-     * 0,6 výšky řádku a nejvýš 2,5 (volný řádek mezi titulkem a úkolem), nebo – když nad ním nic není – ležící
-     * na naučeném místě úkolu ([objectiveTop], ± 0,7 výšky řádku).
-     */
-    /**
      * Vypadá text jako úkol pro hráče? Úkol v GTA je krátký pokyn s velkým písmenem na začátku („Take your shot“,
      * „Follow Lucia“). Ne: začíná malým písmenem nebo spojkou (pokračování věty), končí čárkou/středníkem, má mluvčího
      * „Jméno:“ (i s chybou čtení) nebo zvuk v hranatých závorkách („[thudding]“). Od 0.97.58 – do té doby se jako úkol
@@ -419,6 +410,12 @@ object TextLogic {
     /** Spojky a slova, kterými v titulcích začíná pokračování věty na dalším řádku. */
     private val CONTINUATIONS = setOf("and", "or", "but", "so", "because", "cause", "then", "that", "which", "who", "to", "of", "with", "for")
 
+    /**
+     * Řádek s úkolem z řádků, které prošly jako titulek: nejspodnější řádek bez mluvčího, nad nímž je mezera aspoň
+     * 0,6 výšky řádku a nejvýš 2,5 (volný řádek mezi titulkem a úkolem), nebo – když nad ním nic není – ležící
+     * na naučeném místě úkolu ([objectiveTop], ± 0,7 výšky řádku). Od 0.97.58 jen pod [minTop] (pás úplně dole),
+     * jen v tvaru úkolu ([objectiveShape]) a jen pod ukončenou větou ([endsSentence]).
+     */
     fun objectiveLine(lines: List<OcrLine>, objectiveTop: Int = -1, minTop: Int = -1): OcrLine? {
         if (lines.isEmpty()) return null
         val last = lines.maxByOrNull { it.top } ?: return null

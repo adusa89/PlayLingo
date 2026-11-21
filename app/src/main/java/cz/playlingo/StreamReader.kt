@@ -163,14 +163,14 @@ class StreamReader(private val width: Int, private val height: Int) {
 
     /** Barevný obraz zmenšený po celých krocích na nejvýš [maxW]; [y] čte jas, [u]/[v] barvu v polovičním rozlišení. */
     private inline fun colorScaled(w: Int, h: Int, maxW: Int, y: (Int, Int) -> Int, u: (Int, Int) -> Int, v: (Int, Int) -> Int): Bitmap? = try {
-        val step = maxOf(1, (w + maxW - 1) / maxW)
-        val ow = w / step; val oh = h / step
+        // neceločíselný krok (nejbližší bod): 1920 bodů → 1280, ne 960
+        val ow = minOf(w, maxW); val oh = maxOf(1, (h.toLong() * ow / w).toInt())
         val out = IntArray(ow * oh)
         var o = 0
         for (row in 0 until oh) {
-            val r = row * step
+            val r = (row.toLong() * h / oh).toInt()
             for (x in 0 until ow) {
-                val c = x * step
+                val c = (x.toLong() * w / ow).toInt()
                 out[o++] = Yuv.pixel(y(c, r), u(c / 2, r / 2), v(c / 2, r / 2))
             }
         }
@@ -480,7 +480,11 @@ class StreamReader(private val width: Int, private val height: Int) {
      * Stojí o nový snímek? (Xbox: převod snímku WebRTC do paměti něco stojí, proto se dělá jen
      * tehdy, když čtečka předchozí už vzala, nebo je čas na barevný náhled.)
      */
+    /** Chtít každý snímek (otevřené menu hry, záznam snímků) – nastavuje služba. */
+    @Volatile var eager = false
+
     fun wantsFrame(): Boolean {
+        if (eager) return true
         if (UiState.visible && UiState.previewWanted && SystemClock.uptimeMillis() - lastColorAt > 1500) return true
         if (colorPending || stillWanted != null) return true
         return synchronized(frameLock) { frameW == 0 || grabbedSerial == frameSerial }

@@ -117,9 +117,8 @@ object Prefs {
      */
     fun origSp(c: Context): Int = p(c).getInt("orig_sp", 0).let { v -> if (v <= 0) 0 else TEXT_SIZES.minByOrNull { kotlin.math.abs(it - v) } ?: 0 }
     fun setOrigSp(c: Context, v: Int) = p(c).edit().putInt("orig_sp", v).apply()
-    /** Úkol pod titulky (GTA) jako samostatný pruh (od 0.97.45): zapnuto, písmo (0 = podle hry), poloha (-1 = na místě úkolu ve hře, jinak 0–100 % výšky). */
     /**
-     * Texty hry navíc k titulkům (Titulky → Hra, od 0.97.58): každý má vlastní přepínač, žádná obecná volba ho nepřebije.
+     * Texty hry navíc k titulkům (Titulky → Hra, od 0.97.59): každý má vlastní přepínač, žádná obecná volba ho nepřebije.
      * Kdo měl do 0.97.57 „Rozsah čtení: jen titulky“ (`game_texts` = false), má je vypnuté, dokud některý sám nepřepne
      * (značky `game_prompts` uložená / `obj_volba` / `game_menu_volba`) – viz [cz.playlingo.core.GameScope].
      * Klíče jsou společné pro všechny hry; přepínače se ukazují jen u her, jejichž profil daný text zná.
@@ -134,6 +133,7 @@ object Prefs {
     /** Úkol pod titulky zapnutý (`obj_on` je zvlášť pro každou TV, značka `obj_volba` společná). */
     fun objectiveOn(c: Context) = cz.playlingo.core.GameScope.resolve(legacyTexts(c), bool(c, "obj_volba", false), bool(c, "obj_on", true))
     fun setObjectiveOn(c: Context, v: Boolean) { setBool(c, "obj_on", v); setBool(c, "obj_volba", true) }
+    /** Úkol pod titulky (GTA): písmo (0 = podle hry), poloha (-1 = na místě úkolu ve hře, jinak 0–100 % výšky). */
     fun objSize(c: Context): Int = p(c).getInt("obj_size", 0)
     fun setObjSize(c: Context, v: Int) = p(c).edit().putInt("obj_size", v).apply()
     /** -1 na místě ve hře, -2 těsně nad úkolem, -3 nad pruhem s titulky, -4 nahoře (od 0.97.50), jinak střed 0–100 %. */

@@ -27,6 +27,12 @@ object SnapRecorder {
         private set
     @Volatile private var current: String? = null
     @Volatile private var thread: Thread? = null
+    /** Pořadí spuštění: vlákno starší dávky (rychlé Stop → Start) už nic nezapíše ani nezastaví. */
+    @Volatile private var gen = 0
+    /** Souhrn uložených dávek (počet dávek, snímků, bajtů) – počítá se mimo hlavní vlákno; null = ještě nespočítán. */
+    @Volatile var summary: Triple<Int, Int, Long>? = null
+        private set
+    @Volatile private var summing = false
 
     fun root(c: Context) = File(c.applicationContext.filesDir, SnapBatches.DIR)
 
@@ -46,18 +52,22 @@ object SnapRecorder {
         val n = SnapBatches.next((root.list() ?: emptyArray()).toList())
         val dir = File(root, SnapBatches.dirName(n, now))
         if (!dir.mkdirs()) return false
-        SnapBatches.prune(root, SnapBatches.CAP_BYTES, dir.name)
-        // tajné hodnoty jednou na začátku (čtení klíčů něco stojí), řádky indexu jdou přes Redact
-        val secrets = try { DiagReport.secrets(ctx) } catch (_: Throwable) { emptyList() }
         val head = listOf(
             "PlayLingo ${BuildInfo.VERSION} · ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} · Android ${android.os.Build.VERSION.RELEASE}",
             "zdroj: " + (if (TranslatorService.demo) "ukázka" else if (TranslatorService.xbox) "Xbox" else "PlayStation") +
                 " · hra: ${Prefs.gameId(ctx)}",
         )
-        try { File(dir, SnapBatches.INDEX).writeText(Redact.clean(SnapBatches.header(n, now, head), secrets), Charsets.UTF_8) } catch (_: Throwable) {}
+        val my = ++gen
         batch = n; count = 0; current = dir.name; active = true
         DiagLog.add("SNAP|start ${dir.name}")
-        thread = Thread({ loop(ctx, root, dir, now, secrets) }, "tp-snimky").apply { isDaemon = true; priority = Thread.MIN_PRIORITY; start() }
+        // mazání starých dávek, klíče (Keystore) a hlavička indexu až ve vlákně – start běží z hlavního vlákna
+        thread = Thread({
+            SnapBatches.prune(root, SnapBatches.CAP_BYTES, dir.name)
+            // tajné hodnoty jednou na začátku (čtení klíčů něco stojí), řádky indexu jdou přes Redact
+            val secrets = try { DiagReport.secrets(ctx) } catch (_: Throwable) { emptyList() }
+            try { File(dir, SnapBatches.INDEX).writeText(Redact.clean(SnapBatches.header(n, now, head), secrets), Charsets.UTF_8) } catch (_: Throwable) {}
+            loop(ctx, root, dir, now, secrets, my)
+        }, "tp-snimky").apply { isDaemon = true; priority = Thread.MIN_PRIORITY; start() }
         TranslatorService.refreshNotification()
         return true
     }
@@ -68,25 +78,44 @@ object SnapRecorder {
         thread?.interrupt(); thread = null
         DiagLog.add("SNAP|stop $current · $count snímků · $why")
         TranslatorService.refreshNotification()
+        summary = null
     }
 
-    private fun loop(ctx: Context, root: File, dir: File, startWall: Long, secrets: Collection<String>) {
+    /** Stop jen z vlákna dávky [my] – starší vlákno novou dávku nezastaví. */
+    @Synchronized private fun stopIf(my: Int, why: String) { if (my == gen) stop(why) }
+
+    /** Souhrn uložených dávek pro Nastavení: spočítá se jednou na pozadí, [done] se zavolá na hlavním vlákně. */
+    fun refreshSummary(c: Context, done: () -> Unit) {
+        if (summary != null || summing) return
+        summing = true
+        val root = root(c)
+        val main = android.os.Handler(android.os.Looper.getMainLooper())
+        Thread({
+            val saved = try { SnapBatches.scan(root) } catch (_: Throwable) { emptyList() }
+            summary = Triple(saved.size, saved.sumOf { it.snaps }, saved.sumOf { it.bytes })
+            summing = false
+            main.post(done)
+        }, "tp-snimky-souhrn").apply { isDaemon = true; start() }
+    }
+
+    private fun loop(ctx: Context, root: File, dir: File, startWall: Long, secrets: Collection<String>, my: Int) {
         val pacer = SnapPacer()
         val startUp = SystemClock.uptimeMillis()
         var mark = DiagLog.mark()
         var readsAt = startWall - 1
         val index = File(dir, SnapBatches.INDEX)
         try {
-            while (active) {
+            while (active && my == gen) {
                 try { Thread.sleep(SnapBatches.POLL_MS) } catch (_: InterruptedException) { break }
-                if (!active) break
+                if (!active || my != gen) break
                 val up = SystemClock.uptimeMillis()
-                if (up - startUp > SnapBatches.MAX_MS) { stop("10 min"); break }
-                if (!TranslatorService.running) { stop("překlad zastaven"); break }
+                if (up - startUp > SnapBatches.MAX_MS) { stopIf(my, "10 min"); break }
+                if (!TranslatorService.running) { stopIf(my, "překlad zastaven"); break }
                 val r = TranslatorService.frameReader ?: continue
                 val th = r.thumb() ?: continue
                 val why = pacer.offer(th, up) ?: continue
                 val bmp: Bitmap = r.colorStill(SnapBatches.MAX_W, 600) ?: r.still(SnapBatches.MAX_W) ?: continue
+                if (my != gen) { bmp.recycle(); break }
                 val i = count + 1
                 val name = SnapBatches.snapName(i)
                 val w = bmp.width; val h = bmp.height
@@ -107,11 +136,11 @@ object SnapRecorder {
                 // místo: po každých 20 snímcích smazat nejstarší dávky; když nestačí ani to, zastavit
                 if (i % 20 == 0) {
                     SnapBatches.prune(root, SnapBatches.CAP_BYTES, dir.name)
-                    if (SnapBatches.scan(root).sumOf { it.bytes } > SnapBatches.CAP_BYTES) { stop("plné místo"); break }
+                    if (SnapBatches.scan(root).sumOf { it.bytes } > SnapBatches.CAP_BYTES) { stopIf(my, "plné místo"); break }
                 }
             }
         } catch (_: Throwable) {
-            stop("chyba")
+            stopIf(my, "chyba")
         }
     }
 }

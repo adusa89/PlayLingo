@@ -34,7 +34,6 @@ import cz.playlingo.core.Ps5
 import cz.playlingo.core.Ps5Host
 import cz.playlingo.core.UpdateCheck
 import cz.playlingo.core.SubtitleHistory
-import cz.playlingo.core.SnapBatches
 import cz.playlingo.core.TranslationProbe
 import cz.playlingo.core.TvSender
 import cz.playlingo.core.TvType
@@ -1556,7 +1555,7 @@ class MainActivity : Activity() {
                 } catch (_: Exception) {}
             }, "gamehint"), 8)
         }
-        // co se překládá navíc k titulkům: každý text hry má vlastní přepínač (od 0.97.58, dřív jedna volba „Rozsah čtení“);
+        // co se překládá navíc k titulkům: každý text hry má vlastní přepínač (od 0.97.59, dřív jedna volba „Rozsah čtení“);
         // ukáže se jen u her, jejichž profil ten text zná
         if (game.prompts) add(tagged(ui.settingRow(t("gp_prompts"), onOff(Prefs.gamePrompts(this))) {
             Prefs.setGamePrompts(this, !Prefs.gamePrompts(this)); applyToService(); render(true)
@@ -2047,11 +2046,12 @@ class MainActivity : Activity() {
             if (!SnapRecorder.toggle(this)) Toast.makeText(this, t("sn_need_run"), Toast.LENGTH_LONG).show()
             render(true)
         }, "snimky"), 8)
-        // jen když je skupina Ladění a hlášení otevřená (výpis složky, žádné čtení souborů)
-        val saved = SnapBatches.scan(SnapRecorder.root(this))
-        if (saved.isNotEmpty()) add(ui.text(t("sn_saved").replace("%b", saved.size.toString())
-            .replace("%c", saved.sumOf { it.snaps }.toString())
-            .replace("%m", ((saved.sumOf { it.bytes } + 524_287) / 1_048_576).toString()), 14f, Theme.MUTED), 6)
+        // souhrn uložených dávek se počítá na pozadí (procházení složek), po spočítání se stránka překreslí
+        val saved = SnapRecorder.summary
+        if (saved == null) SnapRecorder.refreshSummary(this) { if (section == Section.SETTINGS) render(keepFocus = true) }
+        else if (saved.first > 0) add(ui.text(t("sn_saved").replace("%b", saved.first.toString())
+            .replace("%c", saved.second.toString())
+            .replace("%m", ((saved.third + 524_287) / 1_048_576).toString()), 14f, Theme.MUTED), 6)
     }
 
     private fun snapValue(): String = if (SnapRecorder.active)

@@ -71,6 +71,8 @@ $cil = Join-Path $zaznamy ('davky-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $stazeno = 0
 foreach ($d in $davky) {
     if ($Davka -gt 0 -and $d.n -ne $Davka) { continue }
+    # název přichází ze zařízení v síti – do cesty jen přesný tvar dávky
+    if ([string]$d.nazev -notmatch '^davka-\d{1,6}-\d{6}$') { Write-Output "Přeskočeno: neplatný název dávky."; continue }
     if ($d.nahrava) { Write-Output "$($d.nazev): právě se nahrává – přeskočeno (stáhni po Stop)."; continue }
     if (-not $Vse -and $Davka -eq 0 -and $uz.ContainsKey($d.nazev) -and $uz[$d.nazev] -eq $d.snimku) {
         Write-Output "$($d.nazev): už je v PC."; continue
