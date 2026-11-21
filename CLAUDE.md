@@ -166,6 +166,9 @@ pruh), lišta Nastavení v řádku pod anglickým popisem vpravo. Značka vybran
 položky se během otevřeného menu doplňují (čtečka občas některou vynechá), vybraná = ta jediná, která v čtení chybí (tmavé písmo na
 bílém pruhu se nepřečte), menu se zavře až po 2 čteních bez něj (neblikne); text se posílá jen při změně.
 
+**Překlad menu je od 0.97.57 volba Titulky → Hra → „Překlad menu hry“ (`Prefs.gameMenu`, klíč `game_menu`, výchozí vypnuto –
+majitel ho nechce, foto Nastavení GTA VI 21. 11. 2026); bez ní `menuSpec = null` a menu se vůbec nečte (titulky v menu hry dál
+odfiltruje `GameScreen.menu`).**
 **Menu hry od 0.97.34 (zatím GTA VI, `core/GameMenu.kt`, testy `GameMenuTest`):** základ podle snímků majitele (`zaznamy/hra-…`) –
 menu otevřené zleva (Map / Game / Store / Help / Photo Studio / Settings), horní lišta Nastavení (Control Scheme … Account) a nadpis
 s popisem vybrané volby vpravo; jednotlivé volby Nastavení záměrně ne. `GameProfile.menuSpec` (`MenuSpec`: položky, záložky, pevné

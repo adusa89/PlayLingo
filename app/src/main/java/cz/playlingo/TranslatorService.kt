@@ -423,7 +423,8 @@ class TranslatorService : Service() {
         glossary = Prefs.glossary(this)
         screen = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).screen
         prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
-        menuSpec = if (Prefs.gameTexts(this)) cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).menuSpec else null
+        // překlad menu hry jen se zapnutou volbou (od 0.97.57 výchozí vypnuto – majitel ho nechce)
+        menuSpec = if (Prefs.gameTexts(this) && Prefs.gameMenu(this)) cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).menuSpec else null
         menuShown = false; menuKey = ""; menuWords.clear(); menuTracker = null
         coloredSpeaker = Prefs.coloredSpeaker(this)
         cz.playlingo.core.NameColor.profile = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey

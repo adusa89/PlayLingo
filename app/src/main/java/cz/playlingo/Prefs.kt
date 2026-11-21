@@ -101,6 +101,9 @@ object Prefs {
     fun origSp(c: Context): Int = p(c).getInt("orig_sp", 0).let { v -> if (v <= 0) 0 else TEXT_SIZES.minByOrNull { kotlin.math.abs(it - v) } ?: 0 }
     fun setOrigSp(c: Context, v: Int) = p(c).edit().putInt("orig_sp", v).apply()
     /** Úkol pod titulky (GTA) jako samostatný pruh (od 0.97.45): zapnuto, písmo (0 = podle hry), poloha (-1 = na místě úkolu ve hře, jinak 0–100 % výšky). */
+    /** Překlad menu hry (GTA VI: Mapa, Hra, Nastavení…), od 0.97.57 volba – výchozí vypnuto (přání majitele). */
+    fun gameMenu(c: Context) = bool(c, "game_menu", false)
+    fun setGameMenu(c: Context, v: Boolean) = setBool(c, "game_menu", v)
     fun objectiveOn(c: Context) = bool(c, "obj_on", true)
     fun setObjectiveOn(c: Context, v: Boolean) = setBool(c, "obj_on", v)
     fun objSize(c: Context): Int = p(c).getInt("obj_size", 0)

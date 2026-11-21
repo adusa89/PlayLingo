@@ -1513,6 +1513,10 @@ class MainActivity : Activity() {
         if (game.prompts || game.menuSpec != null) add(tagged(ui.settingRow(t("gp_scope"), t(if (Prefs.gameTexts(this)) "gp_scope_all" else "gp_scope_subs")) {
             Prefs.setGameTexts(this, !Prefs.gameTexts(this)); applyToService(); render(true)
         }, "gamescope"), 8)
+        // překlad menu hry: jen u her, které ho umí, a jen s „Titulky a texty hry“; výchozí vypnuto
+        if (game.menuSpec != null && Prefs.gameTexts(this)) add(tagged(ui.settingRow(t("gp_menu"), onOff(Prefs.gameMenu(this))) {
+            Prefs.setGameMenu(this, !Prefs.gameMenu(this)); applyToService(); render(true)
+        }, "gamemenu"), 8)
         // úkol pod titulky (GTA): zapnout, písmo, poloha – jen s „Titulky a texty hry“ (od 0.97.45)
         if (game.prompts && Prefs.gameTexts(this)) {
             val on = Prefs.objectiveOn(this)
@@ -2437,6 +2441,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.56"
-    const val VERSION_CODE = 153
+    const val VERSION = "verze 0.97.57"
+    const val VERSION_CODE = 154
 }
