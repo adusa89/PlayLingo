@@ -113,13 +113,18 @@ class TvSender(private val log: (String) -> Unit = {}) {
          * Řádek s úkolem pod titulky (od 0.97.43, aplikace v TV 1.5.11) – samostatný pruh, nezávislý na titulku:
          * `{"typ":"ukol","text":…,"misto":[vlevo,nahoře,vpravo,dole],"pismo":px,"pozadi":0–100,"barva":"#RRGGBB"}`,
          * schování `{"typ":"ukol","text":""}`. [misto] = kde byl anglický úkol (zlomky obrazu 0..1). Starší TV zprávu
-         * neznají a nic neukážou.
+         * neznají a nic neukážou. [casti] = barevná slova úkolu (pokus, [ObjectiveColors]):
+         * `"casti":[{"text":…,"barva":"#RRGGBB"|null}]` na konci zprávy; bez nich je zpráva stejná jako dřív.
          */
-        fun objectiveMessage(text: String?, misto: FloatArray? = null, pismo: Int = 0, pozadi: Int = 100, barva: String = "#FFFFFF"): String {
+        fun objectiveMessage(text: String?, misto: FloatArray? = null, pismo: Int = 0, pozadi: Int = 100, barva: String = "#FFFFFF",
+                             casti: List<ObjectivePart>? = null): String {
             if (text.isNullOrBlank() || misto == null || misto.size < 4) return "{\"typ\":\"ukol\",\"text\":\"\"}"
             val m = misto.joinToString(",") { String.format(java.util.Locale.ROOT, "%.4f", it.coerceIn(0f, 1f)) }
+            val c = casti?.takeIf { p -> p.any { it.color != null } }?.joinToString(",", ",\"casti\":[", "]") { p ->
+                "{\"text\":${json(p.text)},\"barva\":" + (p.color?.let { "\"${SpeakerColors.hex(it)}\"" } ?: "null") + "}"
+            } ?: ""
             return "{\"typ\":\"ukol\",\"text\":${json(text)},\"misto\":[$m],\"pismo\":${pismo.coerceIn(16, 120)}," +
-                "\"pozadi\":${pozadi.coerceIn(0, 100)},\"barva\":\"$barva\"}"
+                "\"pozadi\":${pozadi.coerceIn(0, 100)},\"barva\":\"$barva\"$c}"
         }
 
         /**

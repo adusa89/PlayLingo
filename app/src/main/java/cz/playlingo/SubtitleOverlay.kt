@@ -52,11 +52,13 @@ class SubtitleOverlay(
     private val matchOriginalSize: Boolean = false,
     /** Okraj nad a pod textem 0–3 ([Prefs.BAR_PADS]). */
     private val barPad: Int = 1,
-    /** Velikost anglického originálu v % písma překladu ([Prefs.ORIG_SIZES]). */
-    private val origPercent: Int = 62,
+    /** Velikost písma anglického originálu v sp ([Prefs.origSp]); 0 = automaticky 62 % písma překladu. */
+    private val origSp: Int = 0,
     /** Písmo úkolu v sp (0 = podle úkolu ve hře / jako titulky) a poloha (-1 = na místě úkolu, jinak střed v % výšky). */
     private val objSizeSp: Int = 0,
     private val objPosPercent: Int = -1,
+    /** Pozadí úkolu 0–100 % (-1 = jako pruh s titulky), od 0.97.50. */
+    private val objBgPercent: Int = -1,
     /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky a texty hry), nebo vynechat (Jen titulky). */
     private val showPrompts: Boolean = true,
     /** Pevné barvy postav z profilu hry ([cz.playlingo.core.GameProfile.colorsByKey]). */
@@ -103,6 +105,11 @@ class SubtitleOverlay(
     private val sizeKeeper = SizeKeeper()
     private val tvSizeKeeper = SizeKeeper()
     private val bgAlpha = (255 * opacityPercent / 100).coerceIn(0, 255)
+    /** Pozadí úkolu: vlastní, nebo jako pruh. */
+    private val objOpacity = if (objBgPercent in 0..100) objBgPercent else opacityPercent
+    private val objAlpha = (255 * objOpacity / 100).coerceIn(0, 255)
+    /** Kde naposledy stál pruh s titulky (horní hrana, zlomek výšky; -1 = ještě nebyl) – pro úkol „nad pruhem“. */
+    @Volatile private var lastBarTop = -1f
 
     /** Je pruh právě zobrazený? */
     @Volatile var isShown = false
@@ -139,7 +146,7 @@ class SubtitleOverlay(
                 if (opacityPercent < 60) setShadowLayer(dp(4).toFloat(), 0f, dp(1).toFloat(), Color.BLACK)
                 else setShadowLayer(3f, 0f, 1f, Color.BLACK)
                 background = GradientDrawable().apply {
-                    setColor(Color.argb(bgAlpha, 0, 0, 0))
+                    setColor(Color.argb(objAlpha, 0, 0, 0))
                     cornerRadius = dp(10).toFloat()
                 }
                 visibility = View.GONE
@@ -235,7 +242,10 @@ class SubtitleOverlay(
                 sb.append(s.body)
                 sb.setSpan(ForegroundColorSpan(originalColor), bs, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
-            sb.setSpan(RelativeSizeSpan(origPercent / 100f), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val span = if (origSp > 0) android.text.style.AbsoluteSizeSpan(
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, origSp.toFloat(), host.resources.displayMetrics).toInt())
+            else RelativeSizeSpan(0.62f)
+            sb.setSpan(span, start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return sb
     }
@@ -263,7 +273,10 @@ class SubtitleOverlay(
             // originál po mluvčích (řádek = jeden mluvčí) – televize podle jmen obarví jako překlad
             val tvOriginal = original?.let { o -> TextLogic.segments(o).joinToString("\n") { s ->
                 (s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + s.body } }
-            val look = TvLook.json(layout, opacityPercent, TvLook.textPx(textSize, tvMatched), textColor, bold,
+            // originál v TV: zvolená velikost písma jako podíl písma překladu (TV zná jen poměr, od 1.5.12)
+            val tvMain = TvLook.textPx(textSize, tvMatched)
+            val origPercent = if (origSp > 0) Math.round(TvLook.textPx(origSp, 0) * 100f / tvMain) else 62
+            val look = TvLook.json(layout, opacityPercent, tvMain, textColor, bold,
                 textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box, step, origPercent = origPercent)
             send(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors), look)
         }
@@ -339,6 +352,7 @@ class SubtitleOverlay(
             val limit = max(0, (screenW - width) / 2)
             lp.x = ((centerX - 0.5f) * screenW).toInt().coerceIn(-limit, limit)
             lp.y = (top * screenH).toInt().coerceIn(0, max(0, screenH - h))
+            lastBarTop = lp.y.toFloat() / screenH
             tv.visibility = View.VISIBLE
             try { wm.updateViewLayout(tv, lp) } catch (_: Exception) {}
         }
@@ -347,10 +361,9 @@ class SubtitleOverlay(
     /**
      * Ukáže přeložený úkol ve vlastním pruhu přes anglický úkol. [box] = vlevo, nahoře, vpravo, dole (zlomky obrazu),
      * [lineHeight] = velikost písma originálu jako zlomek výšky (0 = neznámá → písmo z Nastavení).
+     * [parts] = barevná slova úkolu (pokus, [cz.playlingo.core.ObjectiveColors]); null = celý úkol výchozí barvou.
      */
-    fun showObjective(text: String, gameBox: FloatArray, lineHeight: Float) {
-        // vlastní výška: vodorovně na střed obrazovky, svisle střed na zvolené výšce
-        val box = if (objPosPercent >= 0) (objPosPercent / 100f).let { y -> floatArrayOf(0.3f, (y - 0.001f).coerceAtLeast(0f), 0.7f, (y + 0.001f).coerceAtMost(1f)) } else gameBox
+    fun showObjective(text: String, gameBox: FloatArray, lineHeight: Float, parts: List<cz.playlingo.core.ObjectivePart>? = null) {
         val byGame = objSizeSp <= 0 && matchOriginalSize && lineHeight > 0f
         val px = when {
             objSizeSp > 0 -> objSizeSp * density * host.resources.configuration.fontScale
@@ -362,14 +375,37 @@ class SubtitleOverlay(
             byGame -> TvLook.textPx(textSize, MatchSize.textPx(lineHeight, TvLook.SCREEN_H))
             else -> TvLook.textPx(textSize, 0)
         }
-        onObjective?.invoke(TvSender.objectiveMessage(text, box, tvPx, opacityPercent, SpeakerColors.hex(textColor)))
+        // poloha (od 0.97.50 jako pruh): na místě úkolu ve hře / těsně nad ním / nad pruhem s titulky / nahoře / vlastní výška;
+        // výška pruhu úkolu odhadem z písma (≈ 1,45 řádku), střed pak jde do TV jako úzké `misto`
+        val hFrac = (tvPx * 1.45f) / TvLook.SCREEN_H
+        val cyFrac: Float? = when (objPosPercent) {
+            -1 -> null
+            -2 -> (gameBox[1] - 0.006f - hFrac / 2f)
+            -3 -> ((if (lastBarTop >= 0f) lastBarTop else layout.read.top) - 0.006f - hFrac / 2f)
+            -4 -> 0.08f + hFrac / 2f
+            else -> objPosPercent / 100f
+        }?.coerceIn(hFrac / 2f, 1f - hFrac / 2f)
+        val box = if (cyFrac == null) gameBox else {
+            val cx = if (objPosPercent == -2) (gameBox[0] + gameBox[2]) / 2f else 0.5f
+            floatArrayOf(cx - 0.2f, cyFrac - 0.001f, cx + 0.2f, cyFrac + 0.001f)
+        }
+        onObjective?.invoke(TvSender.objectiveMessage(text, box, tvPx, objOpacity, SpeakerColors.hex(textColor), parts))
+        val shown: CharSequence = parts?.takeIf { p -> p.joinToString("") { it.text } == text }?.let { p ->
+            val sb = SpannableStringBuilder()
+            for (part in p) {
+                val start = sb.length
+                sb.append(part.text)
+                part.color?.let { c -> sb.setSpan(ForegroundColorSpan(c or 0xFF000000.toInt()), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE) }
+            }
+            sb
+        } ?: text
         main.post {
             val v = objView ?: return@post
             val lp = objParams ?: return@post
             if (px > 0f) v.setTextSize(TypedValue.COMPLEX_UNIT_PX, px) else v.textSize = textSize.toFloat()
             val em = v.textSize
             v.setPadding((em * 0.7f).toInt(), (em * 0.12f).toInt(), (em * 0.7f).toInt(), (em * 0.16f).toInt())
-            v.text = text
+            v.text = shown
             v.measure(View.MeasureSpec.makeMeasureSpec((screenW * 0.9f).toInt(), View.MeasureSpec.AT_MOST),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
             val w = v.measuredWidth; val h = v.measuredHeight

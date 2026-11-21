@@ -94,16 +94,24 @@ object Prefs {
 
     fun showOriginal(c: Context) = bool(c, "show_original", false)
     fun setShowOriginal(c: Context, v: Boolean) = setBool(c, "show_original", v)
-    /** Velikost písma anglického originálu v % písma překladu (od 0.97.44; dřív pevně 62 %). */
-    val ORIG_SIZES = intArrayOf(40, 50, 62, 75, 90, 100)
-    fun origSize(c: Context): Int = p(c).getInt("orig_size", 62).let { v -> ORIG_SIZES.minByOrNull { kotlin.math.abs(it - v) } ?: 62 }
-    fun setOrigSize(c: Context, v: Int) = p(c).edit().putInt("orig_size", v).apply()
+    /**
+     * Velikost písma anglického originálu jako u překladu (12–48; 0 = automaticky, 62 % písma překladu jako dřív).
+     * Od 0.97.50 na přání majitele velikost písma místo procent (0.97.44–0.97.49 klíč `orig_size` v %, už se nečte).
+     */
+    fun origSp(c: Context): Int = p(c).getInt("orig_sp", 0).let { v -> if (v <= 0) 0 else TEXT_SIZES.minByOrNull { kotlin.math.abs(it - v) } ?: 0 }
+    fun setOrigSp(c: Context, v: Int) = p(c).edit().putInt("orig_sp", v).apply()
     /** Úkol pod titulky (GTA) jako samostatný pruh (od 0.97.45): zapnuto, písmo (0 = podle hry), poloha (-1 = na místě úkolu ve hře, jinak 0–100 % výšky). */
     fun objectiveOn(c: Context) = bool(c, "obj_on", true)
     fun setObjectiveOn(c: Context, v: Boolean) = setBool(c, "obj_on", v)
     fun objSize(c: Context): Int = p(c).getInt("obj_size", 0)
     fun setObjSize(c: Context, v: Int) = p(c).edit().putInt("obj_size", v).apply()
-    fun objPos(c: Context): Int = p(c).getInt("obj_pos", -1).let { if (it < 0) -1 else it.coerceIn(0, 100) }
+    /** -1 na místě ve hře, -2 těsně nad úkolem, -3 nad pruhem s titulky, -4 nahoře (od 0.97.50), jinak střed 0–100 %. */
+    fun objPos(c: Context): Int = p(c).getInt("obj_pos", -1).let { if (it < 0) it.coerceIn(-4, -1) else it.coerceIn(0, 100) }
+    /** Pozadí úkolu 0–100 % (-1 = jako pruh s titulky, výchozí) a barevná slova úkolu (pokus, výchozí vypnuto), od 0.97.50. */
+    fun objBg(c: Context): Int = p(c).getInt("obj_bg", -1).let { v -> if (v < 0) -1 else OPACITIES.minByOrNull { kotlin.math.abs(it - v) } ?: -1 }
+    fun setObjBg(c: Context, v: Int) = p(c).edit().putInt("obj_bg", v).apply()
+    fun objColors(c: Context) = bool(c, "obj_colors", false)
+    fun setObjColors(c: Context, v: Boolean) = setBool(c, "obj_colors", v)
     fun setObjPos(c: Context, v: Int) = p(c).edit().putInt("obj_pos", v).apply()
     /** Vlastní výška pruhu / úkolu: střed v % výšky obrazovky. */
     val HEIGHTS = (0..100 step 5).toList()
@@ -215,8 +223,14 @@ object Prefs {
     fun ps5Wake(c: Context): Boolean = bool(c, "ps5_wake2", false)
     fun setPs5Wake(c: Context, v: Boolean) = setBool(c, "ps5_wake2", v)
     /** Stav (konzole, překlad, hra) vlevo nahoře přes hru na Android TV – výchozí vypnuto (od 0.97.40), stav je na Domů. */
-    fun statusOverlay(c: Context): Boolean = bool(c, "stav_pres_hru", false)
-    fun setStatusOverlay(c: Context, v: Boolean) = setBool(c, "stav_pres_hru", v)
+    /**
+     * Stav přes hru (Android TV): 0 vypnuto (výchozí), 1 dynamicky (ukáže se při změně a po chvíli zmizí; zůstane jen
+     * při potížích se spojením nebo chybějícím jazykovém balíčku), 2 vždy (jako do 0.97.49: oranžový zůstává).
+     * Kdo měl do 0.97.49 zapnutý přepínač `stav_pres_hru`, má „vždy“ (uložené nastavení se nemění).
+     */
+    fun statusMode(c: Context): Int = p(c).getInt("stav_rezim", -1).let { if (it in 0..2) it else if (bool(c, "stav_pres_hru", false)) 2 else 0 }
+    fun setStatusMode(c: Context, v: Int) = p(c).edit().putInt("stav_rezim", v.coerceIn(0, 2)).apply()
+    fun statusOverlay(c: Context): Boolean = statusMode(c) != 0
 
     /** Tlačítko ovladače pro rychlou nabídku vzhledu na Android TV ([QuickLook]); 0 = nenastaveno. */
     fun quickKey(c: Context): Int = p(c).getInt("quick_key", 0)

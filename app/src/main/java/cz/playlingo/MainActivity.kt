@@ -1477,12 +1477,32 @@ class MainActivity : Activity() {
                     }
                 }, "objsize"), 8)
                 val pos = Prefs.objPos(this)
-                val opts = listOf(-1) + Prefs.HEIGHTS
-                add(tagged(ui.settingRow(t("obj_pos"), if (pos < 0) t("obj_pos_game") else "$pos %") {
-                    choose(t("obj_pos"), opts.map { if (it < 0) t("obj_pos_game") else "$it %" }, opts.indexOf(pos).coerceAtLeast(0)) { i ->
-                        Prefs.setObjPos(this, opts[i]); applyToService(); render(true)
+                // polohy jako u pruhu (od 0.97.50) + vlastní výška 0–100 %
+                val fixed = listOf(-1 to t("obj_pos_game"), -2 to t("obj_pos_above"), -3 to t("obj_pos_bar"), -4 to t("pos_top"))
+                fun posLabel(p: Int) = fixed.firstOrNull { it.first == p }?.second ?: (t("pos_height") + " · $p %")
+                add(tagged(ui.settingRow(t("obj_pos"), posLabel(pos)) {
+                    choose(t("obj_pos"), fixed.map { it.second } + t("pos_height"), fixed.indexOfFirst { it.first == pos }.let { if (it < 0) fixed.size else it }) { i ->
+                        if (i < fixed.size) { Prefs.setObjPos(this, fixed[i].first); applyToService(); render(true) }
+                        else {
+                            val near = Prefs.HEIGHTS.minByOrNull { kotlin.math.abs(it - (if (pos >= 0) pos else 90)) } ?: 90
+                            choose(t("pos_height"), Prefs.HEIGHTS.map { "$it %" }, Prefs.HEIGHTS.indexOf(near)) { k ->
+                                Prefs.setObjPos(this, Prefs.HEIGHTS[k]); applyToService(); render(true)
+                            }
+                        }
                     }
                 }, "objpos"), 8)
+                // pozadí úkolu zvlášť (výchozí jako pruh s titulky)
+                val bg = Prefs.objBg(this)
+                val bgs = listOf(-1) + Prefs.OPACITIES.toList()
+                add(tagged(ui.settingRow(t("obj_bg"), if (bg < 0) t("obj_bg_same") else "$bg %") {
+                    choose(t("obj_bg"), bgs.map { if (it < 0) t("obj_bg_same") else "$it %" }, bgs.indexOf(bg).coerceAtLeast(0)) { i ->
+                        Prefs.setObjBg(this, bgs[i]); applyToService(); render(true)
+                    }
+                }, "objbg"), 8)
+                // barevná slova úkolu z obrazu (pokus, výchozí vypnuto)
+                add(tagged(ui.settingRow(t("obj_colors"), onOff(Prefs.objColors(this))) {
+                    Prefs.setObjColors(this, !Prefs.objColors(this)); applyToService(); render(true)
+                }, "objcolors"), 8)
             }
         }
         add(tagged(ui.settingRow(t("gp_list"), if (gameListOpen) "▲" else "▼") { gameListOpen = !gameListOpen; render(true) }, "gamelist"), 8)
@@ -1621,10 +1641,11 @@ class MainActivity : Activity() {
         }, "original"), 6)
         // velikost originálu jen se zapnutým originálem (od 0.97.44)
         if (Prefs.showOriginal(this)) {
-            val os = Prefs.origSize(this)
-            add(tagged(ui.settingRow(t("l_orig_size"), "$os %") {
-                choose(t("l_orig_size"), Prefs.ORIG_SIZES.map { "$it %" }, Prefs.ORIG_SIZES.indexOf(os)) { i ->
-                    Prefs.setOrigSize(this, Prefs.ORIG_SIZES[i]); applyToService(); render(true); showDemo()
+            val os = Prefs.origSp(this)
+            val sizes = listOf(0) + Prefs.TEXT_SIZES.toList()
+            add(tagged(ui.settingRow(t("l_orig_size"), if (os == 0) t("orig_auto") else os.toString()) {
+                choose(t("l_orig_size"), sizes.map { if (it == 0) t("orig_auto") else it.toString() }, sizes.indexOf(os).coerceAtLeast(0)) { i ->
+                    Prefs.setOrigSp(this, sizes[i]); applyToService(); render(true); showDemo()
                 }
             }, "origsize"), 6)
         }
@@ -1856,10 +1877,11 @@ class MainActivity : Activity() {
             add(tagged(ui.settingRow(t("qk_row"), if (qk == 0) t("qk_none") else QuickLook.keyName(qk), if (qk == 0) Theme.MUTED else Theme.ACCENT) {
                 learnQuickKey()
             }, "quickkey"), 8)
-            // stav vlevo nahoře přes hru (StatusPanel) – výchozí vypnuto
-            add(tagged(ui.settingRow(t("so_row"), onOff(Prefs.statusOverlay(this))) {
-                if (Prefs.statusOverlay(this)) { Prefs.setStatusOverlay(this, false); render(true) }
-                else confirmOn(t("so_row"), t("so_desc")) { Prefs.setStatusOverlay(this, true); render(true) }
+            // stav vlevo nahoře přes hru (StatusPanel): vypnuto (výchozí) / dynamicky / vždy
+            val sm = Prefs.statusMode(this)
+            val modes = listOf(t("off"), t("so_dyn"), t("so_always"))
+            add(tagged(ui.settingRow(t("so_row"), modes[sm]) {
+                choose(t("so_row"), modes, sm) { i -> Prefs.setStatusMode(this, i); render(true) }
             }, "statusov"), 8)
             val ovOn = Settings.canDrawOverlays(this)
             add(tagged(ui.settingRow(t("s_overlay"), onOff(ovOn), if (ovOn) Theme.OK else Theme.MUTED) {
@@ -2326,7 +2348,7 @@ class MainActivity : Activity() {
             this, w, h, Prefs.layout(this), Prefs.textSize(this), Prefs.opacity(this),
             false, Prefs.coloredSpeaker(this),
             Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), barPad = Prefs.barPad(this),
-            origPercent = Prefs.origSize(this),
+            origSp = Prefs.origSp(this),
         )
         demo = o
         o.show(
@@ -2352,6 +2374,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.49"
-    const val VERSION_CODE = 146
+    const val VERSION = "verze 0.97.50"
+    const val VERSION_CODE = 147
 }

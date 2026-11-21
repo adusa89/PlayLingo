@@ -3,7 +3,11 @@ package cz.playlingo.core
 import kotlin.math.max
 
 /** Jeden řádek textu rozpoznaný OCR (souřadnice v pixelech snímku). */
-data class OcrLine(val text: String, val left: Int, val top: Int, val right: Int, val bottom: Int) {
+data class OcrLine(
+    val text: String, val left: Int, val top: Int, val right: Int, val bottom: Int,
+    /** Slova řádku s vlastními rámečky (prvky čtečky; pro barvu jména a barevná slova úkolu). Prázdné = neznámé. */
+    val words: List<OcrLine> = emptyList(),
+) {
     val height: Int get() = bottom - top
 }
 

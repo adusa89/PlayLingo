@@ -32,11 +32,15 @@ object StatusPanel {
     @Volatile private var pinned = false
 
     /** Služba volá každé 2 s (jen Android TV, jen když překlad běží a aplikace není vidět). */
-    fun update(c: Context, rows: List<Pair<String, String>>) {
+    /**
+     * [dynamic] = režim „dynamicky“: po chvíli zmizí i oranžový – zůstane jen při [sticky] (potíže se spojením nebo
+     * chybějící jazykový balíček, [TvStatus.sticky]); nejistý odhad hry („GTA VI?“) ho tak nedrží na obrazovce.
+     */
+    fun update(c: Context, rows: List<Pair<String, String>>, dynamic: Boolean = false, sticky: Boolean = false) {
         val sig = rows.joinToString("|") { it.first + it.second }
         if (sig != signature) {
             signature = sig
-            warn = rows.any { it.first == "pozor" }
+            warn = if (dynamic) sticky else rows.any { it.first == "pozor" }
             show(c, rows)
         } else if (view != null && !warn && !pinned && SystemClock.uptimeMillis() > hideAt) hide()
     }

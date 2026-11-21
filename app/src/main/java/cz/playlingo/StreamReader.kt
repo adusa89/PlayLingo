@@ -62,24 +62,55 @@ class StreamReader(private val width: Int, private val height: Int) {
     @Volatile var decoderName: String = "?"
         private set
 
-    /** Žádost o barvu jména: obdélník v zlomcích 0..1 celého obrazu (viz [requestColor]). */
-    class ColorRequest(val name: String, val left: Float, val top: Float, val right: Float, val bottom: Float)
+    /**
+     * Žádost o barvu: obdélník v zlomcích 0..1 celého obrazu (viz [requestColor]). Bez [done] je to barva jména
+     * (výsledek v [colorResult]); s [done] (barevná slova úkolu) se výsledek předá rovnou jí (vlákno dekodéru).
+     */
+    class ColorRequest(val name: String, val left: Float, val top: Float, val right: Float, val bottom: Float,
+                       val done: ((Int?, Long) -> Unit)? = null)
 
-    /** Vyřídí se u nejbližšího snímku s barvami, pak se smaže – jinak se barvy vůbec nečtou. */
-    @Volatile private var colorRequest: ColorRequest? = null
+    /** Vyřídí se všechny u nejbližšího snímku s barvami, pak se smažou – jinak se barvy vůbec nečtou. */
+    private val colorRequests = ArrayList<ColorRequest>()
+    @Volatile private var colorPending = false
 
     /** Výsledek: jméno a barva (null = jméno bez barvy) a jak dlouho čtení trvalo (µs). */
     @Volatile var colorResult: Triple<String, Int?, Long>? = null
 
-    /** Barva jména z obrazu (od 0.97.28): přečte se jen jednou u nejbližšího snímku, jen v obdélníku jména. */
-    fun requestColor(r: ColorRequest) { colorRequest = r }
+    /**
+     * Barva z obrazu (od 0.97.28): přečte se jen jednou u nejbližšího snímku, jen v obdélníku. Barva jména nahradí
+     * dosud nevyřízenou žádost o jméno; žádosti s [ColorRequest.done] (slova úkolu) se přidají (nejvýš 24 čekajících).
+     */
+    fun requestColor(r: ColorRequest) = synchronized(colorRequests) {
+        if (r.done == null) colorRequests.removeAll { it.done == null }
+        colorRequests.add(r)
+        while (colorRequests.size > 24) colorRequests.removeAt(0)
+        colorPending = true
+    }
 
-    /** Projde obdélník po krocích (nejvýš ~48×12 bodů) a vrátí barvu písma; [y], [u], [v] čtou jeden bod. */
+    /** Čekající žádosti o barvu (a smazat je), nebo null – kontrola za snímek je jen jedna proměnná. */
+    private fun takeColorRequests(): List<ColorRequest>? {
+        if (!colorPending) return null
+        return synchronized(colorRequests) {
+            colorPending = false
+            colorRequests.toList().also { colorRequests.clear() }
+        }
+    }
+
+    /** Výsledek jedné žádosti: slovům úkolu do [ColorRequest.done], jménu do [colorResult]. */
+    private fun deliverColor(req: ColorRequest, rgb: Int?, micros: Long) {
+        val d = req.done
+        if (d != null) try { d(rgb, micros) } catch (_: Throwable) {} else colorResult = Triple(req.name, rgb, micros)
+    }
+
+    /**
+     * Projde obdélník po krocích (nejvýš ~48×16 bodů) a předá barvu písma ([cz.playlingo.core.NameColor.fromSamples]);
+     * [y], [u], [v] čtou jeden bod.
+     */
     private inline fun sampleColor(req: ColorRequest, w: Int, h: Int, y: (Int, Int) -> Int, u: (Int, Int) -> Int, v: (Int, Int) -> Int) {
         val t0 = System.nanoTime()
         val x0 = (req.left * w).toInt().coerceIn(0, w - 1); val x1 = (req.right * w).toInt().coerceIn(x0 + 1, w)
         val y0 = (req.top * h).toInt().coerceIn(0, h - 1); val y1 = (req.bottom * h).toInt().coerceIn(y0 + 1, h)
-        val sx = maxOf(1, (x1 - x0) / 48); val sy = maxOf(1, (y1 - y0) / 12)
+        val sx = maxOf(1, (x1 - x0) / 48); val sy = maxOf(1, (y1 - y0) / 16)
         val n = ((x1 - x0) / sx + 1) * ((y1 - y0) / sy + 1)
         val ys = IntArray(n); val us = IntArray(n); val vs = IntArray(n)
         var k = 0
@@ -90,7 +121,7 @@ class StreamReader(private val width: Int, private val height: Int) {
             yy += sy
         }
         val rgb = cz.playlingo.core.NameColor.fromSamples(ys, us, vs, k)
-        colorResult = Triple(req.name, rgb, (System.nanoTime() - t0) / 1000)
+        deliverColor(req, rgb, (System.nanoTime() - t0) / 1000)
     }
 
     /** Barevný náhled (poloviční velikost) – pro obrazovku aplikace a nastavení oblastí. */
@@ -341,8 +372,7 @@ class StreamReader(private val width: Int, private val height: Int) {
         decoded++
         val now = SystemClock.uptimeMillis()
         lastFrameAt = now
-        colorRequest?.let { req ->
-            colorRequest = null
+        takeColorRequests()?.forEach { req ->
             try {
                 val yP = img.planes[0]; val uP = img.planes[1]; val vP = img.planes[2]
                 val yB = yP.buffer; val uB = uP.buffer; val vB = vP.buffer
@@ -350,7 +380,7 @@ class StreamReader(private val width: Int, private val height: Int) {
                     { x, r -> yB.get(r * yP.rowStride + x * yP.pixelStride).toInt() and 0xFF },
                     { x, r -> uB.get(r * uP.rowStride + x * uP.pixelStride).toInt() and 0xFF },
                     { x, r -> vB.get(r * vP.rowStride + x * vP.pixelStride).toInt() and 0xFF })
-            } catch (_: Throwable) { colorResult = Triple(req.name, null, 0) }
+            } catch (_: Throwable) { deliverColor(req, null, 0) }
         }
         // barevný náhled jen pro obrazovku aplikace – při hraní se nedělá
         if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) {
@@ -379,7 +409,7 @@ class StreamReader(private val width: Int, private val height: Int) {
      */
     fun wantsFrame(): Boolean {
         if (UiState.visible && UiState.previewWanted && SystemClock.uptimeMillis() - lastColorAt > 1500) return true
-        if (colorRequest != null) return true
+        if (colorPending) return true
         return synchronized(frameLock) { frameW == 0 || grabbedSerial == frameSerial }
     }
 
@@ -407,14 +437,13 @@ class StreamReader(private val width: Int, private val height: Int) {
         decoded++
         val now = SystemClock.uptimeMillis()
         lastFrameAt = now
-        colorRequest?.let { req ->
-            colorRequest = null
+        takeColorRequests()?.forEach { req ->
             try {
                 sampleColor(req, w, h,
                     { x, r -> yBuf[r * stride + x].toInt() and 0xFF },
                     { x, r -> u.get(r * uStride + x).toInt() and 0xFF },
                     { x, r -> v.get(r * vStride + x).toInt() and 0xFF })
-            } catch (_: Throwable) { colorResult = Triple(req.name, null, 0) }
+            } catch (_: Throwable) { deliverColor(req, null, 0) }
         }
         if (UiState.visible && UiState.previewWanted && now - lastColorAt > 1500) {
             lastColorAt = now

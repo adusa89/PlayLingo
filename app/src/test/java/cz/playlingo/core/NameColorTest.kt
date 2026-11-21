@@ -67,4 +67,89 @@ class NameColorTest {
         assertEquals(true, NameColor.report().contains("NESHODA: profil #F2C14E, ve hře #8EDB8A"))
         NameColor.profile = emptyMap(); NameColor.reset()
     }
+
+    // ---- přesnější čtení: jen výplň písma, převažující odstín, medián ----
+
+    /** Písmo [text] s bílým vyhlazením okrajů ([aa] bodů), tmavým obrysem a pozadím [bg]. */
+    private fun glyphs(text: Int, fill: Int = 30, aa: Int = 12, outline: Int = 20, bg: Int = 0x303840, bgN: Int = 40): Int? {
+        val cols = ArrayList<Int>()
+        repeat(fill) { cols.add(text) }
+        // vyhlazení do bílé: půl na půl s bílou a skoro bílé
+        repeat(aa) { i -> cols.add(if (i % 2 == 0) mix(text, 0xFFFFFF) else 0xF4F4F4) }
+        repeat(outline) { cols.add(0x101010) }
+        repeat(bgN) { cols.add(bg) }
+        val n = cols.size
+        val ys = IntArray(n); val us = IntArray(n); val vs = IntArray(n)
+        cols.forEachIndexed { i, c -> val (y, u, v) = yuv(c); ys[i] = y; us[i] = u; vs[i] = v }
+        return NameColor.fromSamples(ys, us, vs, n)
+    }
+
+    private fun mix(a: Int, b: Int): Int {
+        fun ch(s: Int) = (((a shr s) and 0xFF) + ((b shr s) and 0xFF)) / 2
+        return (ch(16) shl 16) or (ch(8) shl 8) or ch(0)
+    }
+
+    @Test fun pinkWithWhiteEdgesAndOutlineStaysPink() {
+        // růžové jméno (GTA VI) s bílým vyhlazením a tmavým obrysem – průměr dřív táhl k bledé žluté / modré
+        assertEquals(SpeakerColors.PALETTE[3], NameColor.nearest(glyphs(0xF07890)!!))
+        // i s kouskem modrého nebe mezi písmeny (rámeček slova bez okrajů je hlavně písmo)
+        assertEquals(SpeakerColors.PALETTE[3], NameColor.nearest(glyphs(0xF07890, bg = 0x4080D0, bgN = 15)!!))
+    }
+
+    @Test fun yellowAndBlueGlyphs() {
+        assertEquals(SpeakerColors.PALETTE[0], NameColor.nearest(glyphs(0xF2C84A)!!))
+        assertEquals(SpeakerColors.PALETTE[1], NameColor.nearest(glyphs(0x70B8F4)!!))
+    }
+
+    @Test fun whiteNameOverColourfulSceneHasNoColor() {
+        // bílé jméno, za ním pár světlých barevných bodů scény
+        assertNull(glyphs(0xF8F8F8, fill = 40, bg = 0xE0B040, bgN = 6))
+        // málo barevných bodů vůbec
+        assertNull(glyphs(0xF07890, fill = 2, aa = 0, bgN = 200))
+    }
+
+    @Test fun nameBoxFromWords() {
+        val line = OcrLine("Cal Hampton: Hey", 100, 50, 400, 80, listOf(
+            OcrLine("Cal", 100, 50, 140, 80), OcrLine("Hampton:", 150, 50, 270, 80), OcrLine("Hey", 290, 50, 340, 80)))
+        val b = NameColor.nameBox(line, "Cal Hampton")!!
+        // bez dvojtečky (1/8 šířky posledního slova) a bez okrajů
+        assertEquals(listOf(103, 55, 252, 75), b.toList())
+        // slova nesedí na jméno nebo chybí → null (odhad podle znaků)
+        assertNull(NameColor.nameBox(line, "Jason"))
+        assertNull(NameColor.nameBox(OcrLine("Jason: hi", 0, 0, 100, 30), "Jason"))
+    }
+
+    // ---- stálá naučená barva ----
+
+    @Test fun learnedColorDoesNotFlipOnOddReadings() {
+        NameColor.reset()
+        val y = 0xF2C14E; val p = 0xF07890
+        NameColor.record("Lucia", y, 1); NameColor.record("Lucia", y, 1)
+        assertEquals(SpeakerColors.PALETTE[0], NameColor.learned("Lucia"))
+        // dvě divná čtení, pak zase žlutá, pak tři divná – pořád žlutá
+        NameColor.record("Lucia", p, 1); NameColor.record("Lucia", p, 1)
+        NameColor.record("Lucia", y, 1)
+        NameColor.record("Lucia", p, 1); NameColor.record("Lucia", p, 1); NameColor.record("Lucia", p, 1)
+        assertEquals(SpeakerColors.PALETTE[0], NameColor.learned("Lucia"))
+        // čtvrté za sebou → vymění se
+        NameColor.record("Lucia", p, 1)
+        assertEquals(SpeakerColors.PALETTE[3], NameColor.learned("Lucia"))
+        NameColor.reset()
+    }
+
+    @Test fun firstLearningNeedsClearWinnerAndSettles() {
+        NameColor.reset()
+        val y = 0xF2C14E; val b = 0x70B8F4
+        NameColor.record("Jason", y, 1); NameColor.record("Jason", b, 1); NameColor.record("Jason", y, 1)
+        // 2:1 stačí
+        assertEquals(SpeakerColors.PALETTE[0], NameColor.learned("Jason"))
+        NameColor.reset()
+        NameColor.record("Jason", y, 1); NameColor.record("Jason", b, 1)
+        NameColor.record("Jason", y, 1); NameColor.record("Jason", b, 1); NameColor.record("Jason", b, 1)
+        assertEquals(false, NameColor.settled("Jason"))
+        repeat(6) { NameColor.record("Jason", b, 1) }
+        assertEquals(SpeakerColors.PALETTE[1], NameColor.learned("Jason"))
+        assertEquals(true, NameColor.settled("Jason"))
+        NameColor.reset()
+    }
 }

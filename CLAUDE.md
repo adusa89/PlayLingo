@@ -120,6 +120,10 @@ s různým rodem v různých hrách vynechá `Cast`). Postavy jdou se slovníkem
 3. osoba hned za jménem („Lucia šel“). Mění se jen slova u pomocného slovesa / jména a jen spolehlivé koncovky.
 Běží až po paměti překladů (ta je jen podle textu) – ve službě, v `translateSubtitle` i v `DeeplTranslator.merge`.
 Zatím jen čeština. Bez jmen mluvčích v titulcích hry funguje jen 2. a 3. osoba.
+**Od 0.97.50 i jméno uvnitř věty** (Andy v GTA VI, majitel: o ní ostatní mluvili v mužském rodě; testy `GameCastThirdPersonTest`):
+jméno a sloveso přes nejvýš 3 výplňová slova (`after3`, `FILLERS3`), pokračování téhož podmětu po „a/ale“ (`continueSameSubject`),
+sloveso před jménem („Zavolal Andy“, jen když je jméno v angličtině podmět a nic jiného mužského tam není) a u žen navazující
+she/her v originálu (jen l-tvary na začátku věty / vedlejší věty, bez on/něj/jeho v překladu). Opatrně: ve sporných případech nic.
 
 **Zásada profilů her (přání majitele 20. 11. 2026):** univerzální chování (čte se jen pás s titulky) zůstává pro
 všechny hry, profil hry ho jen vylepšuje. Volba „rozsah čtení“ i u vybrané hry: **Jen titulky** = z profilu jen jména,
@@ -133,6 +137,10 @@ nekopírují ani nečtou), vezme nejsvětlejší body a jejich barvu (bílá/še
 z palety) se dá pruhu (`SubtitleOverlay.learnColor`; profil hry má přednost). Měření a naučené barvy: řádky `COLOR|…|us=`
 a oddíl hlášení „barvy jmen ze hry“ → přepsat do `GameProfile.colors`. Jedno jméno se čte nejvýš jednou za 3 s a po naučení
 už ne.
+**Od 0.97.50 přesněji** (majitel: růžová čtená jako žlutá/modrá, barva se v rozhovoru měnila): `OcrLine.words` (rámečky slov z ML Kit)
+→ `NameColor.nameBox` (přesně jméno bez „:“, zmenšené o okraje), `fromSamples` = jen světlé syté body, histogram odstínu (24 dílů),
+převládající okno a medián; `record`: první barva po 2 shodách a 2× víc než jiná, změna až po 4 čteních jiné barvy po sobě
+nebo 3× víc hlasů; po naučení kontrola jednou za 15 s, po 6 hlasech konec (`settled`). Testy `NameColorTest`.
 
 **Barvy jmen z profilu hry (od 0.97.27):** `GameProfile.colors` (jméno → barva jako v titulcích hry; GTA VI Jason
 žlutě, Lucia modře; GTA V Michael modře, Franklin zeleně, Trevor oranžově) platí i pro přezdívky (`colorsByKey`) a dostane
@@ -180,7 +188,11 @@ titulky“ ho `SubtitleOverlay` vynechá. Diablo IV: chat se nečte (`GameProfil
 čtení = stejný, zmizí po 2 čteních bez něj. Služba `handleObjective` → `SubtitleOverlay.showObjective` (vlastní okno přes
 anglický úkol, písmo podle originálu) a do TV `{"typ":"ukol",…}` (`TvSender.objectiveMessage` / `sendObjective`). Nezávislé na
 mizení titulků; schová se v menu hry, při pauze a nové volbě. S „Jen titulky“ se úkol jen vyčlení a nepřekládá. Barevná slova
-úkolu zatím ne (TV umí `casti` s barvami, Android je neposílá). V záznamu `OBJ|show|…` / `OBJ|hide`. Na skutečné hře neověřeno.
+úkolu od 0.97.50 jako pokus (Titulky → Hra → „Barevná slova úkolu“, `Prefs.objColors`, výchozí vypnuto → `TranslatorService.objectiveColors`):
+barva každého slova z obrazu (`askObjectiveColors`, žádosti v `StreamReader` jednou), kusy stejné barvy (`ObjectiveColors.runs`) se najdou
+v překladu doslova nebo přes samostatný překlad kusu (`locate`, české koncovky do 3 písmen), úkol se ukáže hned a po přečtení barev
+znovu s barvami; do TV `casti`. Testy `ObjectiveColorsTest`. **Poloha úkolu od 0.97.50** i těsně nad úkolem (-2), nad pruhem
+s titulky (-3, `lastBarTop`), nahoře (-4); **Pozadí úkolu** zvlášť (`Prefs.objBg`, -1 = jako titulky). V záznamu `OBJ|show|…` / `OBJ|hide`. Na skutečné hře neověřeno.
 **Volby úkolu (od 0.97.45)** v Titulkách → Hra (jen profil s `prompts` a „Titulky a texty hry“): Úkol pod titulky zapnout
 (`Prefs.objectiveOn`), Písmo úkolu (`objSize`, 0 = podle hry), Poloha úkolu (`objPos`, -1 = na místě ve hře, jinak střed
 v 0–100 % výšky; do TV jako úzké `misto` na zvolené výšce). Klíče `obj_on/obj_size/obj_pos` v `TvProfiles.KEYS`.
@@ -386,6 +398,10 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
   je aplikace vidět); ukáže se při změně, zelený zmizí po 8 s / s prvním titulkem, oranžový zůstává.
   **Od 0.97.40 výchozí vypnuto** (přání majitele – stav stačí na Domů): volba ⚙ → Obecné „Stav přes hru“ (`Prefs.statusOverlay`,
   klíč `stav_pres_hru`, texty `so_row`/`so_desc` v `I18nQuick.kt`); bez ní se panel neukáže ani s rychlou nabídkou vzhledu.
+  **Od 0.97.50 tři režimy** (`Prefs.statusMode`, klíč `stav_rezim`: 0 vypnuto – výchozí, 1 dynamicky, 2 vždy; starý zapnutý
+  `stav_pres_hru` = vždy): dynamicky se ukáže na začátku a při změně stavu, po 8 s zmizí i oranžový, zůstane jen při
+  `TvStatus.sticky` (PS5 spí, obraz nejde / spojení selhalo, chybí jazykový balíček) – odhad hry „GTA VI?“ ho už nedrží (u kolegy
+  na Android TV visel pořád). TV LG/Samsung beze změny.
 - **Od 0.97.22 (aplikace v televizi 1.5.4):** okraj pruhu nad a pod textem 0–3 (`Prefs.barPad`, `BAR_PADS`, klíč `bar_pad`
   v `TvProfiles.KEYS`, Titulky → Pruh s překladem; do TV pole `okraj` v `TvLook`). Ve stavu v TV je OK jako tlačítko
   v rámečku (`klavesa`), ne šedá tečka. Po nahrání do TV LG se hned uloží nová verze (`TvSender.lastSeen`,
@@ -401,9 +417,10 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
 - **Úkol ve hře** (aplikace v televizi 1.5.11): zpráva `{"typ":"ukol","text":…,"misto":[l,t,r,b],"pismo","pozadi","barva","casti":[{text,barva}]}`
   ukáže řádek úkolu (GTA VI) ve vlastním prvku `#ukol` (`ukolUkaz` v `app.js`) uprostřed `misto` (zlomky obrazu), šířka podle
   textu do 90 %; prázdný text = schovat. Na pruhu nezávislý (`skryj` ho neschová), mizí při ztrátě spojení a na Domů; `hotovo` neposílá.
-- **Velikost originálu (od 0.97.44, aplikace v TV 1.5.12):** Titulky → Písmo → „Velikost originálu“ (jen se zapnutým originálem,
-  `Prefs.origSize`, klíč `orig_size` v `TvProfiles.KEYS`, hodnoty `ORIG_SIZES` 40–100 % písma překladu, výchozí 62 % jako dřív).
-  Android `RelativeSizeSpan(origPercent)`, do TV pole `pismoOrig` v `TvLook` (jen když není 62).
+- **Velikost originálu (od 0.97.44, aplikace v TV 1.5.12; od 0.97.50 velikost písma místo procent – přání majitele):** Titulky →
+  Písmo → „Velikost originálu“ (jen se zapnutým originálem, `Prefs.origSp`, klíč `orig_sp` v `TvProfiles.KEYS`, 0 = automaticky
+  62 % překladu, jinak 12–48 jako překlad). Android `AbsoluteSizeSpan` (sp), do TV pole `pismoOrig` = podíl px originálu a px
+  překladu v % (TV ho omezí na 30–100, takže originál v TV nebude větší než překlad); bez volby se nic neposílá.
 - **Domů hlásí starou aplikaci v televizi** (`TvChoice.outdated`: ohlášená verze vs. `receiver-manifest.json`
   v APK, text `w_tv_old`), s tlačítkem k nahrání.
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →

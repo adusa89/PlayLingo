@@ -1,0 +1,53 @@
+package cz.playlingo.core
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+
+/** Barevná slova úkolu (GTA) přenesená do překladu – pokus, výchozí vypnuto. */
+class ObjectiveColorsTest {
+    private val yellow = SpeakerColors.PALETTE[0]
+    private val blue = SpeakerColors.PALETTE[1]
+
+    @Test fun runsGroupSameColour() {
+        val r = ObjectiveColors.runs(listOf("Go", "to", "the", "Vice", "City", "safehouse."),
+            listOf(null, null, null, 0xF0C040, 0xF2C84A, null))
+        assertEquals(listOf(ObjectiveColors.Run("Vice City", yellow)), r)
+        // dvě různé barvy za sebou = dva kusy; samotná interpunkce se nepočítá
+        val r2 = ObjectiveColors.runs(listOf("Lose", "the", "cops", "."), listOf(0x70B8F4, null, 0xF2C14E, 0xF2C14E))
+        assertEquals(listOf(ObjectiveColors.Run("Lose", blue), ObjectiveColors.Run("cops .", yellow)), r2)
+        assertEquals(emptyList<ObjectiveColors.Run>(), ObjectiveColors.runs(listOf("Go"), listOf(null)))
+    }
+
+    @Test fun locateVerbatimAndInflected() {
+        // jméno místa se nepřekládá → doslova
+        assertEquals(7..15, ObjectiveColors.locate("Jeď do Vice City.", "Vice City"))
+        // překlad kusu zvlášť: „úkryt“ v „úkrytu“ (koncovka do 3 písmen), bez ohledu na velikost a tečku
+        assertEquals(7..12, ObjectiveColors.locate("Jdi do úkrytu.", "Úkryt."))
+        // jen od začátku slova, ne uprostřed
+        assertNull(ObjectiveColors.locate("Najdi auto.", "to"))
+        // obsazené místo se přeskočí
+        assertNull(ObjectiveColors.locate("Jdi do úkrytu.", "úkryt", listOf(7..12)))
+        // dlouhé pokračování slova není koncovka
+        assertNull(ObjectiveColors.locate("Jdi k autobusu.", "auto"))
+    }
+
+    @Test fun partsSplitText() {
+        val t = "Jdi do úkrytu."
+        val p = ObjectiveColors.parts(t, listOf(7..12 to yellow))!!
+        assertEquals(listOf(ObjectivePart("Jdi do ", null), ObjectivePart("úkrytu", yellow), ObjectivePart(".", null)), p)
+        assertEquals(t, p.joinToString("") { it.text })
+        assertNull(ObjectiveColors.parts(t, emptyList()))
+    }
+
+    @Test fun tvMessageWithParts() {
+        val box = floatArrayOf(0.2f, 0.9f, 0.8f, 0.93f)
+        val parts = listOf(ObjectivePart("Jdi do ", null), ObjectivePart("úkrytu", yellow), ObjectivePart(".", null))
+        val m = TvSender.objectiveMessage("Jdi do úkrytu.", box, 40, 90, "#FFFFFF", parts)
+        assertEquals("{\"typ\":\"ukol\",\"text\":\"Jdi do úkrytu.\",\"misto\":[0.2000,0.9000,0.8000,0.9300],\"pismo\":40,\"pozadi\":90,\"barva\":\"#FFFFFF\"," +
+            "\"casti\":[{\"text\":\"Jdi do \",\"barva\":null},{\"text\":\"úkrytu\",\"barva\":\"#F2C14E\"},{\"text\":\".\",\"barva\":null}]}", m)
+        // bez barevných kusů stejně jako dřív
+        assertEquals(TvSender.objectiveMessage("Jdi do úkrytu.", box, 40, 90, "#FFFFFF"),
+            TvSender.objectiveMessage("Jdi do úkrytu.", box, 40, 90, "#FFFFFF", listOf(ObjectivePart("Jdi do úkrytu.", null))))
+    }
+}

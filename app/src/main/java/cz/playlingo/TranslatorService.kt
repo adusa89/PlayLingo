@@ -401,7 +401,8 @@ class TranslatorService : Service() {
             try {
                 // výchozí vypnuto (přání majitele): stav stačí na Domů, přes hru jen se zapnutou volbou
                 if (demo || UiState.visible || !Prefs.statusOverlay(this@TranslatorService)) StatusPanel.hide()
-                else StatusPanel.update(this@TranslatorService, TvStatus.rows(this@TranslatorService))
+                else StatusPanel.update(this@TranslatorService, TvStatus.rows(this@TranslatorService),
+                    dynamic = Prefs.statusMode(this@TranslatorService) == 1, sticky = TvStatus.sticky(this@TranslatorService))
             } catch (_: Throwable) {}
             tvStatusHandler.postDelayed(this, 2000)
         }
@@ -436,6 +437,7 @@ class TranslatorService : Service() {
         holdMs = Prefs.holdMs(this).toLong()
         showQueue.minMs = Prefs.minShowMs(this).toLong()
         fastRead = Prefs.fastRead(this)
+        objectiveColors = Prefs.objColors(this)
         clearQueue()
         showOriginal = Prefs.showOriginal(this)
         hideAt = 0
@@ -463,9 +465,10 @@ class TranslatorService : Service() {
             debug, Prefs.coloredSpeaker(this),
             Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), Prefs.matchSize(this),
             barPad = Prefs.barPad(this),
-            origPercent = Prefs.origSize(this),
+            origSp = Prefs.origSp(this),
             objSizeSp = Prefs.objSize(this),
             objPosPercent = Prefs.objPos(this),
+            objBgPercent = Prefs.objBg(this),
             showPrompts = Prefs.gameTexts(this),
             speakerPreset = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey,
             onText = sender?.let { s -> { text: String?, parts: String?, look: String? -> if (text == null) s.hide() else s.show(text, parts, look) } },
@@ -491,20 +494,25 @@ class TranslatorService : Service() {
             val name = seg.speaker ?: continue
             if (!text.contains(name)) continue
             val key = cz.playlingo.core.SpeakerColors.key(name)
-            // naučená → už se nečte (i postavy z profilu se ověří – hra mohla po aktualizaci barvy změnit);
-            // jinak nejvýš jednou za 3 s pro to jméno
-            if (cz.playlingo.core.NameColor.learned(name) != null || now - (colorAsked[key] ?: 0L) < 3000) continue
+            // jistá naučená barva → už se nečte; naučená, ale ještě ne jistá → občas ověřit (oprava špatného
+            // naučení; i postavy z profilu – hra mohla po aktualizaci barvy změnit); jinak nejvýš jednou za 3 s
+            if (cz.playlingo.core.NameColor.settled(name)) continue
+            val wait = if (cz.playlingo.core.NameColor.learned(name) != null) 15_000 else 3000
+            if (now - (colorAsked[key] ?: 0L) < wait) continue
             colorAsked[key] = now
-            val frac = (name.length + 1).toFloat() / maxOf(1, line.text.length)
-            val nameRight = line.left + ((line.right - line.left) * frac).toInt()
+            // přesně slova jména (rámečky od čtečky, bez okrajů); bez nich odhad podle počtu znaků jako dřív
+            val box = cz.playlingo.core.NameColor.nameBox(line, name) ?: run {
+                val frac = (name.length + 1).toFloat() / maxOf(1, line.text.length)
+                intArrayOf(line.left, line.top, line.left + ((line.right - line.left) * frac).toInt(), line.bottom)
+            }
             r.requestColor(StreamReader.ColorRequest(TextLogic.normalizeName(name),
-                (x0 + line.left).toFloat() / capW, (y0 + line.top).toFloat() / capH,
-                (x0 + nameRight).toFloat() / capW, (y0 + line.bottom).toFloat() / capH))
+                (x0 + box[0]).toFloat() / capW, (y0 + box[1]).toFloat() / capH,
+                (x0 + box[2]).toFloat() / capW, (y0 + box[3]).toFloat() / capH))
             return
         }
     }
 
-    /** Výsledek čtení barvy: zapsat (měření, naučené barvy) a dát pruhu, když se barva shoduje aspoň 2×. */
+    /** Výsledek čtení barvy: zapsat (měření, naučené barvy) a dát pruhu naučenou barvu ([cz.playlingo.core.NameColor.learned]). */
     private fun takeNameColor() {
         val r = reader ?: return
         val (name, rgb, us) = r.colorResult ?: return
@@ -1001,7 +1009,12 @@ class TranslatorService : Service() {
     private fun toBlocks(t: Text, k: Float, dx: Int = 0, dy: Int = 0): List<OcrBlock> = t.textBlocks.map { block ->
         OcrBlock(block.lines.mapNotNull { l ->
             val bb = l.boundingBox ?: return@mapNotNull null
-            OcrLine(l.text, (bb.left / k).toInt() + dx, (bb.top / k).toInt() + dy, (bb.right / k).toInt() + dx, (bb.bottom / k).toInt() + dy)
+            // slova s vlastními rámečky (přesný obdélník jména / slov úkolu pro barvu z obrazu)
+            val words = l.elements.mapNotNull { e ->
+                val eb = e.boundingBox ?: return@mapNotNull null
+                OcrLine(e.text, (eb.left / k).toInt() + dx, (eb.top / k).toInt() + dy, (eb.right / k).toInt() + dx, (eb.bottom / k).toInt() + dy)
+            }
+            OcrLine(l.text, (bb.left / k).toInt() + dx, (bb.top / k).toInt() + dy, (bb.right / k).toInt() + dx, (bb.bottom / k).toInt() + dy, words)
         })
     }
 
@@ -1047,6 +1060,9 @@ class TranslatorService : Service() {
                     (x0 + l.right).toFloat() / capW, (y0 + l.bottom).toFloat() / capH)
                 val lineH = TextLogic.fontSizeOf(l).toFloat() / capH
                 tp("OBJ|show|" + ch.text.take(60))
+                // pokus: barvy slov úkolu z obrazu (jen u nového úkolu, čtou se u nejbližšího snímku)
+                val words = l.words.take(OBJ_WORDS)
+                val colorsJob = if (objectiveColors) askObjectiveColors(words, x0, y0) else null
                 scope.launch {
                     val offline = translateSegments(ch.text) ?: return@launch
                     // DeepL jako u titulků (paměť, nejvýš 2,5 s), jinak offline
@@ -1057,12 +1073,71 @@ class TranslatorService : Service() {
                     } ?: offline
                     val text = segs.joinToString(" ") { it.body }.trim()
                     if (text.isEmpty() || seq != objectiveSeq || overlay !== ov) return@launch
-                    ov.showObjective(text, box, lineH)
+                    // barvy ještě nejsou → hned bez nich (úkol se kvůli barvám nezdrží), obarví se, až přijdou
+                    val plainFirst = colorsJob == null || !colorsJob.isCompleted
+                    if (plainFirst) ov.showObjective(text, box, lineH)
+                    val cj = colorsJob ?: return@launch
+                    val colors = withTimeoutOrNull(3000) { cj.await() } ?: return@launch
+                    val parts = objectiveParts(words.map { it.text }, colors, text)
+                    if (seq != objectiveSeq || overlay !== ov) return@launch
+                    if (parts != null) {
+                        tp("OBJ|colors|" + parts.count { it.color != null })
+                        ov.showObjective(text, box, lineH, parts)
+                    } else if (!plainFirst) ov.showObjective(text, box, lineH)
                 }
             }
             cz.playlingo.core.ObjectiveTracker.Change.Hide -> { objectiveSeq++; overlay?.hideObjective(); tp("OBJ|hide") }
             cz.playlingo.core.ObjectiveTracker.Change.Keep -> {}
         }
+    }
+
+    /**
+     * Pokus: barevná slova úkolu (GTA „Go to the <žlutě>safehouse</žlutě>.“) i v překladu – v pruhu na Androidu
+     * a do TV jako `casti` ([cz.playlingo.core.ObjectiveColors]). Výchozí vypnuto (nové chování); zapíná nastavení.
+     */
+    @Volatile var objectiveColors = false
+
+    /** Nejvýš tolik slov úkolu se čte na barvu (jedna malá žádost za slovo, jen u nového úkolu). */
+    private val OBJ_WORDS = 20
+
+    /**
+     * Barvy slov úkolu z obrazu: za každé slovo (rámeček čtečky bez okrajů) jedna žádost u nejbližšího snímku.
+     * Výsledek = barva každého slova (null = bílé / nečitelné); null = slova neznámá.
+     */
+    private fun askObjectiveColors(words: List<OcrLine>, x0: Int, y0: Int): kotlinx.coroutines.CompletableDeferred<List<Int?>>? {
+        val r = reader ?: return null
+        if (words.isEmpty()) return null
+        val out = arrayOfNulls<Int>(words.size)
+        val left = java.util.concurrent.atomic.AtomicInteger(words.size)
+        val d = kotlinx.coroutines.CompletableDeferred<List<Int?>>()
+        val one = { if (left.decrementAndGet() == 0) d.complete(out.toList()) }
+        words.forEachIndexed { i, w ->
+            val b = cz.playlingo.core.NameColor.inset(w.left, w.top, w.right, w.bottom)
+            if (b == null) { one(); return@forEachIndexed }
+            r.requestColor(StreamReader.ColorRequest("úkol",
+                (x0 + b[0]).toFloat() / capW, (y0 + b[1]).toFloat() / capH,
+                (x0 + b[2]).toFloat() / capW, (y0 + b[3]).toFloat() / capH) { rgb, _ -> out[i] = rgb; one() })
+        }
+        return d
+    }
+
+    /**
+     * Barevné kusy anglického úkolu přenesené do překladu [translation]: kus najdený v překladu doslova (jména, místa),
+     * jinak jeho samostatný offline překlad; nenalezený kus zůstane ve výchozí barvě. null = nic barevného.
+     */
+    private suspend fun objectiveParts(words: List<String>, colors: List<Int?>, translation: String): List<cz.playlingo.core.ObjectivePart>? {
+        val runs = cz.playlingo.core.ObjectiveColors.runs(words, colors)
+        if (runs.isEmpty()) return null
+        val l = lang
+        val spans = ArrayList<Pair<IntRange, Int>>()
+        for (run in runs.take(6)) {
+            val taken = spans.map { it.first }
+            val hit = cz.playlingo.core.ObjectiveColors.locate(translation, run.text, taken)
+                ?: translate(l, TextLogic.forTranslator(cz.playlingo.core.ObjectiveColors.core(run.text)))
+                    ?.let { cz.playlingo.core.ObjectiveColors.locate(translation, it, taken) }
+            if (hit != null) spans.add(hit to run.color)
+        }
+        return cz.playlingo.core.ObjectiveColors.parts(translation, spans)
     }
 
     /** Úkol pryč (menu hry, nové nastavení, pauza). */

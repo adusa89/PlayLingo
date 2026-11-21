@@ -209,6 +209,19 @@ object TvIdle {
 object TvStatus {
     fun message(c: android.content.Context): String = TvSender.statusMessage(rows(c))
 
+    /**
+     * Má stav přes hru v režimu „dynamicky“ zůstat? Jen když hráč bez zásahu nic neuvidí: konzole spí, obraz nejde,
+     * spojení selhalo, nebo chybí jazykový balíček. Jazyk, DeepL a odhad hry se ukážou jen na chvíli po změně.
+     */
+    fun sticky(c: android.content.Context): Boolean {
+        if (!TranslatorService.running || TranslatorService.demo) return false
+        if (Prefs.console(c) == Console.PLAYSTATION && Ps5Link.asleep) return true
+        val st = TranslatorService.linkStatus().stage
+        if (st == cz.playlingo.core.LinkStatus.Stage.STALLED || st == cz.playlingo.core.LinkStatus.Stage.NO_IMAGE ||
+            st == cz.playlingo.core.LinkStatus.Stage.FAILED) return true
+        return !OfflineTranslator.isReady(Prefs.lang(c))
+    }
+
     fun rows(c: android.content.Context): List<Pair<String, String>> {
         val out = ArrayList<Pair<String, String>>()
         val console = Prefs.console(c)
