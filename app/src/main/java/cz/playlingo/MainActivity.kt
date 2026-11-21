@@ -1596,6 +1596,15 @@ class MainActivity : Activity() {
         add(tagged(ui.settingRow(t("l_original"), onOff(Prefs.showOriginal(this))) {
             Prefs.setShowOriginal(this, !Prefs.showOriginal(this)); applyToService(); render(true); showDemo()
         }, "original"), 6)
+        // velikost originálu jen se zapnutým originálem (od 0.97.44)
+        if (Prefs.showOriginal(this)) {
+            val os = Prefs.origSize(this)
+            add(tagged(ui.settingRow(t("l_orig_size"), "$os %") {
+                choose(t("l_orig_size"), Prefs.ORIG_SIZES.map { "$it %" }, Prefs.ORIG_SIZES.indexOf(os)) { i ->
+                    Prefs.setOrigSize(this, Prefs.ORIG_SIZES[i]); applyToService(); render(true); showDemo()
+                }
+            }, "origsize"), 6)
+        }
         add(tagged(ui.settingRow(t("l_speaker"), onOff(Prefs.coloredSpeaker(this))) {
             Prefs.setColoredSpeaker(this, !Prefs.coloredSpeaker(this)); applyToService(); render(true); showDemo()
         }, "speaker"), 6)
@@ -2271,7 +2280,8 @@ class MainActivity : Activity() {
         val o = SubtitleOverlay(
             this, w, h, Prefs.layout(this), Prefs.textSize(this), Prefs.opacity(this),
             false, Prefs.coloredSpeaker(this),
-            Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), barPad = Prefs.barPad(this)
+            Prefs.TEXT_COLORS[Prefs.textColorIndex(this)], Prefs.boldText(this), barPad = Prefs.barPad(this),
+            origPercent = Prefs.origSize(this),
         )
         demo = o
         o.show(
@@ -2297,6 +2307,6 @@ class MainActivity : Activity() {
 }
 
 object BuildInfo {
-    const val VERSION = "verze 0.97.43"
-    const val VERSION_CODE = 140
+    const val VERSION = "verze 0.97.44"
+    const val VERSION_CODE = 141
 }

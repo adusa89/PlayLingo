@@ -383,6 +383,9 @@ Přehled pro lidi je ve `webos/CTI-ME.md`; tady jen to, co je potřeba vědět p
 - **Úkol ve hře** (aplikace v televizi 1.5.11): zpráva `{"typ":"ukol","text":…,"misto":[l,t,r,b],"pismo","pozadi","barva","casti":[{text,barva}]}`
   ukáže řádek úkolu (GTA VI) ve vlastním prvku `#ukol` (`ukolUkaz` v `app.js`) uprostřed `misto` (zlomky obrazu), šířka podle
   textu do 90 %; prázdný text = schovat. Na pruhu nezávislý (`skryj` ho neschová), mizí při ztrátě spojení a na Domů; `hotovo` neposílá.
+- **Velikost originálu (od 0.97.44, aplikace v TV 1.5.12):** Titulky → Písmo → „Velikost originálu“ (jen se zapnutým originálem,
+  `Prefs.origSize`, klíč `orig_size` v `TvProfiles.KEYS`, hodnoty `ORIG_SIZES` 40–100 % písma překladu, výchozí 62 % jako dřív).
+  Android `RelativeSizeSpan(origPercent)`, do TV pole `pismoOrig` v `TvLook` (jen když není 62).
 - **Domů hlásí starou aplikaci v televizi** (`TvChoice.outdated`: ohlášená verze vs. `receiver-manifest.json`
   v APK, text `w_tv_old`), s tlačítkem k nahrání.
 - Android: **Typ televize** (`Prefs.tvType`: Android TV / LG / Samsung, `core/TvReceiver.kt` →

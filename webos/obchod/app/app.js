@@ -369,6 +369,8 @@
       puvodni = document.createElement('div');
       puvodni.className = 'puvodni';
       puvodniRadky(puvodni, v.original, casti);
+      // velikost originálu z Nastavení v telefonu (od 1.5.12; bez pole 62 % jako dřív)
+      if (typeof v.pismoOrig === 'number') { puvodni.style.fontSize = (cislo(v.pismoOrig, 30, 100, 62) / 100) + 'em'; }
       t.appendChild(puvodni);
     }
     s.background = 'rgba(0,0,0,' + (cislo(v.pozadi, 0, 100, 100) / 100) + ')';

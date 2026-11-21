@@ -94,6 +94,10 @@ object Prefs {
 
     fun showOriginal(c: Context) = bool(c, "show_original", false)
     fun setShowOriginal(c: Context, v: Boolean) = setBool(c, "show_original", v)
+    /** Velikost písma anglického originálu v % písma překladu (od 0.97.44; dřív pevně 62 %). */
+    val ORIG_SIZES = intArrayOf(40, 50, 62, 75, 90, 100)
+    fun origSize(c: Context): Int = p(c).getInt("orig_size", 62).let { v -> ORIG_SIZES.minByOrNull { kotlin.math.abs(it - v) } ?: 62 }
+    fun setOrigSize(c: Context, v: Int) = p(c).edit().putInt("orig_size", v).apply()
 
     fun coloredSpeaker(c: Context) = bool(c, "colored_speaker", true)
     fun setColoredSpeaker(c: Context, v: Boolean) = setBool(c, "colored_speaker", v)

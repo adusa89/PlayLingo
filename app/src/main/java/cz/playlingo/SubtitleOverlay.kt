@@ -52,6 +52,8 @@ class SubtitleOverlay(
     private val matchOriginalSize: Boolean = false,
     /** Okraj nad a pod textem 0–3 ([Prefs.BAR_PADS]). */
     private val barPad: Int = 1,
+    /** Velikost anglického originálu v % písma překladu ([Prefs.ORIG_SIZES]). */
+    private val origPercent: Int = 62,
     /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky a texty hry), nebo vynechat (Jen titulky). */
     private val showPrompts: Boolean = true,
     /** Pevné barvy postav z profilu hry ([cz.playlingo.core.GameProfile.colorsByKey]). */
@@ -230,7 +232,7 @@ class SubtitleOverlay(
                 sb.append(s.body)
                 sb.setSpan(ForegroundColorSpan(originalColor), bs, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
-            sb.setSpan(RelativeSizeSpan(0.62f), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            sb.setSpan(RelativeSizeSpan(origPercent / 100f), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return sb
     }
@@ -259,7 +261,7 @@ class SubtitleOverlay(
             val tvOriginal = original?.let { o -> TextLogic.segments(o).joinToString("\n") { s ->
                 (s.speaker?.let { TextLogic.normalizeName(it) + ": " } ?: "") + s.body } }
             val look = TvLook.json(layout, opacityPercent, TvLook.textPx(textSize, tvMatched), textColor, bold,
-                textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box, step)
+                textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box, step, origPercent = origPercent)
             send(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors), look)
         }
         main.post {

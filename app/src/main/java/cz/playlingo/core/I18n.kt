@@ -119,6 +119,7 @@ object I18n {
         "l_size" to ("Velikost písma" to "Veľkosť písma"),
         "l_opacity" to ("Neprůhlednost pruhu" to "Nepriehľadnosť pruhu"),
         "l_original" to ("Zobrazit i anglický originál" to "Zobraziť aj anglický originál"),
+        "l_orig_size" to ("Velikost originálu" to "Veľkosť originálu"),
         "l_speaker" to ("Jména mluvčích barevně" to "Mená hovoriacich farebne"),
         "l_hold" to ("Nechat překlad déle na obrazovce" to "Nechať preklad dlhšie na obrazovke"),
         "l_pad" to ("Okraj pruhu" to "Okraj pruhu"),

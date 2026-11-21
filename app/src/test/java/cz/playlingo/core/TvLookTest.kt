@@ -49,6 +49,14 @@ class TvLookTest {
         assertEquals(ScreenLayout.Position.CUSTOM, l.withBarCenter(0.5f).position)
     }
 
+    @Test fun velikostOriginalu() {
+        val j = TvLook.json(ScreenLayout(), 100, 50, white, false, -1f, -1f, -1f, -1f, "Hi", origPercent = 90)
+        assertTrue(j, j.contains("\"pismoOrig\":90"))
+        // výchozích 62 % se neposílá (starší TV mají 62 % samy)
+        assertFalse(TvLook.json(ScreenLayout(), 100, 50, white, false, -1f, -1f, -1f, -1f, "Hi").contains("pismoOrig"))
+        assertFalse(TvLook.json(ScreenLayout(), 100, 50, white, false, -1f, -1f, -1f, -1f, null, origPercent = 90).contains("pismoOrig"))
+    }
+
     @Test fun zpravaUkazSVzhledem() {
         val m = TvSender.showMessage(3, "Ahoj", null, "{\"pozadi\":50}")
         assertEquals("{\"typ\":\"ukaz\",\"id\":3,\"text\":\"Ahoj\",\"vzhled\":{\"pozadi\":50}}", m)

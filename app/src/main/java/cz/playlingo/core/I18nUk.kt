@@ -106,6 +106,7 @@ internal val I18N_UK: Map<String, String> = mapOf(
     "l_size" to "Розмір шрифту",
     "l_opacity" to "Непрозорість смуги",
     "l_original" to "Показувати й англійський оригінал",
+    "l_orig_size" to "Розмір оригіналу",
     "l_speaker" to "Імена персонажів кольором",
     "l_hold" to "Залишати переклад на екрані довше",
     "l_pad" to "Поле смуги",

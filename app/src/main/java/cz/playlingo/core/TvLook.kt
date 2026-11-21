@@ -36,6 +36,8 @@ object TvLook {
         box: Pair<Float, Float>? = null,
         /** Rozestup řádků (zlomek výšky) – řádky překladu proti položkám menu ve hře (TV od 1.5.10); 0 = běžně. */
         step: Float = 0f,
+        /** Velikost originálu v % písma překladu (TV od 1.5.12; starší mají 62 %). */
+        origPercent: Int = 62,
     ): String {
         val sb = StringBuilder("{")
         sb.append("\"pozadi\":").append(opacityPercent.coerceIn(0, 100))
@@ -56,7 +58,10 @@ object TvLook {
             if (textLeft >= 0f && textRight > textLeft) sb.append(',').append(f(textLeft)).append(',').append(f(textRight))
             sb.append(']')
         }
-        original?.takeIf { it.isNotBlank() }?.let { sb.append(",\"original\":").append(TvSender.json(it)) }
+        original?.takeIf { it.isNotBlank() }?.let {
+            sb.append(",\"original\":").append(TvSender.json(it))
+            if (origPercent != 62) sb.append(",\"pismoOrig\":").append(origPercent.coerceIn(30, 100))
+        }
         return sb.append('}').toString()
     }
 

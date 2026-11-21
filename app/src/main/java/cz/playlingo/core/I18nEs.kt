@@ -106,6 +106,7 @@ internal val I18N_ES: Map<String, String> = mapOf(
     "l_size" to "Tamaño de letra",
     "l_opacity" to "Opacidad de la franja",
     "l_original" to "Mostrar también el original en inglés",
+    "l_orig_size" to "Tamaño del original",
     "l_speaker" to "Nombres de los personajes en color",
     "l_hold" to "Mantener la traducción más tiempo en pantalla",
     "l_pad" to "Margen de la barra",
