@@ -61,6 +61,8 @@ class SubtitleOverlay(
     private val objBgPercent: Int = -1,
     /** Pokyny pro hráče ([Segment.prompt]) ukazovat (Titulky → Hra → Pokyny pod titulky), nebo vynechat. */
     private val showPrompts: Boolean = true,
+    /** „Zakrýt celou oblast titulků“ (poloha Přes titulky): pruh přes celé pole posledních titulků ([cz.playlingo.core.CoverArea]). */
+    private val coverAll: Boolean = false,
     /** Pevné barvy postav z profilu hry ([cz.playlingo.core.GameProfile.colorsByKey]). */
     private val speakerPreset: Map<String, Int> = emptyMap(),
     /**
@@ -79,6 +81,9 @@ class SubtitleOverlay(
 
         /** Dá se teď vůbec něco zobrazit přes jiné aplikace? */
         fun canShow(c: Context): Boolean = TitulkyAccessibility.instance != null || Settings.canDrawOverlays(c)
+
+        /** Pole posledních titulků – sdílené, ať ho nová instance po změně nastavení nezačíná znovu. */
+        val coverArea = cz.playlingo.core.CoverArea()
     }
 
     private val a11y = TitulkyAccessibility.instance
@@ -289,7 +294,13 @@ class SubtitleOverlay(
         // „přes titulky“: zakrýt anglický text i s okrajem a v rozhovoru se nezmenšovat (CoverBox, od 0.97.56) –
         // rozšířená plocha jde i do TV LG/Samsung, takže kryje lépe i se stávající aplikací v TV
         if (!isShown) coverBox.reset()
-        val cb = if (layout.cover && box == null) coverBox.next(rawTop, rawBottom, rawLeft, rawRight) else null
+        // volba „Zakrýt celou oblast titulků“ (od 0.97.58): celé pole, kde titulky naposledy byly, ne jen tenhle řádek
+        val all = coverAll && layout.cover && box == null && rawTop >= 0f
+        val cb = when {
+            all -> coverArea.next(rawTop, rawBottom, rawLeft, rawRight, layout.read, android.os.SystemClock.uptimeMillis())
+            layout.cover && box == null -> coverBox.next(rawTop, rawBottom, rawLeft, rawRight)
+            else -> null
+        }
         val textTop = cb?.get(0) ?: rawTop
         val textBottom = cb?.get(1) ?: rawBottom
         val textLeft = cb?.get(2) ?: rawLeft
@@ -307,7 +318,7 @@ class SubtitleOverlay(
             val tvMain = TvLook.textPx(textSize, tvMatched)
             val origPercent = if (origSp > 0) Math.round(TvLook.textPx(origSp, 0) * 100f / tvMain) else 62
             val look = TvLook.json(layout, opacityPercent, tvMain, textColor, bold,
-                textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box, step, origPercent = origPercent)
+                textTop, textBottom, textLeft, textRight, tvOriginal, barPad, box, step, origPercent = origPercent, coverAll = all)
             send(TextLogic.joinSegments(segments), TvSender.partsJson(segments, colors), look)
         }
         main.post {
@@ -332,7 +343,12 @@ class SubtitleOverlay(
             val tTop = if (hasText) textTop else l.read.top
             val tBottom = if (hasText) textBottom else l.read.bottom
             // v režimu "přes titulky" pruh zakryje anglický text, ale nikdy není vyšší než čtvrtina obrazovky
-            tv.minHeight = if (l.cover && box == null) (l.coverHeight(tTop, tBottom) * screenH).toInt().coerceAtMost(screenH / 4) else 0
+            tv.minHeight = when {
+                // celé pole titulků: plocha už má okraj, pruh přesně tak vysoký (nejvýš 30 % + okraj, hlídá CoverArea)
+                all && hasText -> ((tBottom - tTop) * screenH).toInt().coerceAtMost((screenH * 0.33f).toInt())
+                l.cover && box == null -> (l.coverHeight(tTop, tBottom) * screenH).toInt().coerceAtMost(screenH / 4)
+                else -> 0
+            }
             // Šířka pruhu podle textu: jen tak široký, aby se vešel překlad a zakryla se angličtina
             // (ne pruh přes celou obrazovku).
             val hasSpan = hasText && textLeft >= 0f && textRight > textLeft
@@ -341,7 +357,7 @@ class SubtitleOverlay(
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
             )
             var width = tv.measuredWidth
-            if (l.cover && hasSpan) width = max(width, ((textRight - textLeft) * screenW).toInt() + dp(20))
+            if (l.cover && hasSpan) width = max(width, ((textRight - textLeft) * screenW).toInt() + if (all) 0 else dp(20))
             width = width.coerceIn(dp(80), screenW)
             tv.measure(
                 View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
@@ -493,6 +509,7 @@ class SubtitleOverlay(
     }
 
     fun hide() {
+        if (isShown && coverAll) coverArea.hidden(android.os.SystemClock.uptimeMillis())
         isShown = false
         onText?.invoke(null, null, null)
         main.post { bar?.visibility = View.GONE }

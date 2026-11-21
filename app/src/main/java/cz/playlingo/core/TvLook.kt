@@ -15,7 +15,7 @@ import java.util.Locale
  * 1080 řádků, `barva` #RRGGBB, `tucne`, `poloha` „pres“ / „tesne“ / „nad“ / „stred“ (+ `stred` = svislý střed
  * pruhu), `sirka` největší šířka pruhu, `cteni` [horní, dolní] hrana oblasti čtení, `text` [nahoře,
  * dole, vlevo, vpravo] anglického titulku (jen když se našel), `original` anglický text (jen se
- * zapnutým „Ukazovat i originál“).
+ * zapnutým „Ukazovat i originál“), `kryt` = `text` je celé pole titulků (volba „Zakrýt celou oblast titulků“).
  */
 object TvLook {
     /** Velikost písma z Nastavení (sp) × tohle = px v televizi; výchozích 22 dá 50 px jako dřív. */
@@ -38,6 +38,11 @@ object TvLook {
         step: Float = 0f,
         /** Velikost originálu v % písma překladu (TV od 1.5.12; starší mají 62 %). */
         origPercent: Int = 62,
+        /**
+         * „Zakrýt celou oblast titulků“ (TV od 1.5.14): `text` je už celé pole titulků i s okrajem – pruh přesně tak vysoký
+         * (bez dalšího okraje a stropu čtvrtiny obrazu). Starší aplikace v TV pole `kryt` přeskočí a kryjí `text` jako „pres“.
+         */
+        coverAll: Boolean = false,
     ): String {
         val sb = StringBuilder("{")
         sb.append("\"pozadi\":").append(opacityPercent.coerceIn(0, 100))
@@ -50,6 +55,7 @@ object TvLook {
         sb.append(",\"poloha\":\"").append(pos).append('"')
         if (box != null) sb.append(",\"misto\":[").append(f(box.first)).append(',').append(f(box.second))
             .append(if (step > 0f) "," + f(step) else "").append(']')
+        if (pos == "pres" && coverAll && textTop >= 0f && textBottom > textTop) sb.append(",\"kryt\":true")
         if (pos == "stred") sb.append(",\"stred\":").append(f(layout.barCenterY))
         sb.append(",\"sirka\":").append(f(layout.barWidth))
         sb.append(",\"cteni\":[").append(f(layout.read.top)).append(',').append(f(layout.read.bottom)).append(']')
