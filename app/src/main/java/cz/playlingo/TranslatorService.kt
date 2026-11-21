@@ -282,7 +282,7 @@ class TranslatorService : Service() {
             ACTION_PAUSE -> {
                 if (running) {
                     paused = !paused
-                    if (paused) { clearQueue(); overlay?.hide(); dropObjective() } else resetReading()
+                    if (paused) { clearQueue(); overlay?.hide(); dropObjective(); dropMenu() } else resetReading()
                     updateNotification()
                 }
                 return START_NOT_STICKY
@@ -425,7 +425,7 @@ class TranslatorService : Service() {
         prompts = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).prompts
         // překlad menu hry jen se zapnutou volbou (od 0.97.57 výchozí vypnuto – majitel ho nechce)
         menuSpec = if (Prefs.gameTexts(this) && Prefs.gameMenu(this)) cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).menuSpec else null
-        menuShown = false; menuKey = ""; menuWords.clear(); menuTracker = null
+        menuShown = false; menuKey = ""; menuDescKey = ""; menuWatch = null; menuWords.clear(); menuTracker = null
         coloredSpeaker = Prefs.coloredSpeaker(this)
         cz.playlingo.core.NameColor.profile = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey
         // změna hry nebo slovníku → dřívější překlady už neplatí
@@ -474,6 +474,7 @@ class TranslatorService : Service() {
             speakerPreset = cz.playlingo.core.GameProfiles.of(Prefs.gameId(this)).colorsByKey,
             onText = sender?.let { s -> { text: String?, parts: String?, look: String? -> if (text == null) s.hide() else s.show(text, parts, look) } },
             onObjective = sender?.let { s -> { m: String -> s.sendObjective(m) } },
+            onMenuDesc = sender?.let { s -> { m: String -> s.sendMenuDesc(m) } },
         )
         objectiveTracker.reset(); objectiveSeq++
         resetReading()
@@ -770,48 +771,112 @@ class TranslatorService : Service() {
     private var menuTracker: cz.playlingo.core.MenuTracker? = null
     /** Překlady popisů a položek menu (jen v paměti; pevné překlady položek jsou v profilu hry). */
     private val menuWords = HashMap<String, String>()
+    /** Nastavení hry: popis vybrané volby je ve vlastním okně (od 0.97.58) – co v něm je. */
+    private var menuDescKey = ""
+    /** Jas pásů seznamu voleb Nastavení ([cz.playlingo.core.GameMenu.WATCH]) – změna = číst hned. */
+    private var menuWatch: IntArray? = null
+    private var menuReadNow = false
 
     /**
-     * Jednou za 1,5 s (v menu za 0,7 s) přečte horní část obrazu a pozná menu hry ([cz.playlingo.core.GameMenu]).
+     * Jednou za 1,5 s (v menu za 0,4 s) přečte horní část obrazu a pozná menu hry ([cz.playlingo.core.GameMenu]).
      * Nečte se, když je v pruhu titulek (hraje se). Vrací true, když je menu vidět – pak se titulky nečtou.
+     * Od 0.97.58 se při otevřeném menu na každém novém snímku změří jas známých položek ([menuFast]) – posun výběru
+     * se ukáže hned, bez čtečky; v Nastavení posun bílého pruhu v seznamu voleb spustí čtení hned (nový popis).
      */
     private suspend fun checkMenu(now: Long, ov: SubtitleOverlay): Boolean {
         val spec = menuSpec ?: return false
-        if (now - menuCheckAt < (if (menuShown) 400 else 1500)) return menuShown
+        val tracker = menuTracker ?: cz.playlingo.core.MenuTracker(spec).also { menuTracker = it }
+        if (menuShown) menuFast(now, ov, spec, tracker)
+        if (!menuReadNow && now - menuCheckAt < (if (menuShown) 400 else 1500)) return menuShown
         if (!menuShown && ov.isShown) return false
-        menuCheckAt = now
         val crop = reader?.grabMenu(0.6f) ?: return menuShown
+        menuCheckAt = now
+        menuReadNow = false
         val result = try { recognizer.process(InputImage.fromBitmap(crop.bmp, 0)).await() } catch (_: Exception) { return menuShown }
         val lines = result.textBlocks.flatMap { it.lines }.mapNotNull { l ->
             val bb = l.boundingBox ?: return@mapNotNull null
-            cz.playlingo.core.MenuLine(l.text, bb.left, bb.top, bb.right, bb.bottom, meanGray(crop, bb))
+            // slova s vlastním rámečkem a jasem: záložky Nastavení čtečka spojí do jednoho řádku (od 0.97.58)
+            val words = l.elements.mapNotNull { e -> e.boundingBox?.let { b -> cz.playlingo.core.MenuWord(e.text, b.left, b.top, b.right, b.bottom, meanGray(crop, b)) } }
+            cz.playlingo.core.MenuLine(l.text, bb.left, bb.top, bb.right, bb.bottom, meanGray(crop, bb), words)
         }
-        val tracker = menuTracker ?: cz.playlingo.core.MenuTracker(spec).also { menuTracker = it }
-        val (view, changed) = tracker.update(cz.playlingo.core.GameMenu.read(lines, crop.fullW, crop.fullH, spec))
+        val (view, changed) = tracker.update(cz.playlingo.core.GameMenu.read(lines, crop.fullW, crop.fullH, spec), now)
         if (view == null) {
-            if (menuShown) { menuShown = false; menuKey = ""; ov.hide(); tp("MENU|off|" + lines.take(10).joinToString(" / ") { it.text.take(30) }) }
+            if (menuShown) { dropMenu(); tp("MENU|off|" + lines.take(10).joinToString(" / ") { it.text.take(30) }) }
             return false
-        }
-        if (changed || view.key != menuKey) {
-            menuKey = view.key
-            val l = lang
-            val items = view.items.map { spec.word(l, it) ?: menuTranslate(it) }
-            val title = view.title?.let { menuTranslate(it) }
-            val desc = view.description?.let { menuTranslate(it) }
-            val text = cz.playlingo.core.GameMenu.text(view.kind, items, view.selected, title, desc)
-            synchronized(showLock) {
-                showQueue.clear()   // repliky z fronty by menu přepsaly
-                // vedle menu, řádky pod sebou (od 0.97.36)
-                ov.show(text.split('\n').map { Segment(null, it) }, null, -1f, -1f, box = view.box,
-                    step = if (view.kind == "pause" && view.title == null) view.step else 0f)
-                ++showSeq
-            }
-            tp("MENU|${view.kind}|${view.items.joinToString(",")}|vybraná=${view.selected}|popis=${view.title ?: "-"}")
         }
         if (!menuShown) { resetReading(); dropObjective(); clearQueue() }
         menuShown = true
         hideAt = 0
+        if (changed || view.listKey != menuKey) showMenuList(view, spec, ov)
+        if (view.kind == "settings") {
+            // popis zvlášť ve vlastním okně přes anglický popis (od 0.97.58)
+            if (view.descKey != menuDescKey) {
+                menuDescKey = view.descKey
+                val box = view.descBox
+                if (box == null || (view.title == null && view.description == null)) ov.hideMenuDesc()
+                else ov.showMenuDesc(view.title?.let { menuTranslate(it) }, view.description?.let { menuTranslate(it) }, box, view.descLine)
+            }
+        } else if (menuDescKey.isNotEmpty()) { menuDescKey = ""; ov.hideMenuDesc() }
         return true
+    }
+
+    /**
+     * Vybraná položka podle jasu na novém snímku ([cz.playlingo.core.MenuTracker.fast]) – pár set bodů z jasové
+     * roviny, žádná bitmapa ani čtečka. V Nastavení se zároveň hlídá seznam voleb: posun pruhu → číst hned.
+     */
+    private suspend fun menuFast(now: Long, ov: SubtitleOverlay, spec: cz.playlingo.core.MenuSpec, tracker: cz.playlingo.core.MenuTracker) {
+        val rects = tracker.sampleRects()
+        val settings = tracker.view?.kind == "settings"
+        if (rects.isEmpty() && !settings) return
+        val watch = if (settings) cz.playlingo.core.GameMenu.WATCH else emptyList()
+        val g = reader?.sampleGray(rects + watch) ?: return
+        if (settings) {
+            val w = g.copyOfRange(rects.size, g.size)
+            val prev = menuWatch
+            if (prev == null || cz.playlingo.core.GameMenu.watchChanged(prev, w)) { if (prev != null) menuReadNow = true; menuWatch = w }
+        }
+        if (rects.isEmpty()) return
+        val (view, changed) = tracker.fast(g.copyOfRange(0, rects.size), now)
+        if (view != null && changed) {
+            showMenuList(view, spec, ov)
+            // jiná záložka = jiný seznam voleb i popis → přečíst hned
+            if (settings) menuReadNow = true
+        }
+    }
+
+    /** Menu zleva: seznam vedle menu. Nastavení: jen vybraná záložka těsně nad lištou (od 0.97.58). */
+    private suspend fun showMenuList(view: cz.playlingo.core.MenuView, spec: cz.playlingo.core.MenuSpec, ov: SubtitleOverlay) {
+        menuKey = view.listKey
+        val l = lang
+        if (view.kind == "pause") {
+            val items = view.items.map { spec.word(l, it) ?: menuTranslate(it) }
+            val text = cz.playlingo.core.GameMenu.text(view.kind, items, view.selected, null, null)
+            synchronized(showLock) {
+                showQueue.clear()   // repliky z fronty by menu přepsaly
+                // vedle menu, řádky pod sebou (od 0.97.36), řádek proti řádku (od 0.97.40)
+                ov.show(text.split('\n').map { Segment(null, it) }, null, -1f, -1f, box = view.box, step = view.step)
+                ++showSeq
+            }
+        } else {
+            val tab = view.items.getOrNull(view.selected)
+            val place = cz.playlingo.core.GameMenu.tabPlace(view.rects.getOrNull(view.selected))
+            val word = tab?.let { spec.word(l, it) ?: menuTranslate(it) }
+            synchronized(showLock) {
+                showQueue.clear()
+                if (word == null || place == null) ov.hide()
+                else ov.show(listOf(Segment(null, word)), null, -1f, -1f, box = place.first, step = place.second)
+                ++showSeq
+            }
+        }
+        tp("MENU|${view.kind}|${view.items.joinToString(",")}|vybraná=${view.selected}|popis=${view.title ?: "-"}")
+    }
+
+    /** Menu pryč (zavřené, pauza): pruh i popis schovat. */
+    private fun dropMenu() {
+        val was = menuShown
+        menuShown = false; menuKey = ""; menuDescKey = ""; menuWatch = null; menuReadNow = false
+        menuTracker?.reset()
+        if (was) { overlay?.hide(); overlay?.hideMenuDesc() }
     }
 
     /** Překlad textu z menu (offline, případně DeepL jako titulky); výsledek se pamatuje. */
