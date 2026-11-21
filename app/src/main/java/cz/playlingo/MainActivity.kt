@@ -338,6 +338,8 @@ class MainActivity : Activity() {
         if (android.os.SystemClock.elapsedRealtime() - lastUpdateCheck > 5 * 60_000L) checkForUpdate()
         // seznam her: jen se zapnutou volbou „Seznam her automaticky“, nejvýš jednou za 6 h
         checkGameList(manual = false)
+        // nastavení z telefonu (jen Android TV / box): stránka běží, dokud žije aplikace; změna z telefonu překreslí
+        if (RemoteHost.start(this)) RemoteHost.onChanged = { if (!isFinishing) { buildShell(); render(keepFocus = true) } }
     }
 
     override fun onPause() {
@@ -353,6 +355,7 @@ class MainActivity : Activity() {
         if (::xbox.isInitialized) xbox.cancel()
         loginServer?.stop(); loginServer = null
         deeplUi?.stopPage()
+        RemoteHost.onChanged = null
         demo?.destroy(); demo = null
         scope.cancel()
         super.onDestroy()
@@ -2141,8 +2144,19 @@ class MainActivity : Activity() {
                 openOverlaySettings()
             }, "overlay"), 8)
         }
+        // nastavení z telefonu: čtvereček na stránku z TV (PlayLingo v telefonu pak nastaví celou aplikaci)
+        if (RemoteHost.eligible(this)) {
+            add(tagged(ui.settingRow(t("rs_row"), if (remoteQr) "▲" else "▼") { remoteQr = !remoteQr; render(true) }, "remote"), 8)
+            if (remoteQr) {
+                val url = if (RemoteHost.start(this)) RemoteHost.pageUrl(this) else null
+                if (url != null) add(qrRow(url, t("rs_qr_text")), 8) else add(ui.text(t("rs_nolan"), 15f, Theme.WARN), 8)
+            }
+        }
         if (SHOW_LICENSE && Prefs.license(this).canRun) { content.addView(ui.section(t("m_license"))); license() }
     }
+
+    /** Čtvereček „Nastavit z telefonu“ rozbalený (⚙ → Obecné). */
+    private var remoteQr = false
 
     /** Čtení a překlad: kvalita čtení (nad tím, co dělá [translate]). */
     private fun settingsRead() {

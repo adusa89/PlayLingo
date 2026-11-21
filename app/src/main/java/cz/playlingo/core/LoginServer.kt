@@ -29,6 +29,8 @@ class LoginServer(
     private val onAccount: (PhoneLogin.Account) -> Unit,
     private val log: (String) -> Unit = {},
     private val custom: Custom? = null,
+    /** Stálý klíč (nastavení TV z telefonu – telefon se připojuje i později); null = nový při každém spuštění. */
+    fixedKey: String? = null,
 ) {
     /** Jiná stránka než přihlášení: [path] = adresa stránky s klíčem (kam se odešle formulář). */
     interface Custom {
@@ -38,7 +40,7 @@ class LoginServer(
         fun gone(): String
     }
 
-    val key: String = PhoneLogin.newKey()
+    val key: String = fixedKey?.takeIf { PhoneLogin.validKey(it) } ?: PhoneLogin.newKey()
 
     @Volatile var port = 0
         private set
@@ -169,12 +171,12 @@ class LoginServer(
 
     companion object {
         /** Server pro jinou stránku než přihlášení účtem (viz [Custom]). */
-        fun forPage(lang: () -> Lang, custom: Custom, log: (String) -> Unit = {}) =
-            LoginServer(lang, "", { "" }, { null }, {}, log, custom)
+        fun forPage(lang: () -> Lang, custom: Custom, log: (String) -> Unit = {}, fixedKey: String? = null) =
+            LoginServer(lang, "", { "" }, { null }, {}, log, custom, fixedKey)
 
         private const val END = "\r\n\r\n"
         private const val MAX_HEAD = 16 * 1024
-        private const val MAX_BODY = 8 * 1024
+        private const val MAX_BODY = 64 * 1024   // celé nastavení z telefonu (vlastní slovník, oblasti)
     }
 }
 

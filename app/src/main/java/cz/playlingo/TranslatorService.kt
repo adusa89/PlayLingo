@@ -1452,6 +1452,8 @@ class TranslatorService : Service() {
     override fun onCreate() {
         super.onCreate()
         self = this
+        // nastavení z telefonu jde měnit i při hraní (jen Android TV / box)
+        try { RemoteHost.start(this) } catch (_: Throwable) {}
         try {
             val cm = getSystemService(android.net.ConnectivityManager::class.java)
             val cb = object : android.net.ConnectivityManager.NetworkCallback() {
