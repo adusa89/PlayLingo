@@ -11,6 +11,7 @@ import cz.playlingo.core.Lang
 import cz.playlingo.core.License
 import cz.playlingo.core.PhoneLogin
 import cz.playlingo.core.ScreenLayout
+import cz.playlingo.core.SourceLang
 import cz.playlingo.core.Ps5Host
 import cz.playlingo.core.TvType
 import cz.playlingo.core.UsageStats
@@ -44,7 +45,23 @@ object Prefs {
      */
     fun lang(c: Context): Lang = p(c).getString("lang", null)?.let { Lang.of(it) }
         ?: Lang.ui(p(c).getString("ui_lang", null))?.takeIf { it.isTarget } ?: Lang.CS
-    fun setLang(c: Context, v: Lang) { if (v.isTarget) p(c).edit().putString("lang", v.code).apply() }
+    fun setLang(c: Context, v: Lang) {
+        if (v.isTarget) p(c).edit().putString("lang", v.code).apply()
+        // stejný jazyk titulků jako jazyk překladu nejde – pak se překládá z angličtiny ([SourceLang.effective])
+        OfflineTranslator.source = sourceLang(c)
+    }
+
+    /**
+     * Z čeho se překládá (jazyk titulků ve hře, průvodce krok Jazyky a Titulky). Nový klíč `src_lang`,
+     * bez něj angličtina – dosavadní hráči nic nepoznají.
+     */
+    fun sourceLang(c: Context): SourceLang = SourceLang.effective(p(c).getString("src_lang", null), lang(c))
+    /** Jazyk překladu k zobrazení; s jiným jazykem titulků než angličtinou dvojice „Français → Čeština“. */
+    fun langPair(c: Context): String = sourceLang(c).let { if (it.english) lang(c).label else it.label + " → " + lang(c).label }
+    fun setSourceLang(c: Context, v: SourceLang) {
+        p(c).edit().putString("src_lang", v.code).apply()
+        OfflineTranslator.source = sourceLang(c)
+    }
 
     /**
      * Jazyk aplikace (nabídky, nápověda). Dokud ho uživatel nezvolil: kdo má zvolený jazyk překladu,
@@ -268,7 +285,9 @@ object Prefs {
     /** Otisk nastavení slovníku – když se změní, paměť překladů se smaže. */
     fun glossarySignature(c: Context): String =
         gameId(c) + "|" + lang(c).code + "|" + userDict(c, lang(c)).hashCode() + "|" +
-            GameProfiles.of(gameId(c)).let { it.names.hashCode() + 31 * it.termsFor(lang(c)).hashCode() }
+            GameProfiles.of(gameId(c)).let { it.names.hashCode() + 31 * it.termsFor(lang(c)).hashCode() } +
+            // jiný jazyk titulků → paměť překladů neplatí (u angličtiny podpis beze změny, paměť hráčům zůstane)
+            sourceLang(c).let { if (it.english) "" else "|" + it.code }
     fun savedGlossarySignature(c: Context): String = p(c).getString("gloss_sig", "") ?: ""
     fun setSavedGlossarySignature(c: Context, v: String) = p(c).edit().putString("gloss_sig", v).apply()
 

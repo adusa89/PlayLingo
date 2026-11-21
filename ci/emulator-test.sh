@@ -22,10 +22,11 @@ adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null || tru
 adb logcat -c
 
 # 1) první spuštění: průvodce krok za krokem (OK = Pokračovat; pořadí kroků v MainActivity.wizardSteps:
-#    zařízení, konzole, televize, jazyk překladu, lepší překlad (DeepL – OK = Přeskočit, zůstat u offline), povolení pruhu,
+#    jazyky (jazyk aplikace a „Překládat z“), zařízení, konzole, televize, jazyk překladu, lepší překlad (DeepL – OK = Přeskočit, zůstat u offline), povolení pruhu,
 #    připojení konzole (jedna řada tlačítek, OK = Pokračovat spárování `pnext`), hotovo)
 adb shell am start -n $PKG/.MainActivity
-sleep 10; shot 01_pruvodce_zarizeni
+sleep 10; shot 00_pruvodce_jazyky
+key 23; sleep 2; shot 01_pruvodce_zarizeni
 key 23; sleep 2; shot 01b_pruvodce_konzole
 key 23; sleep 2; shot 01c_pruvodce_televize
 key 23; sleep 2; shot 03_pruvodce_jazyk

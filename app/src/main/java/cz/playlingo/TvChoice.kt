@@ -244,8 +244,8 @@ object TvStatus {
             out += "pozor" to c.tx("tvs_stopped")
         }
         val lang = Prefs.lang(c)
-        out += if (!OfflineTranslator.isReady(lang)) "pozor" to c.tx("w_model").replace("%s", lang.label)
-            else "ok" to lang.label + " · " + c.tx(if (DeeplTranslator.active(c)) "dl_mode_on" else "h_offline")
+        out += if (!OfflineTranslator.isReady(lang)) "pozor" to c.tx("w_model").replace("%s", Prefs.langPair(c))
+            else "ok" to Prefs.langPair(c) + " · " + c.tx(if (DeeplTranslator.active(c)) "dl_mode_on" else "h_offline")
         val game = cz.playlingo.core.GameProfiles.of(Prefs.gameId(c))
         val guess = Prefs.gameGuess(c)?.let { cz.playlingo.core.GameProfiles.of(it) }
         if (guess != null) out += "pozor" to (if (game.id != "all") game.title + " · " else "") + guess.title + "?"

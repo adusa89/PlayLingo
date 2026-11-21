@@ -682,6 +682,12 @@ Aplikace má dvě na sobě nezávislá nastavení jazyka (`core/Lang.kt`):
 - **jazyk aplikace** (`Prefs.uiLang`, Nastavení a pomocník v telefonu) – nabídky a nápověda;
   všech deset jazyků včetně angličtiny. Texty na obrazovce ber vždy přes `tx()` / `Prefs.uiLang`,
   nikdy podle jazyka překladu.
+- **z čeho se překládá** („Překládat z“, `Prefs.sourceLang`, klíč `src_lang`, `core/SourceLang.kt`, testy `SourceLangTest`;
+  průvodce krok Jazyky a Titulky pod jazykem překladu) – jazyk titulků ve hře, výchozí angličtina (bez klíče = jako dřív).
+  Jen latinka (OCR ML Kit), kterou umí ML Kit Translate i DeepL jako zdroj; stejný jako jazyk překladu = angličtina
+  (`SourceLang.effective`). Překladač ji má v `OfflineTranslator.source` (nastavuje `App`/`Prefs`, balíček pro dvojici).
+  Anglické úpravy (`OfflinePrep.standardize`/`IDIOMS`, `QuickWords`, `Natural`, rod podle originálu, „i“ → „I“
+  v `normalizeCase`, `looksForeign` na diakritiku) běží jen u angličtiny – nový anglický kousek hlídej `SourceLang.english`.
 
 Kdo si jazyk aplikace nezvolil, má ji v jazyce překladu (tak to bylo do 0.63); nová instalace se
 řídí jazykem zařízení a pro jazyk, který aplikace neumí, je anglicky. Další jazyk překladu, pro
@@ -766,13 +772,14 @@ Než zvýšíš verzi a pošleš ji, projdi tohle a v odpovědi napiš, co bylo 
   otevírá z Nastavení (záložka Čtení a překlad).
 - **Licence a platby jsou zatím skryté** (`SHOW_LICENSE = false` v MainActivity, odkryjí se při vydání):
   ukáže se jen, když zkušební doba skončila (`!canRun`), jinak by hráč nevěděl, proč aplikace nejde.
-- **Průvodce prvním spuštěním** (`wizardSteps`, indexy `W_…`): Zařízení (Android TV/box, nebo
+- **Průvodce prvním spuštěním** (`wizardSteps`, indexy `W_…`): Jazyky (přání majitele 21. 11. 2026: první krok, `W_LANGS` –
+  úvodní věta, řádek Jazyk aplikace (hned přepne texty) a Překládat z (`sourceRow`)) → Zařízení (Android TV/box, nebo
   telefon/tablet jako čtečka pro LG/Samsung, `Prefs.readerDevice`; výchozí podle
   `NetInfo.isHandheld`; samo nic nepřepíná – pomocník v telefonu se dál řídí `Prefs.forceTv`) →
   Konzole → Televize (u LG/Samsungu tlačítko nahrání) → Jazyk překladu → Kvalita překladu (od 0.94,
   `W_TRANSLATE`, od 0.97.28 „Lepší překlad (DeepL)“ bez volby DeepL / offline – rovnou věta proč, čtverečky a čekání na
   klíč, viz DeepL) → Zobrazení titulků (povolení; u LG/Samsungu jen vysvětlení) → Připojení konzole → Hotovo.
-  **Připojení konzole (od 0.97.28):** nahoře jen „Krok 7 z 8“, spárování místo druhého pruhu malý podtitul
+  **Připojení konzole (od 0.97.28):** nahoře jen „Krok 8 z 9“, spárování místo druhého pruhu malý podtitul
   „Spárování · 3 z 6“ (`pg_sub`, tag `psub`; mimo průvodce dál pruh `ui.steps`). Jedna řada tlačítek – ta ze spárování
   (`pnext`, `pback`; v kroku 1 spárování vede Zpět na předchozí krok průvodce) a pod ní malé „Spárovat později“
   (`wlater`, skočí na Hotovo); u Xboxu (`XboxForm`) navíc malé Zpět. Vnější Pokračovat/Zpět/Přeskočit průvodce
@@ -873,7 +880,7 @@ jen podtitul „Spárování · 3 z 6“, ať nejsou dva pruhy nad sebou) a pomo
   `result.txt` má být `aktualizace_nahrazeno` aspoň 1.
 - Pořadí položek menu a kroků průvodce – skript se jimi prokliká naslepo šipkami (viz Obrazovky
   a průvodce). Na každém kroku průvodce je po vykreslení vybrané tlačítko Pokračovat (`wnext`, u párování
-  `pnext`), takže OK posune dál. Snímky průvodce: `01_pruvodce_zarizeni`, `01b_…konzole`,
+  `pnext`), takže OK posune dál. Snímky průvodce: `00_pruvodce_jazyky`, `01_pruvodce_zarizeni`, `01b_…konzole`,
   `01c_…televize`, `03_…jazyk`, `03b_…po_stazeni`, `03c_…preklad`, `02_…povoleni`, `04_…ps5_krok1`, `04b_…hledani`;
   stránky menu `07_menu_1`–`4` (od 0.97.52 Titulky, Konzole, Nápověda, Nastavení).
 - Zbytky starého názvu „TestPreklad“ (značka logu, `rootProject.name`, názvy souborů

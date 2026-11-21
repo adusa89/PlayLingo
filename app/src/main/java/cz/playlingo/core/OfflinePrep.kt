@@ -166,8 +166,9 @@ object OfflinePrep {
     fun standardize(text: String): String =
         THEM_DET.replace(normalize(text)) { m -> m.groupValues[1] + "hose " }
 
-    fun prepare(text: String): Prepared {
-        val plain = standardize(text)
+    /** [english] = titulky jsou anglicky (výchozí); jinak se slang a obraty neupravují, jen se schovají jména. */
+    fun prepare(text: String, english: Boolean = true): Prepared {
+        val plain = if (english) standardize(text) else text
         val names = ArrayList<String>()
         val protectedText = NAME_RX.replace(plain) { m ->
             val name = m.value
