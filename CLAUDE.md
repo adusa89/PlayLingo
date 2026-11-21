@@ -185,7 +185,7 @@ mizení titulků; schová se v menu hry, při pauze a nové volbě. S „Jen tit
 (`Prefs.objectiveOn`), Písmo úkolu (`objSize`, 0 = podle hry), Poloha úkolu (`objPos`, -1 = na místě ve hře, jinak střed
 v 0–100 % výšky; do TV jako úzké `misto` na zvolené výšce). Klíče `obj_on/obj_size/obj_pos` v `TvProfiles.KEYS`.
 **Fronta rychlých replik (od 0.97.46, přání majitele):** `core/ShowQueue.kt` (testy `ShowQueueTest`) – každý titulek je v pruhu
-aspoň „Nejkratší doba titulku“ (Titulky → Pruh s překladem, `Prefs.minShowMs`, 0/1/1,5/2/3 s, výchozí 1,5 s); rychlejší repliky
+aspoň „Nejkratší doba titulku“ (Titulky → Pruh s překladem, `Prefs.minShowMs`, 0/0,5/1/1,5/2/3 s, výchozí 0,5 s od 0.97.48 – delší doba by frontu nafukovala); rychlejší repliky
 čekají (nejvýš 3, žádná přes 5 s) a fronta se dožene v mezeře. Služba: `present` (pořadí `presentedSeq` – starší po novějším se
 nezařadí), `pollQueue` na hlavním vlákně podle `dueIn`, schování po zmizení titulku přes `requestHide(teď + Nechat déle)`. S frontou
 se pozdní odpověď DeepL nezahodí (`deeplThenShow`), dokud se neukázalo nic novějšího. Fronta se maže při pauze, menu hry a nové volbě.
