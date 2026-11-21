@@ -98,6 +98,13 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- nahrání PlayLingo z telefonu do Android TV přes ladění po síti (z pomocníka v telefonu) -->
+        <activity
+            android:name=".AtvInstallActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- čtení adresy a Passphrase z obrazovky televize LG kamerou telefonu -->
         <activity
             android:name=".LgScanActivity"

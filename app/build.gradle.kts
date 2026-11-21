@@ -181,6 +181,10 @@ dependencies {
     // Instalace aplikace do televize LG ve vývojářském režimu (SSH/SFTP, udržovaná větev JSch)
     implementation("com.github.mwiede:jsch:2.28.8")
 
+    // Nahrání do Android TV z telefonu přes ladění po síti (ADB, port 5555) – mobile.dev dadb,
+    // čisté Kotlin, Apache 2.0, s okio asi 0,4 MB (navrhy/instalace-android-tv.md, AtvInstaller.kt)
+    implementation("dev.mobile:dadb:2.0.0")
+
     // Xbox: příjem obrazu z konzole přes vzdálené hraní (WebRTC; Google libwebrtc v sestavení
     // od Stream, BSD/Apache 2.0). Do APK jdou jen procesory ARM (abiFilters výše).
     implementation("io.getstream:stream-webrtc-android:1.3.7")

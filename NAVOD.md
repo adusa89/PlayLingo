@@ -31,6 +31,13 @@ Když aplikace nejde nainstalovat nebo aktualizovat:
 
 Stejný postup najdeš i v aplikaci na stránce Instalace.
 
+**Bez Downloaderu, z telefonu s Androidem (zkušební):** nainstaluj PlayLingo do telefonu, v televizi
+zapni Možnosti pro vývojáře (Nastavení → Systém → Informace → 7× Sestavení OS) a v nich Ladění USB /
+Ladění přes síť (Fire TV: Ladění ADB). V telefonu v PlayLingu zvol „Nahrát PlayLingo do Android TV“ –
+televizi najde sám, nahraje do ní PlayLingo a spustí ho. Televize se jednou zeptá „Povolit ladění?“ –
+zaškrtni Vždy povolit a potvrď. Potom můžeš ladění v televizi zase vypnout. Bezdrátové ladění
+s párovacím kódem (Android 11+) zatím nejde.
+
 **Další verze už nahrávat nemusíš.** Když vyjde nová verze, aplikace ji nabídne na stránce Domů.
 Zvol „Aktualizovat“ a instalaci potvrď na ovladači – spárování i nastavení zůstanou.
 Při prvním použití televize požádá o povolení instalace z aplikace PlayLingo (Neznámé zdroje).

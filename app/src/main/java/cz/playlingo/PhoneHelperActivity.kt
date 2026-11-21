@@ -216,6 +216,8 @@ class PhoneHelperActivity : Activity() {
             }
             // Samsung: návod, uložení balíčku a ověření, že se televize připojila
             addView(ui.button(t("ss_open")) { if (!busy) startActivity(Intent(this@PhoneHelperActivity, SamsungInstallActivity::class.java)) }, ui.lp(top = 8))
+            // Android TV / Google TV: nahrát přes ladění po síti, bez aplikace v televizi
+            addView(ui.button(t("at_open")) { if (!busy) startActivity(Intent(this@PhoneHelperActivity, AtvInstallActivity::class.java)) }, ui.lp(top = 8))
         }, 18)
         add(ui.card().apply { addView(ui.text(t("hp_intro"), 15f, Theme.MUTED)) }, 10)
         val tg = target
