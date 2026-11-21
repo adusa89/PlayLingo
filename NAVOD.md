@@ -9,7 +9,18 @@ Stáhni `PlayLingo.apk`:
 https://github.com/adusa89/PlayLingo/releases/download/latest/PlayLingo.apk
 
 ## 2. Instalace
-Nahraj APK do televize (USB flash + správce souborů, nebo aplikace Downloader) a nainstaluj.
+Nejjednodušší je aplikace **Downloader** (od AFTVnews, zdarma v Google Play v televizi) – nic se
+neposílá z telefonu:
+1. V televizi nainstaluj z Google Play **Downloader** a otevři ho (přístup k souborům → Povolit).
+2. Do řádku pro adresu napiš `adusa89.github.io/PlayLingo/tv` a zvol **Go** – PlayLingo se stáhne.
+3. Povol Downloaderu instalaci: na Google TV v okně, které se ukáže, **Nastavení** → Downloader →
+   Povoleno; na starší Android TV Nastavení → Aplikace → Zabezpečení a omezení → Neznámé zdroje.
+4. Zvol **Instalovat** a pak **Otevřít**. Stažený soubor pak Downloader nabídne smazat.
+
+Podrobný postup i pro různé značky televizí: [pomoc/android-tv.md](pomoc/android-tv.md#instalace).
+Jinak jde APK nahrát i z USB flash disku správcem souborů. (Do budoucna možná půjde nahrát
+PlayLingo do televize přímo z PlayLinga v telefonu – zatím ne.)
+
 Když aplikace nejde nainstalovat nebo aktualizovat:
 1. Objeví-li se okno Play Protect, zvol „Další podrobnosti“ → „Přesto nainstalovat“.
 2. Když tam ta možnost není: Google Play → ikona účtu → Play Protect → ozubené kolo → vypni
